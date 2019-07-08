@@ -51,7 +51,5 @@ void main() {
     expect(buffer, [20, 5, 6, 7, 17]);
   });
 
-  test("writeTo", () {
-    // TODO add test
-  });
+  test("writeTo", () {});
 }

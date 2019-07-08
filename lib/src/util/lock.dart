@@ -1,16 +1,14 @@
 import 'dart:async';
 
-/**
- * A lock that guards against concurrent executions of synchronized functions.
- */
+/// A lock that guards against concurrent executions of synchronized functions.
 abstract class Lock {
   const Lock();
 
-  /**
-   * Runs [func] sequentially with other functions invoked using [synchronized] of the same [Lock] instance.
-   * The order of execution is guaranteed to be the same as the order of [synchronized] calls.
-   * If an exception is thrown by [func] during it execution, it gets propagated to the result of [synchronized].
-   */
+  /// Runs [func] sequentially with other functions invoked using
+  /// [synchronized] of the same [Lock] instance. The order of execution is
+  /// guaranteed to be the same as the order of [synchronized] calls. If an
+  /// exception is thrown by [func] during it execution, it gets propagated
+  /// to the result of [synchronized].
   Future<T> synchronized<T>(FutureOr<T> func());
 
   static Lock newLock() {

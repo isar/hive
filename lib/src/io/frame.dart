@@ -8,7 +8,6 @@ import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/header.dart';
 import 'package:hive/src/util/crc32.dart';
-import 'package:meta/meta.dart';
 
 /// Frame
 /// --------------------------

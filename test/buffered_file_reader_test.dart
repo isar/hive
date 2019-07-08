@@ -79,9 +79,7 @@ void main() {
     await reader.close();
   });
 
-  test("setPosition", () {
-    // TODO add test
-  });
+  test("setPosition", () {});
 
   test("close", () async {
     var reader = await openReaderWithBytes([1, 2, 3, 4], 3);

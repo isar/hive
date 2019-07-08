@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_instance_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
