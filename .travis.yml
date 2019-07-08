@@ -1,0 +1,17 @@
+language: dart
+os:
+  - linux
+sudo: false
+dart:
+  - stable
+script:
+  - pub get
+  - pub run test
+  - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
+  - pub global activate coverage
+  - test_coverage
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+cache:
+  directories:
+    - $HOME/.pub-cache
