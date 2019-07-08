@@ -8,7 +8,8 @@ script:
   - pub get
   - pub run test
   - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
-  - pub global run test_coverage
+  - pub global activate test_coverage
+  - test_coverage
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 cache:
