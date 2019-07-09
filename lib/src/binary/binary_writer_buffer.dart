@@ -37,7 +37,7 @@ class BinaryWriterBuffer {
     return offset;
   }
 
-  void addBytes(Uint8List chunk) {
+  void addBytes(List<int> chunk) {
     _commitChunk(false);
     _committedChunks.add(chunk);
     _committedChunks.add(chunk.length);

@@ -65,7 +65,7 @@ void buildGoldens() async {
   for (var frame in testFrames) {
     var file = await getAssetFile("frames", (name++).toString());
     await file.create(recursive: true);
-    var frameBytes = frame.toBytes(registry);
+    var frameBytes = frame.toBytes(registry, null);
     await file.writeAsBytes(frameBytes);
   }
 }
@@ -73,7 +73,6 @@ void buildGoldens() async {
 void expectFramesEqual(Frame f1, Frame f2) {
   expect(f1.key, f2.key);
   expect(f1.deleted, f2.deleted);
-  expect(f1.error, f2.error);
   if (f1.value is double && f2.value is double) {
     if (f1.value.isNaN && f1.value.isNaN) return;
   }
@@ -86,20 +85,20 @@ void main() {
       var tooLongKey = List.filled(256, 'a').join();
       var tooLongFrame = Frame(tooLongKey, 5);
       expect(
-        () => tooLongFrame.toBytes(registry),
+        () => tooLongFrame.toBytes(registry, null),
         throwsA(anything),
       );
 
       var validKey = List.filled(255, 'a').join();
       var frame = Frame(validKey, 5);
-      frame.toBytes(registry);
+      frame.toBytes(registry, null);
     });
 
     test('golden frames', () async {
       var name = 0;
       for (var frame in testFrames) {
         var file = await getTempAssetFile("frames", "${name++}");
-        var bytes = await frame.toBytes(registry);
+        var bytes = await frame.toBytes(registry, null);
         expect(bytes, await file.readAsBytes());
       }
     });
@@ -111,12 +110,7 @@ void main() {
       for (var goldenFrame in testFrames) {
         var file = await getTempAssetFile("frames", "${name++}");
         var reader = await BufferedFileReader.fromFile(file);
-        var frame = await Frame.fromReader(
-          (bytes) => reader.read(bytes),
-          registry,
-          readValue: true,
-        );
-        expect(frame.error, null);
+        var frame = await Frame.fromBytes(reader.read, registry, null);
         expect(frame.length, await file.length());
         expectFramesEqual(frame, goldenFrame);
       }
@@ -125,16 +119,8 @@ void main() {
     test('eof', () async {
       var emptyFile = await getTempFile();
       var reader = await BufferedFileReader.fromFile(emptyFile);
-      var frame = await Frame.fromReader(
-        reader.read,
-        registry,
-        readValue: true,
-      );
-      expect(frame.error, FrameError.eof);
-      expect(frame.key, null);
-      expect(frame.value, null);
-      expect(frame.deleted, null);
-      expect(frame.length, null);
+      var frame = await Frame.fromBytes(reader.read, registry, null);
+      expect(frame, null);
     });
   });
 
@@ -142,12 +128,9 @@ void main() {
     var key = HiveInstanceImpl().generateSecureKey();
     var crypto = CryptoHelper(Uint8List.fromList(key));
     for (var frame in testFrames) {
-      var bytes = frame.toBytes(registry, encryptor: crypto.encryptor);
-      var decryptedFrame = await Frame.fromReader(
-        ByteListReader(bytes).read,
-        registry,
-        decryptor: crypto.decryptor,
-      );
+      var bytes = frame.toBytes(registry, crypto.encryptor);
+      var decryptedFrame = await Frame.fromBytes(
+          ByteListReader(bytes).read, registry, crypto.decryptor);
 
       expectFramesEqual(frame, decryptedFrame);
     }

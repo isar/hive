@@ -7,7 +7,7 @@ abstract class BinaryWriter {
 
   void writeByte(int byte);
 
-  void writeBytes(Uint8List bytes);
+  void writeBytes(List<int> bytes);
 
   void writeWord(int value);
 

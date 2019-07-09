@@ -1,5 +1,5 @@
 name: hive
-description: Hive is a lightweight and blazing fast key/value store written in pure Dart.
+description: Hive is a lightweight and blazing fast key-value store written in pure Dart. It is stronly encrypted using AES-256.
 version: 0.1.1
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/leisim/hive

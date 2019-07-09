@@ -5,23 +5,26 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/io/frame.dart';
 
 class BinaryReaderImpl extends BinaryReader {
+  final Uint8List _buffer;
+  final int _bufferLength;
   final ByteData _data;
   final TypeRegistry typeRegistry;
   int _offset = 0;
 
-  BinaryReaderImpl(Uint8List buffer, this.typeRegistry)
-      : _data =
-            ByteData.view(buffer.buffer, buffer.offsetInBytes, buffer.length);
+  BinaryReaderImpl(this._buffer, this.typeRegistry, [int bufferLength])
+      : _bufferLength = bufferLength ?? _buffer.length,
+        _data = ByteData.view(_buffer.buffer, _buffer.offsetInBytes,
+            bufferLength ?? _buffer.length);
 
-  int get _bufferOffset => _data.offsetInBytes + _offset;
+  int get _bufferOffset => _buffer.offsetInBytes + _offset;
 
   @override
-  int get availableBytes {
-    return _data.lengthInBytes - _offset;
-  }
+  int get availableBytes => _bufferLength - _offset;
 
   @override
   int get usedBytes => _offset;
+
+  Uint8List get buffer => _buffer;
 
   @override
   void skip(int bytes) {
@@ -33,26 +36,26 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   int readByte() {
-    return _data.getUint8(_offset++);
+    return _buffer[_offset++];
   }
 
   @override
-  List<int> viewBytes(int bytes) {
-    var view = Uint8List.view(_data.buffer, _bufferOffset, bytes);
+  Uint8List viewBytes(int bytes) {
+    var view = Uint8List.view(_buffer.buffer, _bufferOffset, bytes);
     _offset += bytes;
     return view;
   }
 
   @override
-  List<int> readBytes(int bytes) {
-    return viewBytes(bytes).toList();
+  Uint8List readBytes(int bytes) {
+    var byteList = _buffer.sublist(_offset, _offset + bytes);
+    _offset += bytes;
+    return byteList as Uint8List;
   }
 
   @override
   int readWord() {
-    var value = _data.getUint16(_offset);
-    _offset += 2;
-    return value;
+    return _buffer[_offset++] << 8 | _buffer[_offset++];
   }
 
   @override
@@ -64,9 +67,10 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   int readUnsignedInt32() {
-    var value = _data.getUint32(_offset);
-    _offset += 4;
-    return value;
+    return _buffer[_offset++] << 24 |
+        _buffer[_offset++] << 16 |
+        _buffer[_offset++] << 8 |
+        _buffer[_offset++];
   }
 
   @override
@@ -85,7 +89,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   bool readBool() {
-    return _data.getUint8(_offset++) > 0;
+    return _buffer[_offset++] > 0;
   }
 
   @override
@@ -115,7 +119,7 @@ class BinaryReaderImpl extends BinaryReader {
       length = readWord();
     }
     var list = List<int>(length);
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       list[i] = _data.getInt64(_offset);
       _offset += 8;
     }
@@ -128,7 +132,7 @@ class BinaryReaderImpl extends BinaryReader {
       length = readWord();
     }
     var list = List<double>(length);
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       list[i] = _data.getFloat64(_offset);
       _offset += 8;
     }
@@ -140,10 +144,9 @@ class BinaryReaderImpl extends BinaryReader {
     if (length == null) {
       length = readWord();
     }
-    var view = viewBytes(length);
     var list = List<bool>(length);
-    for (int i = 0; i < length; i++) {
-      list[i] = view[i] > 0;
+    for (var i = 0; i < length; i++) {
+      list[i] = _buffer[_offset++] > 0;
     }
     return list;
   }
@@ -156,7 +159,7 @@ class BinaryReaderImpl extends BinaryReader {
       length = readWord();
     }
     var list = List<String>(length);
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
     }
     return list;
@@ -168,7 +171,7 @@ class BinaryReaderImpl extends BinaryReader {
       length = readWord();
     }
     var list = List(length);
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       list[i] = read();
     }
     return list;
@@ -180,7 +183,7 @@ class BinaryReaderImpl extends BinaryReader {
       length = readWord();
     }
     Map map = Map();
-    for (int i = 0; i < length; i++) {
+    for (var i = 0; i < length; i++) {
       var key = read();
       var value = read();
       map[key] = value;

@@ -15,12 +15,12 @@ class HiveInstanceImpl extends TypeRegistryImpl implements HiveInstance {
   String _homePath;
 
   @override
-  Directory get home {
+  String get path {
     if (_homePath == null) {
       throw HiveError("Hive not initialized. Call Hive.init() first.");
     }
 
-    return Directory(_homePath);
+    return _homePath;
   }
 
   @override
@@ -45,7 +45,7 @@ class HiveInstanceImpl extends TypeRegistryImpl implements HiveInstance {
     var existingBox = _boxes[name];
     if (existingBox != null) return existingBox;
 
-    await home.create(recursive: true);
+    await Directory(_homePath).create(recursive: true);
 
     var options = BoxOptions(
       encryptionKey: encryptionKey,
@@ -54,7 +54,7 @@ class HiveInstanceImpl extends TypeRegistryImpl implements HiveInstance {
       truncateOnCorruption: truncateOnCorruption,
     );
 
-    var box = await BoxImpl.open(this, name, home, options);
+    var box = await BoxImpl.open(this, name, options);
     _boxes[name] = box;
 
     return box;

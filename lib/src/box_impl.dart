@@ -21,16 +21,12 @@ class KeyEntry {
   final int length;
 
   KeyEntry(this.key, this.offset, this.length);
-
-  bool operator ==(o) =>
-      o is KeyEntry && o.key == key && o.offset == offset && o.length == length;
-  int get hashCode => key.hashCode + offset.hashCode + length.hashCode;
 }
 
 class BoxImpl extends TypeRegistryImpl implements Box {
   static const hiveFileVersion = 1;
   static const deletedBytesRatio = 0.15;
-  static const deletedBytesThreshold = 10000;
+  static const deletedBytesThreshold = 25000;
 
   final HiveInstanceImpl _hive;
   final String name;
@@ -57,9 +53,12 @@ class BoxImpl extends TypeRegistryImpl implements Box {
 
   bool get isOpen => _open;
 
-  static Future<Box> open(HiveInstanceImpl hive, String name, Directory dir,
-      BoxOptions options) async {
-    var file = await findHiveFileAndCleanUp(name, dir);
+  @override
+  String get path => _hiveFile.path;
+
+  static Future<Box> open(
+      HiveInstanceImpl hive, String name, BoxOptions options) async {
+    var file = await findHiveFileAndCleanUp(name, hive.path);
 
     var hiveFile = SyncedFile(file.path);
     await hiveFile.open();
@@ -89,10 +88,10 @@ class BoxImpl extends TypeRegistryImpl implements Box {
 
   @visibleForTesting
   static Future<File> findHiveFileAndCleanUp(
-      String boxName, Directory dir) async {
+      String boxName, String hivePath) async {
     File hiveFile;
     File compactedFile;
-    var files = await dir.list(followLinks: false).toList();
+    var files = await Directory(hivePath).list(followLinks: false).toList();
     for (var file in files) {
       if (file is! File) continue;
       if (file.path.endsWith('$boxName.hive')) {
@@ -112,7 +111,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
       var newPath = p.setExtension(compactedFile.path, '.hive');
       return await compactedFile.rename(newPath);
     } else {
-      hiveFile = File(p.join(dir.path, '$boxName.hive'));
+      hiveFile = File(p.join(hivePath, '$boxName.hive'));
       await hiveFile.create();
       return hiveFile;
     }
@@ -164,33 +163,25 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   @visibleForTesting
   Future readKeysFromHiveFile() async {
     var offset = Header.headerLength;
-    var stream = Frame.streamAll(
-      File(_hiveFile.path),
-      this,
-      readValue: false,
-    );
-    await for (var frame in stream) {
-      if (frame.error != null) {
-        throw HiveError.corrupted(name, "Could not read keys.");
-      } else {
-        var key = frame.key;
-        if (!frame.deleted) {
-          var previousEntry = _keys[key];
-          if (previousEntry != null) {
-            _deletedBytes += previousEntry.length;
-          }
-          _keys[key] = KeyEntry(frame.key, offset, frame.length);
-        } else {
-          var removedFrame = _keys.remove(key);
-          if (removedFrame != null) {
-            _deletedBytes += frame.length;
-            _deletedBytes += removedFrame.length;
-          }
+    var frames = await Frame.readKeys(File(_hiveFile.path), this);
+    for (var frame in frames) {
+      var key = frame.key;
+      if (!frame.deleted) {
+        var previousEntry = _keys[key];
+        if (previousEntry != null) {
+          _deletedBytes += previousEntry.length;
         }
-
-        _totalBytes += frame.length;
-        offset += frame.length;
+        _keys[key] = KeyEntry(frame.key, offset, frame.length);
+      } else {
+        var removedFrame = _keys.remove(key);
+        if (removedFrame != null) {
+          _deletedBytes += frame.length;
+          _deletedBytes += removedFrame.length;
+        }
       }
+
+      _totalBytes += frame.length;
+      offset += frame.length;
     }
   }
 
@@ -209,22 +200,18 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   }
 
   @override
-  Future<T> get<T>(String key, {T defaultValue}) async {
+  Future<T> get<T>(String key, {T defaultValue}) {
     _checkKey(key);
 
     var entry = _keys[key];
-    if (entry == null) return defaultValue;
+    if (entry == null) return Future.value(defaultValue);
 
-    var frame = await _hiveFile.syncRead((file) async {
+    return _hiveFile.syncRead((file) async {
       await file.setReadPosition(entry.offset);
-      return await Frame.fromReader(
-        (bytes) => file.read(bytes),
-        this,
-        decryptor: _cryptoHelper?.decryptor,
-      );
+      var frame =
+          await Frame.fromBytes(file.read, this, _cryptoHelper?.decryptor);
+      return frame.value;
     });
-
-    return frame.value;
   }
 
   @override
@@ -280,7 +267,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   }
 
   @override
-  Future<bool> has(String key) async {
+  bool has(String key) {
     _checkKey(key);
     return _keys.containsKey(key);
   }
@@ -345,10 +332,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
 
   @visibleForTesting
   Future<KeyEntry> writeFrame(Frame frame) async {
-    var bytes = frame.toBytes(
-      this,
-      encryptor: _cryptoHelper?.encryptor,
-    );
+    var bytes = frame.toBytes(this, _cryptoHelper?.encryptor);
 
     var offset = await _hiveFile.write(bytes); // Append to file
     return KeyEntry(frame.key, offset, bytes.length);
@@ -359,10 +343,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
     var bytes = BytesBuilder(copy: false);
     var frameLengths = List<int>(frames.length);
     for (int i = 0; i < frames.length; i++) {
-      var frameBytes = frames[i].toBytes(
-        this,
-        encryptor: _cryptoHelper?.encryptor,
-      );
+      var frameBytes = frames[i].toBytes(this, _cryptoHelper?.encryptor);
       bytes.add(frameBytes);
       frameLengths[i] = frameBytes.length;
     }
@@ -381,7 +362,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   }
 
   @override
-  Future<Iterable<String>> allKeys() async {
+  Iterable<String> allKeys() {
     _checkOpen();
     return _keys.keys;
   }
@@ -390,19 +371,11 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   Future<Map<String, dynamic>> toMap() async {
     _checkOpen();
     var map = Map<String, dynamic>();
-
     await _hiveFile.syncWrite((file) async {
-      var stream = Frame.streamAll(
-        File(_hiveFile.path),
-        this,
-        readValue: true,
-      );
-      await for (var frame in stream) {
-        if (frame.error == null) {
-          map[frame.key] = frame.value;
-        } else {
-          throw frame.error;
-        }
+      var frames = await Frame.readKeysAndValues(
+          File(_hiveFile.path), this, _cryptoHelper?.decryptor);
+      for (var frame in frames) {
+        map[frame.key] = frame.value;
       }
     });
 
@@ -449,7 +422,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
           }
           compactWriter.writeBytes(frameBytes);
 
-          if (compactWriter.writtenBytes > 1000) {
+          if (compactWriter.writtenBytes > 10000) {
             await compactFile.writeFrom(compactWriter.outputAndClear());
           }
           newKeys[entry.key] = KeyEntry(entry.key, compactOffset, entry.length);
@@ -505,11 +478,6 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   }
 
   @override
-  File getBoxFile() {
-    return File(_hiveFile.path);
-  }
-
-  @override
   Future deleteFromDisk() async {
     _checkOpen();
     await _streamController.close();
@@ -520,11 +488,11 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   }
 
   @visibleForTesting
-  Map<String, KeyEntry> get keysForTest => _keys;
+  Map<String, KeyEntry> get debugKeys => _keys;
 
   @visibleForTesting
-  int get deletedBytesForTest => _deletedBytes;
+  int get debugDeletedBytes => _deletedBytes;
 
   @visibleForTesting
-  int get totalBytesForTest => _totalBytes;
+  int get debugTotalBytes => _totalBytes;
 }

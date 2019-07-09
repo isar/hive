@@ -34,13 +34,19 @@ Future<BoxImpl> createTestBox() async {
   return box;
 }
 
+void expectKeyEntriesEqual(KeyEntry k1, KeyEntry k2) {
+  expect(k1.key, k2.key);
+  expect(k1.offset, k2.offset);
+  expect(k1.length, k2.length);
+}
+
 void main() {
   group("findHiveFileAndCleanUp", () {
     void checkFindHiveFileAndCleanUp(String folder) async {
       var hiveFileDir =
           await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
       var hiveFile =
-          await BoxImpl.findHiveFileAndCleanUp("testBox", hiveFileDir);
+          await BoxImpl.findHiveFileAndCleanUp("testBox", hiveFileDir.path);
       expect(hiveFile.path, path.join(hiveFileDir.path, "testBox.hive"));
       await expectDirEqualsAssetDir(
           hiveFileDir, 'findHiveFileAndCleanUp', folder, 'after');
@@ -145,35 +151,37 @@ void main() {
 
     test("read keys", () async {
       var registry = TypeRegistryImpl();
-      var entries = Map<String, KeyEntry>();
+      var entries = List<KeyEntry>();
 
       var bytes = BytesBuilder();
       bytes.add(Header(1, 1, false).toBytes());
 
       var deletedLength = 0;
       testMap.forEach((k, v) {
-        var frame1 = Frame(k, 1234).toBytes(registry);
-        var frame2 = Frame.tombstone(k).toBytes(registry);
-        var frame3 = Frame(k, "test").toBytes(registry);
-        var frame4 = Frame(k, v).toBytes(registry);
+        var frame1 = Frame(k, 1234).toBytes(registry, null);
+        var frame2 = Frame.tombstone(k).toBytes(registry, null);
+        var frame3 = Frame(k, "test").toBytes(registry, null);
+        var frame4 = Frame(k, v).toBytes(registry, null);
 
         deletedLength += frame1.length + frame2.length + frame3.length;
 
         bytes.add(frame1);
         bytes.add(frame2);
         bytes.add(frame3);
-        entries[k] = (KeyEntry(k, bytes.length, frame4.length));
+        entries.add(KeyEntry(k, bytes.length, frame4.length));
         bytes.add(frame4);
       });
 
       var box = await createBoxFromBytes(bytes.toBytes());
 
-      expect(box.keysForTest.length, 0);
+      expect(box.debugKeys.length, 0);
 
       await box.readKeysFromHiveFile();
-      expect(box.keysForTest, entries);
-      expect(box.totalBytesForTest, bytes.length - Header.headerLength);
-      expect(box.deletedBytesForTest, deletedLength);
+      for (var entry in entries) {
+        expectKeyEntriesEqual(entry, box.debugKeys[entry.key]);
+      }
+      expect(box.debugTotalBytes, bytes.length - Header.headerLength);
+      expect(box.debugDeletedBytes, deletedLength);
 
       await box.close();
     });
@@ -182,13 +190,13 @@ void main() {
       var bytes = BytesBuilder();
       bytes.add(Header(1, 1, false).toBytes());
       testMap.forEach((k, v) {
-        bytes.add(Frame(k, v).toBytes(TypeRegistryImpl()));
+        bytes.add(Frame(k, v).toBytes(TypeRegistryImpl(), null));
       });
       var truncated = bytes.toBytes().sublist(0, bytes.length - 1);
       var box = await createBoxFromBytes(truncated);
 
-      await expectLater(() => box.readKeysFromHiveFile(),
-          throwsHiveError("Could not read keys"));
+      await expectLater(
+          () => box.readKeysFromHiveFile(), throwsHiveError("Wrong checksum"));
 
       await box.close();
     });
@@ -236,19 +244,19 @@ void main() {
     for (var key in testMap.keys) {
       var val1 = 1234512345;
       await box.put(key, val1);
-      var bytes1 = Frame(key, val1).toBytes(box);
+      var bytes1 = Frame(key, val1).toBytes(box, null);
       verify(mockFile.write(bytes1));
 
       offset += bytes1.length;
 
       var val2 = testMap[key];
       await box.put(key, val2);
-      var bytes2 = Frame(key, val2).toBytes(box);
+      var bytes2 = Frame(key, val2).toBytes(box, null);
       verify(mockFile.write(bytes2));
 
-      expect(box.totalBytesForTest, offset + bytes2.length);
-      expect(box.deletedBytesForTest, deleted + bytes1.length);
-      expect(keys[key], KeyEntry(key, offset, bytes2.length));
+      expect(box.debugTotalBytes, offset + bytes2.length);
+      expect(box.debugDeletedBytes, deleted + bytes1.length);
+      expectKeyEntriesEqual(keys[key], KeyEntry(key, offset, bytes2.length));
 
       deleted += bytes1.length;
       offset += bytes2.length;
@@ -270,7 +278,7 @@ void main() {
     var bytes = BytesBuilder();
     var offsets = Map<String, int>();
     testMap.forEach((k, v) {
-      var frameBytes = Frame(k, v).toBytes(box);
+      var frameBytes = Frame(k, v).toBytes(box, null);
       bytes.add(frameBytes);
 
       offsets[k] = offset;
@@ -278,7 +286,7 @@ void main() {
     });
 
     verify(mockFile.write(bytes.toBytes()));
-    expect(box.totalBytesForTest, bytes.length);
+    expect(box.debugTotalBytes, bytes.length);
     for (var key in testMap.keys) {
       expect(keys[key].offset, offsets[key]);
     }
@@ -289,7 +297,7 @@ void main() {
     when(mockFile.write(any)).thenAnswer((_) => Future.value(10));
     var box = BoxImpl(HiveInstanceImpl(), "testBox", BoxOptions(), mockFile);
 
-    expect(box.keysForTest.length, 0);
+    expect(box.debugKeys.length, 0);
 
     for (var key in testMap.keys) {
       expect(await box.has(key), false);
@@ -315,11 +323,11 @@ void main() {
 
     var existingKeyLength = keys["ExistingKey"].length;
     await box.delete("ExistingKey");
-    var tombstoneBytes = Frame.tombstone("ExistingKey").toBytes(box);
+    var tombstoneBytes = Frame.tombstone("ExistingKey").toBytes(box, null);
     verify(mockFile.write(tombstoneBytes));
     expect(keys.containsKey("ExistingKey"), false);
-    expect(box.totalBytesForTest, tombstoneBytes.length);
-    expect(box.deletedBytesForTest, existingKeyLength + tombstoneBytes.length);
+    expect(box.debugTotalBytes, tombstoneBytes.length);
+    expect(box.debugDeletedBytes, existingKeyLength + tombstoneBytes.length);
   });
 
   test("deleteAll", () async {
@@ -341,14 +349,14 @@ void main() {
     verifyNever(mockFile.write(any));
 
     var tombstoneBytes = BytesBuilder();
-    tombstoneBytes.add(Frame.tombstone("ExistingKey").toBytes(box));
-    tombstoneBytes.add(Frame.tombstone("SecondKey").toBytes(box));
+    tombstoneBytes.add(Frame.tombstone("ExistingKey").toBytes(box, null));
+    tombstoneBytes.add(Frame.tombstone("SecondKey").toBytes(box, null));
 
     await box.deleteAll(["ExistingKey", "SecondKey"]);
 
     verify(mockFile.write(tombstoneBytes.toBytes()));
-    expect(box.totalBytesForTest, tombstoneBytes.length);
-    expect(box.deletedBytesForTest, tombstoneBytes.length + 60);
+    expect(box.debugTotalBytes, tombstoneBytes.length);
+    expect(box.debugDeletedBytes, tombstoneBytes.length + 60);
     expect(keys.keys, ["ThirdKey"]);
   });
 
@@ -363,7 +371,7 @@ void main() {
     var frame = Frame("key", "value");
     var entry = await box.writeFrame(frame);
 
-    var bytes = frame.toBytes(box);
+    var bytes = frame.toBytes(box, null);
     verify(mockFile.write(bytes));
 
     expect(entry.key, "key");
@@ -423,15 +431,15 @@ void main() {
         await box.delete(key);
         await box.put(key, "This is a test");
         await box.put(key, testMap[key]);
-        comparisonBytes.add(Frame(key, testMap[key]).toBytes(registry));
+        comparisonBytes.add(Frame(key, testMap[key]).toBytes(registry, null));
       }
 
-      var oldEntries = box.keysForTest;
+      var oldEntries = box.debugKeys;
       await box.compact();
 
       var offset = Header.headerLength;
       for (var key in testMap.keys) {
-        var newEntry = box.keysForTest[key];
+        var newEntry = box.debugKeys[key];
         var oldEntry = oldEntries[key];
 
         expect(newEntry.key, key);
@@ -441,11 +449,11 @@ void main() {
         offset += newEntry.length;
       }
 
-      expect(box.totalBytesForTest, offset);
-      expect(box.deletedBytesForTest, 0);
+      expect(box.debugTotalBytes, offset);
+      expect(box.debugDeletedBytes, 0);
 
       var comparisonBox = await createTestBox();
-      var bytes = await box.getBoxFile().readAsBytes();
+      var bytes = await File(box.path).readAsBytes();
       expect(bytes, comparisonBytes.toBytes());
 
       await box.close();
@@ -493,7 +501,7 @@ void main() {
 
     var box = await hive.box("testBox");
     await box.put("key", "value");
-    var boxFile = box.getBoxFile();
+    var boxFile = File(box.path);
 
     expect(await boxFile.exists(), true);
     await box.deleteFromDisk();

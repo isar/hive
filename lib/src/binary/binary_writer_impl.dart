@@ -27,7 +27,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeBytes(Uint8List bytes) {
+  void writeBytes(List<int> bytes) {
     _buffer.addBytes(bytes);
   }
 

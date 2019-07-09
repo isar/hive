@@ -13,20 +13,20 @@ void main() {
   test("home", () {
     var hive = HiveInstanceImpl();
 
-    expect(() => hive.home, throwsHiveError("not initialized"));
+    expect(() => hive.path, throwsHiveError("not initialized"));
 
     hive.init("MYPATH");
-    expect(hive.home.path, "MYPATH");
+    expect(hive.path, "MYPATH");
   });
 
   test("init", () {
     var hive = HiveInstanceImpl();
 
     hive.init("MYPATH");
-    expect(hive.home.path, "MYPATH");
+    expect(hive.path, "MYPATH");
 
     hive.init("OTHERPATH");
-    expect(hive.home.path, "OTHERPATH");
+    expect(hive.path, "OTHERPATH");
 
     expect(hive.findAdapterForType(Uint8List).adapter, isA<Uint8ListAdapter>());
     expect(hive.findAdapterForTypeId(16).adapter, isA<Uint8ListAdapter>());
@@ -91,11 +91,11 @@ void main() {
 
     var box1 = await hive.box("testBox1");
     await box1.put("key", "value");
-    var box1File = box1.getBoxFile();
+    var box1File = File(box1.path);
 
     var box2 = await hive.box("testBox2");
     await box2.put("key", "value");
-    var box2File = box1.getBoxFile();
+    var box2File = File(box1.path);
 
     await hive.deleteFromDisk();
     expect(await box1File.exists(), false);

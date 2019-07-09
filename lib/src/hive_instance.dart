@@ -6,7 +6,7 @@ abstract class HiveInstance implements TypeRegistry {
   /// The home directory of Hive.
   ///
   /// All box files will be stored in this directory.
-  Directory get home;
+  String get path;
 
   /// Initialize Hive by giving Hive a home directory.
   void init(String path);

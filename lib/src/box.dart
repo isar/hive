@@ -11,6 +11,10 @@ class BoxEvent {
 abstract class Box implements TypeRegistry {
   bool get isOpen;
 
+  /// Returns a path to the `.hive` file of this box. It is not save
+  /// to write to this file while the box is open.
+  String get path;
+
   Stream<BoxEvent> watch();
 
   /// Returns the value associated with the given key.
@@ -41,7 +45,7 @@ abstract class Box implements TypeRegistry {
   /// Checks if the box contains the given [key].
   ///
   /// This is a very fast operation and doesn't need a disk access.
-  Future<bool> has(String key);
+  bool has(String key);
 
   /// Removes a key-value pair from the box if the given [key] exists.
   ///
@@ -56,7 +60,7 @@ abstract class Box implements TypeRegistry {
   /// Returns a list of all keys in the box.
   ///
   /// This is a very fast operation and doesn't need a disk access.
-  Future<Iterable<String>> allKeys();
+  Iterable<String> allKeys();
 
   /// Reads all key-value pairs from the box and returns them.
   Future<Map<String, dynamic>> toMap();
@@ -74,10 +78,6 @@ abstract class Box implements TypeRegistry {
   /// **Important:** All instances of this box are being closed. Make sure you
   /// don't access this box anywhere else.
   Future<void> close({bool compact = false});
-
-  /// Returns a [File] pointing to the `.hive` file of this box. It is not save
-  /// to write to this file while the box is open.
-  File getBoxFile();
 
   /// Closes and deletes this box.
   Future<void> deleteFromDisk();

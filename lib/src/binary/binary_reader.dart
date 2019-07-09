@@ -11,9 +11,9 @@ abstract class BinaryReader {
 
   int readByte();
 
-  List<int> viewBytes(int bytes);
+  Uint8List viewBytes(int bytes);
 
-  List<int> readBytes(int bytes);
+  Uint8List readBytes(int bytes);
 
   int readWord();
 
@@ -27,8 +27,10 @@ abstract class BinaryReader {
 
   bool readBool();
 
-  String readString(
-      [int byteCount, Converter<List<int>, String> decoder = utf8Decoder]);
+  String readString([
+    int byteCount,
+    Converter<List<int>, String> decoder = utf8Decoder,
+  ]);
 
   String readAsciiString([int length]);
 
@@ -38,8 +40,10 @@ abstract class BinaryReader {
 
   List<bool> readBoolList([int length]);
 
-  List<String> readStringList(
-      [int length, Converter<List<int>, String> decoder = utf8Decoder]);
+  List<String> readStringList([
+    int length,
+    Converter<List<int>, String> decoder = utf8Decoder,
+  ]);
 
   List readList([int length]);
 

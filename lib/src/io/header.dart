@@ -19,7 +19,7 @@ class Header {
   final int dataVersion;
   final bool encrypted;
 
-  Header(this.fileVersion, this.dataVersion, this.encrypted);
+  const Header(this.fileVersion, this.dataVersion, this.encrypted);
 
   static Header fromBytes(Uint8List headerBytes, {Uint8List keyHash}) {
     var reader = BinaryReaderImpl(headerBytes, null);

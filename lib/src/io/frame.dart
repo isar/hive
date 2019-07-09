@@ -67,147 +67,143 @@ class Frame {
   final dynamic value;
   final bool deleted;
 
-  final FrameError error;
   final int length;
 
-  const Frame(this.key, this.value, [this.length])
-      : deleted = false,
-        error = null;
+  const Frame(this.key, this.value, [this.length]) : deleted = false;
 
   const Frame.keyOnly(this.key, [this.length])
       : value = null,
-        deleted = false,
-        error = null;
+        deleted = false;
 
   const Frame.tombstone(this.key, [this.length])
       : value = null,
-        error = null,
         deleted = true;
 
-  const Frame.error(this.error)
-      : key = null,
-        value = null,
-        deleted = null,
-        length = null;
+  static Future<Frame> fromBytes(
+      ByteSource source, TypeRegistry registry, Crypto decryptor) async {
+    var lengthBytes = (await source(4)).toList();
+    if (lengthBytes.isEmpty) return null;
 
-  static Future<Frame> fromReader(
-    Future<List<int>> Function(int bytes) reader,
-    TypeRegistry registry, {
-    bool readValue = true,
-    Crypto decryptor,
-  }) async {
-    try {
-      // Read first 4 bytes to calculate length of the frame
-      var lenBytes = (await reader(4)).toList();
-      if (lenBytes.isEmpty) {
-        return Frame.error(FrameError.eof);
-      }
-      var frameLength = lenBytes[0] << 24 |
-          lenBytes[1] << 16 |
-          lenBytes[2] << 8 |
-          lenBytes[3];
-      var dataLength = frameLength - 4; // Subtract length bytes
-
-      var frameBytes = await reader(dataLength); // Read rest of frame
-
-      if (frameBytes.length < dataLength) {
-        // Could not read required amount of bytes
-        return Frame.error(FrameError.corrupted);
-      }
-
-      var frameReader = BinaryReaderImpl(frameBytes, registry);
-      var keyLen = frameReader.readByte(); // Read length of key
-      var key = frameReader.readAsciiString(keyLen); // Read key
-
-      Frame frame;
-      if (dataLength - frameReader.usedBytes <= 4) {
-        // This is a tombstone frame
-        frame = Frame.tombstone(key, frameLength);
-      } else if (readValue) {
-        dynamic value;
-        if (decryptor == null) {
-          value = frameReader.read();
-        } else {
-          var valueBytes =
-              frameReader.readBytes(frameReader.availableBytes - 4);
-          var decryptedValueBytes = decryptor(Uint8List.fromList(valueBytes));
-          var valueReader = BinaryReaderImpl(decryptedValueBytes, registry);
-          value = valueReader.read();
-        }
-        frame = Frame(key, value, frameLength);
-      } else {
-        // Return key only frame
-        frame = Frame.keyOnly(key, frameLength);
-        frameReader.skip(frameReader.availableBytes - 4); // Skip to checksum
-      }
-
-      // Calculate checksum of whole frame minus checksum bytes
-      var crc = frameReader.readUnsignedInt32();
-      var computedCrc = Crc32.compute(lenBytes);
-      computedCrc = Crc32.compute(
-        frameBytes,
-        crc: computedCrc,
-        length: dataLength - 4,
-      );
-
-      if (crc != computedCrc) {
-        return Frame.error(FrameError.wrongChecksum);
-      }
-
-      if (frameReader.usedBytes != dataLength) {
-        // Reader did not use all bytes of the frame
-        return Frame.error(FrameError.corrupted);
-      }
-
-      return frame;
-    } catch (e) {
-      print(e);
-      return Frame.error(FrameError.corrupted);
-    }
+    var frameLength = _bytesToUint32(lengthBytes);
+    var frameBytes = await source(frameLength - 4);
+    _checkCrc(lengthBytes, frameBytes);
+    var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
+    return decodeFrameBody(frameReader, true, decryptor);
   }
 
-  static Stream<Frame> streamAll(
-    File file,
-    TypeRegistry registry, {
-    bool readValue = true,
-    Crypto decryptor,
-  }) async* {
+  static Future<List<Frame>> readKeys(File file, TypeRegistry registry) async {
     var bufferedFile = await BufferedFileReader.fromFile(file);
     await bufferedFile.skip(Header.headerLength);
 
+    var frames = List<Frame>();
+
     try {
       while (true) {
-        var frame = await fromReader(
-          (bytes) => bufferedFile.read(bytes),
-          registry,
-          readValue: readValue,
-          decryptor: decryptor,
-        );
-        if (frame.error == null) {
-          yield frame;
-        } else {
-          if (frame.error != FrameError.eof) {
-            yield frame;
-          }
-          break;
-        }
+        var lengthBytes = (await bufferedFile.read(4)).toList();
+        if (lengthBytes.isEmpty) break;
+
+        var frameLength = _bytesToUint32(lengthBytes);
+        var frameBytes = await bufferedFile.read(frameLength - 4);
+        _checkCrc(lengthBytes, frameBytes);
+        var frameReader =
+            BinaryReaderImpl(frameBytes, registry, frameLength - 8);
+        var frame = decodeFrameBody(frameReader, false, null);
+        frames.add(frame);
       }
     } finally {
       await bufferedFile.close();
     }
+
+    return frames;
   }
 
-  Uint8List toBytes(
-    TypeRegistry registry, {
-    Crypto encryptor,
-  }) {
+  static Future<List<Frame>> readKeysAndValues(
+      File file, TypeRegistry registry, Crypto decryptor) async {
+    var bytes = await file.readAsBytes();
+    var reader = BinaryReaderImpl(bytes, registry);
+    reader.skip(Header.headerLength);
+
+    var frames = List<Frame>();
+
+    while (true) {
+      if (reader.availableBytes == 0) break;
+
+      var lengthBytes = reader.readBytes(4);
+      var frameLength = _bytesToUint32(lengthBytes);
+      var frameBytes = reader.viewBytes(frameLength - 4);
+      _checkCrc(lengthBytes, frameBytes);
+      var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
+      var frame = decodeFrameBody(frameReader, true, decryptor);
+      frames.add(frame);
+    }
+
+    return frames;
+  }
+
+  static Frame decodeFrameBody(
+    BinaryReaderImpl frameReader,
+    bool readValue,
+    Crypto decryptor,
+  ) {
+    var frameLength = frameReader.availableBytes + 8;
+    var keyLength = frameReader.readByte(); // Read length of key
+    var key = frameReader.readAsciiString(keyLength); // Read key
+
+    Frame frame;
+    if (frameReader.availableBytes == 0) {
+      // This is a tombstone frame
+      frame = Frame.tombstone(key, frameLength);
+    } else if (readValue) {
+      dynamic value;
+      if (decryptor == null) {
+        value = frameReader.read();
+        if (frameReader.availableBytes > 0) {
+          throw HiveError("Not all bytes have been used.");
+        }
+      } else {
+        var encryptedBytes = frameReader.viewBytes(frameReader.availableBytes);
+        var decryptedBytes = decryptor(encryptedBytes);
+        var valueReader =
+            BinaryReaderImpl(decryptedBytes, frameReader.typeRegistry);
+        value = valueReader.read();
+        if (valueReader.availableBytes > 0) {
+          throw HiveError("Not all bytes have been used.");
+        }
+      }
+      frame = Frame(key, value, frameLength);
+    } else {
+      // Return key only frame
+      frame = Frame.keyOnly(key, frameLength);
+      frameReader.skip(frameReader.availableBytes - 4); // Skip to checksum
+    }
+
+    return frame;
+  }
+
+  static int _bytesToUint32(List<int> bytes, [offset = 0]) {
+    return bytes[offset] << 24 |
+        bytes[offset + 1] << 16 |
+        bytes[offset + 2] << 8 |
+        bytes[offset + 3];
+  }
+
+  static void _checkCrc(List<int> lengthBytes, List<int> frameBytes) {
+    var computedCrc = Crc32.compute(lengthBytes);
+    computedCrc = Crc32.compute(frameBytes,
+        crc: computedCrc, length: frameBytes.length - 4);
+    var crc = _bytesToUint32(frameBytes, frameBytes.length - 4);
+    if (computedCrc != crc) {
+      throw HiveError("Wrong checksum in hive file. Box may be corrupted.");
+    }
+  }
+
+  Uint8List toBytes(TypeRegistry registry, Crypto encryptor) {
     if (key.length > 255) {
       throw HiveError("Key must not be longer than 255 characters");
     }
     var writer = BinaryWriterImpl(registry);
 
-    var placeholderBytes = Uint8List(4);
-    writer.writeBytes(placeholderBytes); // Placeholder for length
+    writer.writeBytes([0, 0, 0, 0]); // Placeholder for length
     writer.writeByte(key.length); // Write key length
     writer.writeAsciiString(key, writeLength: false); // Write key
     if (!deleted) {
@@ -220,7 +216,7 @@ class Frame {
         writer.writeBytes(encryptedValue);
       }
     }
-    writer.writeBytes(placeholderBytes); // Placeholder for CRC
+    writer.writeBytes([0, 0, 0, 0]); // Placeholder for CRC
 
     var bytes = writer.output();
 
@@ -235,6 +231,8 @@ class Frame {
   }
 }
 
+typedef ByteSource = Future<List<int>> Function(int bytes);
+
 enum FrameValueType {
   null_,
   int_,
@@ -247,11 +245,4 @@ enum FrameValueType {
   string_list_,
   list_,
   map_,
-}
-
-enum FrameError {
-  eof,
-  corrupted,
-  wrongChecksum,
-  crypto,
 }
