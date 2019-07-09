@@ -55,34 +55,34 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   int readWord() {
-    return _buffer[_offset++] << 8 | _buffer[_offset++];
+    return _buffer[_offset++] | _buffer[_offset++] << 8;
   }
 
   @override
   int readInt32() {
-    var value = _data.getInt32(_offset);
+    var value = _data.getInt32(_offset, Endian.little);
     _offset += 4;
     return value;
   }
 
   @override
   int readUnsignedInt32() {
-    return _buffer[_offset++] << 24 |
-        _buffer[_offset++] << 16 |
+    return _buffer[_offset++] |
         _buffer[_offset++] << 8 |
-        _buffer[_offset++];
+        _buffer[_offset++] << 16 |
+        _buffer[_offset++] << 24;
   }
 
   @override
   int readInt() {
-    var value = _data.getInt64(_offset);
+    var value = _data.getInt64(_offset, Endian.little);
     _offset += 8;
     return value;
   }
 
   @override
   double readDouble() {
-    var value = _data.getFloat64(_offset);
+    var value = _data.getFloat64(_offset, Endian.little);
     _offset += 8;
     return value;
   }
@@ -120,7 +120,7 @@ class BinaryReaderImpl extends BinaryReader {
     }
     var list = List<int>(length);
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getInt64(_offset);
+      list[i] = _data.getInt64(_offset, Endian.little);
       _offset += 8;
     }
     return list;
@@ -133,7 +133,7 @@ class BinaryReaderImpl extends BinaryReader {
     }
     var list = List<double>(length);
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getFloat64(_offset);
+      list[i] = _data.getFloat64(_offset, Endian.little);
       _offset += 8;
     }
     return list;

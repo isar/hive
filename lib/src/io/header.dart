@@ -52,8 +52,8 @@ class Header {
 
   int calculateChecksum(Uint8List keyHash) {
     var bytes = Uint8List(8);
-    bytes[0] = fileVersion;
-    bytes[1] = dataVersion >> 8;
+    bytes[0] = fileVersion >> 8;
+    bytes[1] = dataVersion;
     bytes[2] = dataVersion & 0xFF;
     bytes[3] = encrypted ? 1 : 0;
     if (encrypted) {

@@ -181,10 +181,10 @@ class Frame {
   }
 
   static int _bytesToUint32(List<int> bytes, [offset = 0]) {
-    return bytes[offset] << 24 |
-        bytes[offset + 1] << 16 |
-        bytes[offset + 2] << 8 |
-        bytes[offset + 3];
+    return bytes[offset] |
+        bytes[offset + 1] << 8 |
+        bytes[offset + 2] << 16 |
+        bytes[offset + 3] << 24;
   }
 
   static void _checkCrc(List<int> lengthBytes, List<int> frameBytes) {
@@ -221,11 +221,11 @@ class Frame {
     var bytes = writer.output();
 
     var byteData = ByteData.view(bytes.buffer);
-    byteData.setUint32(0, bytes.length); // Write length
+    byteData.setUint32(0, bytes.length, Endian.little); // Write length
 
     var bytesWithoutCRC = Uint8List.view(bytes.buffer, 0, bytes.length - 4);
     var checksum = Crc32.compute(bytesWithoutCRC);
-    byteData.setUint32(bytes.length - 4, checksum);
+    byteData.setUint32(bytes.length - 4, checksum, Endian.little);
 
     return bytes;
   }

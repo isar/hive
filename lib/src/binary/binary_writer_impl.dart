@@ -34,31 +34,31 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeWord(int value) {
     var offset = _buffer.useBytes(2);
-    _buffer.byteData.setUint16(offset, value);
+    _buffer.byteData.setUint16(offset, value, Endian.little);
   }
 
   @override
   void writeInt32(int value) {
     var offset = _buffer.useBytes(4);
-    _buffer.byteData.setInt32(offset, value);
+    _buffer.byteData.setInt32(offset, value, Endian.little);
   }
 
   @override
   void writeUnsigenedInt32(int value) {
     var offset = _buffer.useBytes(4);
-    _buffer.byteData.setUint32(offset, value);
+    _buffer.byteData.setUint32(offset, value, Endian.little);
   }
 
   @override
   void writeInt(int value) {
     var offset = _buffer.useBytes(8);
-    _buffer.byteData.setInt64(offset, value);
+    _buffer.byteData.setInt64(offset, value, Endian.little);
   }
 
   @override
   void writeDouble(double value) {
     var offset = _buffer.useBytes(8);
-    _buffer.byteData.setFloat64(offset, value);
+    _buffer.byteData.setFloat64(offset, value, Endian.little);
   }
 
   @override
@@ -105,7 +105,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
     var offset = _buffer.useBytes(list.length * 8);
     for (int i = 0; i < list.length; i++) {
-      _buffer.byteData.setInt64(offset + i * 8, list[i]);
+      _buffer.byteData.setInt64(offset + i * 8, list[i], Endian.little);
     }
   }
 
@@ -116,7 +116,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
     var offset = _buffer.useBytes(list.length * 8);
     for (int i = 0; i < list.length; i++) {
-      _buffer.byteData.setFloat64(offset + i * 8, list[i]);
+      _buffer.byteData.setFloat64(offset + i * 8, list[i], Endian.little);
     }
   }
 
@@ -142,8 +142,8 @@ class BinaryWriterImpl extends BinaryWriter {
     for (int i = 0; i < list.length; i++) {
       var str = list[i];
       var strBytes = encoder.convert(str);
-      bytes.addByte(strBytes.length << 8);
       bytes.addByte(strBytes.length);
+      bytes.addByte(strBytes.length << 8);
       bytes.add(strBytes);
     }
     writeBytes(bytes.toBytes());
