@@ -8,11 +8,11 @@ void main() {
   test("read", () {
     var now = DateTime.now();
     var binaryReader = BinaryReaderMock();
-    when(binaryReader.readInt()).thenReturn(now.microsecondsSinceEpoch);
+    when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
 
     var date = DateTimeAdapter().read(binaryReader);
     verify(binaryReader.readInt());
-    expect(date, now);
+    expect(date, now.subtract(Duration(microseconds: now.microsecond)));
   });
 
   test("write", () {
@@ -20,6 +20,6 @@ void main() {
     var binaryWriter = BinaryWriterMock();
 
     DateTimeAdapter().write(binaryWriter, now);
-    verify(binaryWriter.writeInt(now.microsecondsSinceEpoch));
+    verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
   });
 }

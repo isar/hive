@@ -1,9 +1,11 @@
+@TestOn("vm")
+
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/adapters/uint8_list_adapter.dart';
-import 'package:hive/src/hive_instance_impl.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
@@ -11,7 +13,7 @@ import 'common.dart';
 
 void main() {
   test("home", () {
-    var hive = HiveInstanceImpl();
+    var hive = HiveImpl();
 
     expect(() => hive.path, throwsHiveError("not initialized"));
 
@@ -20,7 +22,7 @@ void main() {
   });
 
   test("init", () {
-    var hive = HiveInstanceImpl();
+    var hive = HiveImpl();
 
     hive.init("MYPATH");
     expect(hive.path, "MYPATH");
@@ -38,7 +40,7 @@ void main() {
   group("box()", () {
     test("opened box is returned if it exists", () async {
       var tempDir = await getTempDir();
-      var hive = HiveInstanceImpl();
+      var hive = HiveImpl();
       hive.init(tempDir.path);
 
       var testBox = await hive.box("testBox");
@@ -48,7 +50,7 @@ void main() {
 
     test("home directory is created", () async {
       var tempDir = await getTempDir();
-      var hive = HiveInstanceImpl();
+      var hive = HiveImpl();
 
       var hivePath = path.join(tempDir.path, "somePath");
       hive.init(hivePath);
@@ -60,7 +62,7 @@ void main() {
 
   test("closeAll()", () async {
     var tempDir = await getTempDir();
-    var hive = HiveInstanceImpl();
+    var hive = HiveImpl();
     hive.init(tempDir.path);
 
     var box1 = await hive.box("box1");
@@ -74,7 +76,7 @@ void main() {
   });
 
   test("generateSecureKey()", () {
-    var hive = HiveInstanceImpl();
+    var hive = HiveImpl();
 
     var key1 = hive.generateSecureKey();
     var key2 = hive.generateSecureKey();
@@ -86,7 +88,7 @@ void main() {
 
   test("deleteFromDisk", () async {
     var dir = await getTempDir();
-    var hive = HiveInstanceImpl();
+    var hive = HiveImpl();
     hive.init(dir.path);
 
     var box1 = await hive.box("testBox1");

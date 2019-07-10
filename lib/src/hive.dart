@@ -1,22 +1,19 @@
 part of hive;
 
-typedef Migrator = FutureOr Function(int oldVersion, int newVersion, Box box);
-
-abstract class HiveInstance implements TypeRegistry {
+abstract class HiveInterface implements TypeRegistry {
   /// The home directory of Hive.
   ///
   /// All box files will be stored in this directory.
   String get path;
 
-  /// Initialize Hive by giving Hive a home directory.
+  /// Initialize Hive by giving it a home directory.
   void init(String path);
 
   /// Open a box
   Future<Box> box(
     String name, {
     List<int> encryptionKey,
-    int version,
-    Migrator migrator,
+    bool inMemory = false,
   });
 
   /// Checks if a specific box is currently open.

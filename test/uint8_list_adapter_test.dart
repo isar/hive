@@ -1,5 +1,5 @@
 import 'package:hive/src/adapters/uint8_list_adapter.dart';
-import 'package:hive/src/hive_instance_impl.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -7,7 +7,7 @@ import 'common.dart';
 
 void main() {
   test("read", () {
-    var bytes = HiveInstanceImpl().generateSecureKey();
+    var bytes = HiveImpl().generateSecureKey();
     var binaryReader = BinaryReaderMock();
     when(binaryReader.readWord()).thenReturn(bytes.length);
     when(binaryReader.readBytes(bytes.length)).thenReturn(bytes);
@@ -21,7 +21,7 @@ void main() {
   });
 
   test("write", () {
-    var bytes = HiveInstanceImpl().generateSecureKey();
+    var bytes = HiveImpl().generateSecureKey();
     var binaryWriter = BinaryWriterMock();
 
     Uint8ListAdapter().write(binaryWriter, bytes);

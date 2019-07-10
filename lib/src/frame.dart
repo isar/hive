@@ -1,12 +1,9 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
-import 'package:hive/src/io/buffered_file_reader.dart';
-import 'package:hive/src/io/header.dart';
 import 'package:hive/src/util/crc32.dart';
 
 /// Frame
@@ -79,81 +76,37 @@ class Frame {
       : value = null,
         deleted = true;
 
-  static Future<Frame> fromBytes(
-      ByteSource source, TypeRegistry registry, Crypto decryptor) async {
+  static Future<Frame> fromBytes(ByteSource source, TypeRegistry registry,
+      bool readKey, Crypto decryptor) async {
     var lengthBytes = (await source(4)).toList();
     if (lengthBytes.isEmpty) return null;
 
-    var frameLength = _bytesToUint32(lengthBytes);
+    var frameLength = bytesToUint32(lengthBytes);
     var frameBytes = await source(frameLength - 4);
-    _checkCrc(lengthBytes, frameBytes);
+    checkCrc(lengthBytes, frameBytes);
     var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-    return decodeFrameBody(frameReader, true, decryptor);
+    return decodeBody(frameReader, readKey, true, decryptor);
   }
 
-  static Future<List<Frame>> readKeys(File file, TypeRegistry registry) async {
-    var bufferedFile = await BufferedFileReader.fromFile(file);
-    await bufferedFile.skip(Header.headerLength);
-
-    var frames = List<Frame>();
-
-    try {
-      while (true) {
-        var lengthBytes = (await bufferedFile.read(4)).toList();
-        if (lengthBytes.isEmpty) break;
-
-        var frameLength = _bytesToUint32(lengthBytes);
-        var frameBytes = await bufferedFile.read(frameLength - 4);
-        _checkCrc(lengthBytes, frameBytes);
-        var frameReader =
-            BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-        var frame = decodeFrameBody(frameReader, false, null);
-        frames.add(frame);
-      }
-    } finally {
-      await bufferedFile.close();
-    }
-
-    return frames;
-  }
-
-  static Future<List<Frame>> readKeysAndValues(
-      File file, TypeRegistry registry, Crypto decryptor) async {
-    var bytes = await file.readAsBytes();
-    var reader = BinaryReaderImpl(bytes, registry);
-    reader.skip(Header.headerLength);
-
-    var frames = List<Frame>();
-
-    while (true) {
-      if (reader.availableBytes == 0) break;
-
-      var lengthBytes = reader.readBytes(4);
-      var frameLength = _bytesToUint32(lengthBytes);
-      var frameBytes = reader.viewBytes(frameLength - 4);
-      _checkCrc(lengthBytes, frameBytes);
-      var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-      var frame = decodeFrameBody(frameReader, true, decryptor);
-      frames.add(frame);
-    }
-
-    return frames;
-  }
-
-  static Frame decodeFrameBody(
+  static Frame decodeBody(
     BinaryReaderImpl frameReader,
-    bool readValue,
+    bool decodeKey,
+    bool decodeValue,
     Crypto decryptor,
   ) {
     var frameLength = frameReader.availableBytes + 8;
-    var keyLength = frameReader.readByte(); // Read length of key
-    var key = frameReader.readAsciiString(keyLength); // Read key
+
+    String key;
+    if (decodeKey) {
+      var keyLength = frameReader.readByte(); // Read length of key
+      key = frameReader.readAsciiString(keyLength); // Read key
+    }
 
     Frame frame;
     if (frameReader.availableBytes == 0) {
       // This is a tombstone frame
       frame = Frame.tombstone(key, frameLength);
-    } else if (readValue) {
+    } else if (decodeValue) {
       dynamic value;
       if (decryptor == null) {
         value = frameReader.read();
@@ -174,48 +127,29 @@ class Frame {
     } else {
       // Return key only frame
       frame = Frame.keyOnly(key, frameLength);
-      frameReader.skip(frameReader.availableBytes - 4); // Skip to checksum
     }
 
     return frame;
   }
 
-  static int _bytesToUint32(List<int> bytes, [offset = 0]) {
-    return bytes[offset] |
-        bytes[offset + 1] << 8 |
-        bytes[offset + 2] << 16 |
-        bytes[offset + 3] << 24;
-  }
-
-  static void _checkCrc(List<int> lengthBytes, List<int> frameBytes) {
+  static void checkCrc(List<int> lengthBytes, List<int> frameBytes) {
     var computedCrc = Crc32.compute(lengthBytes);
     computedCrc = Crc32.compute(frameBytes,
         crc: computedCrc, length: frameBytes.length - 4);
-    var crc = _bytesToUint32(frameBytes, frameBytes.length - 4);
+    var crc = bytesToUint32(frameBytes, frameBytes.length - 4);
     if (computedCrc != crc) {
       throw HiveError("Wrong checksum in hive file. Box may be corrupted.");
     }
   }
 
-  Uint8List toBytes(TypeRegistry registry, Crypto encryptor) {
+  Uint8List toBytes(TypeRegistry registry, bool writeKey, Crypto encryptor) {
     if (key.length > 255) {
       throw HiveError("Key must not be longer than 255 characters");
     }
     var writer = BinaryWriterImpl(registry);
 
     writer.writeBytes([0, 0, 0, 0]); // Placeholder for length
-    writer.writeByte(key.length); // Write key length
-    writer.writeAsciiString(key, writeLength: false); // Write key
-    if (!deleted) {
-      if (encryptor == null) {
-        writer.write(value); // Write value
-      } else {
-        var valueWriter = BinaryWriterImpl(registry);
-        valueWriter.write(value);
-        var encryptedValue = encryptor(valueWriter.output());
-        writer.writeBytes(encryptedValue);
-      }
-    }
+    encodeBody(writer, writeKey, encryptor);
     writer.writeBytes([0, 0, 0, 0]); // Placeholder for CRC
 
     var bytes = writer.output();
@@ -228,6 +162,28 @@ class Frame {
     byteData.setUint32(bytes.length - 4, checksum, Endian.little);
 
     return bytes;
+  }
+
+  void encodeBody(
+    BinaryWriterImpl frameWriter,
+    bool writeKey,
+    Crypto encryptor,
+  ) {
+    if (writeKey) {
+      frameWriter.writeByte(key.length); // Write key length
+      frameWriter.writeAsciiString(key, writeLength: false); // Write key
+    }
+
+    if (!deleted) {
+      if (encryptor == null) {
+        frameWriter.write(value); // Write value
+      } else {
+        var valueWriter = BinaryWriterImpl(frameWriter.typeRegistry);
+        valueWriter.write(value);
+        var encryptedValue = encryptor(valueWriter.output());
+        frameWriter.writeBytes(encryptedValue);
+      }
+    }
   }
 }
 
@@ -245,4 +201,11 @@ enum FrameValueType {
   string_list_,
   list_,
   map_,
+}
+
+int bytesToUint32(List<int> bytes, [offset = 0]) {
+  return bytes[offset] |
+      bytes[offset + 1] << 8 |
+      bytes[offset + 2] << 16 |
+      bytes[offset + 3] << 24;
 }

@@ -5,15 +5,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:hive/src/hive_instance_impl.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
 part 'src/binary/binary_reader.dart';
 part 'src/binary/binary_writer.dart';
 part 'src/registry/type_registry.dart';
 part 'src/registry/type_adapter.dart';
-part 'src/box.dart';
+part 'src/box/box.dart';
 part 'src/hive_error.dart';
-part 'src/hive_instance.dart';
+part 'src/hive.dart';
 
-final HiveInstance Hive = HiveInstanceImpl();
+final HiveInterface Hive = HiveImpl();

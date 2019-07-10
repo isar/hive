@@ -19,7 +19,7 @@ abstract class BinaryReader {
 
   int readInt32();
 
-  int readUnsignedInt32();
+  int readUint32();
 
   int readInt();
 

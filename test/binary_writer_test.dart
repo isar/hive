@@ -1,8 +1,7 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hive/src/binary/binary_writer_impl.dart';
-import 'package:hive/src/io/frame.dart';
+import 'package:hive/src/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
@@ -99,24 +98,24 @@ void main() {
     var bd = ByteData(4);
     var bw = getWriter();
 
-    bw.writeUnsigenedInt32(0);
+    bw.writeUint32(0);
     bd.setUint32(0, 0, Endian.little);
     expect(bw.writtenBytes, 4);
     expect(bw.outputAndClear(), bytes(bd));
 
-    bw.writeUnsigenedInt32(1);
+    bw.writeUint32(1);
     bd.setUint32(0, 1, Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
-    bw.writeUnsigenedInt32(2147483647);
+    bw.writeUint32(2147483647);
     bd.setUint32(0, 2147483647, Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
-    bw.writeUnsigenedInt32(-2147483648);
+    bw.writeUint32(-2147483648);
     bd.setUint32(0, -2147483648, Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
-    expect(() => bw.writeUnsigenedInt32(null), throwsA(anything));
+    expect(() => bw.writeUint32(null), throwsA(anything));
   });
 
   test("write int", () {
@@ -124,24 +123,24 @@ void main() {
     var bw = getWriter();
 
     bw.writeInt(0);
-    bd.setInt64(0, 0, Endian.little);
+    bd.setFloat64(0, 0, Endian.little);
     expect(bw.writtenBytes, 8);
     expect(bw.outputAndClear(), bytes(bd));
 
     bw.writeInt(1);
-    bd.setInt64(0, 1, Endian.little);
+    bd.setFloat64(0, 1, Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
     bw.writeInt(-1);
-    bd.setInt64(0, -1, Endian.little);
+    bd.setFloat64(0, -1, Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
-    bw.writeInt(-(pow(-2, 63) + 1));
-    bd.setInt64(0, -(pow(-2, 63) + 1), Endian.little);
+    bw.writeInt(2 ^ 53);
+    bd.setFloat64(0, (2 ^ 53).toDouble(), Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
-    bw.writeInt(pow(-2, 63));
-    bd.setInt64(0, pow(-2, 63), Endian.little);
+    bw.writeInt(-2 ^ 53);
+    bd.setFloat64(0, (-2 ^ 53).toDouble(), Endian.little);
     expect(bw.outputAndClear(), bytes(bd));
 
     expect(() => bw.writeInt(null), throwsA(anything));
@@ -250,11 +249,11 @@ void main() {
 
     bw.writeIntList([1, 2]);
     expect(bw.outputAndClear(),
-        [2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]);
+        [2, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
 
     bw.writeIntList([1, 2], writeLength: false);
-    expect(
-        bw.outputAndClear(), [1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]);
+    expect(bw.outputAndClear(),
+        [0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
 
     expect(() => bw.writeIntList(null), throwsA(anything));
   });
@@ -362,7 +361,7 @@ void main() {
     });
 
     test("int", () {
-      var bd = ByteData(8)..setInt64(0, 12345, Endian.little);
+      var bd = ByteData(8)..setFloat64(0, 12345, Endian.little);
       var bw = getWriter();
 
       bw.write(12345, writeTypeId: false);
@@ -407,8 +406,8 @@ void main() {
     test("int list", () {
       var bd = ByteData(18)
         ..setUint16(0, 2, Endian.little)
-        ..setInt64(2, 123, Endian.little)
-        ..setInt64(10, 45, Endian.little);
+        ..setFloat64(2, 123, Endian.little)
+        ..setFloat64(10, 45, Endian.little);
       var bw = getWriter();
 
       bw.write([123, 45], writeTypeId: false);
@@ -466,9 +465,9 @@ void main() {
       var bd = ByteData(21)
         ..setUint16(0, 3, Endian.little)
         ..setUint8(2, FrameValueType.int_.index)
-        ..setInt64(3, 123, Endian.little)
+        ..setFloat64(3, 123, Endian.little)
         ..setUint8(11, FrameValueType.int_.index)
-        ..setInt64(12, 45, Endian.little)
+        ..setFloat64(12, 45, Endian.little)
         ..setUint8(20, FrameValueType.null_.index);
       var bw = getWriter();
 

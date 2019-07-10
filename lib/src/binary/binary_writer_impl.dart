@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_buffer.dart';
-import 'package:hive/src/io/frame.dart';
+import 'package:hive/src/frame.dart';
 import 'package:meta/meta.dart';
 
 class BinaryWriterImpl extends BinaryWriter {
@@ -22,6 +22,9 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeByte(int byte) {
+    if (byte == null) {
+      throw ArgumentError.notNull();
+    }
     var offset = _buffer.useBytes(1);
     _buffer.byteData.setUint8(offset, byte);
   }
@@ -33,36 +36,53 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeWord(int value) {
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
     var offset = _buffer.useBytes(2);
     _buffer.byteData.setUint16(offset, value, Endian.little);
   }
 
   @override
   void writeInt32(int value) {
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
     var offset = _buffer.useBytes(4);
     _buffer.byteData.setInt32(offset, value, Endian.little);
   }
 
   @override
-  void writeUnsigenedInt32(int value) {
+  void writeUint32(int value) {
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
     var offset = _buffer.useBytes(4);
     _buffer.byteData.setUint32(offset, value, Endian.little);
   }
 
   @override
   void writeInt(int value) {
-    var offset = _buffer.useBytes(8);
-    _buffer.byteData.setInt64(offset, value, Endian.little);
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
+    writeDouble(value.toDouble());
   }
 
   @override
   void writeDouble(double value) {
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
     var offset = _buffer.useBytes(8);
     _buffer.byteData.setFloat64(offset, value, Endian.little);
   }
 
   @override
   void writeBool(bool value) {
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
     var offset = _buffer.useBytes(1);
     _buffer.byteData.setUint8(offset, value ? 1 : 0);
   }
@@ -105,7 +125,8 @@ class BinaryWriterImpl extends BinaryWriter {
     }
     var offset = _buffer.useBytes(list.length * 8);
     for (int i = 0; i < list.length; i++) {
-      _buffer.byteData.setInt64(offset + i * 8, list[i], Endian.little);
+      _buffer.byteData
+          .setFloat64(offset + i * 8, list[i].toDouble(), Endian.little);
     }
   }
 

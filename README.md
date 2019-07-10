@@ -1,10 +1,10 @@
 # Hive
 
-[![Travis](https://img.shields.io/travis/com/leisim/hive/master.svg)](https://travis-ci.com/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Version](https://img.shields.io/pub/v/hive.svg)](https://pub.dartlang.org/packages/hive) ![Runtime](https://img.shields.io/badge/dart-%3E%3D2.2-brightgreen.svg) ![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)
+[![Travis](https://img.shields.io/travis/com/leisim/hive/master.svg)](https://travis-ci.com/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Version](https://img.shields.io/pub/v/hive.svg)](https://pub.dartlang.org/packages/hive) ![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)
 
 Hive is a lightweight and blazing fast key/value store written in pure Dart.
 
-It is fun to use and stronly encrypted using AES-256.
+It is fun to use and stronly encrypted using AES-256.<br>
 Read, write and delete operations only need a single disk access.
 
 **Hive is not ready for production yet**
@@ -27,11 +27,11 @@ All of your data is stored in boxes.
 var box = await Hive.box('testBox');
 ```
 
-You can encrypt a box with one extra line:
+Just provide an `encryptionKey` to encrypt a box:
 
 ```dart
 var key = Hive.generateSecureKey();
-var box = await Hive.box('encryptedBox', encryptionKey: key);
+var box = await Hive.box('secureBox', encryptionKey: key);
 ```
 
 ### Read & Write
@@ -65,20 +65,21 @@ Dog myDog = await box.get('myDog');
   - [Generate key](#generate-key)
   - [Open encrypted box](#open-encrypted-box)
 - [Compactation](#compactation)
-- [Migration](#migration)
 - [Benchmark](#benchmark)
 - [Limitations](#limitations)
 
 
 ## Init
 
-Before you use Hive for the first time, you have to initialize it. Give it a directory where it should store its files. It is recommended to use an empty directory and not to store any other data there. Each box will have it's own `.hive` file in the Hive-home directory.
+When your program starts, Hive has to be initialized. Give it a directory where it can store its files. It is recommended to use an empty directory and not to store any other data there. Each box will have it's own `.hive` file in the Hive-home directory.
 
 ```dart
 Hive.init('path/to/hive');
 ```
 
 If you use a directory outside your app files, make sure to request runtime permission on iOS and Android.
+
+*Hint: This is not needed when Hive runs in the browser*
 
 ## Boxes
 
@@ -90,29 +91,28 @@ Boxes can also be encrypted to store sensitive data.
 
 ### Open Box
 
-Before you use a box, you have to open it:
+Before a box can be used, you have to open it:
 
 ```dart
 var box = await Hive.box('testBox');
 ```
 
 If the box is already open, it will be returned immediately. This is a very fast and cheap operation so you don't have to store the box instance.
-Otherwise the box will be opened.
+
+| Option | Description |
+|---|---|
+| `encryptionKey` | Used to decrypt an encrypted box. Go to [Encryption](#encryption) for more information. |
+| `inMemory` | An in-memory box caches all values. This can lead to major performance improvements and should be considered for frequently used data. |
 
 Once you obtained a box instance, you can read, write and delete entries.
 
 ### Read from box
 
-Reading from a box is almost like reading from a Map:
+Reading from a box is almost like accessing a Map:
 
 ```dart
 String name = await box.get('name');
-int age = await box.get('ageInYears');
-```
 
-You can even use `[]` to access data:
-
-```dart
 DateTime birthday = await box['birthday'];
 ```
 
@@ -155,7 +155,7 @@ If the key does not exist, no disk access is needed and the returned `Future` fi
 
 ### Watch changes
 
-You can watch a box for changes. This will emit a `BoxEvent` every time an entry in the box is being changed or deleted.
+You can watch a box for changes. A `BoxEvent` will be emitted every time an entry in the box is being changed or deleted.
 
 ```dart
 var subscription = box.watch().listen(
@@ -177,7 +177,7 @@ await subscription.cancel();
 
 ### Close box
 
-If you don't need a box again, you can close it. All cached keys of the box will be dropped from memory and the box file will be closed after all active read and write operations finished.
+If you don't need a box again, you should close it. All cached keys of the box will be dropped from memory and the box file will be closed after all active read and write operations finished.
 
 It is not recommended to open and close the same box frequently because this leads to unnecessary disk accesses. If you need a box again in the future, just leave it open.
 
@@ -192,7 +192,7 @@ Before your application exits, you should call `Hive.close()` to close all open 
 
 ## TypeAdapters
 
-Hive supports all primitive types, `List`, `Map`, `DateTime`, `Uint8List` and `null`. If you want to store other objects, you have to register a `TypeAdapter` which convert your object from and to binary form.
+Hive supports all primitive types, `List`, `Map`, `DateTime`, `Uint8List` and `null`. If you want to store other objects, you have to register a `TypeAdapter` which converts your object from and to binary form.
 
 ### Create Adapter
 
@@ -204,18 +204,18 @@ It is very easy to implement a `TypeAdapter`. Here is the `DataTimeAdapter` used
 class DataTimeAdapter extends TypeAdapter<DateTime> {
   @override
   DateTime read(BinaryReader reader) {
-    var micros = reader.readInt();
-    return DateTime.fromMicrosecondsSinceEpoch(micros);
+    var millis = reader.readInt();
+    return DateTime.fromMillisecondsSinceEpoch(millis);
   }
 
   @override
   void write(BinaryWriter writer, DateTime obj) {
-    writer.writeInt(obj.microsecondsSinceEpoch);
+    writer.writeInt(obj.millisecondsSinceEpoch);
   }
 }
 ```
 
-The `read()` method is called when your object has to be read from the disk. Use the `BinaryReader` to read all properties of your object. In the above sample it is only an `int` containing `microsecondsSinceEpoch`.<br>
+The `read()` method is called when your object has to be read from the disk. Use the `BinaryReader` to read all properties of your object. In the above sample it is only an `int` containing `millisecondsSinceEpoch`.<br>
 The `write()` method is the same just for writing the object to disk.
 
 **Important:** Make sure, you read properties in the same order you have written them before.
@@ -263,21 +263,6 @@ Hive is an append-only data store. When you change or delete a value, the change
 It may benefit the start time of your app if you call `Hive.close(compact: true)` before your app exits to induce compactation  of all boxes manually.
 
 
-## Migration
-
-Sometimes it may be necessary to change the data in your box fundamentally. When you open a box, you can provide a `version` and `Migrator`.<br>
-When the version is higher than the disk version, the migrator is called and you can make changes to the box before it is beign opened.
-
-```dart
-Hive.box("myBox", version: 5, migrator: (oldVersion, newVersion, box) async {
-  await box.delete("unusedKey");
-  await box.put("newKey", 7);
-});
-```
-
-*Hint: Make sure the migrator can handle all possible version changes*
-
-
 ## Benchmark
 
 Coming soon.
@@ -287,6 +272,7 @@ Coming soon.
 
 - **HIVE IS NOT READY FOR PRODUCTION YET**
 - Keys have to be ASCII Strings with a max length of 255 chars.
+- The supported integer values include all integers between -2^53 and 2^53, and some integers with larger magnitude
 - Strings can have a maximum of 65536 **bytes**. Mind that a Unicode chars may be longer than one byte.
 - Lists and Maps cannot have more than 65536 elements.
 - Only one process can access a box at any time. Bad things happen otherwise.

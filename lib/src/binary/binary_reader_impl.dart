@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/io/frame.dart';
+import 'package:hive/src/frame.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
@@ -26,21 +26,27 @@ class BinaryReaderImpl extends BinaryReader {
 
   Uint8List get buffer => _buffer;
 
-  @override
-  void skip(int bytes) {
-    if (availableBytes < bytes) {
+  void _requireBytes(int bytes) {
+    if (_bufferLength - _offset < bytes) {
       throw RangeError("Not enough bytes available.");
     }
+  }
+
+  @override
+  void skip(int bytes) {
+    _requireBytes(bytes);
     _offset += bytes;
   }
 
   @override
   int readByte() {
+    _requireBytes(1);
     return _buffer[_offset++];
   }
 
   @override
   Uint8List viewBytes(int bytes) {
+    _requireBytes(bytes);
     var view = Uint8List.view(_buffer.buffer, _bufferOffset, bytes);
     _offset += bytes;
     return view;
@@ -48,6 +54,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Uint8List readBytes(int bytes) {
+    _requireBytes(bytes);
     var byteList = _buffer.sublist(_offset, _offset + bytes);
     _offset += bytes;
     return byteList as Uint8List;
@@ -55,18 +62,21 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   int readWord() {
+    _requireBytes(2);
     return _buffer[_offset++] | _buffer[_offset++] << 8;
   }
 
   @override
   int readInt32() {
+    _requireBytes(4);
     var value = _data.getInt32(_offset, Endian.little);
     _offset += 4;
     return value;
   }
 
   @override
-  int readUnsignedInt32() {
+  int readUint32() {
+    _requireBytes(4);
     return _buffer[_offset++] |
         _buffer[_offset++] << 8 |
         _buffer[_offset++] << 16 |
@@ -75,13 +85,12 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   int readInt() {
-    var value = _data.getInt64(_offset, Endian.little);
-    _offset += 8;
-    return value;
+    return readDouble().toInt();
   }
 
   @override
   double readDouble() {
+    _requireBytes(8);
     var value = _data.getFloat64(_offset, Endian.little);
     _offset += 8;
     return value;
@@ -89,6 +98,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   bool readBool() {
+    _requireBytes(1);
     return _buffer[_offset++] > 0;
   }
 
@@ -118,9 +128,10 @@ class BinaryReaderImpl extends BinaryReader {
     if (length == null) {
       length = readWord();
     }
+    _requireBytes(length * 8);
     var list = List<int>(length);
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getInt64(_offset, Endian.little);
+      list[i] = _data.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
     }
     return list;
@@ -131,6 +142,7 @@ class BinaryReaderImpl extends BinaryReader {
     if (length == null) {
       length = readWord();
     }
+    _requireBytes(length * 8);
     var list = List<double>(length);
     for (var i = 0; i < length; i++) {
       list[i] = _data.getFloat64(_offset, Endian.little);
@@ -144,6 +156,7 @@ class BinaryReaderImpl extends BinaryReader {
     if (length == null) {
       length = readWord();
     }
+    _requireBytes(length);
     var list = List<bool>(length);
     for (var i = 0; i < length; i++) {
       list[i] = _buffer[_offset++] > 0;

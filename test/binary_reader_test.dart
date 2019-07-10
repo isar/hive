@@ -1,9 +1,8 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
-import 'package:hive/src/io/frame.dart';
+import 'package:hive/src/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
@@ -35,7 +34,7 @@ void main() {
     expect(br.availableBytes, 0);
     expect(br.usedBytes, 20);
 
-    expect(() => br.skip(1), throwsRangeError);
+    expect(() => br.skip(1), throwsA(anything));
   });
 
   test("read byte", () {
@@ -48,7 +47,7 @@ void main() {
     expect(br.readByte(), 0);
     expect(br.readByte(), 17);
     expect(br.readByte(), 255);
-    expect(() => br.readByte(), throwsRangeError);
+    expect(() => br.readByte(), throwsA(anything));
   });
 
   test("view bytes", () {
@@ -64,7 +63,7 @@ void main() {
     byteData.setUint8(1, 57);
     expect(bytes, [0, 57, 255]);
 
-    expect(() => br.viewBytes(1), throwsRangeError);
+    expect(() => br.viewBytes(1), throwsA(anything));
   });
 
   test("read bytes", () {
@@ -75,7 +74,7 @@ void main() {
     var br = fromByteData(byteData);
 
     expect(br.readBytes(3), [0, 17, 255]);
-    expect(() => br.readBytes(1), throwsRangeError);
+    expect(() => br.readBytes(1), throwsA(anything));
   });
 
   test("read word", () {
@@ -86,7 +85,7 @@ void main() {
 
     expect(br.readWord(), 0);
     expect(br.readWord(), 65535);
-    expect(() => br.readWord(), throwsRangeError);
+    expect(() => br.readWord(), throwsA(anything));
   });
 
   test("read int32", () {
@@ -99,7 +98,7 @@ void main() {
     expect(br.readInt32(), 0);
     expect(br.readInt32(), 65535);
     expect(br.readInt32(), -65536);
-    expect(() => br.readInt32(), throwsRangeError);
+    expect(() => br.readInt32(), throwsA(anything));
   });
 
   test("read unsigned int32", () {
@@ -108,22 +107,22 @@ void main() {
       ..setUint32(4, 4294967295, Endian.little);
     var br = fromByteData(byteData);
 
-    expect(br.readUnsignedInt32(), 0);
-    expect(br.readUnsignedInt32(), 4294967295);
-    expect(() => br.readUnsignedInt32(), throwsRangeError);
+    expect(br.readUint32(), 0);
+    expect(br.readUint32(), 4294967295);
+    expect(() => br.readUint32(), throwsA(anything));
   });
 
   test("read int", () {
     var byteData = ByteData(24)
-      ..setInt64(0, 0, Endian.little)
-      ..setInt64(8, -(pow(-2, 63) + 1), Endian.little)
-      ..setInt64(16, pow(-2, 63), Endian.little);
+      ..setFloat64(0, 0, Endian.little)
+      ..setFloat64(8, (2 ^ 53).toDouble(), Endian.little)
+      ..setFloat64(16, (-2 ^ 53).toDouble(), Endian.little);
     var br = fromByteData(byteData);
 
     expect(br.readInt(), 0);
-    expect(br.readInt(), -(pow(-2, 63) + 1));
-    expect(br.readInt(), pow(-2, 63));
-    expect(() => br.readInt(), throwsRangeError);
+    expect(br.readInt(), 2 ^ 53);
+    expect(br.readInt(), -2 ^ 53);
+    expect(() => br.readInt(), throwsA(anything));
   });
 
   test("read double", () {
@@ -142,7 +141,7 @@ void main() {
     expect(br.readDouble(), double.negativeInfinity);
     expect(br.readDouble(), double.maxFinite);
     expect(br.readDouble(), double.minPositive);
-    expect(() => br.readDouble(), throwsRangeError);
+    expect(() => br.readDouble(), throwsA(anything));
   });
 
   test("read bool", () {
@@ -152,7 +151,7 @@ void main() {
     expect(br.readBool(), true);
     expect(br.readBool(), false);
     expect(br.readBool(), true);
-    expect(() => br.readBool(), throwsRangeError);
+    expect(() => br.readBool(), throwsA(anything));
   });
 
   test("read ascii string", () {
@@ -201,10 +200,10 @@ void main() {
     br = fromBytes([]);
     expect(br.readIntList(0), []);
 
-    br = fromBytes([2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]);
+    br = fromBytes([2, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
     expect(br.readIntList(), [1, 2]);
 
-    br = fromBytes([1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]);
+    br = fromBytes([0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
     expect(br.readIntList(2), [1, 2]);
 
     expect(() => br.readIntList(), throwsRangeError);
@@ -305,13 +304,13 @@ void main() {
     });
 
     test("int", () {
-      var byteData = ByteData(8)..setInt64(0, 12345, Endian.little);
+      var byteData = ByteData(8)..setFloat64(0, 12345, Endian.little);
       var br = fromByteData(byteData);
       expect(br.read(FrameValueType.int_.index), 12345);
 
       byteData = ByteData(9)
         ..setUint8(0, FrameValueType.int_.index)
-        ..setInt64(1, 12345, Endian.little);
+        ..setFloat64(1, 12345, Endian.little);
       br = fromByteData(byteData);
       expect(br.read(), 12345);
     });
@@ -351,16 +350,16 @@ void main() {
     test("int list", () {
       var byteData = ByteData(18)
         ..setUint16(0, 2, Endian.little)
-        ..setInt64(2, 12345, Endian.little)
-        ..setInt64(10, 123, Endian.little);
+        ..setFloat64(2, 12345, Endian.little)
+        ..setFloat64(10, 123, Endian.little);
       var br = fromByteData(byteData);
       expect(br.read(FrameValueType.int_list_.index), [12345, 123]);
 
       byteData = ByteData(19)
         ..setUint8(0, FrameValueType.int_list_.index)
         ..setUint16(1, 2, Endian.little)
-        ..setInt64(3, 12345, Endian.little)
-        ..setInt64(11, 123, Endian.little);
+        ..setFloat64(3, 12345, Endian.little)
+        ..setFloat64(11, 123, Endian.little);
       br = fromByteData(byteData);
       expect(br.read(), [12345, 123]);
     });
@@ -414,9 +413,9 @@ void main() {
       var byteData = ByteData(21)
         ..setUint16(0, 3, Endian.little)
         ..setUint8(2, FrameValueType.int_.index)
-        ..setInt64(3, 12345, Endian.little)
+        ..setFloat64(3, 12345, Endian.little)
         ..setUint8(11, FrameValueType.int_.index)
-        ..setInt64(12, 123, Endian.little)
+        ..setFloat64(12, 123, Endian.little)
         ..setUint8(20, FrameValueType.null_.index);
       var br = fromByteData(byteData);
       expect(br.read(FrameValueType.list_.index), [12345, 123, null]);
@@ -425,9 +424,9 @@ void main() {
         ..setInt8(0, FrameValueType.list_.index)
         ..setUint16(1, 3, Endian.little)
         ..setUint8(3, FrameValueType.int_.index)
-        ..setInt64(4, 12345, Endian.little)
+        ..setFloat64(4, 12345, Endian.little)
         ..setUint8(12, FrameValueType.int_.index)
-        ..setInt64(13, 123, Endian.little)
+        ..setFloat64(13, 123, Endian.little)
         ..setUint8(21, FrameValueType.null_.index);
       br = fromByteData(byteData);
       expect(br.read(), [12345, 123, null]);

@@ -13,7 +13,7 @@ abstract class BinaryWriter {
 
   void writeInt32(int value);
 
-  void writeUnsigenedInt32(int value);
+  void writeUint32(int value);
 
   void writeInt(int value);
 

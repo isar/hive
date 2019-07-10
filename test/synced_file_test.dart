@@ -1,3 +1,7 @@
+@TestOn("vm")
+
+import 'dart:typed_data';
+
 import 'package:hive/src/io/synced_file.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -24,7 +28,8 @@ void main() {
     var readFile = RAFMock();
     var readLock = LockMock();
 
-    when(readFile.read(5)).thenAnswer((_) async => [1, 2, 3, 4, 5]);
+    when(readFile.read(5))
+        .thenAnswer((_) async => Uint8List.fromList([1, 2, 3, 4, 5]));
 
     when(readLock.synchronized(any)).thenAnswer((inv) async {
       verifyZeroInteractions(readFile);

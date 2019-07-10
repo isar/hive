@@ -1,11 +1,11 @@
-import 'package:hive/src/box_options.dart';
+import 'package:hive/src/box/box_options.dart';
 import 'package:test/test.dart';
 
 void main() {
   test("no options", () {
     var options = BoxOptions();
 
-    expect(options.version, 1);
+    expect(options.inMemory, false);
   });
 
   test("valid encryption key", () {
@@ -15,12 +15,5 @@ void main() {
     var invalidKey = List.filled(31, 0);
 
     expect(() => BoxOptions(encryptionKey: invalidKey), throwsArgumentError);
-  });
-
-  test("valid version", () {
-    var options = BoxOptions(version: 5);
-    expect(options.version, 5);
-
-    expect(() => BoxOptions(version: -1), throwsArgumentError);
   });
 }
