@@ -4,7 +4,7 @@
 
 Hive is a lightweight and blazing fast key/value store written in pure Dart.
 
-It is fun to use and stronly encrypted using AES-256.<br>
+It is fun to use and strongly encrypted using AES-256.<br>
 Read, write and delete operations only need a single disk access.
 
 **Hive is not ready for production yet**
@@ -124,7 +124,7 @@ double height = await box.get('randomKey', defaultValue: 17.5);
 
 ### Write to box
 
-Writing is just as easy as reading. All keys have to be ASCII Strings with a max lenght of 255 chars.
+Writing is just as easy as reading. All keys have to be ASCII Strings with a max length of 255 chars.
 
 ```dart
 await box.put('name', 'Paul');
@@ -169,7 +169,7 @@ var subscription = box.watch().listen(
 });
 ```
 
-If you dont want to be notified any more, you can cancel the subscription:
+If you dont want to be notified anymore, you can cancel the subscription:
 
 ```dart
 await subscription.cancel();
@@ -245,7 +245,7 @@ The box file can be securely encrypted on disk using AES-256 CBC.
 
 You can either generate the encryption key yourself or call `Hive.generateSecureKey()` to generate a key.
 
-Make sure you store the key securely when your application is closed. With Flutter you can use the [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) or a similar package.
+Make sure you store the key securely when your application is closed. With Flutter, you can use the [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) or a similar package.
 
 ### Open encrypted box
 
