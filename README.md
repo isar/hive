@@ -1,5 +1,7 @@
 # Hive
 
+![logo](https://raw.githubusercontent.com/leisim/hive/master/.github/logo.svg)
+
 [![Travis](https://img.shields.io/travis/com/leisim/hive/master.svg)](https://travis-ci.com/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Version](https://img.shields.io/pub/v/hive.svg)](https://pub.dartlang.org/packages/hive) ![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)
 
 Hive is a lightweight and blazing fast key/value store written in pure Dart.
