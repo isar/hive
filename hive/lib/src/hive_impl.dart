@@ -39,25 +39,25 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<Box> box(
     String name, {
     List<int> encryptionKey,
-    bool inMemory = false,
+    bool cacheAll = false,
   }) async {
-    var existingBox = _boxes[name];
+    var existingBox = _boxes[name.toLowerCase()];
     if (existingBox != null) return existingBox;
 
     var options = BoxOptions(
       encryptionKey: encryptionKey,
-      inMemory: inMemory,
+      cacheAll: cacheAll,
     );
 
-    var box = await openBox(this, name, options);
-    _boxes[name] = box;
+    var box = await openBox(this, name.toLowerCase(), options);
+    _boxes[name.toLowerCase()] = box;
 
     return box;
   }
 
   @override
   bool isBoxOpen(String name) {
-    return _boxes.containsKey(name);
+    return _boxes.containsKey(name.toLowerCase());
   }
 
   @override
@@ -70,7 +70,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   void unregisterBox(String name) {
-    _boxes.remove(name);
+    _boxes.remove(name.toLowerCase());
   }
 
   @override

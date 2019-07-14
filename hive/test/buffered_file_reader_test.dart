@@ -9,7 +9,7 @@ Future<BufferedFileReader> openReaderWithBytes(
     List<int> bytes, int chunkSize) async {
   var file = await getTempFile();
   await file.writeAsBytes(bytes);
-  return await BufferedFileReader.fromFile(file, chunkSize);
+  return await BufferedFileReader.fromFile(file.path, chunkSize);
 }
 
 void main() {

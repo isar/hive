@@ -20,9 +20,9 @@ class BufferedFileReader {
 
   BufferedFileReader._(this.file, this.chunkSize);
 
-  static Future<BufferedFileReader> fromFile(File file,
+  static Future<BufferedFileReader> fromFile(String path,
       [int chunkSize = defaultChunkSize]) async {
-    var raf = await file.open();
+    var raf = await File(path).open();
     return BufferedFileReader._(raf, chunkSize);
   }
 

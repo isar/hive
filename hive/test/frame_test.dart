@@ -111,7 +111,7 @@ void main() {
       var name = 0;
       for (var goldenFrame in testFrames) {
         var file = await getTempAssetFile("frames", "${name++}");
-        var reader = await BufferedFileReader.fromFile(file);
+        var reader = await BufferedFileReader.fromFile(file.path);
         var frame = await Frame.fromBytes(reader.read, registry, true, null);
         expect(frame.length, await file.length());
         expectFramesEqual(frame, goldenFrame);
@@ -120,7 +120,7 @@ void main() {
 
     test('eof', () async {
       var emptyFile = await getTempFile();
-      var reader = await BufferedFileReader.fromFile(emptyFile);
+      var reader = await BufferedFileReader.fromFile(emptyFile.path);
       var frame = await Frame.fromBytes(reader.read, registry, true, null);
       expect(frame, null);
     });

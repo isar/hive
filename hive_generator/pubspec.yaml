@@ -1,0 +1,17 @@
+name: hive_generator
+description: Lightweight and blazing fast key-value store written in pure Dart. Stronly encrypted using AES-256.
+version: 0.2.0
+author: Simon Leier <simonleier@gmail.com>
+homepage: https://github.com/leisim/hive
+
+environment:
+  sdk: ">=2.2.2 <3.0.0"
+
+dependencies:
+  build: ^1.1.4
+  source_gen: ^0.9.4
+
+dev_dependencies:
+  test: ^1.6.4
+  build_test: ^0.10.8
+  build_runner: ^1.1.6

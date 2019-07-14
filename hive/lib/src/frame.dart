@@ -83,7 +83,7 @@ class Frame {
 
     var frameLength = bytesToUint32(lengthBytes);
     var frameBytes = await source(frameLength - 4);
-    checkCrc(lengthBytes, frameBytes);
+    checkCrc(lengthBytes, frameBytes, 0);
     var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
     return decodeBody(frameReader, readKey, true, decryptor);
   }
@@ -132,8 +132,9 @@ class Frame {
     return frame;
   }
 
-  static void checkCrc(List<int> lengthBytes, List<int> frameBytes) {
-    var computedCrc = Crc32.compute(lengthBytes);
+  static void checkCrc(
+      List<int> lengthBytes, List<int> frameBytes, int keyHash) {
+    var computedCrc = Crc32.compute(lengthBytes, crc: keyHash ?? 0);
     computedCrc = Crc32.compute(frameBytes,
         crc: computedCrc, length: frameBytes.length - 4);
     var crc = bytesToUint32(frameBytes, frameBytes.length - 4);

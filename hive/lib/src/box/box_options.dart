@@ -1,10 +1,10 @@
 class BoxOptions {
   final List<int> encryptionKey;
-  final bool inMemory;
+  final bool cacheAll;
 
   BoxOptions({
     this.encryptionKey,
-    this.inMemory = false,
+    this.cacheAll = false,
   }) {
     if (encryptionKey != null) {
       if (encryptionKey.length != 32 ||

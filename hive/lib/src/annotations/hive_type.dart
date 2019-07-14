@@ -1,0 +1,3 @@
+class HiveType {
+  const HiveType();
+}

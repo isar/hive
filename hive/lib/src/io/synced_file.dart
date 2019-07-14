@@ -42,9 +42,9 @@ class SyncedFile {
     });
   }
 
-  Future setWritePosition(int position) async {
+  Future setWritePosition(int position) {
     if (_writeOffset == position) return Future.value();
-    await _writeLock.synchronized(() {
+    return _writeLock.synchronized(() {
       _writeOffset = position;
       return _writeFile.setPosition(position);
     });
@@ -59,7 +59,7 @@ class SyncedFile {
     });
   }
 
-  Future truncate(int targetLength) async {
+  Future truncate(int targetLength) {
     return _readLock.synchronized(() {
       return _writeLock.synchronized(() async {
         await _writeFile.truncate(targetLength);
