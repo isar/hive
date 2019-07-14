@@ -22,7 +22,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @override
   String get path {
     if (_homePath == null) {
-      throw HiveError("Hive not initialized. Call Hive.init() first.");
+      throw HiveError('Hive not initialized. Call Hive.init() first.');
     }
 
     return _homePath;

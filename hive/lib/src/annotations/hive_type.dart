@@ -1,3 +1,7 @@
+part of hive;
+
 class HiveType {
-  const HiveType();
+  final String adapterName;
+
+  const HiveType({this.adapterName});
 }

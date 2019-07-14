@@ -25,8 +25,8 @@ class TestAdapter2 extends TypeAdapter<int> {
 }
 
 void main() {
-  group("registerAdapter", () {
-    test("register", () {
+  group('registerAdapter', () {
+    test('register', () {
       var registry = TypeRegistryImpl();
       var adapter = TestAdapter();
       registry.registerAdapter(adapter, 33);
@@ -36,31 +36,31 @@ void main() {
       expect(resolvedAdapter.adapter, adapter);
     });
 
-    test("too low typeId", () {
+    test('too low typeId', () {
       var registry = TypeRegistryImpl();
       expect(
           () => registry.registerAdapter(
               TestAdapter(), TypeRegistry.minCustomTypeId - 1),
-          throwsHiveError("not allowed"));
+          throwsHiveError('not allowed'));
     });
 
-    test("duplicate typeId", () {
+    test('duplicate typeId', () {
       var registry = TypeRegistryImpl();
       registry.registerAdapter(TestAdapter(), 35);
       expect(() => registry.registerAdapter(TestAdapter(), 35),
-          throwsHiveError("already a TypeAdapter for typeId"));
+          throwsHiveError('already a TypeAdapter for typeId'));
     });
 
-    test("duplicate parent typeId", () {
+    test('duplicate parent typeId', () {
       var parent = TypeRegistryImpl();
       var registry = TypeRegistryImpl(parent);
 
       parent.registerAdapter(TestAdapter(), 35);
       expect(() => registry.registerAdapter(TestAdapter(), 35),
-          throwsHiveError("already a TypeAdapter for typeId"));
+          throwsHiveError('already a TypeAdapter for typeId'));
     });
 
-    test("duplicate type", () {
+    test('duplicate type', () {
       var registry = TypeRegistryImpl();
       var adapter1 = TestAdapter();
       registry.registerAdapter(adapter1, 35);
@@ -73,8 +73,8 @@ void main() {
     });
   });
 
-  group("findAdapterForType / findAdapterForTypeId", () {
-    test("find", () {
+  group('findAdapterForType / findAdapterForTypeId', () {
+    test('find', () {
       var registry = TypeRegistryImpl();
       var adapter = TestAdapter();
       registry.registerAdapter(adapter, 33);
@@ -88,7 +88,7 @@ void main() {
       expect(resolvedAdapter.adapter, adapter);
     });
 
-    test("find in parent", () {
+    test('find in parent', () {
       var parent = TypeRegistryImpl();
       var registry = TypeRegistryImpl(parent);
       var adapter = TestAdapter();
@@ -103,7 +103,7 @@ void main() {
       expect(resolvedAdapter.adapter, adapter);
     });
 
-    test("prefer child", () {
+    test('prefer child', () {
       var parent = TypeRegistryImpl();
       var registry = TypeRegistryImpl(parent);
 

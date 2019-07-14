@@ -1,4 +1,4 @@
-@TestOn("vm")
+@TestOn('vm')
 
 import 'dart:typed_data';
 
@@ -14,58 +14,58 @@ import 'common.dart';
 get registry => TypeRegistryImpl();
 
 const testFrames = [
-  Frame.tombstone("Tombstone frame"),
-  Frame("Null frame", null),
-  Frame("Int", 123123123),
-  Frame("Large int", 2 ^ 32),
-  Frame("This is true", true),
-  Frame("This is not true", false),
-  Frame("Float1", 1232312.9912838261),
-  Frame("Float2", double.nan),
-  Frame("Unicode string",
-      "A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀"),
-  Frame("Empty list", []),
-  Frame("Int list", [123, 456, 129318238]),
-  Frame("Bool list", [true, false, false, true]),
-  Frame("Double list", [
+  Frame.tombstone('Tombstone frame'),
+  Frame('Null frame', null),
+  Frame('Int', 123123123),
+  Frame('Large int', 2 ^ 32),
+  Frame('This is true', true),
+  Frame('This is not true', false),
+  Frame('Float1', 1232312.9912838261),
+  Frame('Float2', double.nan),
+  Frame('Unicode string',
+      'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
+  Frame('Empty list', []),
+  Frame('Int list', [123, 456, 129318238]),
+  Frame('Bool list', [true, false, false, true]),
+  Frame('Double list', [
     10.1723812,
     double.infinity,
     double.maxFinite,
     double.minPositive,
     double.negativeInfinity
   ]),
-  Frame("String list", [
-    "hello",
-    "🧙‍♂️ 👨‍👨‍👧‍👦 ",
-    " ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ",
-    "അ ആ ഇ ",
-    " צּ קּ רּ שּ ",
-    "ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ "
+  Frame('String list', [
+    'hello',
+    '🧙‍♂️ 👨‍👨‍👧‍👦 ',
+    ' ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ',
+    'അ ആ ഇ ',
+    ' צּ קּ רּ שּ ',
+    'ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ '
   ]),
-  Frame("List with null", ["This", "is", "a", "test", null]),
-  Frame("List with different types", [
-    "List",
+  Frame('List with null', ['This', 'is', 'a', 'test', null]),
+  Frame('List with different types', [
+    'List',
     [1, 2, 3],
     5.8,
     true,
     12341234,
-    {"t": true, "f": false},
+    {'t': true, 'f': false},
   ]),
-  Frame("Map", {
-    "Bool": true,
-    "Int": 1234,
-    "Double": 15.7,
-    "String": "Hello",
-    "List": [1, 2, null],
-    "Null": null,
-    "Map": {"Key": "Val", "Key2": 2}
+  Frame('Map', {
+    'Bool': true,
+    'Int': 1234,
+    'Double': 15.7,
+    'String': 'Hello',
+    'List': [1, 2, null],
+    'Null': null,
+    'Map': {'Key': 'Val', 'Key2': 2}
   }),
 ];
 
 void buildGoldens() async {
   var name = 0;
   for (var frame in testFrames) {
-    var file = await getAssetFile("frames", (name++).toString());
+    var file = await getAssetFile('frames', (name++).toString());
     await file.create(recursive: true);
     var frameBytes = frame.toBytes(registry, true, null);
     await file.writeAsBytes(frameBytes);
@@ -82,7 +82,7 @@ void expectFramesEqual(Frame f1, Frame f2) {
 }
 
 void main() {
-  group("toBytes", () {
+  group('toBytes', () {
     test('key length', () async {
       var tooLongKey = List.filled(256, 'a').join();
       var tooLongFrame = Frame(tooLongKey, 5);
@@ -99,18 +99,18 @@ void main() {
     test('golden frames', () async {
       var name = 0;
       for (var frame in testFrames) {
-        var file = await getTempAssetFile("frames", "${name++}");
+        var file = await getTempAssetFile('frames', '${name++}');
         var bytes = await frame.toBytes(registry, true, null);
         expect(bytes, await file.readAsBytes());
       }
     });
   });
 
-  group("fromReader", () {
+  group('fromReader', () {
     test('golden frames', () async {
       var name = 0;
       for (var goldenFrame in testFrames) {
-        var file = await getTempAssetFile("frames", "${name++}");
+        var file = await getTempAssetFile('frames', '${name++}');
         var reader = await BufferedFileReader.fromFile(file.path);
         var frame = await Frame.fromBytes(reader.read, registry, true, null);
         expect(frame.length, await file.length());
@@ -126,7 +126,7 @@ void main() {
     });
   });
 
-  test("encryption / decryption", () async {
+  test('encryption / decryption', () async {
     var key = HiveImpl().generateSecureKey();
     var crypto = CryptoHelper(Uint8List.fromList(key));
     for (var frame in testFrames) {

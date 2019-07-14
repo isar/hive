@@ -22,11 +22,11 @@ class TypeRegistryImpl with TypeRegistry {
   @override
   void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
     if (typeId < TypeRegistry.minCustomTypeId) {
-      throw HiveError("TypeId $typeId not allowed.");
+      throw HiveError('TypeId $typeId not allowed.');
     }
 
     if (findAdapterForTypeId(typeId) != null) {
-      throw HiveError("There is already a TypeAdapter for typeId $typeId.");
+      throw HiveError('There is already a TypeAdapter for typeId $typeId.');
     }
 
     registerInternal(adapter, typeId);

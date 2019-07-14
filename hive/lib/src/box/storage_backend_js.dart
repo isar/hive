@@ -17,8 +17,8 @@ Future<BoxImpl> openBox(
     HiveInterface hive, String name, BoxOptions options) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     Database db = e.target.result;
-    if (!db.objectStoreNames.contains("box")) {
-      db.createObjectStore("box");
+    if (!db.objectStoreNames.contains('box')) {
+      db.createObjectStore('box');
     }
   });
 
@@ -75,7 +75,7 @@ class StorageBackendJs extends StorageBackend {
     }
   }
 
-  ObjectStore getStore(bool write, [String box = "box"]) {
+  ObjectStore getStore(bool write, [String box = 'box']) {
     return _db
         .transaction(box, write ? 'readwrite' : 'readonly')
         .objectStore(box);

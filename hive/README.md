@@ -161,9 +161,9 @@ You can watch a box for changes. A `BoxEvent` will be emitted every time an entr
 var subscription = box.watch().listen(
   onData: (BoxEvent event) {
     if (event.deleted) {
-      print("Entry with key ${event.key} has been deleted.");
+      print('Entry with key ${event.key} has been deleted.');
     } else {
-      print("Key ${event.key} is now associated with ${event.value}.");
+      print('Key ${event.key} is now associated with ${event.value}.');
     }
   },
 });

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import 'common.dart';
 
 void main() {
-  test("read", () {
+  test('read', () {
     var now = DateTime.now();
     var binaryReader = BinaryReaderMock();
     when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
@@ -15,7 +15,7 @@ void main() {
     expect(date, now.subtract(Duration(microseconds: now.microsecond)));
   });
 
-  test("write", () {
+  test('write', () {
     var now = DateTime.now();
     var binaryWriter = BinaryWriterMock();
 

@@ -15,7 +15,7 @@ BinaryReader fromBytes(List<int> bytes) {
 }
 
 void main() {
-  test("skip", () {
+  test('skip', () {
     var byteData = ByteData(20);
     var br = fromByteData(byteData);
 
@@ -37,7 +37,7 @@ void main() {
     expect(() => br.skip(1), throwsA(anything));
   });
 
-  test("read byte", () {
+  test('read byte', () {
     var byteData = ByteData(3)
       ..setUint8(0, 0)
       ..setUint8(1, 17)
@@ -50,7 +50,7 @@ void main() {
     expect(() => br.readByte(), throwsA(anything));
   });
 
-  test("view bytes", () {
+  test('view bytes', () {
     var byteData = ByteData(3)
       ..setUint8(0, 0)
       ..setUint8(1, 17)
@@ -66,7 +66,7 @@ void main() {
     expect(() => br.viewBytes(1), throwsA(anything));
   });
 
-  test("read bytes", () {
+  test('read bytes', () {
     var byteData = ByteData(3)
       ..setUint8(0, 0)
       ..setUint8(1, 17)
@@ -77,7 +77,7 @@ void main() {
     expect(() => br.readBytes(1), throwsA(anything));
   });
 
-  test("read word", () {
+  test('read word', () {
     var byteData = ByteData(4)
       ..setUint16(0, 0, Endian.little)
       ..setUint16(2, 65535, Endian.little);
@@ -88,7 +88,7 @@ void main() {
     expect(() => br.readWord(), throwsA(anything));
   });
 
-  test("read int32", () {
+  test('read int32', () {
     var byteData = ByteData(12)
       ..setInt32(0, 0, Endian.little)
       ..setInt32(4, 65535, Endian.little)
@@ -101,7 +101,7 @@ void main() {
     expect(() => br.readInt32(), throwsA(anything));
   });
 
-  test("read unsigned int32", () {
+  test('read unsigned int32', () {
     var byteData = ByteData(8)
       ..setUint32(0, 0, Endian.little)
       ..setUint32(4, 4294967295, Endian.little);
@@ -112,7 +112,7 @@ void main() {
     expect(() => br.readUint32(), throwsA(anything));
   });
 
-  test("read int", () {
+  test('read int', () {
     var byteData = ByteData(24)
       ..setFloat64(0, 0, Endian.little)
       ..setFloat64(8, (2 ^ 53).toDouble(), Endian.little)
@@ -125,7 +125,7 @@ void main() {
     expect(() => br.readInt(), throwsA(anything));
   });
 
-  test("read double", () {
+  test('read double', () {
     var byteData = ByteData(48)
       ..setFloat64(0, 0, Endian.little)
       ..setFloat64(8, double.nan, Endian.little)
@@ -144,7 +144,7 @@ void main() {
     expect(() => br.readDouble(), throwsA(anything));
   });
 
-  test("read bool", () {
+  test('read bool', () {
     var byteData = ByteData(3)..setUint8(0, 1)..setUint8(1, 0)..setUint8(2, 2);
     var br = fromByteData(byteData);
 
@@ -154,46 +154,46 @@ void main() {
     expect(() => br.readBool(), throwsA(anything));
   });
 
-  test("read ascii string", () {
+  test('read ascii string', () {
     var br = fromBytes([0, 0]);
-    expect(br.readAsciiString(), "");
+    expect(br.readAsciiString(), '');
 
     br = fromBytes([]);
-    expect(br.readAsciiString(0), "");
+    expect(br.readAsciiString(0), '');
 
     br = fromBytes([6, 0, 84, 46, 44, 114, 32, 10]);
-    expect(br.readAsciiString(), "T.,r \n");
+    expect(br.readAsciiString(), 'T.,r \n');
 
     br = fromBytes([84, 46, 44, 114, 32, 10]);
-    expect(br.readAsciiString(6), "T.,r \n");
+    expect(br.readAsciiString(6), 'T.,r \n');
 
     expect(() => br.readAsciiString(), throwsRangeError);
   });
 
-  test("read string", () {
+  test('read string', () {
     var br = fromBytes([0, 0]);
-    expect(br.readString(), "");
+    expect(br.readString(), '');
 
     br = fromBytes([]);
-    expect(br.readString(0), "");
+    expect(br.readString(0), '');
 
     br = fromBytes([
       12, 0, 0xf0, 0xa0, 0x81, 0xa0, 0xf0, //
       0x9f, 0x87, 0xac, 0xf0, 0x9f, 0x87, 0xb5 //
     ]);
-    expect(br.readString(), "𠁠🇬🇵");
+    expect(br.readString(), '𠁠🇬🇵');
 
     br = fromBytes([
       0xf0, 0x9f, 0x91, 0xa8, 0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa8, //
       0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa7, 0xe2, 0x80, 0x8d, 0xf0, //
       0x9f, 0x91, 0xa6 //
     ]);
-    expect(br.readString(25), "👨‍👨‍👧‍👦");
+    expect(br.readString(25), '👨‍👨‍👧‍👦');
 
     expect(() => br.readString(), throwsRangeError);
   });
 
-  test("read int list", () {
+  test('read int list', () {
     var br = fromBytes([0, 0]);
     expect(br.readIntList(), []);
 
@@ -209,7 +209,7 @@ void main() {
     expect(() => br.readIntList(), throwsRangeError);
   });
 
-  test("read double list", () {
+  test('read double list', () {
     var br = fromBytes([0, 0]);
     expect(br.readDoubleList(), []);
 
@@ -225,7 +225,7 @@ void main() {
     expect(() => br.readDoubleList(), throwsRangeError);
   });
 
-  test("read bool list", () {
+  test('read bool list', () {
     var br = fromBytes([0, 0]);
     expect(br.readBoolList(), []);
 
@@ -241,7 +241,7 @@ void main() {
     expect(() => br.readBoolList(), throwsRangeError);
   });
 
-  test("read string list", () {
+  test('read string list', () {
     var br = fromBytes([0, 0]);
     expect(br.readStringList(), []);
 
@@ -252,50 +252,50 @@ void main() {
       2, 0, 1, 0, 97, 13, 0, 0xf0, 0x9f, 0xa7, 0x99, 0xe2, 0x80, 0x8d, 0xe2, //
       0x99, 0x82, 0xef, 0xb8, 0x8f //
     ]);
-    expect(br.readStringList(), ["a", "🧙‍♂️"]);
+    expect(br.readStringList(), ['a', '🧙‍♂️']);
 
     br = fromBytes([1, 0, 97, 2, 0, 97, 98]);
-    expect(br.readStringList(2), ["a", "ab"]);
+    expect(br.readStringList(2), ['a', 'ab']);
 
     expect(() => br.readStringList(), throwsRangeError);
   });
 
-  test("read list", () {
+  test('read list', () {
     var br = fromBytes([
       2, 0, FrameValueType.bool_.index, 1, //
       FrameValueType.string_.index, 2, 0, 0x68, 0x69 //
     ]);
-    expect(br.readList(), [true, "hi"]);
+    expect(br.readList(), [true, 'hi']);
 
     br = fromBytes([
       FrameValueType.bool_.index, 1, //
       FrameValueType.string_.index, 2, 0, 0x68, 0x69 //
     ]);
-    expect(br.readList(2), [true, "hi"]);
+    expect(br.readList(2), [true, 'hi']);
 
     expect(() => br.readList(), throwsRangeError);
   });
 
-  test("read map", () {
+  test('read map', () {
     var br = fromBytes([
       2, 0, FrameValueType.string_.index, 2, 0, 0x68, 0x69, //
       FrameValueType.bool_.index, 1, FrameValueType.bool_.index, //
       0, FrameValueType.string_.index, 2, 0, 0x68, 0x69 //
     ]);
-    expect(br.readMap(), {"hi": true, false: "hi"});
+    expect(br.readMap(), {'hi': true, false: 'hi'});
 
     br = fromBytes([
       FrameValueType.string_.index, 2, 0, 0x68, 0x69, //
       FrameValueType.bool_.index, 1, FrameValueType.bool_.index, //
       0, FrameValueType.string_.index, 2, 0, 0x68, 0x69 //
     ]);
-    expect(br.readMap(2), {"hi": true, false: "hi"});
+    expect(br.readMap(2), {'hi': true, false: 'hi'});
 
     expect(() => br.readMap(), throwsA(anything));
   });
 
-  group("read value", () {
-    test("null", () {
+  group('read value', () {
+    test('null', () {
       var br = fromBytes([]);
       expect(br.read(FrameValueType.null_.index), null);
 
@@ -303,7 +303,7 @@ void main() {
       expect(br.read(), null);
     });
 
-    test("int", () {
+    test('int', () {
       var byteData = ByteData(8)..setFloat64(0, 12345, Endian.little);
       var br = fromByteData(byteData);
       expect(br.read(FrameValueType.int_.index), 12345);
@@ -315,7 +315,7 @@ void main() {
       expect(br.read(), 12345);
     });
 
-    test("double", () {
+    test('double', () {
       var byteData = ByteData(8)..setFloat64(0, 234.99283, Endian.little);
       var br = fromByteData(byteData);
       expect(br.read(FrameValueType.double_.index), 234.99283);
@@ -327,7 +327,7 @@ void main() {
       expect(br.read(), 234.99283);
     });
 
-    test("bool", () {
+    test('bool', () {
       var byteData = ByteData(2)..setUint8(0, 1);
       var br = fromByteData(byteData);
       expect(br.read(FrameValueType.bool_.index), true);
@@ -339,15 +339,15 @@ void main() {
       expect(br.read(), true);
     });
 
-    test("string", () {
+    test('string', () {
       var br = fromBytes([2, 0, 0x68, 0x69]);
-      expect(br.read(FrameValueType.string_.index), "hi");
+      expect(br.read(FrameValueType.string_.index), 'hi');
 
       br = fromBytes([FrameValueType.string_.index, 2, 0, 0x68, 0x69]);
-      expect(br.read(), "hi");
+      expect(br.read(), 'hi');
     });
 
-    test("int list", () {
+    test('int list', () {
       var byteData = ByteData(18)
         ..setUint16(0, 2, Endian.little)
         ..setFloat64(2, 12345, Endian.little)
@@ -364,7 +364,7 @@ void main() {
       expect(br.read(), [12345, 123]);
     });
 
-    test("double list", () {
+    test('double list', () {
       var byteData = ByteData(18)
         ..setUint16(0, 2, Endian.little)
         ..setFloat64(2, 11.11, Endian.little)
@@ -381,7 +381,7 @@ void main() {
       expect(br.read(), [11.11, 12.12]);
     });
 
-    test("bool list", () {
+    test('bool list', () {
       var byteData = ByteData(4)
         ..setUint16(0, 2, Endian.little)
         ..setUint8(2, 0)
@@ -398,18 +398,18 @@ void main() {
       expect(br.read(), [false, true]);
     });
 
-    test("string list", () {
+    test('string list', () {
       var br = fromBytes([2, 0, 2, 0, 0x68, 0x69, 1, 0, 0x68]);
-      expect(br.read(FrameValueType.string_list_.index), ["hi", "h"]);
+      expect(br.read(FrameValueType.string_list_.index), ['hi', 'h']);
 
       br = fromBytes([
         FrameValueType.string_list_.index,
         2, 0, 2, 0, 0x68, 0x69, 1, 0, 0x68 //
       ]);
-      expect(br.read(), ["hi", "h"]);
+      expect(br.read(), ['hi', 'h']);
     });
 
-    test("list with null", () {
+    test('list with null', () {
       var byteData = ByteData(21)
         ..setUint16(0, 3, Endian.little)
         ..setUint8(2, FrameValueType.int_.index)

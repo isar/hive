@@ -47,7 +47,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   @protected
   void checkOpen() {
     if (!_open) {
-      throw HiveError("Box has already been closed.");
+      throw HiveError('Box has already been closed.');
     }
   }
 

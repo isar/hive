@@ -4,7 +4,7 @@ import 'package:hive/src/binary/binary_writer_buffer.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test("use bytes", () {
+  test('use bytes', () {
     var b = BinaryWriterBuffer();
     expect(b.writtenBytes, 0);
 
@@ -30,7 +30,7 @@ void main() {
     expect(buffer[100199], 3);
   });
 
-  test("add bytes", () {
+  test('add bytes', () {
     var b = BinaryWriterBuffer();
 
     var offset = b.useBytes(1);
@@ -51,5 +51,5 @@ void main() {
     expect(buffer, [20, 5, 6, 7, 17]);
   });
 
-  test("writeTo", () {});
+  test('writeTo', () {});
 }

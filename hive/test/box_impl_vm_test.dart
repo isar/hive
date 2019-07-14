@@ -1,9 +1,8 @@
-@TestOn("vm")
+@TestOn('vm')
 
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:hive/src/box/box_impl_vm.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/frame.dart';
@@ -16,12 +15,12 @@ import 'package:path/path.dart' as path;
 import 'common.dart';
 
 const testMap = {
-  "SomeKey": 123,
-  "AnotherKey": ["Just", 456, "a", 333, "List"],
-  "Random Double list": [1.0, 2.0, 10.0, double.infinity],
-  "Unicode:": "👋",
-  "Null": null,
-  "LastKey": true,
+  'SomeKey': 123,
+  'AnotherKey': ['Just', 456, 'a', 333, 'List'],
+  'Random Double list': [1.0, 2.0, 10.0, double.infinity],
+  'Unicode:': '👋',
+  'Null': null,
+  'LastKey': true,
 };
 
 Future<BoxImplVm> createTestBox() async {
@@ -29,7 +28,7 @@ Future<BoxImplVm> createTestBox() async {
   var hive = HiveImpl();
   hive.init(tempDir.path);
 
-  var box = await hive.box("testBox");
+  var box = await hive.box('testBox');
   await box.putAll(testMap);
 
   return box;
@@ -42,34 +41,34 @@ void expectValueEntriesEqual(ValueEntry k1, ValueEntry k2) {
 }
 
 void main() {
-  group("findHiveFileAndCleanUp", () {
+  group('findHiveFileAndCleanUp', () {
     void checkFindHiveFileAndCleanUp(String folder) async {
       var hiveFileDir =
           await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
-      var hiveFile = await findHiveFileAndCleanUp("testBox", hiveFileDir.path);
-      expect(hiveFile.path, path.join(hiveFileDir.path, "testBox.hive"));
+      var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir.path);
+      expect(hiveFile.path, path.join(hiveFileDir.path, 'testBox.hive'));
       await expectDirEqualsAssetDir(
           hiveFileDir, 'findHiveFileAndCleanUp', folder, 'after');
     }
 
-    test("no hive file", () async {
+    test('no hive file', () async {
       await checkFindHiveFileAndCleanUp('no_hive_file');
     });
 
-    test("hive file", () async {
+    test('hive file', () async {
       await checkFindHiveFileAndCleanUp('hive_file');
     });
 
-    test("hive file and compact file", () async {
+    test('hive file and compact file', () async {
       await checkFindHiveFileAndCleanUp('hive_file_and_compact_file');
     });
 
-    test("only compact file", () async {
+    test('only compact file', () async {
       await checkFindHiveFileAndCleanUp('only_compact_file');
     });
   });
 
-  group("readKeysFromHiveFile", () {
+  group('readKeysFromHiveFile', () {
     Future<BoxImplVm> createBoxFromBytes(Uint8List bytes) async {
       var tempFile = await getTempFile();
       await tempFile.writeAsBytes(bytes, flush: true);
@@ -77,10 +76,10 @@ void main() {
       var mockFile = SyncedFileMock();
       when(mockFile.path).thenReturn(tempFile.path);
 
-      return BoxImplVm(HiveImpl(), "testBox", BoxOptions(), mockFile);
+      return BoxImplVm(HiveImpl(), 'testBox', BoxOptions(), mockFile);
     }
 
-    test("read keys", () async {
+    test('read keys', () async {
       var registry = TypeRegistryImpl();
       var entries = Map<String, ValueEntry>();
 
@@ -89,7 +88,7 @@ void main() {
       testMap.forEach((k, v) {
         var frame1 = Frame(k, 1234).toBytes(registry, true, null);
         var frame2 = Frame.tombstone(k).toBytes(registry, true, null);
-        var frame3 = Frame(k, "test").toBytes(registry, true, null);
+        var frame3 = Frame(k, 'test').toBytes(registry, true, null);
         var frame4 = Frame(k, v).toBytes(registry, true, null);
 
         deletedLength += frame1.length + frame2.length + frame3.length;
@@ -115,7 +114,7 @@ void main() {
       await box.close();
     });
 
-    test("truncated", () async {
+    test('truncated', () async {
       var bytes = BytesBuilder();
       testMap.forEach((k, v) {
         bytes.add(Frame(k, v).toBytes(TypeRegistryImpl(), true, null));
@@ -124,26 +123,26 @@ void main() {
       var box = await createBoxFromBytes(truncated);
 
       await expectLater(
-          () => box.initialize(), throwsHiveError("Wrong checksum"));
+          () => box.initialize(), throwsHiveError('Wrong checksum'));
 
       await box.close();
     });
   });
 
-  group("get", () {
-    test("nonexisting key", () async {
+  group('get', () {
+    test('nonexisting key', () async {
       var box = await createTestBox();
 
-      expect(await box.get("Nothing12345"), null);
-      expect(await box.get("AAAAAA"), null);
+      expect(await box.get('Nothing12345'), null);
+      expect(await box.get('AAAAAA'), null);
 
-      expect(await box.get("Nothing12345", defaultValue: 1.0), 1.0);
-      expect(await box.get("AAAAAA", defaultValue: [1, 2, 3]), [1, 2, 3]);
+      expect(await box.get('Nothing12345', defaultValue: 1.0), 1.0);
+      expect(await box.get('AAAAAA', defaultValue: [1, 2, 3]), [1, 2, 3]);
 
       await box.close();
     });
 
-    test("keys in random order", () async {
+    test('keys in random order', () async {
       var box = await createTestBox();
 
       for (int i = 0; i < 10; i++) {
@@ -158,7 +157,7 @@ void main() {
     });
   });
 
-  test("put", () async {
+  test('put', () async {
     var mockFile = SyncedFileMock();
 
     var offset = 0;
@@ -166,7 +165,7 @@ void main() {
 
     var entries = Map<String, ValueEntry>();
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, entries);
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, entries);
 
     var deleted = 0;
     for (var key in testMap.keys) {
@@ -192,7 +191,7 @@ void main() {
     }
   });
 
-  test("putAll", () async {
+  test('putAll', () async {
     var mockFile = SyncedFileMock();
 
     var offset = 20;
@@ -200,7 +199,7 @@ void main() {
 
     var entries = Map<String, ValueEntry>();
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, entries);
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, entries);
 
     await box.putAll(testMap);
 
@@ -221,10 +220,10 @@ void main() {
     }
   });
 
-  test("has", () async {
+  test('has', () async {
     var mockFile = SyncedFileMock();
     when(mockFile.write(any)).thenAnswer((_) => Future.value(10));
-    var box = BoxImplVm(HiveImpl(), "testBox", BoxOptions(), mockFile);
+    var box = BoxImplVm(HiveImpl(), 'testBox', BoxOptions(), mockFile);
 
     expect(box.debugKeys.length, 0);
 
@@ -237,67 +236,67 @@ void main() {
     }
   });
 
-  test("delete", () async {
+  test('delete', () async {
     var mockFile = SyncedFileMock();
     var entries = {
-      "ExistingKey": ValueEntry(null, 111, 20),
-      "SecondKey": ValueEntry(null, 200, 40),
+      'ExistingKey': ValueEntry(null, 111, 20),
+      'SecondKey': ValueEntry(null, 200, 40),
     };
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, entries);
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, entries);
 
-    await box.delete("SomeRandomKey");
+    await box.delete('SomeRandomKey');
     verifyNever(mockFile.setReadPosition(any));
     verifyNever(mockFile.write(any));
 
-    var existingKeyLength = entries["ExistingKey"].length;
-    await box.delete("ExistingKey");
+    var existingKeyLength = entries['ExistingKey'].length;
+    await box.delete('ExistingKey');
     var tombstoneBytes =
-        Frame.tombstone("ExistingKey").toBytes(box, true, null);
+        Frame.tombstone('ExistingKey').toBytes(box, true, null);
     verify(mockFile.write(tombstoneBytes));
-    expect(entries.containsKey("ExistingKey"), false);
+    expect(entries.containsKey('ExistingKey'), false);
     expect(box.debugTotalBytes, tombstoneBytes.length);
     expect(box.debugDeletedBytes, existingKeyLength + tombstoneBytes.length);
   });
 
-  test("deleteAll", () async {
+  test('deleteAll', () async {
     var mockFile = SyncedFileMock();
 
     var offset = 20;
     when(mockFile.write(any)).thenAnswer((_) => Future.value(offset));
 
     var entries = {
-      "ExistingKey": ValueEntry(null, 111, 20),
-      "SecondKey": ValueEntry(null, 200, 40),
-      "ThirdKey": ValueEntry(null, 250, 40),
+      'ExistingKey': ValueEntry(null, 111, 20),
+      'SecondKey': ValueEntry(null, 200, 40),
+      'ThirdKey': ValueEntry(null, 250, 40),
     };
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, entries);
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, entries);
 
-    await box.deleteAll(["SomeRandomKey", "AnotherOne"]);
+    await box.deleteAll(['SomeRandomKey', 'AnotherOne']);
     verifyNever(mockFile.setReadPosition(any));
     verifyNever(mockFile.write(any));
 
     var tombstoneBytes = BytesBuilder();
-    tombstoneBytes.add(Frame.tombstone("ExistingKey").toBytes(box, true, null));
-    tombstoneBytes.add(Frame.tombstone("SecondKey").toBytes(box, true, null));
+    tombstoneBytes.add(Frame.tombstone('ExistingKey').toBytes(box, true, null));
+    tombstoneBytes.add(Frame.tombstone('SecondKey').toBytes(box, true, null));
 
-    await box.deleteAll(["ExistingKey", "SecondKey"]);
+    await box.deleteAll(['ExistingKey', 'SecondKey']);
 
     verify(mockFile.write(tombstoneBytes.toBytes()));
     expect(box.debugTotalBytes, tombstoneBytes.length);
     expect(box.debugDeletedBytes, tombstoneBytes.length + 60);
-    expect(entries.keys, ["ThirdKey"]);
+    expect(entries.keys, ['ThirdKey']);
   });
 
-  test("writeFrame", () async {
+  test('writeFrame', () async {
     var mockFile = SyncedFileMock();
     when(mockFile.write(any)).thenAnswer((_) => Future.value(123));
 
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, {});
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, {});
 
-    var frame = Frame("key", "value");
+    var frame = Frame('key', 'value');
     var entry = await box.writeFrame(frame);
 
     var bytes = frame.toBytes(box, true, null);
@@ -308,42 +307,42 @@ void main() {
     expect(entry.length, bytes.length);
   });
 
-  test("allKeys", () async {
+  test('allKeys', () async {
     var mockFile = SyncedFileMock();
     when(mockFile.write(any)).thenAnswer((_) => Future.value(123));
 
     Map<String, ValueEntry> entries = {
-      "key1": ValueEntry(null, 0, 20),
-      "SomeKey": ValueEntry(null, 100, 20),
-      "ThirdKey": ValueEntry(null, 100, 20),
+      'key1': ValueEntry(null, 0, 20),
+      'SomeKey': ValueEntry(null, 100, 20),
+      'ThirdKey': ValueEntry(null, 100, 20),
     };
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, entries);
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, entries);
 
     var keys = await box.allKeys();
     expect(keys.length, 3);
-    expect(keys.contains("key1"), true);
-    expect(keys.contains("SomeKey"), true);
-    expect(keys.contains("ThirdKey"), true);
+    expect(keys.contains('key1'), true);
+    expect(keys.contains('SomeKey'), true);
+    expect(keys.contains('ThirdKey'), true);
   });
 
-  test("toMap", () async {
+  test('toMap', () async {
     var box = await createTestBox();
 
     expect(await box.toMap(), testMap);
   });
 
-  test("performCompactationIfNeeded", () async {});
+  test('performCompactationIfNeeded', () async {});
 
-  group("compact", () {
-    test("check compactation", () async {
+  group('compact', () {
+    test('check compactation', () async {
       var boxFile = await getTempFile();
       var comparisonBytes = BytesBuilder();
       var registry = TypeRegistryImpl();
 
       var syncedFile = SyncedFile(boxFile.path);
       await syncedFile.open();
-      var box = BoxImplVm(HiveImpl(), "testBox", BoxOptions(), syncedFile);
+      var box = BoxImplVm(HiveImpl(), 'testBox', BoxOptions(), syncedFile);
 
       for (int i = 0; i < 1000; i++) {
         for (var key in testMap.keys) {
@@ -356,7 +355,7 @@ void main() {
       for (var key in testMap.keys) {
         await box.put(key, 12345);
         await box.delete(key);
-        await box.put(key, "This is a test");
+        await box.put(key, 'This is a test');
         await box.put(key, testMap[key]);
         comparisonBytes
             .add(Frame(key, testMap[key]).toBytes(registry, true, null));
@@ -387,52 +386,52 @@ void main() {
       await comparisonBox.close();
     });
 
-    test("throws error if corrupted", () async {
+    test('throws error if corrupted', () async {
       var boxFile = await getTempFile();
       var syncedFile = SyncedFile(boxFile.path);
       await syncedFile.open();
 
       var box = BoxImplVm(
           HiveImpl(), path.basename(boxFile.path), BoxOptions(), syncedFile);
-      await box.put("test", true);
-      await box.put("test2", "hello");
-      await box.put("test", "world");
+      await box.put('test', true);
+      await box.put('test2', 'hello');
+      await box.put('test', 'world');
 
       await syncedFile.truncate(await boxFile.length() - 1);
 
-      expect(() => box.compact(), throwsHiveError("unexpected eof"));
+      expect(() => box.compact(), throwsHiveError('unexpected eof'));
     });
   });
 
-  test("clear", () async {
+  test('clear', () async {
     var mockFile = SyncedFileMock();
     when(mockFile.write(any)).thenAnswer((_) => Future.value(123));
 
     Map<String, ValueEntry> entries = {
-      "key1": ValueEntry(null, 0, 20),
-      "SomeKey": ValueEntry(null, 100, 20),
-      "ThirdKey": ValueEntry(null, 100, 20),
+      'key1': ValueEntry(null, 0, 20),
+      'SomeKey': ValueEntry(null, 100, 20),
+      'ThirdKey': ValueEntry(null, 100, 20),
     };
     var box = BoxImplVm.debugEntries(
-        HiveImpl(), "testBox", BoxOptions(), mockFile, entries);
+        HiveImpl(), 'testBox', BoxOptions(), mockFile, entries);
 
     expect(await box.clear(), 3);
     verify(mockFile.truncate(0));
     expect(entries.length, 0);
   });
 
-  test("deleteFromDisk", () async {
+  test('deleteFromDisk', () async {
     var dir = await getTempDir();
     var hive = HiveImpl();
     hive.init(dir.path);
 
-    var box = await hive.box("testBox");
-    await box.put("key", "value");
+    var box = await hive.box('testBox');
+    await box.put('key', 'value');
     var boxFile = File(box.path);
 
     expect(await boxFile.exists(), true);
     await box.deleteFromDisk();
     expect(await boxFile.exists(), false);
-    expect(hive.isBoxOpen("testBox"), false);
+    expect(hive.isBoxOpen('testBox'), false);
   });
 }

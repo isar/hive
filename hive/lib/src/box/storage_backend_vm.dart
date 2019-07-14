@@ -57,7 +57,7 @@ Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
     }
     return hiveFile;
   } else if (compactedFile != null) {
-    print("Restoring compacted file.");
+    print('Restoring compacted file.');
     var newPath = p.setExtension(compactedFile.path, '.hive');
     return await compactedFile.rename(newPath);
   } else {
@@ -204,7 +204,7 @@ class StorageBackendVm extends StorageBackend {
             }
             var frameBytes = await reader.read(entry.length);
             if (frameBytes.length != entry.length) {
-              throw HiveError("Could not compact box: Unexpected EOF.");
+              throw HiveError('Could not compact box: Unexpected EOF.');
             }
             writer.writeBytes(frameBytes);
 

@@ -11,7 +11,7 @@ class HiveError {
 
   @override
   String toString() {
-    return "HiveError: $message";
+    return 'HiveError: $message';
   }
 }
 
@@ -21,6 +21,6 @@ class _CorruptedError extends HiveError {
 
   @override
   String toString() {
-    return "HiveError: Hive file of box '$boxName' is corrupted. $message";
+    return 'HiveError: Hive file of box "$boxName" is corrupted. $message';
   }
 }

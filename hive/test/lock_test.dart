@@ -18,11 +18,11 @@ void main() {
 
   failSlow() async {
     await completer;
-    throw "failed";
+    throw 'failed';
   }
 
   failFast() {
-    throw "failed";
+    throw 'failed';
   }
 
   fastIncrement() {
@@ -37,7 +37,7 @@ void main() {
     lock = Lock.newLock();
   });
 
-  test("Without synchronized(), all incrementers run concurrently", () async {
+  test('Without synchronized(), all incrementers run concurrently', () async {
     var futures = List.generate(attempts, (i) => slowIncrement());
     expect(i, equals(0));
     completer.complete();
@@ -45,7 +45,7 @@ void main() {
     expect(i, equals(1));
   });
 
-  test("With synchronized(), all incrementers run sequentially", () async {
+  test('With synchronized(), all incrementers run sequentially', () async {
     List<Future<int>> futures =
         List.generate(attempts, (i) => lock.synchronized<int>(slowIncrement));
     expect(i, equals(0));
@@ -55,7 +55,7 @@ void main() {
     expect(results, equals(List.generate(attempts, (i) => i + 1).toList()));
   });
 
-  test("Non-async functions work correctly with synchronized()", () async {
+  test('Non-async functions work correctly with synchronized()', () async {
     List<Future<int>> futures =
         List.generate(attempts, (i) => lock.synchronized<int>(fastIncrement));
     var results = await Future.wait<int>(futures);
@@ -63,14 +63,14 @@ void main() {
     expect(results, equals(List.generate(attempts, (i) => i + 1).toList()));
   });
 
-  test("Exceptions are propagated", () async {
+  test('Exceptions are propagated', () async {
     expect(i, equals(0));
     final future1 = lock.synchronized(failSlow);
     final future2 = lock.synchronized(slowIncrement);
     final future3 = lock.synchronized(failFast);
     completer.complete();
-    expect(future1, throwsA(equals("failed")));
+    expect(future1, throwsA(equals('failed')));
     expect(future2, completion(equals(1)));
-    expect(future3, throwsA(equals("failed")));
+    expect(future3, throwsA(equals('failed')));
   });
 }

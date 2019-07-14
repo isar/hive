@@ -1,6 +1,6 @@
 name: hive_generator
-description: Lightweight and blazing fast key-value store written in pure Dart. Stronly encrypted using AES-256.
-version: 0.2.0
+description: Automatic code generator for Hive TypeAdapters.
+version: 0.1.0
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/leisim/hive
 
@@ -10,6 +10,7 @@ environment:
 dependencies:
   build: ^1.1.4
   source_gen: ^0.9.4
+  hive: ^0.3.0
 
 dev_dependencies:
   test: ^1.6.4

@@ -1,4 +1,4 @@
-@TestOn("vm")
+@TestOn('vm')
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -12,23 +12,23 @@ import 'package:path/path.dart' as path;
 import 'common.dart';
 
 void main() {
-  test("home", () {
+  test('home', () {
     var hive = HiveImpl();
 
-    expect(() => hive.path, throwsHiveError("not initialized"));
+    expect(() => hive.path, throwsHiveError('not initialized'));
 
-    hive.init("MYPATH");
-    expect(hive.path, "MYPATH");
+    hive.init('MYPATH');
+    expect(hive.path, 'MYPATH');
   });
 
-  test("init", () {
+  test('init', () {
     var hive = HiveImpl();
 
-    hive.init("MYPATH");
-    expect(hive.path, "MYPATH");
+    hive.init('MYPATH');
+    expect(hive.path, 'MYPATH');
 
-    hive.init("OTHERPATH");
-    expect(hive.path, "OTHERPATH");
+    hive.init('OTHERPATH');
+    expect(hive.path, 'OTHERPATH');
 
     expect(hive.findAdapterForType(Uint8List).adapter, isA<Uint8ListAdapter>());
     expect(hive.findAdapterForTypeId(16).adapter, isA<Uint8ListAdapter>());
@@ -37,36 +37,36 @@ void main() {
     expect(hive.findAdapterForTypeId(17).adapter, isA<DateTimeAdapter>());
   });
 
-  group("box()", () {
-    test("opened box is returned if it exists", () async {
+  group('box()', () {
+    test('opened box is returned if it exists', () async {
       var tempDir = await getTempDir();
       var hive = HiveImpl();
       hive.init(tempDir.path);
 
-      var testBox = await hive.box("testBox");
-      var testBox2 = await hive.box("testBox");
+      var testBox = await hive.box('testBox');
+      var testBox2 = await hive.box('testBox');
       expect(testBox, testBox2);
     });
 
-    test("home directory is created", () async {
+    test('home directory is created', () async {
       var tempDir = await getTempDir();
       var hive = HiveImpl();
 
-      var hivePath = path.join(tempDir.path, "somePath");
+      var hivePath = path.join(tempDir.path, 'somePath');
       hive.init(hivePath);
-      await hive.box("testBox");
+      await hive.box('testBox');
 
       expect(await Directory(hivePath).exists(), true);
     });
   });
 
-  test("closeAll()", () async {
+  test('closeAll()', () async {
     var tempDir = await getTempDir();
     var hive = HiveImpl();
     hive.init(tempDir.path);
 
-    var box1 = await hive.box("box1");
-    var box2 = await hive.box("box2");
+    var box1 = await hive.box('box1');
+    var box2 = await hive.box('box2');
     expect(box1.isOpen, true);
     expect(box2.isOpen, true);
 
@@ -75,7 +75,7 @@ void main() {
     expect(box2.isOpen, false);
   });
 
-  test("generateSecureKey()", () {
+  test('generateSecureKey()', () {
     var hive = HiveImpl();
 
     var key1 = hive.generateSecureKey();
@@ -86,23 +86,23 @@ void main() {
     expect(key1, isNot(key2));
   });
 
-  test("deleteFromDisk", () async {
+  test('deleteFromDisk', () async {
     var dir = await getTempDir();
     var hive = HiveImpl();
     hive.init(dir.path);
 
-    var box1 = await hive.box("testBox1");
-    await box1.put("key", "value");
+    var box1 = await hive.box('testBox1');
+    await box1.put('key', 'value');
     var box1File = File(box1.path);
 
-    var box2 = await hive.box("testBox2");
-    await box2.put("key", "value");
+    var box2 = await hive.box('testBox2');
+    await box2.put('key', 'value');
     var box2File = File(box1.path);
 
     await hive.deleteFromDisk();
     expect(await box1File.exists(), false);
     expect(await box2File.exists(), false);
-    expect(hive.isBoxOpen("testBox1"), false);
-    expect(hive.isBoxOpen("testBox2"), false);
+    expect(hive.isBoxOpen('testBox1'), false);
+    expect(hive.isBoxOpen('testBox2'), false);
   });
 }

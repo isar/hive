@@ -110,7 +110,7 @@ class BinaryWriterImpl extends BinaryWriter {
     for (var i = 0; i < length; i++) {
       var codeUnit = value.codeUnitAt(i);
       if ((codeUnit & ~_asciiMask) != 0) {
-        throw HiveError("String contains non-ASCII characters.");
+        throw HiveError('String contains non-ASCII characters.');
       }
       bytes[i] = codeUnit;
     }
@@ -257,7 +257,7 @@ class BinaryWriterImpl extends BinaryWriter {
     } else {
       var resolved = typeRegistry.findAdapterForType(value.runtimeType);
       if (resolved == null) {
-        throw HiveError("Cannot write, unknown type '${value.runtimeType}'.");
+        throw HiveError('Cannot write, unknown type: ${value.runtimeType}.');
       }
       if (writeTypeId) {
         writeByte(resolved.typeId);

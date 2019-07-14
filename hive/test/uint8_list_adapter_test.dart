@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import 'common.dart';
 
 void main() {
-  test("read", () {
+  test('read', () {
     var bytes = HiveImpl().generateSecureKey();
     var binaryReader = BinaryReaderMock();
     when(binaryReader.readWord()).thenReturn(bytes.length);
@@ -20,7 +20,7 @@ void main() {
     expect(readBytes, bytes);
   });
 
-  test("write", () {
+  test('write', () {
     var bytes = HiveImpl().generateSecureKey();
     var binaryWriter = BinaryWriterMock();
 

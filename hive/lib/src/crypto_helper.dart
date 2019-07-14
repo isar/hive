@@ -13,8 +13,8 @@ class CryptoHelper {
   final SecureRandom random;
 
   CryptoHelper(this.keyBytes)
-      : keyHash = Digest("SHA-256").process(keyBytes),
-        cipher = PaddedBlockCipher("AES/CBC/PKCS7"),
+      : keyHash = Digest('SHA-256').process(keyBytes),
+        cipher = PaddedBlockCipher('AES/CBC/PKCS7'),
         random = createSecureRandom();
 
   static SecureRandom createSecureRandom() {

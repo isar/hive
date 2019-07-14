@@ -28,7 +28,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   void _requireBytes(int bytes) {
     if (_bufferLength - _offset < bytes) {
-      throw RangeError("Not enough bytes available.");
+      throw RangeError('Not enough bytes available.');
     }
   }
 
@@ -238,7 +238,7 @@ class BinaryReaderImpl extends BinaryReader {
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);
       if (resolved == null) {
-        throw HiveError("Cannot read, unknown typeId '$typeId'.");
+        throw HiveError('Cannot read, unknown typeId: $typeId.');
       }
       return resolved.adapter.read(this);
     }

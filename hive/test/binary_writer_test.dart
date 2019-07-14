@@ -10,7 +10,7 @@ List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 BinaryWriterImpl getWriter() => BinaryWriterImpl(TypeRegistryImpl());
 
 void main() {
-  test("write byte", () {
+  test('write byte', () {
     var bw = getWriter();
 
     bw.writeByte(0);
@@ -29,7 +29,7 @@ void main() {
     expect(() => bw.writeByte(null), throwsA(anything));
   });
 
-  test("write bytes", () {
+  test('write bytes', () {
     var bw = getWriter();
 
     bw.writeBytes(Uint8List.fromList([0, 17, 255, 257]));
@@ -39,7 +39,7 @@ void main() {
     expect(() => bw.writeBytes(null), throwsA(anything));
   });
 
-  test("write word", () {
+  test('write word', () {
     var bw = getWriter();
 
     bw.writeWord(0);
@@ -58,7 +58,7 @@ void main() {
     expect(() => bw.writeWord(null), throwsA(anything));
   });
 
-  test("write int32", () {
+  test('write int32', () {
     var bd = ByteData(4);
     var bw = getWriter();
 
@@ -94,7 +94,7 @@ void main() {
     expect(() => bw.writeInt32(null), throwsA(anything));
   });
 
-  test("write unsigned int32", () {
+  test('write unsigned int32', () {
     var bd = ByteData(4);
     var bw = getWriter();
 
@@ -118,7 +118,7 @@ void main() {
     expect(() => bw.writeUint32(null), throwsA(anything));
   });
 
-  test("write int", () {
+  test('write int', () {
     var bd = ByteData(8);
     var bw = getWriter();
 
@@ -146,7 +146,7 @@ void main() {
     expect(() => bw.writeInt(null), throwsA(anything));
   });
 
-  test("write double", () {
+  test('write double', () {
     var bd = ByteData(8);
     var bw = getWriter();
 
@@ -182,7 +182,7 @@ void main() {
     expect(() => bw.writeDouble(null), throwsA(anything));
   });
 
-  test("write bool", () {
+  test('write bool', () {
     var bw = getWriter();
 
     bw.writeBool(true);
@@ -194,41 +194,41 @@ void main() {
     expect(() => bw.writeBool(null), throwsA(anything));
   });
 
-  test("write ascii string", () {
+  test('write ascii string', () {
     var bw = getWriter();
 
-    bw.writeAsciiString("");
+    bw.writeAsciiString('');
     expect(bw.outputAndClear(), [0, 0]);
 
-    bw.writeAsciiString("", writeLength: false);
+    bw.writeAsciiString('', writeLength: false);
     expect(bw.outputAndClear(), []);
 
-    bw.writeAsciiString("T.,r \n");
+    bw.writeAsciiString('T.,r \n');
     expect(bw.outputAndClear(), [6, 0, 84, 46, 44, 114, 32, 10]);
 
-    bw.writeAsciiString("T.,r \n", writeLength: false);
+    bw.writeAsciiString('T.,r \n', writeLength: false);
     expect(bw.outputAndClear(), [84, 46, 44, 114, 32, 10]);
 
-    expect(() => bw.writeAsciiString("😍"), throwsA(anything));
+    expect(() => bw.writeAsciiString('😍'), throwsA(anything));
     expect(() => bw.writeAsciiString(null), throwsA(anything));
   });
 
-  test("write string", () {
+  test('write string', () {
     var bw = getWriter();
 
-    bw.writeString("");
+    bw.writeString('');
     expect(bw.outputAndClear(), [0, 0]);
 
-    bw.writeString("", writeByteCount: false);
+    bw.writeString('', writeByteCount: false);
     expect(bw.outputAndClear(), []);
 
-    bw.writeString("𠁠🇬🇵");
+    bw.writeString('𠁠🇬🇵');
     expect(bw.outputAndClear(), [
       12, 0, 0xf0, 0xa0, 0x81, 0xa0, 0xf0, //
       0x9f, 0x87, 0xac, 0xf0, 0x9f, 0x87, 0xb5 //
     ]);
 
-    bw.writeString("👨‍👨‍👧‍👦", writeByteCount: false);
+    bw.writeString('👨‍👨‍👧‍👦', writeByteCount: false);
     expect(bw.outputAndClear(), [
       0xf0, 0x9f, 0x91, 0xa8, 0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa8, //
       0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa7, 0xe2, 0x80, 0x8d, 0xf0, //
@@ -238,7 +238,7 @@ void main() {
     expect(() => bw.writeString(null), throwsA(anything));
   });
 
-  test("write int list", () {
+  test('write int list', () {
     var bw = getWriter();
 
     bw.writeIntList([]);
@@ -258,7 +258,7 @@ void main() {
     expect(() => bw.writeIntList(null), throwsA(anything));
   });
 
-  test("write double list", () {
+  test('write double list', () {
     var bw = getWriter();
 
     bw.writeDoubleList([]);
@@ -276,7 +276,7 @@ void main() {
     expect(() => bw.writeDoubleList(null), throwsA(anything));
   });
 
-  test("write bool list", () {
+  test('write bool list', () {
     var bw = getWriter();
 
     bw.writeBoolList([]);
@@ -294,7 +294,7 @@ void main() {
     expect(() => bw.writeBoolList(null), throwsA(anything));
   });
 
-  test("write string list", () {
+  test('write string list', () {
     var bw = getWriter();
 
     bw.writeStringList([]);
@@ -303,45 +303,45 @@ void main() {
     bw.writeStringList([], writeLength: false);
     expect(bw.outputAndClear(), []);
 
-    bw.writeStringList(["a", "🧙‍♂️"]);
+    bw.writeStringList(['a', '🧙‍♂️']);
     expect(bw.outputAndClear(), [
       2, 0, 1, 0, 97, 13, 0, 0xf0, 0x9f, 0xa7, 0x99, 0xe2, 0x80, 0x8d, 0xe2, //
       0x99, 0x82, 0xef, 0xb8, 0x8f //
     ]);
 
-    bw.writeStringList(["a", "ab"], writeLength: false);
+    bw.writeStringList(['a', 'ab'], writeLength: false);
     expect(bw.outputAndClear(), [1, 0, 97, 2, 0, 97, 98]);
 
     expect(() => bw.writeBoolList(null), throwsA(anything));
   });
 
-  test("write list", () {
+  test('write list', () {
     var bw = getWriter();
 
-    bw.writeList(["h", true]);
+    bw.writeList(['h', true]);
     expect(bw.outputAndClear(), [
       2, 0, FrameValueType.string_.index, //
       1, 0, 0x68, FrameValueType.bool_.index, 1 //
     ]);
 
-    bw.writeList(["h", true], writeLength: false);
+    bw.writeList(['h', true], writeLength: false);
     expect(bw.outputAndClear(), [
       FrameValueType.string_.index, //
       1, 0, 0x68, FrameValueType.bool_.index, 1 //
     ]);
   });
 
-  test("write map", () {
+  test('write map', () {
     var bw = getWriter();
 
-    bw.writeMap({true: "h", "hi": true});
+    bw.writeMap({true: 'h', 'hi': true});
     expect(bw.outputAndClear(), [
       2, 0, FrameValueType.bool_.index, 1, FrameValueType.string_.index, //
       1, 0, 0x68, FrameValueType.string_.index, 2, 0, 0x68, 0x69, //
       FrameValueType.bool_.index, 1 //
     ]);
 
-    bw.writeMap({true: "h", "hi": true}, writeLength: false);
+    bw.writeMap({true: 'h', 'hi': true}, writeLength: false);
     expect(bw.outputAndClear(), [
       FrameValueType.bool_.index, 1, FrameValueType.string_.index, //
       1, 0, 0x68, FrameValueType.string_.index, 2, 0, 0x68, 0x69, //
@@ -349,8 +349,8 @@ void main() {
     ]);
   });
 
-  group("write value", () {
-    test("null", () {
+  group('write value', () {
+    test('null', () {
       var bw = getWriter();
 
       bw.write(null, writeTypeId: false);
@@ -360,7 +360,7 @@ void main() {
       expect(bw.outputAndClear(), [FrameValueType.null_.index]);
     });
 
-    test("int", () {
+    test('int', () {
       var bd = ByteData(8)..setFloat64(0, 12345, Endian.little);
       var bw = getWriter();
 
@@ -371,7 +371,7 @@ void main() {
       expect(bw.outputAndClear(), [FrameValueType.int_.index, ...bytes(bd)]);
     });
 
-    test("double", () {
+    test('double', () {
       var bd = ByteData(8)..setFloat64(0, 123.456, Endian.little);
       var bw = getWriter();
 
@@ -382,7 +382,7 @@ void main() {
       expect(bw.outputAndClear(), [FrameValueType.double_.index, ...bytes(bd)]);
     });
 
-    test("bool", () {
+    test('bool', () {
       var bw = getWriter();
 
       bw.write(true, writeTypeId: false);
@@ -392,18 +392,18 @@ void main() {
       expect(bw.outputAndClear(), [FrameValueType.bool_.index, 1]);
     });
 
-    test("string", () {
+    test('string', () {
       var bw = getWriter();
 
-      bw.write("hi", writeTypeId: false);
+      bw.write('hi', writeTypeId: false);
       expect(bw.outputAndClear(), [2, 0, 0x68, 0x69]);
 
-      bw.write("hi", writeTypeId: true);
+      bw.write('hi', writeTypeId: true);
       expect(bw.outputAndClear(),
           [FrameValueType.string_.index, 2, 0, 0x68, 0x69]);
     });
 
-    test("int list", () {
+    test('int list', () {
       var bd = ByteData(18)
         ..setUint16(0, 2, Endian.little)
         ..setFloat64(2, 123, Endian.little)
@@ -418,7 +418,7 @@ void main() {
           bw.outputAndClear(), [FrameValueType.int_list_.index, ...bytes(bd)]);
     });
 
-    test("double list", () {
+    test('double list', () {
       var bd = ByteData(18)
         ..setUint16(0, 2, Endian.little)
         ..setFloat64(2, 123.456, Endian.little)
@@ -433,7 +433,7 @@ void main() {
           [FrameValueType.double_list_.index, ...bytes(bd)]);
     });
 
-    test("bool list", () {
+    test('bool list', () {
       var bd = ByteData(4)
         ..setUint16(0, 2, Endian.little)
         ..setUint8(2, 0)
@@ -448,20 +448,20 @@ void main() {
           bw.outputAndClear(), [FrameValueType.bool_list_.index, ...bytes(bd)]);
     });
 
-    test("string list", () {
+    test('string list', () {
       var bw = getWriter();
 
-      bw.write(["h", "hi"], writeTypeId: false);
+      bw.write(['h', 'hi'], writeTypeId: false);
       expect(bw.outputAndClear(), [2, 0, 1, 0, 0x68, 2, 0, 0x68, 0x69]);
 
-      bw.write(["h", "hi"], writeTypeId: true);
+      bw.write(['h', 'hi'], writeTypeId: true);
       expect(bw.outputAndClear(), [
         FrameValueType.string_list_.index, //
         2, 0, 1, 0, 0x68, 2, 0, 0x68, 0x69 //
       ]);
     });
 
-    test("list with null", () {
+    test('list with null', () {
       var bd = ByteData(21)
         ..setUint16(0, 3, Endian.little)
         ..setUint8(2, FrameValueType.int_.index)

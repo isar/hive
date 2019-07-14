@@ -111,7 +111,7 @@ class Frame {
       if (decryptor == null) {
         value = frameReader.read();
         if (frameReader.availableBytes > 0) {
-          throw HiveError("Not all bytes have been used.");
+          throw HiveError('Not all bytes have been used.');
         }
       } else {
         var encryptedBytes = frameReader.viewBytes(frameReader.availableBytes);
@@ -120,7 +120,7 @@ class Frame {
             BinaryReaderImpl(decryptedBytes, frameReader.typeRegistry);
         value = valueReader.read();
         if (valueReader.availableBytes > 0) {
-          throw HiveError("Not all bytes have been used.");
+          throw HiveError('Not all bytes have been used.');
         }
       }
       frame = Frame(key, value, frameLength);
@@ -139,13 +139,13 @@ class Frame {
         crc: computedCrc, length: frameBytes.length - 4);
     var crc = bytesToUint32(frameBytes, frameBytes.length - 4);
     if (computedCrc != crc) {
-      throw HiveError("Wrong checksum in hive file. Box may be corrupted.");
+      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
     }
   }
 
   Uint8List toBytes(TypeRegistry registry, bool writeKey, Crypto encryptor) {
     if (key.length > 255) {
-      throw HiveError("Key must not be longer than 255 characters");
+      throw HiveError('Key must not be longer than 255 characters');
     }
     var writer = BinaryWriterImpl(registry);
 

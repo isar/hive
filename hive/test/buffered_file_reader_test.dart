@@ -1,4 +1,4 @@
-@TestOn("vm")
+@TestOn('vm')
 
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:test/test.dart';
@@ -13,7 +13,7 @@ Future<BufferedFileReader> openReaderWithBytes(
 }
 
 void main() {
-  test("skip", () async {
+  test('skip', () async {
     var reader = await openReaderWithBytes(
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 3);
 
@@ -50,7 +50,7 @@ void main() {
     await reader.close();
   });
 
-  test("read", () async {
+  test('read', () async {
     var reader = await openReaderWithBytes(
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 4);
 
@@ -81,9 +81,9 @@ void main() {
     await reader.close();
   });
 
-  test("setPosition", () {});
+  test('setPosition', () {});
 
-  test("close", () async {
+  test('close', () async {
     var reader = await openReaderWithBytes([1, 2, 3, 4], 3);
 
     var bytes = await reader.read(1);
