@@ -3,9 +3,9 @@
 import 'dart:typed_data';
 
 import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
-import 'package:hive/src/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 

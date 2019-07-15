@@ -1,5 +1,5 @@
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/frame.dart';
+import 'package:hive/src/binary/frame.dart';
 
 abstract class StorageBackend {
   String get path;

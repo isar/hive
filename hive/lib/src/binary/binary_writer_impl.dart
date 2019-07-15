@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_buffer.dart';
-import 'package:hive/src/frame.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:meta/meta.dart';
 
 class BinaryWriterImpl extends BinaryWriter {

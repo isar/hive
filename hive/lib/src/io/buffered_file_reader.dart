@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'dart:typed_data';
 
-import 'package:hive/src/frame.dart';
+import 'package:hive/src/binary/frame.dart';
 
 class BufferedFileReader {
   static const defaultChunkSize = Frame.maxFrameLength;

@@ -1,8 +1,8 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/frame.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';

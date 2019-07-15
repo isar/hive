@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/frame.dart';
+import 'package:hive/src/binary/frame.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;

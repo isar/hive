@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
-import 'package:hive/src/frame.dart';
 
 Future<List<Frame>> readFrameKeysFromFile(String path) async {
   var bufferedFile = await BufferedFileReader.fromFile(path);
