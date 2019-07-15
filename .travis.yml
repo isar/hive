@@ -5,7 +5,7 @@ sudo: false
 dart:
   - stable
 script:
-  - cd ../hive_generator
+  - cd hive_generator
   - pub get
   - pub run test
 
