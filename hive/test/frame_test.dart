@@ -106,7 +106,7 @@ void main() {
     });
   });
 
-  group('fromReader', () {
+  /*group('fromReader', () {
     test('golden frames', () async {
       var name = 0;
       for (var goldenFrame in testFrames) {
@@ -136,5 +136,5 @@ void main() {
 
       expectFramesEqual(frame, decryptedFrame);
     }
-  });
+  });*/
 }

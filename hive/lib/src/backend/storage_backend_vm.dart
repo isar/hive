@@ -84,8 +84,7 @@ class StorageBackendVm extends StorageBackend {
   Future<dynamic> readValue(String key, int offset) {
     return _readLock.synchronized(() async {
       await _readFile.setPosition(offset);
-      var frame = await Frame.fromBytes(
-          _readFile.read, _registry, true, _crypto.decryptor);
+      var frame = await Frame.fromBytes(_readFile.read, _registry, _crypto);
       return frame.value;
     });
   }
@@ -93,7 +92,7 @@ class StorageBackendVm extends StorageBackend {
   Future<Map<String, dynamic>> readAll(Iterable<String> keys) {
     var map = Map<String, dynamic>();
     return _writeLock.synchronized(() async {
-      var frames = await readFramesFromFile(path, _registry, _crypto.decryptor);
+      var frames = await readFramesFromFile(path, _registry, _crypto);
       for (var frame in frames) {
         map[frame.key] = frame.value;
       }
@@ -119,9 +118,9 @@ class StorageBackendVm extends StorageBackend {
 
     List<Frame> frames;
     if (cache) {
-      frames = await readFramesFromFile(path, _registry, _crypto.decryptor);
+      frames = await readFramesFromFile(path, _registry, _crypto);
     } else {
-      frames = await readFrameKeysFromFile(path);
+      frames = await readFrameKeysFromFile(path, _crypto);
     }
     var offset = 0;
     var deletedEntries = 0;
@@ -148,7 +147,7 @@ class StorageBackendVm extends StorageBackend {
 
   @visibleForTesting
   Future<BoxEntry> writeFrame(Frame frame, bool cache) async {
-    var bytes = frame.toBytes(_registry, true, _crypto.encryptor);
+    var bytes = frame.toBytes(_registry, true, _crypto);
 
     await _writeLock.synchronized(() {
       return _writeFile.writeFrom(bytes); // Append to file
@@ -165,7 +164,7 @@ class StorageBackendVm extends StorageBackend {
     var bytes = BytesBuilder(copy: false);
     var frameLengths = List<int>(frames.length);
     for (int i = 0; i < frames.length; i++) {
-      var frameBytes = frames[i].toBytes(_registry, true, _crypto.encryptor);
+      var frameBytes = frames[i].toBytes(_registry, true, _crypto);
       bytes.add(frameBytes);
       frameLengths[i] = frameBytes.length;
     }

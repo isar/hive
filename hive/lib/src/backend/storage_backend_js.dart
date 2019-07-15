@@ -60,7 +60,7 @@ class StorageBackendJs extends StorageBackend {
       return value;
     } else {
       var writer = BinaryWriterImpl(_registry);
-      Frame(null, value).encodeBody(writer, false, _crypto.encryptor);
+      Frame(null, value).encodeBody(writer, false, _crypto);
       return writer.output().buffer;
     }
   }
@@ -68,8 +68,8 @@ class StorageBackendJs extends StorageBackend {
   @visibleForTesting
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
-      var reader = BinaryReaderImpl(Uint8List.view(value), _registry);
-      return Frame.decodeBody(reader, false, true, _crypto.decryptor).value;
+      var bytes = Uint8List.view(value);
+      return Frame.valueOnlyFromBytes(bytes, _registry, _crypto).value;
     } else {
       return value;
     }

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:hive/src/util/crc32.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
 
@@ -8,12 +9,12 @@ typedef Crypto = Uint8List Function(Uint8List bytes);
 
 class CryptoHelper {
   final Uint8List keyBytes;
-  final Uint8List keyHash;
+  final int keyCrc;
   final BlockCipher cipher;
   final SecureRandom random;
 
   CryptoHelper(this.keyBytes)
-      : keyHash = Digest('SHA-256').process(keyBytes),
+      : keyCrc = Crc32.compute(Digest('SHA-256').process(keyBytes)),
         cipher = PaddedBlockCipher('AES/CBC/PKCS7'),
         random = createSecureRandom();
 

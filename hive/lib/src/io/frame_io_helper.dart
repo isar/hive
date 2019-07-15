@@ -6,7 +6,8 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 
-Future<List<Frame>> readFrameKeysFromFile(String path) async {
+Future<List<Frame>> readFrameKeysFromFile(
+    String path, CryptoHelper crypto) async {
   var bufferedFile = await BufferedFileReader.fromFile(path);
   var frames = List<Frame>();
   try {
@@ -16,7 +17,7 @@ Future<List<Frame>> readFrameKeysFromFile(String path) async {
 
       var frameLength = bytesToUint32(lengthBytes);
       var frameBytes = await bufferedFile.read(frameLength - 4);
-      Frame.checkCrc(lengthBytes, frameBytes, 0);
+      Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
       var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);
       var frame = Frame.decodeBody(frameReader, true, false, null);
       frames.add(frame);
@@ -29,7 +30,7 @@ Future<List<Frame>> readFrameKeysFromFile(String path) async {
 }
 
 Future<List<Frame>> readFramesFromFile(
-    String path, TypeRegistry registry, Crypto decryptor) async {
+    String path, TypeRegistry registry, CryptoHelper crypto) async {
   var bytes = await File(path).readAsBytes();
   var reader = BinaryReaderImpl(bytes, registry);
   var frames = List<Frame>();
@@ -39,9 +40,9 @@ Future<List<Frame>> readFramesFromFile(
     var lengthBytes = reader.readBytes(4);
     var frameLength = bytesToUint32(lengthBytes);
     var frameBytes = reader.viewBytes(frameLength - 4);
-    Frame.checkCrc(lengthBytes, frameBytes, 0);
+    Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
     var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-    var frame = Frame.decodeBody(frameReader, true, true, decryptor);
+    var frame = Frame.decodeBody(frameReader, true, true, crypto);
     frames.add(frame);
   }
 
