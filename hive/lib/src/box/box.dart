@@ -9,6 +9,8 @@ class BoxEvent {
 }
 
 abstract class Box implements TypeRegistry {
+  String get name;
+
   bool get isOpen;
 
   /// Returns a path to the `.hive` file of this box. It is not save
