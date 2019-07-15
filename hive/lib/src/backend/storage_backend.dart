@@ -6,7 +6,7 @@ abstract class StorageBackend {
 
   Future<int> initialize(Map<String, BoxEntry> entries, bool cache);
 
-  Future<dynamic> readValue(String key, int offset);
+  Future<dynamic> readValue(String key, int offset, int length);
 
   Future<Map<String, dynamic>> readAll(Iterable<String> keys);
 

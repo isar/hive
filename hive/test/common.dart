@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/io/synced_file.dart';
 import 'package:hive/src/util/lock.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
@@ -18,6 +19,8 @@ class BinaryReaderMock extends Mock implements BinaryReader {}
 class BinaryWriterMock extends Mock implements BinaryWriter {}
 
 class BackendMock extends Mock implements StorageBackend {}
+
+class SyncedFileMock extends Mock implements SyncedFile {}
 
 Matcher throwsHiveError([String contains]) {
   return throwsA(

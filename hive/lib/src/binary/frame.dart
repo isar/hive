@@ -71,23 +71,12 @@ class Frame {
 
   bool get deleted => value == null;
 
-  static Future<Frame> fromBytes(
-      ByteSource source, TypeRegistry registry, Crypto crypto) async {
-    var lengthBytes = (await source(4)).toList();
-    if (lengthBytes.isEmpty) return null;
-
-    var frameLength = bytesToUint32(lengthBytes);
-    var frameBytes = await source(frameLength - 4);
+  static Frame fromBytes(Uint8List lengthBytes, Uint8List frameBytes,
+      bool decodeKey, TypeRegistry registry, Crypto crypto) {
     checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
-    var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-    return decodeBody(frameReader, true, true, crypto);
-  }
-
-  static Frame valueOnlyFromBytes(
-      Uint8List bytes, TypeRegistry registry, Crypto crypto) {
-    checkCrc(null, bytes, crypto?.keyCrc);
-    var frameReader = BinaryReaderImpl(bytes, registry, bytes.length - 4);
-    return decodeBody(frameReader, false, true, crypto);
+    var frameReader =
+        BinaryReaderImpl(frameBytes, registry, frameBytes.length - 4);
+    return decodeBody(frameReader, decodeKey, true, crypto);
   }
 
   static Frame decodeBody(

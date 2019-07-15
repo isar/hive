@@ -1,5 +1,6 @@
-import 'dart:async';
 @TestOn('browser')
+
+import 'dart:async' show Future;
 import 'dart:html';
 import 'dart:indexed_db';
 import 'dart:typed_data';
@@ -53,7 +54,7 @@ void main() {
         var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
         var bytes = Uint8List.view(backend.encodeValue(1));
-        var frame = Frame.valueOnlyFromBytes(bytes, null, crypto);
+        var frame = Frame.fromBytes(null, bytes, false, null, crypto);
         expect(frame.value, 1);
       });
 
@@ -64,7 +65,7 @@ void main() {
           'otherKey': null
         };
         var bytes = Uint8List.view(backend.encodeValue(map));
-        var frame = Frame.valueOnlyFromBytes(bytes, null, null);
+        var frame = Frame.fromBytes(null, bytes, false, null, null);
         expect(frame.value, map);
       });
     });
@@ -135,7 +136,7 @@ void main() {
       var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
       var backend = StorageBackendJs(db, null);
 
-      expect(await backend.readValue('key2', null), 2);
+      expect(await backend.readValue('key2', null, null), 2);
     });
 
     test('.readAll()', () async {

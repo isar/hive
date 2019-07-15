@@ -82,15 +82,16 @@ void main() {
 
       test('reads value from backend', () async {
         var backend = BackendMock();
-        when(backend.readValue(any, any)).thenAnswer((i) async => 'testVal');
+        when(backend.readValue(any, any, any))
+            .thenAnswer((i) async => 'testVal');
         var box = getBox(
           cached: false,
           backend: backend,
-          entries: {'testKey': BoxEntry('testVal', 123, null)},
+          entries: {'testKey': BoxEntry('testVal', 123, 456)},
         );
 
         expect(await box.get('testKey'), 'testVal');
-        verify(backend.readValue('testKey', 123));
+        verify(backend.readValue('testKey', 123, 456));
       });
     });
 

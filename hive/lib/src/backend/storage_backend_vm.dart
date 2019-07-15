@@ -11,6 +11,7 @@ import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/crypto.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
+import 'package:hive/src/io/synced_file.dart';
 import 'package:hive/src/util/lock.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
@@ -23,8 +24,8 @@ Future<BoxImpl> openBox(
   if (options.encrypted) {
     crypto = Crypto(Uint8List.fromList(options.encryptionKey));
   }
-
-  var backend = StorageBackendVm(file.path, crypto);
+  var syncedFile = SyncedFile(file.path);
+  var backend = StorageBackendVm(syncedFile, crypto);
   var box = BoxImpl(hive, name, options, backend);
   backend._registry = box;
 
@@ -68,54 +69,18 @@ Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
 }
 
 class StorageBackendVm extends StorageBackend {
-  @override
-  final String path;
-  final Lock _readLock = Lock.newLock();
-  final Lock _writeLock = Lock.newLock();
   final Crypto _crypto;
+  final SyncedFile _file;
 
   TypeRegistry _registry;
-  RandomAccessFile _readFile;
-  RandomAccessFile _writeFile;
-  int _writeOffset = 0;
 
-  StorageBackendVm(this.path, this._crypto);
+  StorageBackendVm(this._file, this._crypto);
 
-  Future<dynamic> readValue(String key, int offset) {
-    return _readLock.synchronized(() async {
-      await _readFile.setPosition(offset);
-      var frame = await Frame.fromBytes(_readFile.read, _registry, _crypto);
-      return frame.value;
-    });
-  }
-
-  Future<Map<String, dynamic>> readAll(Iterable<String> keys) {
-    var map = Map<String, dynamic>();
-    return _writeLock.synchronized(() async {
-      var frames = await readFramesFromFile(path, _registry, _crypto);
-      for (var frame in frames) {
-        map[frame.key] = frame.value;
-      }
-
-      return map;
-    });
-  }
-
-  _openFiles() async {
-    var file = File(path);
-    _readFile = await file.open(mode: FileMode.read);
-    _writeFile = await file.open(mode: FileMode.append);
-  }
-
-  _closeFiles() async {
-    await _readFile.close();
-    await _writeFile.close();
-  }
+  @override
+  String get path => _file.path;
 
   @override
   Future<int> initialize(Map<String, BoxEntry> entries, bool cache) async {
-    await _openFiles();
-
     List<Frame> frames;
     if (cache) {
       frames = await readFramesFromFile(path, _registry, _crypto);
@@ -140,23 +105,40 @@ class StorageBackendVm extends StorageBackend {
       offset += frame.length;
     }
 
-    _writeOffset = offset;
-
     return deletedEntries;
+  }
+
+  @override
+  Future<dynamic> readValue(String key, int offset, int length) async {
+    var bytes = await _file.readAt(offset, length);
+    var lengthBytes = Uint8List.view(bytes.buffer, 0, 4);
+    var frameBytes = Uint8List.view(bytes.buffer, 4);
+    var frame =
+        Frame.fromBytes(lengthBytes, frameBytes, true, _registry, _crypto);
+    return frame.value;
+  }
+
+  @override
+  Future<Map<String, dynamic>> readAll(Iterable<String> keys) async {
+    var frames = await _file.writeLock.synchronized(() {
+      return readFramesFromFile(path, _registry, _crypto);
+    });
+
+    var map = Map<String, dynamic>();
+    for (var frame in frames) {
+      map[frame.key] = frame.value;
+    }
+    return map;
   }
 
   @visibleForTesting
   Future<BoxEntry> writeFrame(Frame frame, bool cache) async {
     var bytes = frame.toBytes(_registry, true, _crypto);
 
-    await _writeLock.synchronized(() {
-      return _writeFile.writeFrom(bytes); // Append to file
-    });
+    var offset = await _file.write(bytes);
 
     var value = cache ? frame.value : null;
-    var entry = BoxEntry(value, _writeOffset, bytes.length);
-    _writeOffset += bytes.length;
-    return entry;
+    return BoxEntry(value, offset, bytes.length);
   }
 
   @visibleForTesting
@@ -169,25 +151,23 @@ class StorageBackendVm extends StorageBackend {
       frameLengths[i] = frameBytes.length;
     }
 
-    await _writeLock.synchronized(() {
-      return _writeFile.writeFrom(bytes.toBytes()); // Append to file
-    });
+    var offset = await _file.write(bytes.toBytes());
 
     var keyEntries = List<BoxEntry>(frames.length);
     for (int i = 0; i < frames.length; i++) {
       var frame = frames[i];
       var frameLength = frameLengths[i];
       var value = cache ? frame.value : null;
-      keyEntries[i] = BoxEntry(value, _writeOffset, frameLength);
-      _writeOffset += frameLength;
+      keyEntries[i] = BoxEntry(value, offset, frameLength);
+      offset += frameLength;
     }
 
     return keyEntries;
   }
 
   Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries) {
-    return _readLock.synchronized(() {
-      return _writeLock.synchronized(() async {
+    return _file.readLock.synchronized(() {
+      return _file.writeLock.synchronized(() async {
         var reader = await BufferedFileReader.fromFile(path);
         var writer = BinaryWriterImpl(_registry);
         var compactPath = p.withoutExtension(path) + '.hivec';
@@ -220,9 +200,9 @@ class StorageBackendVm extends StorageBackend {
           await compactFile.close();
         }
 
-        await _closeFiles();
+        await _file.close();
         await File(compactFile.path).rename(path);
-        await _openFiles();
+        await _file.open();
         return newEntries;
       });
     });
@@ -230,30 +210,17 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future clear() {
-    return _readLock.synchronized(() {
-      return _writeLock.synchronized(() async {
-        await _writeFile.truncate(0);
-        _writeOffset = 0;
-      });
-    });
+    return _file.truncate(0);
   }
 
   @override
   Future close() {
-    return _readLock.synchronized(() {
-      return _writeLock.synchronized(() async {
-        await _closeFiles();
-      });
-    });
+    return _file.close();
   }
 
   @override
-  Future deleteFromDisk() {
-    return _readLock.synchronized(() {
-      return _writeLock.synchronized(() async {
-        await _closeFiles();
-        return File(path).delete();
-      });
-    });
+  Future deleteFromDisk() async {
+    await _file.close;
+    await File(path).delete();
   }
 }

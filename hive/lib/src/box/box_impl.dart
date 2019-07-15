@@ -87,7 +87,8 @@ class BoxImpl extends BoxBase {
     if (!_entries.containsKey(key)) return Future.value(defaultValue);
     if (options.cached) return Future.value(_entries[key]?.value);
 
-    return _backend.readValue(key, _entries[key].offset);
+    var entry = _entries[key];
+    return _backend.readValue(key, entry.offset, entry.length);
   }
 
   @override

@@ -66,7 +66,7 @@ class StorageBackendJs extends StorageBackend {
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
-      return Frame.valueOnlyFromBytes(bytes, _registry, _crypto).value;
+      return Frame.fromBytes(null, bytes, false, _registry, _crypto).value;
     } else {
       return value;
     }
@@ -122,7 +122,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(String key, int offset) async {
+  Future<dynamic> readValue(String key, int offset, int length) async {
     var value = await getStore(false).getObject(key);
     return decodeValue(value);
   }

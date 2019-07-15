@@ -5,21 +5,23 @@ import 'package:test/test.dart';
 import 'common.dart';
 
 void main() {
-  test('read', () {
-    var now = DateTime.now();
-    var binaryReader = BinaryReaderMock();
-    when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
+  group('DateTimeAdapter', () {
+    test('.read()', () {
+      var now = DateTime.now();
+      var binaryReader = BinaryReaderMock();
+      when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
 
-    var date = DateTimeAdapter().read(binaryReader);
-    verify(binaryReader.readInt());
-    expect(date, now.subtract(Duration(microseconds: now.microsecond)));
-  });
+      var date = DateTimeAdapter().read(binaryReader);
+      verify(binaryReader.readInt());
+      expect(date, now.subtract(Duration(microseconds: now.microsecond)));
+    });
 
-  test('write', () {
-    var now = DateTime.now();
-    var binaryWriter = BinaryWriterMock();
+    test('.write()', () {
+      var now = DateTime.now();
+      var binaryWriter = BinaryWriterMock();
 
-    DateTimeAdapter().write(binaryWriter, now);
-    verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
+      DateTimeAdapter().write(binaryWriter, now);
+      verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
+    });
   });
 }
