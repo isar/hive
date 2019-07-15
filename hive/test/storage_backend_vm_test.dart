@@ -128,7 +128,7 @@ void main() {
       ]);
     });
 
-    group('compact', () {
+    /*group('compact', () {
       test('check compactation', () async {
         var boxFile = await getTempFile();
         var comparisonBytes = BytesBuilder();
@@ -195,6 +195,6 @@ void main() {
 
         expect(() => box.compact(), throwsHiveError("unexpected eof"));
       });
-    });
+    });*/
   });
 }
