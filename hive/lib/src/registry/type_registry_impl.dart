@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-class TypeRegistryImpl with TypeRegistry {
+class TypeRegistryImpl implements TypeRegistry {
   final TypeRegistry parent;
   final _typeAdaptersById = Map<int, ResolvedAdapter>();
   final _typeAdaptersByType = Map<Type, ResolvedAdapter>();

@@ -1,13 +1,15 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/box/box_base.dart';
 
-class Transaction implements Box {
+class TransactionBox extends BoxBase {
   final Box _box;
   Set<String> _deletedKeys = Set();
   Map<String, dynamic> _newEntries = HashMap();
 
-  Transaction(this._box);
+  TransactionBox(this._box) : super(_box);
 
   @override
   String get name => _box.name;
@@ -105,14 +107,8 @@ class Transaction implements Box {
     return map;
   }
 
-  @override
-  Future<void> transaction(Future Function(Box box) transaction) async {
-    var trxBox = Transaction(this);
-    await transaction(trxBox);
-    await trxBox.commit();
-  }
-
   Future commit() async {
+    await waitForRunningTransactions();
     await _box.deleteAll(_deletedKeys);
     await _box.putAll(_newEntries);
   }
@@ -135,16 +131,6 @@ class Transaction implements Box {
   @override
   Future<void> deleteFromDisk() {
     throw UnsupportedError("Cannot delete box within transaction.");
-  }
-
-  @override
-  ResolvedAdapter findAdapterForType(Type type) {
-    return _box.findAdapterForType(type);
-  }
-
-  @override
-  ResolvedAdapter findAdapterForTypeId(int typeId) {
-    return _box.findAdapterForTypeId(typeId);
   }
 
   @override

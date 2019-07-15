@@ -2,12 +2,11 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/storage_backend.dart';
-import 'package:hive/src/box/transaction.dart';
 import 'package:hive/src/frame.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 export 'package:hive/src/box/storage_backend_stub.dart'
@@ -22,7 +21,7 @@ class BoxEntry {
   const BoxEntry(this.value, this.offset, this.length);
 }
 
-class BoxImpl extends TypeRegistryImpl implements Box {
+class BoxImpl extends BoxBase {
   static const deletedRatio = 0.15;
   static const deletedThreshold = 40;
 
@@ -79,9 +78,6 @@ class BoxImpl extends TypeRegistryImpl implements Box {
 
     return _backend.readValue(key, _entries[key].offset);
   }
-
-  @override
-  Future operator [](String key) => get(key);
 
   @override
   bool has(String key) {
@@ -208,13 +204,6 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   }
 
   @override
-  Future<void> transaction(Future Function(Box box) transaction) async {
-    var trxBox = Transaction(this);
-    await transaction(trxBox);
-    await trxBox.commit();
-  }
-
-  @override
   Future<int> clear() async {
     checkOpen();
     if (_entries.isEmpty) return 0;
@@ -234,6 +223,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   @override
   Future<void> compact() async {
     checkOpen();
+    if (_deletedEntries == 0) return;
     var newEntries = await _backend.compact(_entries);
     if (newEntries != null) {
       _entries = newEntries;
@@ -255,6 +245,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   @override
   Future<void> close({bool compact = false}) async {
     if (!_open) return;
+    await waitForRunningTransactions();
     if (compact) {
       await _backend.compact(_entries);
     }
@@ -268,6 +259,7 @@ class BoxImpl extends TypeRegistryImpl implements Box {
   @override
   Future<void> deleteFromDisk() async {
     await _streamController.close();
+    await waitForRunningTransactions();
     _open = false;
     hive.unregisterBox(name);
     await _backend.deleteFromDisk();
