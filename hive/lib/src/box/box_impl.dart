@@ -19,6 +19,13 @@ class BoxEntry {
   final int length;
 
   const BoxEntry(this.value, this.offset, this.length);
+
+  bool operator ==(dynamic b) {
+    if (b is BoxEntry) {
+      return b.value == value && b.offset == offset && b.length == length;
+    }
+    return false;
+  }
 }
 
 class BoxImpl extends BoxBase {
@@ -37,6 +44,10 @@ class BoxImpl extends BoxBase {
   int _deletedEntries = 0;
 
   BoxImpl(this.hive, this.name, this.options, this._backend) : super(hive);
+
+  BoxImpl.debug(
+      this.hive, this.name, this.options, this._backend, this._entries)
+      : super(hive);
 
   @override
   bool get isOpen => _open;
@@ -265,7 +276,9 @@ class BoxImpl extends BoxBase {
     await _backend.deleteFromDisk();
   }
 
-  int getKeyOffset(String key) {
-    return _entries[key].offset;
-  }
+  @visibleForTesting
+  Map<String, BoxEntry> get debugEntries => _entries;
+
+  @visibleForTesting
+  int get debugDeletedEntries => _deletedEntries;
 }

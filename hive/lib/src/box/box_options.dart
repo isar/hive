@@ -4,7 +4,7 @@ class BoxOptions {
 
   BoxOptions({
     this.encryptionKey,
-    this.cacheAll = false,
+    this.cacheAll = true,
   }) {
     if (encryptionKey != null) {
       if (encryptionKey.length != 32 ||

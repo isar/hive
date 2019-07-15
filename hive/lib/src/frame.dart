@@ -186,6 +186,17 @@ class Frame {
       }
     }
   }
+
+  @override
+  bool operator ==(dynamic f) {
+    if (f is Frame) {
+      return f.key == key &&
+          f.value == value &&
+          f.deleted == deleted &&
+          f.length == length;
+    }
+    return false;
+  }
 }
 
 typedef ByteSource = Future<List<int>> Function(int bytes);
