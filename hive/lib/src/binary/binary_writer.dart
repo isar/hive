@@ -7,8 +7,6 @@ abstract class BinaryWriter {
 
   void writeByte(int byte);
 
-  void writeBytes(List<int> bytes);
-
   void writeWord(int value);
 
   void writeInt32(int value);
@@ -26,6 +24,8 @@ abstract class BinaryWriter {
       Converter<String, List<int>> encoder = utf8Encoder});
 
   void writeAsciiString(String value, {bool writeLength = true});
+
+  void writeByteList(List<int> bytes, {bool writeLength = true});
 
   void writeIntList(List<int> list, {bool writeLength = true});
 

@@ -30,11 +30,6 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeBytes(List<int> bytes) {
-    _buffer.addBytes(bytes);
-  }
-
-  @override
   void writeWord(int value) {
     if (value == null) {
       throw ArgumentError.notNull();
@@ -119,6 +114,14 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
+  void writeByteList(List<int> bytes, {bool writeLength = true}) {
+    if (writeLength) {
+      writeWord(bytes.length);
+    }
+    _buffer.addBytes(bytes);
+  }
+
+  @override
   void writeIntList(List<int> list, {bool writeLength = true}) {
     if (writeLength) {
       writeWord(list.length);
@@ -167,7 +170,7 @@ class BinaryWriterImpl extends BinaryWriter {
       bytes.addByte(strBytes.length << 8);
       bytes.add(strBytes);
     }
-    writeBytes(bytes.toBytes());
+    _buffer.addBytes(bytes.toBytes());
   }
 
   @override
@@ -223,6 +226,11 @@ class BinaryWriterImpl extends BinaryWriter {
           writeByte(FrameValueType.list_.index);
         }
         writeList(value);
+      } else if (value is Uint8List) {
+        if (writeTypeId) {
+          writeByte(FrameValueType.byte_list_.index);
+        }
+        writeByteList(value);
       } else if (value is List<int>) {
         if (writeTypeId) {
           writeByte(FrameValueType.int_list_.index);

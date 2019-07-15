@@ -11,13 +11,13 @@ import 'common.dart';
 
 BoxImpl getBox(
     {String name,
-    bool cacheAll,
+    bool cached,
     StorageBackend backend,
     Map<String, BoxEntry> entries}) {
   return BoxImpl.debug(
       HiveImpl(),
       name ?? 'testBox',
-      BoxOptions(cacheAll: cacheAll ?? true),
+      BoxOptions(cached: cached ?? true),
       backend ?? BackendMock(),
       entries ?? Map());
 }
@@ -25,18 +25,10 @@ BoxImpl getBox(
 void main() {
   group('BoxImpl', () {
     test('.watch()', () async {
-      void expectBoxEventsEqual(List<BoxEvent> l1, List<BoxEvent> l2) {
-        for (int i = 0; i < l1.length; i++) {
-          expect(l1[i].key, l2[i].key);
-          expect(l1[i].value, l2[i].value);
-          expect(l1[i].deleted, l2[i].deleted);
-        }
-      }
-
-      var box = getBox();
-
-      await box.put('key1', 123);
-      await box.put('key2', 123);
+      var box = getBox(entries: {
+        'key1': BoxEntry(123, 0, 0),
+        'key2': BoxEntry(123, 0, 0),
+      });
 
       var allEvents = List<BoxEvent>();
       box.watch().listen((e) {
@@ -53,15 +45,17 @@ void main() {
       await box.put('key1', 'newVal');
       await box.put('key2', 'newVal2');
 
-      expectBoxEventsEqual(allEvents, [
-        BoxEvent('key1', null, true),
-        BoxEvent('key1', 'newVal', false),
-        BoxEvent('key2', 'newVal2', false),
+      await Future.delayed(Duration(milliseconds: 1));
+
+      expect(allEvents, [
+        BoxEvent('key1', null),
+        BoxEvent('key1', 'newVal'),
+        BoxEvent('key2', 'newVal2'),
       ]);
 
-      expectBoxEventsEqual(filteredEvents, [
-        BoxEvent('key1', null, true),
-        BoxEvent('key1', 'newVal', false),
+      expect(filteredEvents, [
+        BoxEvent('key1', null),
+        BoxEvent('key1', 'newVal'),
       ]);
     });
 
@@ -90,13 +84,26 @@ void main() {
         var backend = BackendMock();
         when(backend.readValue(any, any)).thenAnswer((i) async => 'testVal');
         var box = getBox(
-          cacheAll: false,
+          cached: false,
           backend: backend,
           entries: {'testKey': BoxEntry('testVal', 123, null)},
         );
 
         expect(await box.get('testKey'), 'testVal');
         verify(backend.readValue('testKey', 123));
+      });
+    });
+
+    group('[]', () {
+      test('returns cached value', () {
+        var box = getBox(entries: {'key': BoxEntry('value', 0, 0)});
+        expect(box['key'], 'value');
+        expect(box['nonexistantKey'], null);
+      });
+
+      test('throws if box not cached', () {
+        var box = getBox(cached: false, entries: {});
+        expect(() => box['key'], throwsHiveError('only cached boxes'));
       });
     });
 
@@ -119,6 +126,10 @@ void main() {
       var entries = Map<String, BoxEntry>();
       var box = getBox(backend: backend, entries: entries);
 
+      await box.put('key1', null);
+      expect(box.debugDeletedEntries, 0);
+      verifyZeroInteractions(backend);
+
       await box.put('key1', 'value1');
       expect(entries.containsKey('key1'), true);
       expect(box.debugDeletedEntries, 0);
@@ -126,6 +137,17 @@ void main() {
 
       await box.put('key1', 'value2');
       expect(box.debugDeletedEntries, 1);
+
+      await box.put('key1', null);
+      expect(entries.containsKey('key1'), false);
+      expect(box.debugDeletedEntries, 2);
+    });
+
+    test('[]=', () {
+      var backend = BackendMock();
+      var box = getBox(backend: backend, entries: {});
+      box['key'] = 123;
+      verify(backend.writeFrame(Frame('key', 123), true));
     });
 
     test('.putAll()', () async {
@@ -138,7 +160,7 @@ void main() {
       var entries = Map<String, BoxEntry>();
       var box = getBox(backend: backend, entries: entries);
 
-      await box.putAll({'key1': 'val1', 'key2': 'val2'});
+      await box.putAll({'key1': 'val1', 'key2': 'val2', 'key3': null});
       expect(entries, {
         'key1': BoxEntry(null, 0, 0),
         'key2': BoxEntry(null, 1, 0),
@@ -149,41 +171,11 @@ void main() {
         Frame('key2', 'val2'),
       ], true));
 
-      await box.putAll({'key1': 'val3', 'key3': 'val4'});
+      await box.putAll({'key1': 'val3', 'key2': null});
       expect(entries, {
         'key1': BoxEntry(null, 2, 0),
-        'key2': BoxEntry(null, 1, 0),
-        'key3': BoxEntry(null, 3, 0),
       });
-      expect(box.debugDeletedEntries, 1);
-    });
-
-    test('.delete()', () async {
-      var backend = BackendMock();
-      var entries = {'key1': BoxEntry(null, 0, 0)};
-      var box = getBox(backend: backend, entries: entries);
-
-      await box.delete('nonExistingKey');
-      verifyZeroInteractions(backend);
-      expect(box.debugDeletedEntries, 0);
-
-      await box.delete('key1');
-      verify(backend.writeFrame(Frame.tombstone('key1'), true));
-      expect(box.debugDeletedEntries, 1);
-    });
-
-    test('.deleteAll()', () async {
-      /*var backend = BackendMock();
-      var entries = {'key1': BoxEntry(null, 0, 0)};
-      var box = getBox(backend: backend, entries: entries);
-
-      await box.delete('nonExistingKey');
-      verifyZeroInteractions(backend);
-      expect(box.debugDeletedEntries, 0);
-
-      await box.delete('key1');
-      verify(backend.writeFrame(Frame.tombstone('key1'), false));
-      expect(box.debugDeletedEntries, 1);*/
+      expect(box.debugDeletedEntries, 2);
     });
 
     test('.allKeys()', () async {
@@ -216,7 +208,7 @@ void main() {
           'key2': BoxEntry(null, 0, 0),
           'key4': BoxEntry(null, 0, 0)
         };
-        var box = getBox(entries: entries, cacheAll: false, backend: backend);
+        var box = getBox(entries: entries, cached: false, backend: backend);
         expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
         verify(backend.readAll(['key1', 'key2', 'key4']));
       });

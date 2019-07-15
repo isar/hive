@@ -11,9 +11,6 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   BoxBase(TypeRegistry parent) : super(parent);
 
   @override
-  Future operator [](String key) => get(key);
-
-  @override
   Future<void> transaction(Future Function(Box box) transaction) async {
     var completer = Completer();
     var completerFuture = completer.future;

@@ -13,11 +13,13 @@ abstract class HiveInterface implements TypeRegistry {
   Future<Box> box(
     String name, {
     List<int> encryptionKey,
-    bool cacheAll = true,
+    bool cached = true,
   });
 
   /// Checks if a specific box is currently open.
   bool isBoxOpen(String name);
+
+  Box getBox(String name);
 
   /// Closes all open boxes and then Hive itself.
   Future close({bool compact = false});

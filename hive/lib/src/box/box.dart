@@ -3,9 +3,17 @@ part of hive;
 class BoxEvent {
   final String key;
   final dynamic value;
-  final bool deleted;
 
-  BoxEvent(this.key, this.value, this.deleted);
+  BoxEvent(this.key, this.value);
+
+  bool get deleted => value == null;
+
+  bool operator ==(dynamic b) {
+    if (b is BoxEvent) {
+      return b.key == key && b.value == value;
+    }
+    return false;
+  }
 }
 
 abstract class Box implements TypeRegistry {
@@ -28,7 +36,9 @@ abstract class Box implements TypeRegistry {
   /// Identical to [get].
   ///
   /// See: [get]
-  Future<dynamic> operator [](String key);
+  dynamic operator [](String key);
+
+  operator []=(String key, dynamic value);
 
   /// Store a key-value pair in the box.
   ///
@@ -37,6 +47,11 @@ abstract class Box implements TypeRegistry {
   /// be handled by a registered [TypeAdapter].
   Future<void> put(String key, dynamic value);
 
+  /// Removes a key-value pair from the box if the given [key] exists.
+  ///
+  /// Returns whether the key existed.
+  Future<void> delete(String key);
+
   /// Stores multiple key-value pairs in the box.
   ///
   /// This saves disk accesses compared to multiple calls to [put].
@@ -44,20 +59,15 @@ abstract class Box implements TypeRegistry {
   /// See: [put]
   Future<void> putAll(Map<String, dynamic> entries);
 
+  /// Deletes all values associated with the given [keys].
+  ///
+  /// Returns for each key whether it existed.
+  Future<void> deleteAll(Iterable<String> keys);
+
   /// Checks if the box contains the given [key].
   ///
   /// This is a very fast operation and doesn't need a disk access.
   bool has(String key);
-
-  /// Removes a key-value pair from the box if the given [key] exists.
-  ///
-  /// Returns whether the key existed.
-  Future<bool> delete(String key);
-
-  /// Deletes all values associated with the given [keys].
-  ///
-  /// Returns for each key whether it existed.
-  Future<List<bool>> deleteAll(Iterable<String> keys);
 
   /// Returns a list of all keys in the box.
   ///

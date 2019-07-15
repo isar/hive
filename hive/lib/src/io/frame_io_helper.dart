@@ -3,11 +3,10 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 
-Future<List<Frame>> readFrameKeysFromFile(
-    String path, CryptoHelper crypto) async {
+Future<List<Frame>> readFrameKeysFromFile(String path, Crypto crypto) async {
   var bufferedFile = await BufferedFileReader.fromFile(path);
   var frames = List<Frame>();
   try {
@@ -30,14 +29,14 @@ Future<List<Frame>> readFrameKeysFromFile(
 }
 
 Future<List<Frame>> readFramesFromFile(
-    String path, TypeRegistry registry, CryptoHelper crypto) async {
+    String path, TypeRegistry registry, Crypto crypto) async {
   var bytes = await File(path).readAsBytes();
   var reader = BinaryReaderImpl(bytes, registry);
   var frames = List<Frame>();
   while (true) {
     if (reader.availableBytes == 0) break;
 
-    var lengthBytes = reader.readBytes(4);
+    var lengthBytes = reader.readByteList(4);
     var frameLength = bytesToUint32(lengthBytes);
     var frameBytes = reader.viewBytes(frameLength - 4);
     Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);

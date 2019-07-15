@@ -5,12 +5,10 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/binary/binary_reader_impl.dart';
-import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto.dart';
 import 'package:meta/meta.dart';
 
 Future<BoxImpl> openBox(
@@ -22,9 +20,9 @@ Future<BoxImpl> openBox(
     }
   });
 
-  CryptoHelper crypto;
+  Crypto crypto;
   if (options.encrypted) {
-    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
+    crypto = Crypto(Uint8List.fromList(options.encryptionKey));
   }
 
   var backend = StorageBackendJs(db, crypto);
@@ -38,7 +36,7 @@ Future<BoxImpl> openBox(
 
 class StorageBackendJs extends StorageBackend {
   final Database _db;
-  final CryptoHelper _crypto;
+  final Crypto _crypto;
 
   TypeRegistry _registry;
 
@@ -59,9 +57,8 @@ class StorageBackendJs extends StorageBackend {
     if (noEncodingNeeded) {
       return value;
     } else {
-      var writer = BinaryWriterImpl(_registry);
-      Frame(null, value).encodeBody(writer, false, _crypto);
-      return writer.output().buffer;
+      var bytes = Frame('', value).toBytes(_registry, false, _crypto);
+      return bytes.buffer;
     }
   }
 
@@ -108,9 +105,9 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(Map<String, BoxEntry> entries, bool cache) async {
+  Future<int> initialize(Map<String, BoxEntry> entries, bool cached) async {
     var keys = await getKeys();
-    if (cache) {
+    if (cached) {
       var values = await getValues();
       for (var i = 0; i < keys.length; i++) {
         entries[keys[i]] = BoxEntry(values[i], null, null);
@@ -139,23 +136,26 @@ class StorageBackendJs extends StorageBackend {
   Future<BoxEntry> writeFrame(Frame frame, bool cache) async {
     if (frame.deleted) {
       await getStore(true).delete(frame.key);
+      return null;
     } else {
       await getStore(true).put(encodeValue(frame.value), frame.key);
+      return BoxEntry(cache ? frame.value : null, null, null);
     }
-    return BoxEntry(cache ? frame.value : null, -1, -1);
   }
 
   @override
   Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cache) async {
     var store = getStore(true);
     var entries = List<BoxEntry>(frames.length);
+    var i = 0;
     for (var frame in frames) {
       if (frame.deleted) {
         await store.delete(frame.key);
+        entries[i++] = null;
       } else {
         await store.put(encodeValue(frame.value), frame.key);
+        entries[i++] = BoxEntry(cache ? frame.value : null, null, null);
       }
-      entries.add(BoxEntry(cache ? frame.value : null, -1, -1));
     }
     return entries;
   }

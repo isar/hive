@@ -13,8 +13,6 @@ abstract class BinaryReader {
 
   Uint8List viewBytes(int bytes);
 
-  Uint8List readBytes(int bytes);
-
   int readWord();
 
   int readInt32();
@@ -33,6 +31,8 @@ abstract class BinaryReader {
   ]);
 
   String readAsciiString([int length]);
+
+  Uint8List readByteList([int length]);
 
   List<int> readIntList([int length]);
 

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/src/adapters/date_time_adapter.dart';
-import 'package:hive/src/adapters/uint8_list_adapter.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
@@ -30,11 +29,8 @@ void main() {
     hive.init('OTHERPATH');
     expect(hive.path, 'OTHERPATH');
 
-    expect(hive.findAdapterForType(Uint8List).adapter, isA<Uint8ListAdapter>());
-    expect(hive.findAdapterForTypeId(16).adapter, isA<Uint8ListAdapter>());
-
     expect(hive.findAdapterForType(DateTime).adapter, isA<DateTimeAdapter>());
-    expect(hive.findAdapterForTypeId(17).adapter, isA<DateTimeAdapter>());
+    expect(hive.findAdapterForTypeId(16).adapter, isA<DateTimeAdapter>());
   });
 
   group('box()', () {

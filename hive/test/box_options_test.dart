@@ -5,7 +5,7 @@ void main() {
   test('no options', () {
     var options = BoxOptions();
 
-    expect(options.cacheAll, false);
+    expect(options.cached, true);
   });
 
   test('valid encryption key', () {

@@ -53,14 +53,6 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
-  Uint8List readBytes(int bytes) {
-    _requireBytes(bytes);
-    var byteList = _buffer.sublist(_offset, _offset + bytes);
-    _offset += bytes;
-    return byteList as Uint8List;
-  }
-
-  @override
   int readWord() {
     _requireBytes(2);
     return _buffer[_offset++] | _buffer[_offset++] << 8;
@@ -121,6 +113,17 @@ class BinaryReaderImpl extends BinaryReader {
     var view = viewBytes(length);
     var str = String.fromCharCodes(view);
     return str;
+  }
+
+  @override
+  Uint8List readByteList([int length]) {
+    if (length == null) {
+      length = readWord();
+    }
+    _requireBytes(length);
+    var byteList = _buffer.sublist(_offset, _offset + length);
+    _offset += length;
+    return byteList as Uint8List;
   }
 
   @override
@@ -222,6 +225,8 @@ class BinaryReaderImpl extends BinaryReader {
           return readBool();
         case FrameValueType.string_:
           return readString();
+        case FrameValueType.byte_list_:
+          return readByteList();
         case FrameValueType.int_list_:
           return readIntList();
         case FrameValueType.double_list_:

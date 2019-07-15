@@ -2,7 +2,7 @@
 
 import 'dart:typed_data';
 
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
@@ -14,8 +14,7 @@ import 'common.dart';
 get registry => TypeRegistryImpl();
 
 const testFrames = [
-  Frame.tombstone('Tombstone frame'),
-  Frame('Null frame', null),
+  Frame('Tombstone frame', null),
   Frame('Int', 123123123),
   Frame('Large int', 2 ^ 32),
   Frame('This is true', true),

@@ -2,9 +2,8 @@ import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
-import 'package:hive/src/adapters/uint8_list_adapter.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
 import 'box/box_impl.dart';
@@ -15,8 +14,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   String _homePath;
 
   HiveImpl() {
-    registerInternal(Uint8ListAdapter(), 16);
-    registerInternal(DateTimeAdapter(), 17);
+    registerInternal(DateTimeAdapter(), 16);
   }
 
   @override
@@ -39,14 +37,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<Box> box(
     String name, {
     List<int> encryptionKey,
-    bool cacheAll = true,
+    bool cached = true,
   }) async {
     var existingBox = _boxes[name.toLowerCase()];
     if (existingBox != null) return existingBox;
 
     var options = BoxOptions(
       encryptionKey: encryptionKey,
-      cacheAll: cacheAll,
+      cached: cached,
     );
 
     var box = await openBox(this, name.toLowerCase(), options);
@@ -58,6 +56,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @override
   bool isBoxOpen(String name) {
     return _boxes.containsKey(name.toLowerCase());
+  }
+
+  @override
+  Box getBox(String name) {
+    return _boxes[name];
   }
 
   @override
@@ -84,7 +87,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   List<int> generateSecureKey() {
-    var secureRandom = CryptoHelper.createSecureRandom();
+    var secureRandom = Crypto.createSecureRandom();
     return secureRandom.nextBytes(32);
   }
 }

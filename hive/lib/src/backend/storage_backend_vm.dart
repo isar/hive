@@ -8,7 +8,7 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/util/lock.dart';
@@ -19,9 +19,9 @@ Future<BoxImpl> openBox(
     HiveInterface hive, String name, BoxOptions options) async {
   var file = await findHiveFileAndCleanUp(name, hive.path);
 
-  CryptoHelper crypto;
+  Crypto crypto;
   if (options.encrypted) {
-    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
+    crypto = Crypto(Uint8List.fromList(options.encryptionKey));
   }
 
   var backend = StorageBackendVm(file.path, crypto);
@@ -72,7 +72,7 @@ class StorageBackendVm extends StorageBackend {
   final String path;
   final Lock _readLock = Lock.newLock();
   final Lock _writeLock = Lock.newLock();
-  final CryptoHelper _crypto;
+  final Crypto _crypto;
 
   TypeRegistry _registry;
   RandomAccessFile _readFile;
@@ -205,7 +205,7 @@ class StorageBackendVm extends StorageBackend {
             if (frameBytes.length != entry.length) {
               throw HiveError('Could not compact box: Unexpected EOF.');
             }
-            writer.writeBytes(frameBytes);
+            writer.writeByteList(frameBytes, writeLength: false);
 
             if (writer.writtenBytes > 10000) {
               await compactFile.writeFrom(writer.outputAndClear());
@@ -250,7 +250,8 @@ class StorageBackendVm extends StorageBackend {
   @override
   Future deleteFromDisk() {
     return _readLock.synchronized(() {
-      return _writeLock.synchronized(() {
+      return _writeLock.synchronized(() async {
+        await _closeFiles();
         return File(path).delete();
       });
     });

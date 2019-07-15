@@ -72,12 +72,12 @@ class BoxImpl extends BoxBase {
     }
   }
 
-  void _notifyChange(String key, dynamic value, bool deleted) {
-    _streamController.add(BoxEvent(key, value, deleted));
+  void _notifyChange(String key, dynamic value) {
+    _streamController.add(BoxEvent(key, value));
   }
 
   Future initialize() async {
-    _deletedEntries = await _backend.initialize(_entries, options.cacheAll);
+    _deletedEntries = await _backend.initialize(_entries, options.cached);
   }
 
   @override
@@ -85,9 +85,23 @@ class BoxImpl extends BoxBase {
     checkOpen();
 
     if (!_entries.containsKey(key)) return Future.value(defaultValue);
-    if (options.cacheAll) return Future.value(_entries[key]?.value);
+    if (options.cached) return Future.value(_entries[key]?.value);
 
     return _backend.readValue(key, _entries[key].offset);
+  }
+
+  @override
+  dynamic operator [](String key) {
+    if (!options.cached) {
+      throw HiveError('Only cached boxes can be accessed using [].');
+    }
+
+    return _entries[key]?.value;
+  }
+
+  @override
+  operator []=(String key, dynamic value) {
+    put(key, value);
   }
 
   @override
@@ -100,100 +114,77 @@ class BoxImpl extends BoxBase {
   Future put(String key, dynamic value) async {
     checkOpen();
 
-    var entry = await _backend.writeFrame(Frame(key, value), options.cacheAll);
-
-    if (_entries.containsKey(key)) {
+    var frame = Frame(key, value);
+    if (value != null) {
+      var entry = await _backend.writeFrame(frame, options.cached);
+      if (_entries.containsKey(key)) {
+        _deletedEntries++;
+      }
+      _entries[key] = entry;
+    } else {
+      if (!_entries.containsKey(key)) return;
+      await _backend.writeFrame(frame, options.cached);
       _deletedEntries++;
+      _entries.remove(key);
     }
-
-    _entries[key] = entry;
 
     await performCompactationIfNeeded();
 
-    _notifyChange(key, value, false);
+    _notifyChange(key, value);
+  }
+
+  @override
+  Future delete(String key) {
+    return put(key, null);
   }
 
   @override
   Future putAll(Map<String, dynamic> kvPairs) async {
     checkOpen();
-    if (kvPairs.isEmpty) {
-      return;
-    }
+    if (kvPairs.isEmpty) return;
+
+    var toBeDeletedEntries = 0;
     var frames = List<Frame>();
     kvPairs.forEach((key, val) {
-      frames.add(Frame(key, val));
+      var frame = Frame(key, val);
+      if (val != null) {
+        frames.add(frame);
+        if (_entries.containsKey(key)) {
+          toBeDeletedEntries++;
+        }
+      } else {
+        if (_entries.containsKey(key)) {
+          frames.add(frame);
+          toBeDeletedEntries++;
+        }
+      }
     });
 
-    var newEntries = await _backend.writeFrames(frames, options.cacheAll);
+    var newEntries = await _backend.writeFrames(frames, options.cached);
     for (int i = 0; i < frames.length; i++) {
       var frame = frames[i];
-      if (_entries.containsKey(frame.key)) {
-        _deletedEntries++;
+      if (frame.value != null) {
+        _entries[frame.key] = newEntries[i];
+      } else {
+        _entries.remove(frame.key);
       }
-
-      _entries[frame.key] = newEntries[i];
     }
+
+    _deletedEntries += toBeDeletedEntries;
 
     await performCompactationIfNeeded();
 
     if (_streamController.hasListener) {
       kvPairs.forEach((k, v) {
-        _notifyChange(k, v, false);
+        _notifyChange(k, v);
       });
     }
   }
 
   @override
-  Future<bool> delete(String key) async {
-    checkOpen();
-    if (_entries.containsKey(key)) {
-      await _backend.writeFrame(Frame.tombstone(key), options.cacheAll);
-      _entries.remove(key);
-      _deletedEntries++;
-      await performCompactationIfNeeded();
-
-      _notifyChange(key, null, true);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  @override
-  Future<List<bool>> deleteAll(Iterable<String> keysToDelete) async {
-    checkOpen();
-    var tombstoneFrames = List<Frame>();
-    var result = List<bool>(keysToDelete.length);
-    var i = 0;
-    for (var key in keysToDelete) {
-      if (!_entries.containsKey(key)) {
-        result[i++] = false;
-      } else {
-        tombstoneFrames.add(Frame.tombstone(key));
-        result[i++] = true;
-      }
-    }
-
-    if (tombstoneFrames.isEmpty) {
-      return [];
-    }
-
-    await _backend.writeFrames(tombstoneFrames, options.cacheAll);
-
-    for (var frame in tombstoneFrames) {
-      _entries.remove(frame.key);
-    }
-    _deletedEntries += tombstoneFrames.length;
-
-    await performCompactationIfNeeded();
-
-    if (_streamController.hasListener) {
-      for (var frame in tombstoneFrames) {
-        _notifyChange(frame.key, null, true);
-      }
-    }
-
-    return result;
+  Future deleteAll(Iterable<String> keysToDelete) {
+    var nullValues = List.filled(keysToDelete.length, null);
+    return putAll(Map.fromIterables(keysToDelete, nullValues));
   }
 
   @override
@@ -206,7 +197,7 @@ class BoxImpl extends BoxBase {
   Future<Map<String, dynamic>> toMap() {
     checkOpen();
 
-    if (options.cacheAll) {
+    if (options.cached) {
       var mappedEntries = _entries.map((k, e) => MapEntry(k, e.value));
       return Future.value(mappedEntries);
     }
@@ -225,7 +216,7 @@ class BoxImpl extends BoxBase {
     _deletedEntries = 0;
 
     for (var key in oldEntries.keys) {
-      _notifyChange(key, null, true);
+      _notifyChange(key, null);
     }
 
     return oldEntries.length;

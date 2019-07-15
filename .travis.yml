@@ -19,13 +19,17 @@ script:
   - cd hive_flutter
   - ./flutter/bin/flutter packages pub get
   - ./flutter/bin/flutter test
+
   - cd ../hive_generator
   - pub get
   - pub run test
+
   - cd ../hive
   - pub get
   - pub run test -p "vm,chrome"
+  
   - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
+  
   - pub global activate test_coverage
   - test_coverage
 after_success:
