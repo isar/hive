@@ -1,12 +1,12 @@
-import 'dart:io';
 @TestOn('vm')
+
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/src/backend/storage_backend_vm.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/io/synced_file.dart';
-import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
