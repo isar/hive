@@ -67,6 +67,8 @@ abstract class Box implements TypeRegistry {
   /// Reads all key-value pairs from the box and returns them.
   Future<Map<String, dynamic>> toMap();
 
+  Future<void> transaction(Future Function(Box box) transaction);
+
   /// Compacts the box. Unused space in the box file is being freed. You don't
   /// have to call this manually. Hive will automatically compact the box if it
   /// is needed.

@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:hive/hive.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/storage_backend.dart';
+import 'package:hive/src/box/transaction.dart';
 import 'package:hive/src/frame.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
@@ -204,6 +205,13 @@ class BoxImpl extends TypeRegistryImpl implements Box {
     }
 
     return _backend.readAll(_entries.keys);
+  }
+
+  @override
+  Future<void> transaction(Future Function(Box box) transaction) async {
+    var trxBox = Transaction(this);
+    await transaction(trxBox);
+    await trxBox.commit();
   }
 
   @override
