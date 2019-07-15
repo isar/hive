@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/storage_backend.dart';
 import 'package:hive/src/frame.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-export 'package:hive/src/box/storage_backend_stub.dart'
-    if (dart.library.io) 'package:hive/src/box/storage_backend_vm.dart'
-    if (dart.library.html) 'package:hive/src/box/storage_backend_js.dart';
+export 'package:hive/src/backend/storage_backend_stub.dart'
+    if (dart.library.io) 'package:hive/src/backend/storage_backend_vm.dart'
+    if (dart.library.html) 'package:hive/src/backend/storage_backend_js.dart';
 
 class BoxEntry {
   final dynamic value;

@@ -4,11 +4,11 @@ import 'dart:indexed_db';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/box/storage_backend.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/frame.dart';
 import 'package:meta/meta.dart';

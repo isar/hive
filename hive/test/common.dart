@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/io/synced_file.dart';
 import 'package:hive/src/util/lock.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
@@ -12,8 +11,6 @@ import 'package:test/test.dart';
 class RAFMock extends Mock implements RandomAccessFile {}
 
 class LockMock extends Mock implements Lock {}
-
-class SyncedFileMock extends Mock implements SyncedFile {}
 
 class BinaryReaderMock extends Mock implements BinaryReader {}
 
