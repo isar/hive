@@ -57,7 +57,7 @@ class StorageBackendJs extends StorageBackend {
     if (noEncodingNeeded) {
       return value;
     } else {
-      var bytes = Frame('', value).toBytes(_registry, false, _crypto);
+      var bytes = Frame('', value).toBytes(false, _registry, _crypto);
       return bytes.buffer;
     }
   }
@@ -66,7 +66,7 @@ class StorageBackendJs extends StorageBackend {
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
-      return Frame.fromBytes(null, bytes, false, _registry, _crypto).value;
+      return Frame.bodyFromBytes(bytes, _registry, _crypto).value;
     } else {
       return value;
     }

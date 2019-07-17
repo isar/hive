@@ -1,29 +1,35 @@
-@TestOn('vm')
-
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/src/crypto.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
+import 'generated/frames.g.dart';
+import 'generated/frames_body_only.g.dart';
+import 'generated/frames_encrypted.g.dart';
+import 'generated/frames_encrypted_body_only.g.dart';
 
 get registry => TypeRegistryImpl();
 
-const testFrames = [
+Frame frameWithLength(Frame frame, int length) {
+  return Frame(frame.key, frame.value, length);
+}
+
+final testFrames = [
   Frame('Tombstone frame', null),
   Frame('Int', 123123123),
   Frame('Large int', 2 ^ 32),
-  Frame('This is true', true),
-  Frame('This is not true', false),
-  Frame('Float1', 1232312.9912838261),
-  Frame('Float2', double.nan),
+  Frame('Bool true', true),
+  Frame('Bool false', false),
+  Frame('Float', 12312.991283),
   Frame('Unicode string',
       'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
   Frame('Empty list', []),
+  Frame('Byte list', Uint8List.fromList([1, 12, 123, 1234])),
   Frame('Int list', [123, 456, 129318238]),
   Frame('Bool list', [true, false, false, true]),
   Frame('Double list', [
@@ -61,17 +67,17 @@ const testFrames = [
   }),
 ];
 
-void buildGoldens() async {
-  var name = 0;
-  for (var frame in testFrames) {
-    var file = await getAssetFile('frames', (name++).toString());
-    await file.create(recursive: true);
-    var frameBytes = frame.toBytes(registry, true, null);
-    await file.writeAsBytes(frameBytes);
-  }
+Crypto getDebugCrypto() {
+  var secMock = SecureRandomMock();
+  when(secMock.nextUint8()).thenReturn(1);
+  when(secMock.nextUint16()).thenReturn(2);
+  when(secMock.nextUint32()).thenReturn(3);
+  when(secMock.nextBytes(any)).thenAnswer(
+      (i) => Uint8List.fromList(List.filled(i.positionalArguments[0], 4)));
+  return Crypto.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
 }
 
-void expectFramesEqual(Frame f1, Frame f2) {
+void fEqual(Frame f1, Frame f2) {
   expect(f1.key, f2.key);
   expect(f1.deleted, f2.deleted);
   if (f1.value is double && f2.value is double) {
@@ -81,59 +87,132 @@ void expectFramesEqual(Frame f1, Frame f2) {
 }
 
 void main() {
-  group('toBytes', () {
-    test('key length', () async {
-      var tooLongKey = List.filled(256, 'a').join();
-      var tooLongFrame = Frame(tooLongKey, 5);
-      expect(
-        () => tooLongFrame.toBytes(registry, true, null),
-        throwsA(anything),
-      );
+  //test('t', buildGoldens);
+  group('Frame', () {
+    group('.toBytes()', () {
+      test('validates key length', () async {
+        var tooLongKey = List.filled(256, 'a').join();
+        var tooLongFrame = Frame(tooLongKey, 5);
+        expect(
+          () => tooLongFrame.toBytes(true, registry, null),
+          throwsA(anything),
+        );
 
-      var validKey = List.filled(255, 'a').join();
-      var frame = Frame(validKey, 5);
-      frame.toBytes(registry, true, null);
+        var validKey = List.filled(255, 'a').join();
+        var frame = Frame(validKey, 5);
+        frame.toBytes(true, registry, null);
+      });
+
+      test('frames', () {
+        var i = 0;
+        for (var frame in testFrames) {
+          var bytes = frame.toBytes(true, registry, null);
+          expect(bytes, frameBytes[i]);
+          i++;
+        }
+      });
+
+      test('frames body only', () {
+        var i = 0;
+        for (var frame in testFrames) {
+          var bytes = frame.toBytes(false, registry, null);
+          expect(bytes, frameBytesBodyOnly[i]);
+          i++;
+        }
+      });
+
+      test('encrypted frames', () async {
+        var i = 0;
+        for (var frame in testFrames) {
+          var bytes = await frame.toBytes(true, registry, getDebugCrypto());
+          expect(bytes, frameBytesEncrypted[i]);
+          i++;
+        }
+      });
+
+      test('encrypted frames body only', () {
+        var i = 0;
+        for (var frame in testFrames) {
+          var bytes = frame.toBytes(false, registry, getDebugCrypto());
+          expect(bytes, frameBytesEncryptedBodyOnly[i]);
+          i++;
+        }
+      });
     });
 
-    test('golden frames', () async {
-      var name = 0;
-      for (var frame in testFrames) {
-        var file = await getTempAssetFile('frames', '${name++}');
-        var bytes = await frame.toBytes(registry, true, null);
-        expect(bytes, await file.readAsBytes());
-      }
+    group('.fromBytes()', () {
+      test('frames', () {
+        var i = 0;
+        for (var testFrame in testFrames) {
+          var frame = Frame.fromBytes(frameBytes[i], registry, null);
+          fEqual(frame, frameWithLength(testFrame, frameBytes[i].length));
+          i++;
+        }
+      });
+
+      test('encrypted frames', () {
+        var i = 0;
+        for (var testFrame in testFrames) {
+          var bytes = frameBytesEncrypted[i];
+          var frame = Frame.fromBytes(bytes, registry, getDebugCrypto());
+          fEqual(frame, frameWithLength(testFrame, bytes.length));
+          i++;
+        }
+      });
+    });
+
+    group('.bodyFromBytes()', () {
+      test('frames', () {
+        var i = 0;
+        for (var testFrame in testFrames) {
+          var bytes = frameBytesBodyOnly[i];
+          var frame = Frame.bodyFromBytes(bytes, registry, null);
+          fEqual(frame, Frame(null, testFrame.value, bytes.length));
+          i++;
+        }
+      });
+
+      test('encrypted frames', () {
+        var i = 0;
+        for (var testFrame in testFrames) {
+          var bytes = frameBytesEncryptedBodyOnly[i];
+          var frame = Frame.bodyFromBytes(bytes, registry, getDebugCrypto());
+          fEqual(frame, Frame(null, testFrame.value, bytes.length));
+          i++;
+        }
+      });
     });
   });
+}
 
-  /*group('fromReader', () {
-    test('golden frames', () async {
-      var name = 0;
-      for (var goldenFrame in testFrames) {
-        var file = await getTempAssetFile('frames', '${name++}');
-        var reader = await BufferedFileReader.fromFile(file.path);
-        var frame = await Frame.fromBytes(reader.read, registry, true, null);
-        expect(frame.length, await file.length());
-        expectFramesEqual(frame, goldenFrame);
-      }
-    });
-
-    test('eof', () async {
-      var emptyFile = await getTempFile();
-      var reader = await BufferedFileReader.fromFile(emptyFile.path);
-      var frame = await Frame.fromBytes(reader.read, registry, true, null);
-      expect(frame, null);
-    });
-  });
-
-  test('encryption / decryption', () async {
-    var key = HiveImpl().generateSecureKey();
-    var crypto = CryptoHelper(Uint8List.fromList(key));
+void buildGoldens() async {
+  void generate(String fileName, String varName,
+      Uint8List Function(Frame frame) transformer) async {
+    var file = File('test/generated/$fileName.g.dart');
+    await file.create();
+    var code = StringBuffer();
+    code.writeln("import 'dart:typed_data';\n");
+    code.writeln('final $varName = [');
     for (var frame in testFrames) {
-      var bytes = frame.toBytes(registry, true, crypto.encryptor);
-      var decryptedFrame = await Frame.fromBytes(
-          ByteListReader(bytes).read, registry, true, crypto.decryptor);
-
-      expectFramesEqual(frame, decryptedFrame);
+      code.writeln('// ' + frame.key);
+      var bytes = transformer(frame);
+      code.writeln('Uint8List.fromList(' + bytes.toString() + '),');
     }
-  });*/
+    code.writeln('];');
+    file.writeAsStringSync(code.toString(), flush: true);
+  }
+
+  await generate('frames', 'frameBytes', (f) {
+    return f.toBytes(true, registry, null);
+  });
+  await generate('frames_body_only', 'frameBytesBodyOnly', (f) {
+    return f.toBytes(false, registry, null);
+  });
+  await generate('frames_encrypted', 'frameBytesEncrypted', (f) {
+    return f.toBytes(true, registry, getDebugCrypto());
+  });
+  await generate('frames_encrypted_body_only', 'frameBytesEncryptedBodyOnly',
+      (f) {
+    return f.toBytes(false, registry, getDebugCrypto());
+  });
 }

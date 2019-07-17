@@ -17,3 +17,4 @@ dev_dependencies:
   test: ^1.6.4
   build_test: ^0.10.8
   build_runner: ^1.1.6
+  pedantic: '1.7.0'

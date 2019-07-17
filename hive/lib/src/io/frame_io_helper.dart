@@ -18,7 +18,7 @@ Future<List<Frame>> readFrameKeysFromFile(String path, Crypto crypto) async {
       var frameBytes = await bufferedFile.read(frameLength - 4);
       Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
       var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);
-      var frame = Frame.decodeBody(frameReader, true, false, null);
+      var frame = Frame.decodeBody(frameReader, true, false, frameLength, null);
       frames.add(frame);
     }
   } finally {
@@ -41,7 +41,7 @@ Future<List<Frame>> readFramesFromFile(
     var frameBytes = reader.viewBytes(frameLength - 4);
     Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
     var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-    var frame = Frame.decodeBody(frameReader, true, true, crypto);
+    var frame = Frame.decodeBody(frameReader, true, true, frameLength, crypto);
     frames.add(frame);
   }
 

@@ -12,7 +12,6 @@ import 'package:hive/src/crypto.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/io/synced_file.dart';
-import 'package:hive/src/util/lock.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
@@ -111,10 +110,7 @@ class StorageBackendVm extends StorageBackend {
   @override
   Future<dynamic> readValue(String key, int offset, int length) async {
     var bytes = await _file.readAt(offset, length);
-    var lengthBytes = Uint8List.view(bytes.buffer, 0, 4);
-    var frameBytes = Uint8List.view(bytes.buffer, 4);
-    var frame =
-        Frame.fromBytes(lengthBytes, frameBytes, true, _registry, _crypto);
+    var frame = Frame.fromBytes(bytes, _registry, _crypto);
     return frame.value;
   }
 
@@ -133,7 +129,7 @@ class StorageBackendVm extends StorageBackend {
 
   @visibleForTesting
   Future<BoxEntry> writeFrame(Frame frame, bool cache) async {
-    var bytes = frame.toBytes(_registry, true, _crypto);
+    var bytes = frame.toBytes(true, _registry, _crypto);
 
     var offset = await _file.write(bytes);
 
@@ -146,7 +142,7 @@ class StorageBackendVm extends StorageBackend {
     var bytes = BytesBuilder(copy: false);
     var frameLengths = List<int>(frames.length);
     for (int i = 0; i < frames.length; i++) {
-      var frameBytes = frames[i].toBytes(_registry, true, _crypto);
+      var frameBytes = frames[i].toBytes(true, _registry, _crypto);
       bytes.add(frameBytes);
       frameLengths[i] = frameBytes.length;
     }

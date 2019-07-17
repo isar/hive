@@ -14,21 +14,21 @@ void main() {
       var readFile = RAFMock();
       var readLock = LockMock();
 
-      when(readFile.read(5))
-          .thenAnswer((_) async => Uint8List.fromList([1, 2, 3, 4, 5]));
+      when(readFile.read(5)).thenAnswer((_) async {
+        return Uint8List.fromList([1, 2, 3, 4, 5]);
+      });
 
-      when(readLock.synchronized(any)).thenAnswer((inv) async {
+      when(readLock.synchronized(any)).thenAnswer((inv) {
         verifyZeroInteractions(readFile);
-        var result = await inv.positionalArguments[0]();
-        return result as List<int>;
+        return inv.positionalArguments[0]();
       });
 
       var syncedFile = SyncedFile.internal("p", readFile, null, readLock, null);
-      var result = await syncedFile.readAt(5, 20);
+      var result = await syncedFile.readAt(20, 5);
       verifyInOrder([
         readLock.synchronized(any),
-        readFile.setPosition(5),
-        readFile.read(20),
+        readFile.setPosition(20),
+        readFile.read(5),
       ]);
       expect(result, [1, 2, 3, 4, 5]);
     });

@@ -16,6 +16,10 @@ class Crypto {
         cipher = PaddedBlockCipher('AES/CBC/PKCS7'),
         random = createSecureRandom();
 
+  Crypto.debug(this.keyBytes, this.random)
+      : keyCrc = Crc32.compute(Digest('SHA-256').process(keyBytes)),
+        cipher = PaddedBlockCipher('AES/CBC/PKCS7');
+
   static SecureRandom createSecureRandom() {
     var secureRandom = FortunaRandom();
     var random = Random.secure();

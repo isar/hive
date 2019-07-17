@@ -54,7 +54,7 @@ void main() {
         var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
         var bytes = Uint8List.view(backend.encodeValue(1));
-        var frame = Frame.fromBytes(null, bytes, false, null, crypto);
+        var frame = Frame.bodyFromBytes(bytes, null, crypto);
         expect(frame.value, 1);
       });
 
@@ -65,7 +65,7 @@ void main() {
           'otherKey': null
         };
         var bytes = Uint8List.view(backend.encodeValue(map));
-        var frame = Frame.fromBytes(null, bytes, false, null, null);
+        var frame = Frame.fromBytes(bytes, null, null);
         expect(frame.value, map);
       });
     });
@@ -84,7 +84,7 @@ void main() {
       test('primitive crypto', () {
         var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
-        var bytes = Frame('', 1).toBytes(null, false, crypto);
+        var bytes = Frame('', 1).toBytes(false, null, crypto);
         var value = backend.decodeValue(bytes.buffer);
         expect(value, 1);
       });

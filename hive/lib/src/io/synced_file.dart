@@ -34,7 +34,7 @@ class SyncedFile {
   Future<Uint8List> readAt(int position, int bytes) {
     return readLock.synchronized(() async {
       await _readFile.setPosition(position);
-      await _readFile.read(bytes);
+      return await _readFile.read(bytes);
     });
   }
 

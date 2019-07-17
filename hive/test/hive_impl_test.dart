@@ -83,7 +83,7 @@ void main() {
       expect(key1, isNot(key2));
     });
 
-    test('.deleteFromDisk()', () async {
+    /*test('.deleteFromDisk()', () async {
       var dir = await getTempDir();
       var hive = HiveImpl();
       hive.init(dir.path);
@@ -101,6 +101,6 @@ void main() {
       expect(await box2File.exists(), false);
       expect(hive.isBoxOpen('testBox1'), false);
       expect(hive.isBoxOpen('testBox2'), false);
-    });
+    });*/
   });
 }

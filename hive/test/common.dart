@@ -8,6 +8,7 @@ import 'package:hive/src/io/synced_file.dart';
 import 'package:hive/src/util/lock.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
+import 'package:pointycastle/pointycastle.dart';
 import 'package:test/test.dart';
 
 class RAFMock extends Mock implements RandomAccessFile {}
@@ -21,6 +22,8 @@ class BinaryWriterMock extends Mock implements BinaryWriter {}
 class BackendMock extends Mock implements StorageBackend {}
 
 class SyncedFileMock extends Mock implements SyncedFile {}
+
+class SecureRandomMock extends Mock implements SecureRandom {}
 
 Matcher throwsHiveError([String contains]) {
   return throwsA(

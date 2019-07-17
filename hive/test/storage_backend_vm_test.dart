@@ -25,7 +25,7 @@ const testMap = {
 Uint8List getFrameBytes(List<Frame> frames) {
   var bytes = BytesBuilder();
   for (var frame in frames) {
-    bytes.add(frame.toBytes(null, true, null));
+    bytes.add(frame.toBytes(true, null, null));
   }
   return bytes.toBytes();
 }
@@ -90,7 +90,7 @@ void main() {
       var backend = StorageBackendVm(mockFile, null);
 
       var frame = Frame("key", "value");
-      var bytes = frame.toBytes(null, true, null);
+      var bytes = frame.toBytes(true, null, null);
 
       var entry = await backend.writeFrame(frame, true);
       verify(mockFile.write(bytes));
@@ -109,8 +109,8 @@ void main() {
 
       var frame1 = Frame("key", "value");
       var frame2 = Frame("key", null);
-      var bytes1 = frame1.toBytes(null, true, null);
-      var bytes2 = frame2.toBytes(null, true, null);
+      var bytes1 = frame1.toBytes(true, null, null);
+      var bytes2 = frame2.toBytes(true, null, null);
       var bytes = [...bytes1, ...bytes2];
 
       var entries = await backend.writeFrames([frame1, frame2], true);
