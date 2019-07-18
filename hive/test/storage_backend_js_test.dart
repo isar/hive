@@ -151,15 +151,15 @@ void main() {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entry = await backend.writeFrame(Frame('key1', 123), true);
+      var entry = await backend.writeFrame(const Frame('key1', 123), true);
       expect(entry, const BoxEntry(123, null, null));
       expect(await backend.getKeys(), ['key1']);
 
-      entry = await backend.writeFrame(Frame('key2', 456), false);
+      entry = await backend.writeFrame(const Frame('key2', 456), false);
       expect(entry, const BoxEntry(null, null, null));
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      entry = await backend.writeFrame(Frame('key1', null), true);
+      entry = await backend.writeFrame(const Frame('key1', null), true);
       expect(entry, null);
       expect(await backend.getKeys(), ['key2']);
     });
@@ -191,8 +191,8 @@ void main() {
       var backend = StorageBackendJs(db, null);
 
       var entries = {
-        'key1': BoxEntry(null, null, null),
-        'key2': BoxEntry(null, null, null)
+        'key1': const BoxEntry(null, null, null),
+        'key2': const BoxEntry(null, null, null)
       };
       expect(await backend.compact(entries), entries);
     });

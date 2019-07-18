@@ -18,7 +18,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
 
     var typeFields = Map<int, FieldElement>();
     for (var field in cls.fields) {
-      var index = getHiveFieldAnn(field)?.index as int;
+      var index = getHiveFieldAnn(field)?.index;
       if (index != null) {
         assert(
             typeFields.containsKey(index), 'Duplicate field index ${index}.');
