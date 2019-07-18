@@ -4,7 +4,7 @@ class BinaryWriterBuffer {
   static const _chunkLength = 512;
 
   /// Current chunk used to write data into. Once it is full it is
-  /// pushed into [_outputChunks] and a new one is allocated.
+  /// pushed into outputChunks and a new one is allocated.
   Uint8List _outputChunk;
 
   /// Number of bytes written into the [_outputChunk].
@@ -14,7 +14,7 @@ class BinaryWriterBuffer {
   /// more efficiently.
   ByteData _outputChunkData;
 
-  final List<dynamic> _committedChunks = [];
+  final List<dynamic> _committedChunks = <dynamic>[];
 
   /// Total amount of bytes used in all chunks.
   int _committedBytes = 0;
@@ -44,7 +44,7 @@ class BinaryWriterBuffer {
     _committedBytes += chunk.length;
   }
 
-  /// Move the current [_outputChunk] into [_outputChunks].
+  /// Move the current [_outputChunk] into _outputChunks.
   void _commitChunk(bool allocateNew, [int minChunkSize]) {
     if (_bytesInChunk != 0) {
       _committedChunks.add(_outputChunk);
@@ -69,11 +69,11 @@ class BinaryWriterBuffer {
   void writeTo(Uint8List buffer, [int offset = 0]) {
     _commitChunk(false);
 
-    int outPos = offset; // Output position in the buffer.
-    int chunkPos = 0;
+    var outPos = offset; // Output position in the buffer.
+    var chunkPos = 0;
 
-    for (int i = 0; i < _committedChunks.length; i++) {
-      final chunk = _committedChunks[i];
+    for (var i = 0; i < _committedChunks.length; i++) {
+      final chunk = _committedChunks[i] as List<int>;
       final bytesInChunk = _committedChunks[++i] as int;
       while (chunkPos < bytesInChunk) {
         // ignore: invalid_assignment

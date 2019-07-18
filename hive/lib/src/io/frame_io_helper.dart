@@ -9,7 +9,7 @@ import 'package:hive/src/io/buffered_file_reader.dart';
 
 Future<List<Frame>> readFrameKeysFromFile(String path, Crypto crypto) async {
   var bufferedFile = await BufferedFileReader.fromFile(path);
-  var frames = List<Frame>();
+  var frames = <Frame>[];
   try {
     while (true) {
       var lengthBytes = (await bufferedFile.read(4)).toList();
@@ -33,7 +33,7 @@ Future<List<Frame>> readFramesFromFile(
     String path, TypeRegistry registry, Crypto crypto) async {
   var bytes = await File(path).readAsBytes() as Uint8List;
   var reader = BinaryReaderImpl(bytes, registry);
-  var frames = List<Frame>();
+  var frames = <Frame>[];
   while (true) {
     if (reader.availableBytes == 0) break;
 

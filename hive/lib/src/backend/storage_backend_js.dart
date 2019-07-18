@@ -42,6 +42,7 @@ class StorageBackendJs extends StorageBackend {
 
   StorageBackendJs(this._db, this._crypto);
 
+  @override
   String get path => null;
 
   @visibleForTesting
@@ -114,7 +115,7 @@ class StorageBackendJs extends StorageBackend {
       }
     } else {
       for (var i = 0; i < keys.length; i++) {
-        entries[keys[i]] = BoxEntry(null, null, null);
+        entries[keys[i]] = const BoxEntry(null, null, null);
       }
     }
 
@@ -123,7 +124,7 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<dynamic> readValue(String key, int offset, int length) async {
-    dynamic value = await getStore(false).getObject(key);
+    var value = await getStore(false).getObject(key);
     return decodeValue(value);
   }
 
@@ -133,18 +134,18 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<BoxEntry> writeFrame(Frame frame, bool cache) async {
+  Future<BoxEntry> writeFrame(Frame frame, bool cached) async {
     if (frame.deleted) {
       await getStore(true).delete(frame.key);
       return null;
     } else {
       await getStore(true).put(encodeValue(frame.value), frame.key);
-      return BoxEntry(cache ? frame.value : null, null, null);
+      return BoxEntry(cached ? frame.value : null, null, null);
     }
   }
 
   @override
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cache) async {
+  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cached) async {
     var store = getStore(true);
     var entries = List<BoxEntry>(frames.length);
     var i = 0;
@@ -154,7 +155,7 @@ class StorageBackendJs extends StorageBackend {
         entries[i++] = null;
       } else {
         await store.put(encodeValue(frame.value), frame.key);
-        entries[i++] = BoxEntry(cache ? frame.value : null, null, null);
+        entries[i++] = BoxEntry(cached ? frame.value : null, null, null);
       }
     }
     return entries;

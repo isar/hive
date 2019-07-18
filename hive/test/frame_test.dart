@@ -21,26 +21,26 @@ Frame frameWithLength(Frame frame, int length) {
 }
 
 final testFrames = [
-  Frame('Tombstone frame', null),
-  Frame('Int', 123123123),
-  Frame('Large int', 2 ^ 32),
-  Frame('Bool true', true),
-  Frame('Bool false', false),
-  Frame('Float', 12312.991283),
-  Frame('Unicode string',
+  const Frame('Tombstone frame', null),
+  const Frame('Int', 123123123),
+  const Frame('Large int', 2 ^ 32),
+  const Frame('Bool true', true),
+  const Frame('Bool false', false),
+  const Frame('Float', 12312.991283),
+  const Frame('Unicode string',
       'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
-  Frame('Empty list', []),
+  const Frame('Empty list', []),
   Frame('Byte list', Uint8List.fromList([1, 12, 123, 1234])),
-  Frame('Int list', [123, 456, 129318238]),
-  Frame('Bool list', [true, false, false, true]),
-  Frame('Double list', [
+  const Frame('Int list', [123, 456, 129318238]),
+  const Frame('Bool list', [true, false, false, true]),
+  const Frame('Double list', [
     10.1723812,
     double.infinity,
     double.maxFinite,
     double.minPositive,
     double.negativeInfinity
   ]),
-  Frame('String list', [
+  const Frame('String list', [
     'hello',
     '🧙‍♂️ 👨‍👨‍👧‍👦 ',
     ' ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ',
@@ -48,8 +48,8 @@ final testFrames = [
     ' צּ קּ רּ שּ ',
     'ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ '
   ]),
-  Frame('List with null', ['This', 'is', 'a', 'test', null]),
-  Frame('List with different types', [
+  const Frame('List with null', ['This', 'is', 'a', 'test', null]),
+  const Frame('List with different types', [
     'List',
     [1, 2, 3],
     5.8,
@@ -57,7 +57,7 @@ final testFrames = [
     12341234,
     {'t': true, 'f': false},
   ]),
-  Frame('Map', {
+  const Frame('Map', {
     'Bool': true,
     'Int': 1234,
     'Double': 15.7,
@@ -122,10 +122,10 @@ void main() {
         }
       });
 
-      test('encrypted frames', () async {
+      test('encrypted frames', () {
         var i = 0;
         for (var frame in testFrames) {
-          var bytes = await frame.toBytes(true, registry, getDebugCrypto());
+          var bytes = frame.toBytes(true, registry, getDebugCrypto());
           expect(bytes, frameBytesEncrypted[i]);
           i++;
         }
@@ -187,7 +187,7 @@ void main() {
 }
 
 void buildGoldens() async {
-  void generate(String fileName, String varName,
+  Future generate(String fileName, String varName,
       Uint8List Function(Frame frame) transformer) async {
     var file = File('test/generated/$fileName.g.dart');
     await file.create();
@@ -195,9 +195,9 @@ void buildGoldens() async {
     code.writeln("import 'dart:typed_data';\n");
     code.writeln('final $varName = [');
     for (var frame in testFrames) {
-      code.writeln('// ' + frame.key);
+      code.writeln('// ${frame.key}');
       var bytes = transformer(frame);
-      code.writeln('Uint8List.fromList(' + bytes.toString() + '),');
+      code.writeln('Uint8List.fromList(${bytes.toString()}),');
     }
     code.writeln('];');
     file.writeAsStringSync(code.toString(), flush: true);

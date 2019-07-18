@@ -24,7 +24,7 @@ class Crypto {
     var secureRandom = FortunaRandom();
     var random = Random.secure();
     var seed = Uint8List(32);
-    for (int i = 0; i < 32; i++) {
+    for (var i = 0; i < 32; i++) {
       seed[i] = random.nextInt(255);
     }
     secureRandom.seed(KeyParameter(seed));

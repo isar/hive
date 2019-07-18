@@ -98,18 +98,14 @@ class BinaryReaderImpl extends BinaryReader {
   String readString(
       [int byteCount,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    if (byteCount == null) {
-      byteCount = readWord();
-    }
+    byteCount ??= readWord();
     var view = viewBytes(byteCount);
     return decoder.convert(view);
   }
 
   @override
   String readAsciiString([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
+    length ??= readWord();
     var view = viewBytes(length);
     var str = String.fromCharCodes(view);
     return str;
@@ -117,9 +113,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Uint8List readByteList([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
+    length ??= readWord();
     _requireBytes(length);
     var byteList = _buffer.sublist(_offset, _offset + length);
     _offset += length;
@@ -128,9 +122,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<int> readIntList([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
+    length ??= readWord();
     _requireBytes(length * 8);
     var list = List<int>(length);
     for (var i = 0; i < length; i++) {
@@ -142,9 +134,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<double> readDoubleList([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
+    length ??= readWord();
     _requireBytes(length * 8);
     var list = List<double>(length);
     for (var i = 0; i < length; i++) {
@@ -156,9 +146,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<bool> readBoolList([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
+    length ??= readWord();
     _requireBytes(length);
     var list = List<bool>(length);
     for (var i = 0; i < length; i++) {
@@ -171,9 +159,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<String> readStringList(
       [int length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    if (length == null) {
-      length = readWord();
-    }
+    length ??= readWord();
     var list = List<String>(length);
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
@@ -183,10 +169,8 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List readList([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
-    var list = List(length);
+    length ??= readWord();
+    var list = List<dynamic>(length);
     for (var i = 0; i < length; i++) {
       list[i] = read();
     }
@@ -195,13 +179,11 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Map readMap([int length]) {
-    if (length == null) {
-      length = readWord();
-    }
-    Map map = Map<dynamic, dynamic>();
+    length ??= readWord();
+    var map = <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
-      dynamic key = read();
-      dynamic value = read();
+      var key = read();
+      var value = read();
       map[key] = value;
     }
     return map;
@@ -209,35 +191,33 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   dynamic read([int typeId]) {
-    if (typeId == null) {
-      typeId = readByte();
-    }
+    typeId ??= readByte();
     if (typeId < FrameValueType.values.length) {
       var typeEnum = FrameValueType.values[typeId];
       switch (typeEnum) {
-        case FrameValueType.null_:
+        case FrameValueType.nullT:
           return null;
-        case FrameValueType.int_:
+        case FrameValueType.intT:
           return readInt();
-        case FrameValueType.double_:
+        case FrameValueType.doubleT:
           return readDouble();
-        case FrameValueType.bool_:
+        case FrameValueType.boolT:
           return readBool();
-        case FrameValueType.string_:
+        case FrameValueType.stringT:
           return readString();
-        case FrameValueType.byte_list_:
+        case FrameValueType.byteListT:
           return readByteList();
-        case FrameValueType.int_list_:
+        case FrameValueType.intListT:
           return readIntList();
-        case FrameValueType.double_list_:
+        case FrameValueType.doubleListT:
           return readDoubleList();
-        case FrameValueType.bool_list_:
+        case FrameValueType.boolListT:
           return readBoolList();
-        case FrameValueType.string_list_:
+        case FrameValueType.stringListT:
           return readStringList();
-        case FrameValueType.list_:
+        case FrameValueType.listT:
           return readList();
-        case FrameValueType.map_:
+        case FrameValueType.mapT:
           return readMap();
       }
     } else {

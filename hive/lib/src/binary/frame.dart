@@ -146,19 +146,18 @@ class Frame {
     var writer = BinaryWriterImpl(registry);
 
     if (writeKeyAndLength) {
-      writer.writeByteList([0, 0, 0, 0],
-          writeLength: false); // Placeholder for length
-
-      writer.writeByte(key.length); // Write key length
-      writer.writeAsciiString(key, writeLength: false); // Write key
+      writer
+        ..writeByteList([0, 0, 0, 0],
+            writeLength: false) // Placeholder for length
+        ..writeByte(key.length) // Write key length
+        ..writeAsciiString(key, writeLength: false); // Write key
     }
 
     if (!deleted) {
       if (crypto == null) {
         writer.write(value); // Write value
       } else {
-        var valueWriter = BinaryWriterImpl(writer.typeRegistry);
-        valueWriter.write(value);
+        var valueWriter = BinaryWriterImpl(writer.typeRegistry)..write(value);
         var encryptedValue = crypto.encrypt(valueWriter.output());
         writer.writeByteList(encryptedValue, writeLength: false);
       }
@@ -183,9 +182,9 @@ class Frame {
   }
 
   @override
-  bool operator ==(dynamic f) {
-    if (f is Frame) {
-      return f.key == key && f.value == value && f.length == length;
+  bool operator ==(dynamic other) {
+    if (other is Frame) {
+      return other.key == key && other.value == value && other.length == length;
     }
     return false;
   }
@@ -194,18 +193,18 @@ class Frame {
 typedef ByteSource = Future<List<int>> Function(int bytes);
 
 enum FrameValueType {
-  null_,
-  int_,
-  double_,
-  bool_,
-  string_,
-  byte_list_,
-  int_list_,
-  double_list_,
-  bool_list_,
-  string_list_,
-  list_,
-  map_,
+  nullT,
+  intT,
+  doubleT,
+  boolT,
+  stringT,
+  byteListT,
+  intListT,
+  doubleListT,
+  boolListT,
+  stringListT,
+  listT,
+  mapT,
 }
 
 int bytesToUint32(List<int> bytes, [int offset = 0]) {

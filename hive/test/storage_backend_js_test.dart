@@ -84,7 +84,7 @@ void main() {
       test('primitive crypto', () {
         var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
-        var bytes = Frame('', 1).toBytes(false, null, crypto);
+        var bytes = const Frame('', 1).toBytes(false, null, crypto);
         var value = backend.decodeValue(bytes.buffer);
         expect(value, 1);
       });
@@ -109,12 +109,12 @@ void main() {
         var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
-        var entries = Map<String, BoxEntry>();
+        var entries = <String, BoxEntry>{};
         expect(await backend.initialize(entries, true), 0);
         expect(entries, {
-          'key1': BoxEntry(1, null, null),
-          'key2': BoxEntry(2, null, null),
-          'key3': BoxEntry(3, null, null)
+          'key1': const BoxEntry(1, null, null),
+          'key2': const BoxEntry(2, null, null),
+          'key3': const BoxEntry(3, null, null)
         });
       });
 
@@ -122,12 +122,12 @@ void main() {
         var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
-        var entries = Map<String, BoxEntry>();
+        var entries = <String, BoxEntry>{};
         expect(await backend.initialize(entries, false), 0);
         expect(entries, {
-          'key1': BoxEntry(null, null, null),
-          'key2': BoxEntry(null, null, null),
-          'key3': BoxEntry(null, null, null)
+          'key1': const BoxEntry(null, null, null),
+          'key2': const BoxEntry(null, null, null),
+          'key3': const BoxEntry(null, null, null)
         });
       });
     });
@@ -152,11 +152,11 @@ void main() {
       var backend = StorageBackendJs(db, null);
 
       var entry = await backend.writeFrame(Frame('key1', 123), true);
-      expect(entry, BoxEntry(123, null, null));
+      expect(entry, const BoxEntry(123, null, null));
       expect(await backend.getKeys(), ['key1']);
 
       entry = await backend.writeFrame(Frame('key2', 456), false);
-      expect(entry, BoxEntry(null, null, null));
+      expect(entry, const BoxEntry(null, null, null));
       expect(await backend.getKeys(), ['key1', 'key2']);
 
       entry = await backend.writeFrame(Frame('key1', null), true);
@@ -168,14 +168,21 @@ void main() {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entries = await backend
-          .writeFrames([Frame('key1', 123), Frame('key2', 456)], true);
-      expect(entries, [BoxEntry(123, null, null), BoxEntry(456, null, null)]);
+      var entries = await backend.writeFrames([
+        const Frame('key1', 123),
+        const Frame('key2', 456),
+      ], true);
+      expect(entries, [
+        const BoxEntry(123, null, null),
+        const BoxEntry(456, null, null),
+      ]);
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      entries = await backend
-          .writeFrames([Frame('key1', null), Frame('key3', 789)], false);
-      expect(entries, [null, BoxEntry(null, null, null)]);
+      entries = await backend.writeFrames([
+        const Frame('key1', null),
+        const Frame('key3', 789),
+      ], false);
+      expect(entries, [null, const BoxEntry(null, null, null)]);
       expect(await backend.getKeys(), ['key2', 'key3']);
     });
 

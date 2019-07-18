@@ -31,7 +31,7 @@ Uint8List getFrameBytes(List<Frame> frames) {
 
 void main() {
   group('findHiveFileAndCleanUp', () {
-    void checkFindHiveFileAndCleanUp(String folder) async {
+    Future checkFindHiveFileAndCleanUp(String folder) async {
       var hiveFileDir =
           await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
       var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir.path);
@@ -62,7 +62,7 @@ void main() {
 
     test('.readValue()', () async {
       var file = SyncedFileMock();
-      var frameBytes = getFrameBytes([Frame('test', 123)]);
+      var frameBytes = getFrameBytes([const Frame('test', 123)]);
       when(file.readAt(5, frameBytes.length))
           .thenAnswer((i) async => frameBytes);
 
@@ -75,8 +75,11 @@ void main() {
       var file = SyncedFile((await getTempFile()).path);
       await file.open();
 
-      var frameBytes =
-          getFrameBytes([Frame('key1', 1), Frame('key2', 2), Frame('key3', 3)]);
+      var frameBytes = getFrameBytes([
+        const Frame('key1', 1),
+        const Frame('key2', 2),
+        const Frame('key3', 3)
+      ]);
       await file.write(frameBytes);
 
       var backend = StorageBackendVm(file, null);
@@ -90,7 +93,7 @@ void main() {
 
       var backend = StorageBackendVm(mockFile, null);
 
-      var frame = Frame('key', 'value');
+      var frame = const Frame('key', 'value');
       var bytes = frame.toBytes(true, null, null);
 
       var entry = await backend.writeFrame(frame, true);
@@ -108,8 +111,8 @@ void main() {
 
       var backend = StorageBackendVm(mockFile, null);
 
-      var frame1 = Frame('key', 'value');
-      var frame2 = Frame('key', null);
+      var frame1 = const Frame('key', 'value');
+      var frame2 = const Frame('key', null);
       var bytes1 = frame1.toBytes(true, null, null);
       var bytes2 = frame2.toBytes(true, null, null);
       var bytes = [...bytes1, ...bytes2];
@@ -133,7 +136,7 @@ void main() {
       test('check compactation', () async {
         var bytes = BytesBuilder();
         var comparisonBytes = BytesBuilder();
-        var entries = Map<String, BoxEntry>();
+        var entries = <String, BoxEntry>{};
 
         void addFrame(String key, dynamic val, [bool keep = false]) {
           var frameBytes = Frame(key, val).toBytes(true, null, null);
@@ -146,7 +149,7 @@ void main() {
           bytes.add(frameBytes);
         }
 
-        for (int i = 0; i < 1000; i++) {
+        for (var i = 0; i < 1000; i++) {
           for (var key in testMap.keys) {
             addFrame(key, testMap[key]);
             addFrame(key, null);

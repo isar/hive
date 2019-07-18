@@ -6,7 +6,7 @@ import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 abstract class BoxBase extends TypeRegistryImpl implements Box {
-  List<Future> _runningTransactions = List();
+  final _runningTransactions = <Future<void>>[];
 
   BoxBase(TypeRegistry parent) : super(parent);
 
@@ -23,7 +23,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   }
 
   @protected
-  Future waitForRunningTransactions() {
+  Future<void> waitForRunningTransactions() {
     return Future.wait(_runningTransactions);
   }
 }

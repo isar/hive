@@ -20,9 +20,12 @@ class BoxEntry {
 
   const BoxEntry(this.value, this.offset, this.length);
 
-  bool operator ==(dynamic b) {
-    if (b is BoxEntry) {
-      return b.value == value && b.offset == offset && b.length == length;
+  @override
+  bool operator ==(dynamic other) {
+    if (other is BoxEntry) {
+      return other.value == value &&
+          other.offset == offset &&
+          other.length == length;
     }
     return false;
   }
@@ -33,6 +36,7 @@ class BoxImpl extends BoxBase {
   static const deletedThreshold = 40;
 
   final HiveImpl hive;
+  @override
   final String name;
   final BoxOptions options;
   final StorageBackend _backend;
@@ -145,7 +149,7 @@ class BoxImpl extends BoxBase {
     if (kvPairs.isEmpty) return;
 
     var toBeDeletedEntries = 0;
-    var frames = List<Frame>();
+    var frames = <Frame>[];
     kvPairs.forEach((key, dynamic val) {
       var frame = Frame(key, val);
       if (val != null) {
@@ -162,7 +166,7 @@ class BoxImpl extends BoxBase {
     });
 
     var newEntries = await _backend.writeFrames(frames, options.cached);
-    for (int i = 0; i < frames.length; i++) {
+    for (var i = 0; i < frames.length; i++) {
       var frame = frames[i];
       if (frame.value != null) {
         _entries[frame.key] = newEntries[i];
@@ -176,16 +180,14 @@ class BoxImpl extends BoxBase {
     await performCompactationIfNeeded();
 
     if (_streamController.hasListener) {
-      kvPairs.forEach((k, v) {
-        _notifyChange(k, v);
-      });
+      kvPairs.forEach(_notifyChange);
     }
   }
 
   @override
   Future deleteAll(Iterable<String> keysToDelete) {
     var nullValues = List.filled(keysToDelete.length, null);
-    return putAll(Map.fromIterables(keysToDelete, nullValues));
+    return putAll(Map<String, void>.fromIterables(keysToDelete, nullValues));
   }
 
   @override
@@ -199,7 +201,8 @@ class BoxImpl extends BoxBase {
     checkOpen();
 
     if (options.cached) {
-      var mappedEntries = _entries.map((k, e) => MapEntry(k, e.value));
+      var mappedEntries =
+          _entries.map<String, dynamic>((k, e) => MapEntry(k, e.value));
       return Future.value(mappedEntries);
     }
 
@@ -235,7 +238,7 @@ class BoxImpl extends BoxBase {
   }
 
   @visibleForTesting
-  Future performCompactationIfNeeded() {
+  Future<void> performCompactationIfNeeded() {
     if (_deletedEntries > deletedThreshold) {
       if (_deletedEntries / _entries.length > deletedRatio) {
         return compact();

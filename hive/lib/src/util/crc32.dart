@@ -10,11 +10,9 @@ class Crc32 {
   }) {
     crc = crc ^ 0xffffffff;
 
-    if (length == null) {
-      length = bytes.length - offset;
-    }
+    length ??= bytes.length - offset;
 
-    for (int i = offset; i < length; i++) {
+    for (var i = offset; i < length; i++) {
       crc = _table[(crc ^ bytes[i]) & 0xff] ^ (crc >> 8);
     }
 
@@ -22,7 +20,7 @@ class Crc32 {
   }
 
   /// Precalculated CRC table.
-  static const List<int> _table = const [
+  static const List<int> _table = [
     0x00000000,
     0x77073096,
     0xee0e612c,

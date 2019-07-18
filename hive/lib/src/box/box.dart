@@ -8,9 +8,10 @@ class BoxEvent {
 
   bool get deleted => value == null;
 
-  bool operator ==(dynamic b) {
-    if (b is BoxEvent) {
-      return b.key == key && b.value == value;
+  @override
+  bool operator ==(dynamic other) {
+    if (other is BoxEvent) {
+      return other.key == key && other.value == value;
     }
     return false;
   }

@@ -90,9 +90,7 @@ class SyncedFile {
 
   Future<void> close() {
     return readLock.synchronized(() {
-      return writeLock.synchronized(() {
-        return _closeFiles();
-      });
+      return writeLock.synchronized(_closeFiles);
     });
   }
 }

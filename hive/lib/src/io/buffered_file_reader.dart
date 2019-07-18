@@ -63,7 +63,7 @@ class BufferedFileReader {
 
   Future _readChunk(Uint8List oldChunk, int offset, int remaining) async {
     if (oldChunk != null) {
-      for (int i = 0; i < remaining; i++) {
+      for (var i = 0; i < remaining; i++) {
         _buffer[i] = _buffer[offset + i];
       }
     }

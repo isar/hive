@@ -6,7 +6,7 @@ import 'package:hive/src/box/box_base.dart';
 
 class TransactionBox extends BoxBase {
   final Box _box;
-  Map<String, dynamic> _newEntries = HashMap();
+  final Map<String, dynamic> _newEntries = HashMap<String, dynamic>();
 
   TransactionBox(this._box) : super(_box);
 
@@ -80,17 +80,18 @@ class TransactionBox extends BoxBase {
 
   @override
   Iterable<String> allKeys() {
-    var keys = _box.allKeys().toSet();
-    keys.addAll(_newEntries.keys);
-    keys.removeWhere((key) => _newEntries[key] == null);
+    var keys = _box.allKeys().toSet()
+      ..addAll(_newEntries.keys)
+      ..removeWhere((key) => _newEntries[key] == null);
     return keys;
   }
 
   @override
   Future<Map<String, dynamic>> toMap() async {
     var map = await _box.toMap();
-    map.addAll(_newEntries);
-    map.removeWhere((key, val) => val == null);
+    map
+      ..addAll(_newEntries)
+      ..removeWhere((key, val) => val == null);
     return map;
   }
 

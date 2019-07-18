@@ -80,9 +80,9 @@ class StorageBackendVm extends StorageBackend {
   String get path => _file.path;
 
   @override
-  Future<int> initialize(Map<String, BoxEntry> entries, bool cache) async {
+  Future<int> initialize(Map<String, BoxEntry> entries, bool cached) async {
     List<Frame> frames;
-    if (cache) {
+    if (cached) {
       frames = await readFramesFromFile(path, _registry, _crypto);
     } else {
       frames = await readFrameKeysFromFile(path, _crypto);
@@ -121,28 +121,28 @@ class StorageBackendVm extends StorageBackend {
       return readFramesFromFile(path, _registry, _crypto);
     });
 
-    var map = Map<String, dynamic>();
+    var map = <String, dynamic>{};
     for (var frame in frames) {
       map[frame.key] = frame.value;
     }
     return map;
   }
 
-  @visibleForTesting
-  Future<BoxEntry> writeFrame(Frame frame, bool cache) async {
+  @override
+  Future<BoxEntry> writeFrame(Frame frame, bool cached) async {
     var bytes = frame.toBytes(true, _registry, _crypto);
 
     var offset = await _file.write(bytes);
 
-    dynamic value = cache ? frame.value : null;
+    var value = cached ? frame.value : null;
     return BoxEntry(value, offset, bytes.length);
   }
 
-  @visibleForTesting
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cache) async {
+  @override
+  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cached) async {
     var bytes = BytesBuilder(copy: false);
     var frameLengths = List<int>(frames.length);
-    for (int i = 0; i < frames.length; i++) {
+    for (var i = 0; i < frames.length; i++) {
       var frameBytes = frames[i].toBytes(true, _registry, _crypto);
       bytes.add(frameBytes);
       frameLengths[i] = frameBytes.length;
@@ -151,10 +151,10 @@ class StorageBackendVm extends StorageBackend {
     var offset = await _file.write(bytes.toBytes());
 
     var keyEntries = List<BoxEntry>(frames.length);
-    for (int i = 0; i < frames.length; i++) {
+    for (var i = 0; i < frames.length; i++) {
       var frame = frames[i];
       var frameLength = frameLengths[i];
-      var value = cache ? frame.value : null;
+      var value = cached ? frame.value : null;
       keyEntries[i] = BoxEntry(value, offset, frameLength);
       offset += frameLength;
     }
@@ -162,8 +162,9 @@ class StorageBackendVm extends StorageBackend {
     return keyEntries;
   }
 
+  @override
   Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries) async {
-    var compactPath = p.withoutExtension(path) + '.hivec';
+    var compactPath = '${p.withoutExtension(path)}.hivec';
     var compactFile = await File(compactPath).open(mode: FileMode.write);
 
     var newEntries = HashMap<String, BoxEntry>();
@@ -220,7 +221,7 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future deleteFromDisk() async {
-    await _file.close;
+    await _file.close();
     await File(path).delete();
   }
 }

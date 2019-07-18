@@ -18,4 +18,5 @@ part 'src/box/box.dart';
 part 'src/hive_error.dart';
 part 'src/hive.dart';
 
+// ignore: non_constant_identifier_names
 final HiveInterface Hive = HiveImpl();

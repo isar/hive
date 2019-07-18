@@ -6,7 +6,8 @@ import 'common.dart';
 
 class TestAdapter extends TypeAdapter<int> {
   @override
-  read(BinaryReader reader) {
+  int read(BinaryReader reader) {
+    // ignore: avoid_returning_null
     return null;
   }
 
@@ -16,7 +17,8 @@ class TestAdapter extends TypeAdapter<int> {
 
 class TestAdapter2 extends TypeAdapter<int> {
   @override
-  read(BinaryReader reader) {
+  int read(BinaryReader reader) {
+    // ignore: avoid_returning_null
     return null;
   }
 

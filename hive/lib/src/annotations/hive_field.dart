@@ -1,7 +1,7 @@
 part of hive;
 
 class HiveField {
-  final index;
+  final int index;
 
   const HiveField(this.index);
 }
