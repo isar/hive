@@ -23,6 +23,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   }
 
   @protected
+  @visibleForTesting
   Future<void> waitForRunningTransactions() {
     return Future.wait(_runningTransactions);
   }

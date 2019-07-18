@@ -25,6 +25,8 @@ class SyncedFileMock extends Mock implements SyncedFile {}
 
 class SecureRandomMock extends Mock implements SecureRandom {}
 
+class BoxMock extends Mock implements Box {}
+
 Matcher throwsHiveError([String contains]) {
   return throwsA(
     allOf(

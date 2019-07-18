@@ -3,12 +3,18 @@ import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/box/box_base.dart';
+import 'package:meta/meta.dart';
 
 class TransactionBox extends BoxBase {
   final Box _box;
-  final Map<String, dynamic> _newEntries = HashMap<String, dynamic>();
+  final Map<String, dynamic> _newEntries;
 
-  TransactionBox(this._box) : super(_box);
+  TransactionBox(this._box)
+      : _newEntries = HashMap<String, dynamic>(),
+        super(_box);
+
+  @visibleForTesting
+  TransactionBox.debug(this._box, this._newEntries) : super(_box);
 
   @override
   String get name => _box.name;
@@ -35,8 +41,11 @@ class TransactionBox extends BoxBase {
 
   @override
   dynamic operator [](String key) {
-    if (_newEntries.containsKey(key)) return _newEntries[key];
-    return _box[key];
+    if (_newEntries.containsKey(key)) {
+      return _newEntries[key];
+    } else {
+      return _box[key];
+    }
   }
 
   @override
@@ -73,8 +82,9 @@ class TransactionBox extends BoxBase {
 
   @override
   Future<List<bool>> deleteAll(Iterable<String> keys) {
-    var nullList = List.filled(keys.length, null);
-    _newEntries.addAll(Map<String, void>.fromIterables(keys, nullList));
+    for (var key in keys) {
+      _newEntries[key] = null;
+    }
     return Future.value();
   }
 
@@ -82,7 +92,8 @@ class TransactionBox extends BoxBase {
   Iterable<String> allKeys() {
     var keys = _box.allKeys().toSet()
       ..addAll(_newEntries.keys)
-      ..removeWhere((key) => _newEntries[key] == null);
+      ..removeWhere(
+          (key) => _newEntries.containsKey(key) && _newEntries[key] == null);
     return keys;
   }
 
@@ -123,5 +134,10 @@ class TransactionBox extends BoxBase {
   @override
   void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
     throw UnsupportedError('Cannot add new adapters within a transaction.');
+  }
+
+  @override
+  void resetAdapters() {
+    throw UnsupportedError('Cannot reset adapters within a transaction.');
   }
 }

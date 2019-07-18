@@ -46,7 +46,7 @@ void main() {
   });
 
   test('With synchronized(), all incrementers run sequentially', () async {
-    List<Future<int>> futures =
+    var futures =
         List.generate(attempts, (i) => lock.synchronized<int>(slowIncrement));
     expect(i, equals(0));
     completer.complete();
@@ -56,7 +56,7 @@ void main() {
   });
 
   test('Non-async functions work correctly with synchronized()', () async {
-    List<Future<int>> futures =
+    var futures =
         List.generate(attempts, (i) => lock.synchronized<int>(fastIncrement));
     var results = await Future.wait<int>(futures);
     expect(i, equals(attempts));
