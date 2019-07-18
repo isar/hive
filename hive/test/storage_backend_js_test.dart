@@ -65,7 +65,7 @@ void main() {
           'otherKey': null
         };
         var bytes = Uint8List.view(backend.encodeValue(map));
-        var frame = Frame.fromBytes(bytes, null, null);
+        var frame = Frame.bodyFromBytes(bytes, null, null);
         expect(frame.value, map);
       });
     });

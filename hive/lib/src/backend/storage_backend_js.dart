@@ -50,7 +50,7 @@ class StorageBackendJs extends StorageBackend {
         (value is num ||
             value is bool ||
             value is String ||
-            value is List<num> ||
+            (value is List<num> && value is! Uint8List) ||
             value is List<bool> ||
             value is List<String>);
 
