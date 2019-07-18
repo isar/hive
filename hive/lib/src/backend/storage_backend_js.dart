@@ -82,7 +82,7 @@ class StorageBackendJs extends StorageBackend {
     var completer = Completer<List<String>>();
     var request = getStore(false).getAllKeys(null);
     request.onSuccess.listen((_) {
-      var keys = request.result.cast<String>();
+      var keys = request.result.cast<String>() as List<String>;
       completer.complete(keys);
     });
     request.onError.listen((_) {
