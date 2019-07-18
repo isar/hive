@@ -67,8 +67,6 @@ class Frame {
 
   const Frame(this.key, this.value, [this.length]);
 
-  const Frame.keyOnly(this.key, [this.length]) : value = null;
-
   bool get deleted => value == null;
 
   static Frame fromBytes(
@@ -121,7 +119,7 @@ class Frame {
 
       return Frame(key, value, frameLength);
     } else {
-      return Frame.keyOnly(key, frameLength);
+      return Frame(key, null, frameLength);
     }
   }
 
