@@ -128,59 +128,53 @@ void main() {
       ]);
     });
 
-    /*group('compact', () {
+    group('.compact()', () {
       test('check compactation', () async {
-        var boxFile = await getTempFile();
+        var bytes = BytesBuilder();
         var comparisonBytes = BytesBuilder();
-        var registry = TypeRegistryImpl();
+        var entries = Map<String, BoxEntry>();
 
-        var syncedFile = SyncedFile(boxFile.path);
-        await syncedFile.open();
-        var box = BoxImplVm(HiveImpl(), "testBox", BoxOptions(), syncedFile);
+        void addFrame(String key, dynamic val, [bool keep = false]) {
+          var frameBytes = Frame(key, val).toBytes(true, null, null);
+          if (keep) {
+            entries[key] = BoxEntry(val, bytes.length, frameBytes.length);
+            comparisonBytes.add(frameBytes);
+          } else {
+            entries.remove(key);
+          }
+          bytes.add(frameBytes);
+        }
 
         for (int i = 0; i < 1000; i++) {
           for (var key in testMap.keys) {
-            var value = testMap[key];
-            await box.put(key, value);
-            await box.delete(key);
+            addFrame(key, testMap[key]);
+            addFrame(key, null);
           }
         }
 
         for (var key in testMap.keys) {
-          await box.put(key, 12345);
-          await box.delete(key);
-          await box.put(key, "This is a test");
-          await box.put(key, testMap[key]);
-          comparisonBytes
-              .add(Frame(key, testMap[key]).toBytes(registry, true, null));
+          addFrame(key, 12345);
+          addFrame(key, null);
+          addFrame(key, "This is a test");
+          addFrame(key, testMap[key], true);
         }
 
-        var oldEntries = box.debugKeys;
-        await box.compact();
+        var boxFile = await getTempFile();
+        await boxFile.writeAsBytes(bytes.toBytes());
 
-        var offset = 0;
-        for (var key in testMap.keys) {
-          var newEntry = box.debugKeys[key];
-          var oldEntry = oldEntries[key];
+        var syncedFile = SyncedFile(boxFile.path);
+        await syncedFile.open();
+        var backend = StorageBackendVm(syncedFile, null);
 
-          expect(newEntry.offset, offset);
-          expect(newEntry.length, oldEntry.length);
+        await backend.compact(entries);
 
-          offset += newEntry.length;
-        }
+        var compactedBytes = await File(backend.path).readAsBytes();
+        expect(compactedBytes, comparisonBytes.toBytes());
 
-        expect(box.debugTotalBytes, offset);
-        expect(box.debugDeletedBytes, 0);
-
-        var comparisonBox = await createTestBox();
-        var bytes = await File(box.path).readAsBytes();
-        expect(bytes, comparisonBytes.toBytes());
-
-        await box.close();
-        await comparisonBox.close();
+        await backend.close();
       });
 
-      test("throws error if corrupted", () async {
+      /*test("throws error if corrupted", () async {
         var boxFile = await getTempFile();
         var syncedFile = SyncedFile(boxFile.path);
         await syncedFile.open();
@@ -194,7 +188,7 @@ void main() {
         await syncedFile.truncate(await boxFile.length() - 1);
 
         expect(() => box.compact(), throwsHiveError("unexpected eof"));
-      });
-    });*/
+      });*/
+    });
   });
 }

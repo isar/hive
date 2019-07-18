@@ -161,16 +161,19 @@ class StorageBackendVm extends StorageBackend {
     return keyEntries;
   }
 
-  Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries) {
-    return _file.readLock.synchronized(() {
+  Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries) async {
+    var compactPath = p.withoutExtension(path) + '.hivec';
+    var compactFile = await File(compactPath).open(mode: FileMode.write);
+
+    var newEntries = HashMap<String, BoxEntry>();
+
+    await _file.readLock.synchronized(() {
       return _file.writeLock.synchronized(() async {
         var reader = await BufferedFileReader.fromFile(path);
         var writer = BinaryWriterImpl(_registry);
-        var compactPath = p.withoutExtension(path) + '.hivec';
-        var compactFile = await File(compactPath).open(mode: FileMode.write);
 
         var compactOffset = 0;
-        var newEntries = HashMap<String, BoxEntry>();
+
         try {
           for (var key in entries.keys) {
             var entry = entries[key];
@@ -195,13 +198,13 @@ class StorageBackendVm extends StorageBackend {
           await reader.close();
           await compactFile.close();
         }
-
-        await _file.close();
-        await File(compactFile.path).rename(path);
-        await _file.open();
-        return newEntries;
       });
     });
+
+    await _file.close();
+    await File(compactFile.path).rename(path);
+    await _file.open();
+    return newEntries;
   }
 
   @override
