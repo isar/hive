@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:hive/hive.dart';
 import 'package:hive/src/crypto.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
@@ -13,7 +14,7 @@ import 'generated/frames_body_only.g.dart';
 import 'generated/frames_encrypted.g.dart';
 import 'generated/frames_encrypted_body_only.g.dart';
 
-get registry => TypeRegistryImpl();
+TypeRegistry get registry => TypeRegistryImpl();
 
 Frame frameWithLength(Frame frame, int length) {
   return Frame(frame.key, frame.value, length);
@@ -72,8 +73,8 @@ Crypto getDebugCrypto() {
   when(secMock.nextUint8()).thenReturn(1);
   when(secMock.nextUint16()).thenReturn(2);
   when(secMock.nextUint32()).thenReturn(3);
-  when(secMock.nextBytes(any)).thenAnswer(
-      (i) => Uint8List.fromList(List.filled(i.positionalArguments[0], 4)));
+  when(secMock.nextBytes(any)).thenAnswer((i) =>
+      Uint8List.fromList(List.filled(i.positionalArguments[0] as int, 4)));
   return Crypto.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
 }
 
@@ -81,7 +82,7 @@ void fEqual(Frame f1, Frame f2) {
   expect(f1.key, f2.key);
   expect(f1.deleted, f2.deleted);
   if (f1.value is double && f2.value is double) {
-    if (f1.value.isNaN && f1.value.isNaN) return;
+    if (f1.value.isNaN as bool && f1.value.isNaN as bool) return;
   }
   expect(f1.value, f2.value);
 }

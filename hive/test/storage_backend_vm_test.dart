@@ -1,5 +1,4 @@
 @TestOn('vm')
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -14,12 +13,12 @@ import 'package:path/path.dart' as path;
 import 'common.dart';
 
 const testMap = {
-  "SomeKey": 123,
-  "AnotherKey": ["Just", 456, "a", 333, "List"],
-  "Random Double list": [1.0, 2.0, 10.0, double.infinity],
-  "Unicode:": "👋",
-  "Null": null,
-  "LastKey": true,
+  'SomeKey': 123,
+  'AnotherKey': ['Just', 456, 'a', 333, 'List'],
+  'Random Double list': [1.0, 2.0, 10.0, double.infinity],
+  'Unicode:': '👋',
+  'Null': null,
+  'LastKey': true,
 };
 
 Uint8List getFrameBytes(List<Frame> frames) {
@@ -27,7 +26,7 @@ Uint8List getFrameBytes(List<Frame> frames) {
   for (var frame in frames) {
     bytes.add(frame.toBytes(true, null, null));
   }
-  return bytes.toBytes();
+  return bytes.toBytes() as Uint8List;
 }
 
 void main() {
@@ -59,6 +58,8 @@ void main() {
   });
 
   group('StorageBackendVm', () {
+    test('.initialize()', () async {});
+
     test('.readValue()', () async {
       var file = SyncedFileMock();
       var frameBytes = getFrameBytes([Frame('test', 123)]);
@@ -89,7 +90,7 @@ void main() {
 
       var backend = StorageBackendVm(mockFile, null);
 
-      var frame = Frame("key", "value");
+      var frame = Frame('key', 'value');
       var bytes = frame.toBytes(true, null, null);
 
       var entry = await backend.writeFrame(frame, true);
@@ -107,8 +108,8 @@ void main() {
 
       var backend = StorageBackendVm(mockFile, null);
 
-      var frame1 = Frame("key", "value");
-      var frame2 = Frame("key", null);
+      var frame1 = Frame('key', 'value');
+      var frame2 = Frame('key', null);
       var bytes1 = frame1.toBytes(true, null, null);
       var bytes2 = frame2.toBytes(true, null, null);
       var bytes = [...bytes1, ...bytes2];
@@ -155,7 +156,7 @@ void main() {
         for (var key in testMap.keys) {
           addFrame(key, 12345);
           addFrame(key, null);
-          addFrame(key, "This is a test");
+          addFrame(key, 'This is a test');
           addFrame(key, testMap[key], true);
         }
 
@@ -174,20 +175,20 @@ void main() {
         await backend.close();
       });
 
-      /*test("throws error if corrupted", () async {
+      /*test('throws error if corrupted', () async {
         var boxFile = await getTempFile();
         var syncedFile = SyncedFile(boxFile.path);
         await syncedFile.open();
 
         var box = BoxImplVm(
             HiveImpl(), path.basename(boxFile.path), BoxOptions(), syncedFile);
-        await box.put("test", true);
-        await box.put("test2", "hello");
-        await box.put("test", "world");
+        await box.put('test', true);
+        await box.put('test2', 'hello');
+        await box.put('test', 'world');
 
         await syncedFile.truncate(await boxFile.length() - 1);
 
-        expect(() => box.compact(), throwsHiveError("unexpected eof"));
+        expect(() => box.compact(), throwsHiveError('unexpected eof'));
       });*/
     });
   });

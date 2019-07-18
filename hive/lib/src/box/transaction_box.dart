@@ -27,7 +27,7 @@ class TransactionBox extends BoxBase {
   @override
   Future<T> get<T>(String key, {T defaultValue}) {
     if (_newEntries.containsKey(key)) {
-      return Future.value(_newEntries[key] ?? defaultValue);
+      return Future.value(_newEntries[key] as T ?? defaultValue);
     } else {
       return _box.get(key, defaultValue: defaultValue);
     }
@@ -74,7 +74,7 @@ class TransactionBox extends BoxBase {
   @override
   Future<List<bool>> deleteAll(Iterable<String> keys) {
     var nullList = List.filled(keys.length, null);
-    _newEntries.addAll(Map.fromIterables(keys, nullList));
+    _newEntries.addAll(Map<String, void>.fromIterables(keys, nullList));
     return Future.value();
   }
 

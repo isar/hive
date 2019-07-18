@@ -1,1 +1,9 @@
 include: package:pedantic/analysis_options.yaml
+
+linter:
+  rules:
+    - prefer_single_quotes
+
+analyzer:
+  strong-mode:
+    implicit-casts: false

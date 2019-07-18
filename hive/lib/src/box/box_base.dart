@@ -12,7 +12,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   Future<void> transaction(Future Function(Box box) transaction) async {
-    var completer = Completer();
+    var completer = Completer<void>();
     var completerFuture = completer.future;
     _runningTransactions.add(completerFuture);
     var trxBox = TransactionBox(this);

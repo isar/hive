@@ -41,7 +41,7 @@ String tempPath =
 String assetsPath = path.join(Directory.current.path, 'test', 'assets');
 
 Future<File> getTempFile([Uint8List bytes]) async {
-  var name = Random().nextInt(pow(2, 32));
+  var name = Random().nextInt(pow(2, 32) as int);
   var file = File(path.join(tempPath, '$name.tmp'));
   await file.create(recursive: true);
 
@@ -53,7 +53,7 @@ Future<File> getTempFile([Uint8List bytes]) async {
 }
 
 Future<Directory> getTempDir() async {
-  var name = Random().nextInt(pow(2, 32));
+  var name = Random().nextInt(pow(2, 32) as int);
   var dir = Directory(path.join(tempPath, '${name}_tmp'));
   await dir.create(recursive: true);
   return dir;

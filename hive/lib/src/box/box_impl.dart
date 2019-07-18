@@ -85,10 +85,10 @@ class BoxImpl extends BoxBase {
     checkOpen();
 
     if (!_entries.containsKey(key)) return Future.value(defaultValue);
-    if (options.cached) return Future.value(_entries[key]?.value);
+    if (options.cached) return Future.value(_entries[key]?.value as T);
 
     var entry = _entries[key];
-    return _backend.readValue(key, entry.offset, entry.length);
+    return _backend.readValue(key, entry.offset, entry.length) as Future<T>;
   }
 
   @override
@@ -146,7 +146,7 @@ class BoxImpl extends BoxBase {
 
     var toBeDeletedEntries = 0;
     var frames = List<Frame>();
-    kvPairs.forEach((key, val) {
+    kvPairs.forEach((key, dynamic val) {
       var frame = Frame(key, val);
       if (val != null) {
         frames.add(frame);

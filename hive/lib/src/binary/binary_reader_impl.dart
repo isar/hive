@@ -198,10 +198,10 @@ class BinaryReaderImpl extends BinaryReader {
     if (length == null) {
       length = readWord();
     }
-    Map map = Map();
+    Map map = Map<dynamic, dynamic>();
     for (var i = 0; i < length; i++) {
-      var key = read();
-      var value = read();
+      dynamic key = read();
+      dynamic value = read();
       map[key] = value;
     }
     return map;

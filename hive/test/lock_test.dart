@@ -34,7 +34,7 @@ void main() {
   setUp(() {
     i = 0;
     completer = Completer();
-    lock = Lock.newLock();
+    lock = Lock();
   });
 
   test('Without synchronized(), all incrementers run concurrently', () async {

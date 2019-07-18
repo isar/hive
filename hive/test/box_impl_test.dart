@@ -155,7 +155,7 @@ void main() {
       var backend = BackendMock();
       var offset = 0;
       when(backend.writeFrames(any, true)).thenAnswer((i) async {
-        return List.generate(i.positionalArguments[0].length,
+        return List.generate((i.positionalArguments[0] as List).length,
             (i) => BoxEntry(null, offset++, 0));
       });
       var entries = Map<String, BoxEntry>();

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
@@ -30,7 +31,7 @@ Future<List<Frame>> readFrameKeysFromFile(String path, Crypto crypto) async {
 
 Future<List<Frame>> readFramesFromFile(
     String path, TypeRegistry registry, Crypto crypto) async {
-  var bytes = await File(path).readAsBytes();
+  var bytes = await File(path).readAsBytes() as Uint8List;
   var reader = BinaryReaderImpl(bytes, registry);
   var frames = List<Frame>();
   while (true) {

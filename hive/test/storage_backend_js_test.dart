@@ -14,7 +14,7 @@ import 'package:test/test.dart';
 Future<Database> openDb() async {
   return await window.indexedDB.open('testBox', version: 1,
       onUpgradeNeeded: (e) {
-    Database db = e.target.result;
+    var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
       db.createObjectStore('box');
     }
@@ -53,7 +53,7 @@ void main() {
       test('primitive crypto', () {
         var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
-        var bytes = Uint8List.view(backend.encodeValue(1));
+        var bytes = Uint8List.view(backend.encodeValue(1) as ByteBuffer);
         var frame = Frame.bodyFromBytes(bytes, null, crypto);
         expect(frame.value, 1);
       });
@@ -64,7 +64,7 @@ void main() {
           'key': Uint8List.fromList([1, 2, 3]),
           'otherKey': null
         };
-        var bytes = Uint8List.view(backend.encodeValue(map));
+        var bytes = Uint8List.view(backend.encodeValue(map) as ByteBuffer);
         var frame = Frame.bodyFromBytes(bytes, null, null);
         expect(frame.value, map);
       });

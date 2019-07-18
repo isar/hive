@@ -184,11 +184,11 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeMap(Map map, {bool writeLength = true}) {
+  void writeMap(Map<dynamic, dynamic> map, {bool writeLength = true}) {
     if (writeLength) {
       writeWord(map.length);
     }
-    map.forEach((k, v) {
+    map.forEach((dynamic k, dynamic v) {
       write(k);
       write(v);
     });
@@ -263,7 +263,7 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeMap(value);
     } else {
-      var resolved = typeRegistry.findAdapterForType(value.runtimeType);
+      var resolved = typeRegistry.findAdapterForType(value.runtimeType as Type);
       if (resolved == null) {
         throw HiveError('Cannot write, unknown type: ${value.runtimeType}.');
       }

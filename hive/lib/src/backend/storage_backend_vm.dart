@@ -9,14 +9,14 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/crypto.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<BoxImpl> openBox(
-    HiveInterface hive, String name, BoxOptions options) async {
+Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
   var file = await findHiveFileAndCleanUp(name, hive.path);
 
   Crypto crypto;
@@ -43,11 +43,12 @@ Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
   }
   var files = await dir.list(followLinks: false).toList();
   for (var file in files) {
-    if (file is! File) continue;
-    if (file.path.endsWith('$boxName.hive')) {
-      hiveFile = file;
-    } else if (file.path.endsWith('$boxName.hivec')) {
-      compactedFile = file;
+    if (file is File) {
+      if (file.path.endsWith('$boxName.hive')) {
+        hiveFile = file;
+      } else if (file.path.endsWith('$boxName.hivec')) {
+        compactedFile = file;
+      }
     }
   }
 
@@ -133,7 +134,7 @@ class StorageBackendVm extends StorageBackend {
 
     var offset = await _file.write(bytes);
 
-    var value = cache ? frame.value : null;
+    dynamic value = cache ? frame.value : null;
     return BoxEntry(value, offset, bytes.length);
   }
 

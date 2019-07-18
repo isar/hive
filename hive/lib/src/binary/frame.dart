@@ -208,7 +208,7 @@ enum FrameValueType {
   map_,
 }
 
-int bytesToUint32(List<int> bytes, [offset = 0]) {
+int bytesToUint32(List<int> bytes, [int offset = 0]) {
   return bytes[offset] |
       bytes[offset + 1] << 8 |
       bytes[offset + 2] << 16 |

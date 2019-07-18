@@ -16,8 +16,8 @@ class SyncedFile {
   int get writeOffset => _writeOffset;
 
   SyncedFile(this.path)
-      : readLock = Lock.newLock(),
-        writeLock = Lock.newLock();
+      : readLock = Lock(),
+        writeLock = Lock();
 
   @visibleForTesting
   SyncedFile.internal(this.path, this._readFile, this._writeFile, this.readLock,
@@ -34,11 +34,11 @@ class SyncedFile {
   Future<Uint8List> readAt(int position, int bytes) {
     return readLock.synchronized(() async {
       await _readFile.setPosition(position);
-      return await _readFile.read(bytes);
+      return await _readFile.read(bytes) as Uint8List;
     });
   }
 
-  Future setWritePosition(int position) async {
+  Future<void> setWritePosition(int position) async {
     if (_writeOffset == position) return Future.value();
     await writeLock.synchronized(() {
       _writeOffset = position;
@@ -55,7 +55,7 @@ class SyncedFile {
     });
   }
 
-  Future truncate(int targetLength) async {
+  Future<void> truncate(int targetLength) async {
     return readLock.synchronized(() {
       return writeLock.synchronized(() async {
         await _writeFile.truncate(targetLength);
@@ -67,7 +67,7 @@ class SyncedFile {
     });
   }
 
-  Future delete() {
+  Future<void> delete() {
     return readLock.synchronized(() {
       return writeLock.synchronized(() async {
         await _closeFiles();
@@ -79,7 +79,7 @@ class SyncedFile {
     });
   }
 
-  Future _closeFiles() async {
+  Future<void> _closeFiles() async {
     if (_readFile != null) {
       await _readFile.close();
     }
@@ -88,7 +88,7 @@ class SyncedFile {
     }
   }
 
-  Future close() {
+  Future<void> close() {
     return readLock.synchronized(() {
       return writeLock.synchronized(() {
         return _closeFiles();

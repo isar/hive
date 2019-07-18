@@ -9,12 +9,12 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/crypto.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-Future<BoxImpl> openBox(
-    HiveInterface hive, String name, BoxOptions options) async {
+Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
-    Database db = e.target.result;
+    var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
       db.createObjectStore('box');
     }
@@ -57,7 +57,7 @@ class StorageBackendJs extends StorageBackend {
     if (noEncodingNeeded) {
       return value;
     } else {
-      var bytes = Frame('', value).toBytes(false, _registry, _crypto);
+      var bytes = Frame('', value).toBytes(false, _registry, _crypto as Crypto);
       return bytes.buffer;
     }
   }
@@ -66,7 +66,7 @@ class StorageBackendJs extends StorageBackend {
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
-      return Frame.bodyFromBytes(bytes, _registry, _crypto).value;
+      return Frame.bodyFromBytes(bytes, _registry, _crypto as Crypto).value;
     } else {
       return value;
     }
@@ -95,7 +95,7 @@ class StorageBackendJs extends StorageBackend {
     var completer = Completer<List<dynamic>>();
     var request = getStore(false).getAll(null);
     request.onSuccess.listen((_) {
-      List values = request.result.map(decodeValue).toList();
+      var values = (request.result as List).map(decodeValue).toList();
       completer.complete(values);
     });
     request.onError.listen((_) {
@@ -123,13 +123,13 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<dynamic> readValue(String key, int offset, int length) async {
-    var value = await getStore(false).getObject(key);
+    dynamic value = await getStore(false).getObject(key);
     return decodeValue(value);
   }
 
   @override
   Future<Map<String, dynamic>> readAll(Iterable<String> keys) async {
-    return Map.fromIterables(keys, await getValues());
+    return Map<String, dynamic>.fromIterables(keys, await getValues());
   }
 
   @override
@@ -166,18 +166,18 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future clear() {
+  Future<void> clear() {
     return getStore(true).clear();
   }
 
   @override
-  Future close() {
+  Future<void> close() {
     _db.close();
     return Future.value();
   }
 
   @override
-  Future deleteFromDisk() {
+  Future<void> deleteFromDisk() {
     return window.indexedDB.deleteDatabase(_db.name);
   }
 }

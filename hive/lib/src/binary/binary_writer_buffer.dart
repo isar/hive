@@ -74,8 +74,9 @@ class BinaryWriterBuffer {
 
     for (int i = 0; i < _committedChunks.length; i++) {
       final chunk = _committedChunks[i];
-      final int bytesInChunk = _committedChunks[++i];
+      final bytesInChunk = _committedChunks[++i] as int;
       while (chunkPos < bytesInChunk) {
+        // ignore: invalid_assignment
         buffer[outPos++] = chunk[chunkPos++];
       }
       chunkPos = 0;

@@ -1,4 +1,4 @@
-@TestOn("vm")
+@TestOn('vm')
 
 import 'dart:typed_data';
 
@@ -10,7 +10,7 @@ import 'common.dart';
 
 void main() {
   group('SyncedFile', () {
-    test(".readAt()", () async {
+    test('.readAt()', () async {
       var readFile = RAFMock();
       var readLock = LockMock();
 
@@ -20,10 +20,10 @@ void main() {
 
       when(readLock.synchronized(any)).thenAnswer((inv) {
         verifyZeroInteractions(readFile);
-        return inv.positionalArguments[0]();
+        return (inv.positionalArguments[0] as Function)() as Future;
       });
 
-      var syncedFile = SyncedFile.internal("p", readFile, null, readLock, null);
+      var syncedFile = SyncedFile.internal('p', readFile, null, readLock, null);
       var result = await syncedFile.readAt(20, 5);
       verifyInOrder([
         readLock.synchronized(any),
@@ -33,17 +33,17 @@ void main() {
       expect(result, [1, 2, 3, 4, 5]);
     });
 
-    test(".setWritePosition()", () async {
+    test('.setWritePosition()', () async {
       var writeFile = RAFMock();
       var writeLock = LockMock();
 
       when(writeLock.synchronized(any)).thenAnswer((inv) {
         verifyNoMoreInteractions(writeFile);
-        return inv.positionalArguments[0]();
+        return (inv.positionalArguments[0] as Function)() as Future;
       });
 
       var syncedFile =
-          SyncedFile.internal("p", null, writeFile, null, writeLock);
+          SyncedFile.internal('p', null, writeFile, null, writeLock);
       await syncedFile.setWritePosition(25);
       verify(writeLock.synchronized(any));
       verify(writeFile.setPosition(25));
@@ -54,17 +54,17 @@ void main() {
       verifyNoMoreInteractions(writeFile);
     });
 
-    test(".write()", () async {
+    test('.write()', () async {
       var writeFile = RAFMock();
       var writeLock = LockMock();
 
       when(writeLock.synchronized(any)).thenAnswer((inv) {
         verifyNoMoreInteractions(writeFile);
-        return inv.positionalArguments[0]();
+        return (inv.positionalArguments[0] as Function)() as Future;
       });
 
       var syncedFile =
-          SyncedFile.internal("p", null, writeFile, null, writeLock);
+          SyncedFile.internal('p', null, writeFile, null, writeLock);
       await syncedFile.write([1, 2, 3]);
       verify(writeLock.synchronized(any));
       verify(writeFile.writeFrom([1, 2, 3]));
