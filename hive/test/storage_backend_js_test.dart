@@ -105,7 +105,7 @@ void main() {
     });
 
     group('.initialize()', () {
-      test('cached', () async {
+      test('lazy', () async {
         var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
@@ -118,7 +118,7 @@ void main() {
         });
       });
 
-      test('not cached', () async {
+      test('not lazy', () async {
         var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 

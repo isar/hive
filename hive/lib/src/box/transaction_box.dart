@@ -26,6 +26,15 @@ class TransactionBox extends BoxBase {
   String get path => _box.path;
 
   @override
+  Iterable<String> get keys {
+    var keys = _box.keys.toSet()
+      ..addAll(_newEntries.keys)
+      ..removeWhere(
+          (key) => _newEntries.containsKey(key) && _newEntries[key] == null);
+    return keys;
+  }
+
+  @override
   Stream<BoxEvent> watch() {
     throw UnsupportedError('Watching is not supported within a transaction.');
   }
@@ -64,11 +73,6 @@ class TransactionBox extends BoxBase {
   }
 
   @override
-  operator []=(String key, dynamic value) {
-    _newEntries[key] = value;
-  }
-
-  @override
   Future<bool> delete(String key) {
     _newEntries[key] = null;
     return Future.value();
@@ -86,15 +90,6 @@ class TransactionBox extends BoxBase {
       _newEntries[key] = null;
     }
     return Future.value();
-  }
-
-  @override
-  Iterable<String> allKeys() {
-    var keys = _box.allKeys().toSet()
-      ..addAll(_newEntries.keys)
-      ..removeWhere(
-          (key) => _newEntries.containsKey(key) && _newEntries[key] == null);
-    return keys;
   }
 
   @override
@@ -122,7 +117,7 @@ class TransactionBox extends BoxBase {
   }
 
   @override
-  Future<void> close({bool compact = false}) {
+  Future<void> close() {
     throw UnsupportedError('Cannot close box within transaction.');
   }
 

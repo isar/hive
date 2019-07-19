@@ -27,6 +27,15 @@ void main() {
       expect(trxBox.path, 'some/box/path');
     });
 
+    test('.keys', () {
+      var box = BoxMock();
+      when(box.keys).thenReturn(['key1', 'key2']);
+      var entries = <String, dynamic>{'key2': null, 'key3': 'val3'};
+      var trxBox = TransactionBox.debug(box, entries);
+
+      expect(trxBox.keys, ['key1', 'key3']);
+    });
+
     test('.watch()', () {
       var trxBox = TransactionBox(null);
       expect(() => trxBox.watch(), throwsUnsupportedError);
@@ -83,17 +92,6 @@ void main() {
       expect(entries['newKey'], null);
     });
 
-    test('[]=', () {
-      var entries = <String, dynamic>{};
-      var trxBox = TransactionBox.debug(null, entries);
-
-      trxBox['newKey'] = 'newVal';
-      expect(entries['newKey'], 'newVal');
-
-      trxBox['newKey'] = null;
-      expect(entries['newKey'], null);
-    });
-
     test('.delete()', () async {
       var entries = <String, dynamic>{'key': 'val'};
       var trxBox = TransactionBox.debug(null, entries);
@@ -123,15 +121,6 @@ void main() {
 
       await trxBox.deleteAll(['key1', 'key3']);
       expect(entries, {'key1': null, 'key2': 'val2', 'key3': null});
-    });
-
-    test('.allKeys()', () {
-      var box = BoxMock();
-      when(box.allKeys()).thenReturn(['key1', 'key2']);
-      var entries = <String, dynamic>{'key2': null, 'key3': 'val3'};
-      var trxBox = TransactionBox.debug(box, entries);
-
-      expect(trxBox.allKeys(), ['key1', 'key3']);
     });
 
     test('.toMap()', () async {

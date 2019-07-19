@@ -38,14 +38,6 @@ class SyncedFile {
     });
   }
 
-  Future<void> setWritePosition(int position) async {
-    if (_writeOffset == position) return Future.value();
-    await writeLock.synchronized(() {
-      _writeOffset = position;
-      return _writeFile.setPosition(position);
-    });
-  }
-
   Future<int> write(List<int> buffer) {
     return writeLock.synchronized(() async {
       var initialOffset = _writeOffset;

@@ -80,9 +80,9 @@ class StorageBackendVm extends StorageBackend {
   String get path => _file.path;
 
   @override
-  Future<int> initialize(Map<String, BoxEntry> entries, bool cached) async {
+  Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
     List<Frame> frames;
-    if (cached) {
+    if (lazy) {
       frames = await readFramesFromFile(path, _registry, _crypto);
     } else {
       frames = await readFrameKeysFromFile(path, _crypto);
@@ -129,17 +129,17 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<BoxEntry> writeFrame(Frame frame, bool cached) async {
+  Future<BoxEntry> writeFrame(Frame frame, bool lazy) async {
     var bytes = frame.toBytes(true, _registry, _crypto);
 
     var offset = await _file.write(bytes);
 
-    var value = cached ? frame.value : null;
+    var value = lazy ? frame.value : null;
     return BoxEntry(value, offset, bytes.length);
   }
 
   @override
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cached) async {
+  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool lazy) async {
     var bytes = BytesBuilder(copy: false);
     var frameLengths = List<int>(frames.length);
     for (var i = 0; i < frames.length; i++) {
@@ -154,7 +154,7 @@ class StorageBackendVm extends StorageBackend {
     for (var i = 0; i < frames.length; i++) {
       var frame = frames[i];
       var frameLength = frameLengths[i];
-      var value = cached ? frame.value : null;
+      var value = lazy ? frame.value : null;
       keyEntries[i] = BoxEntry(value, offset, frameLength);
       offset += frameLength;
     }

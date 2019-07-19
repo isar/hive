@@ -37,14 +37,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<Box> box(
     String name, {
     List<int> encryptionKey,
-    bool cached = true,
+    bool lazy = true,
   }) async {
     var existingBox = _boxes[name.toLowerCase()];
     if (existingBox != null) return existingBox;
 
     var options = BoxOptions(
       encryptionKey: encryptionKey,
-      cached: cached,
+      lazy: lazy,
     );
 
     var box = await openBox(this, name.toLowerCase(), options);
@@ -59,14 +59,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Box getBox(String name) {
+  Box operator [](String name) {
     return _boxes[name];
   }
 
   @override
-  Future close({bool compact = false}) {
+  Future close() {
     var closeFutures = _boxes.values.map((box) {
-      return box.close(compact: compact);
+      return box.close();
     });
 
     return Future.wait(closeFutures);

@@ -10,6 +10,8 @@ import 'common.dart';
 
 void main() {
   group('SyncedFile', () {
+    test('open', () {});
+
     test('.readAt()', () async {
       var readFile = RAFMock();
       var readLock = LockMock();
@@ -33,27 +35,6 @@ void main() {
       expect(result, [1, 2, 3, 4, 5]);
     });
 
-    test('.setWritePosition()', () async {
-      var writeFile = RAFMock();
-      var writeLock = LockMock();
-
-      when(writeLock.synchronized(any)).thenAnswer((inv) {
-        verifyNoMoreInteractions(writeFile);
-        return (inv.positionalArguments[0] as Function)() as Future;
-      });
-
-      var syncedFile =
-          SyncedFile.internal('p', null, writeFile, null, writeLock);
-      await syncedFile.setWritePosition(25);
-      verify(writeLock.synchronized(any));
-      verify(writeFile.setPosition(25));
-      expect(syncedFile.writeOffset, 25);
-
-      await syncedFile.setWritePosition(25);
-      verifyNoMoreInteractions(writeLock);
-      verifyNoMoreInteractions(writeFile);
-    });
-
     test('.write()', () async {
       var writeFile = RAFMock();
       var writeLock = LockMock();
@@ -70,5 +51,11 @@ void main() {
       verify(writeFile.writeFrom([1, 2, 3]));
       expect(syncedFile.writeOffset, 3);
     });
+
+    test('truncate', () {});
+
+    test('delete', () {});
+
+    test('close', () {});
   });
 }

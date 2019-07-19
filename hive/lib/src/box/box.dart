@@ -26,6 +26,11 @@ abstract class Box implements TypeRegistry {
   /// to write to this file while the box is open.
   String get path;
 
+  /// Returns a list of all keys in the box.
+  ///
+  /// This is a very fast operation and doesn't need a disk access.
+  Iterable<String> get keys;
+
   Stream<BoxEvent> watch();
 
   /// Returns the value associated with the given key.
@@ -38,8 +43,6 @@ abstract class Box implements TypeRegistry {
   ///
   /// See: [get]
   dynamic operator [](String key);
-
-  operator []=(String key, dynamic value);
 
   /// Store a key-value pair in the box.
   ///
@@ -70,11 +73,6 @@ abstract class Box implements TypeRegistry {
   /// This is a very fast operation and doesn't need a disk access.
   bool has(String key);
 
-  /// Returns a list of all keys in the box.
-  ///
-  /// This is a very fast operation and doesn't need a disk access.
-  Iterable<String> allKeys();
-
   /// Reads all key-value pairs from the box and returns them.
   Future<Map<String, dynamic>> toMap();
 
@@ -92,7 +90,7 @@ abstract class Box implements TypeRegistry {
   ///
   /// **Important:** All instances of this box are being closed. Make sure you
   /// don't access this box anywhere else.
-  Future<void> close({bool compact = false});
+  Future<void> close();
 
   /// Closes and deletes this box.
   Future<void> deleteFromDisk();

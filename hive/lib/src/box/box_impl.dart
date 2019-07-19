@@ -59,6 +59,12 @@ class BoxImpl extends BoxBase {
   @override
   String get path => _backend.path;
 
+  @override
+  Iterable<String> get keys {
+    checkOpen();
+    return _entries.keys;
+  }
+
   @protected
   void checkOpen() {
     if (!_open) {
@@ -81,7 +87,7 @@ class BoxImpl extends BoxBase {
   }
 
   Future initialize() async {
-    _deletedEntries = await _backend.initialize(_entries, options.cached);
+    _deletedEntries = await _backend.initialize(_entries, options.lazy);
   }
 
   @override
@@ -89,7 +95,7 @@ class BoxImpl extends BoxBase {
     checkOpen();
 
     if (!_entries.containsKey(key)) return Future.value(defaultValue);
-    if (options.cached) return Future.value(_entries[key]?.value as T);
+    if (options.lazy) return Future.value(_entries[key]?.value as T);
 
     var entry = _entries[key];
     return _backend.readValue(key, entry.offset, entry.length) as Future<T>;
@@ -97,16 +103,11 @@ class BoxImpl extends BoxBase {
 
   @override
   dynamic operator [](String key) {
-    if (!options.cached) {
-      throw HiveError('Only cached boxes can be accessed using [].');
+    if (!options.lazy) {
+      throw HiveError('Only lazy boxes can be accessed using [].');
     }
 
     return _entries[key]?.value;
-  }
-
-  @override
-  operator []=(String key, dynamic value) {
-    put(key, value);
   }
 
   @override
@@ -121,14 +122,14 @@ class BoxImpl extends BoxBase {
 
     var frame = Frame(key, value);
     if (value != null) {
-      var entry = await _backend.writeFrame(frame, options.cached);
+      var entry = await _backend.writeFrame(frame, options.lazy);
       if (_entries.containsKey(key)) {
         _deletedEntries++;
       }
       _entries[key] = entry;
     } else {
       if (!_entries.containsKey(key)) return;
-      await _backend.writeFrame(frame, options.cached);
+      await _backend.writeFrame(frame, options.lazy);
       _deletedEntries++;
       _entries.remove(key);
     }
@@ -165,7 +166,7 @@ class BoxImpl extends BoxBase {
       }
     });
 
-    var newEntries = await _backend.writeFrames(frames, options.cached);
+    var newEntries = await _backend.writeFrames(frames, options.lazy);
     for (var i = 0; i < frames.length; i++) {
       var frame = frames[i];
       if (frame.value != null) {
@@ -191,16 +192,10 @@ class BoxImpl extends BoxBase {
   }
 
   @override
-  Iterable<String> allKeys() {
-    checkOpen();
-    return _entries.keys;
-  }
-
-  @override
   Future<Map<String, dynamic>> toMap() {
     checkOpen();
 
-    if (options.cached) {
+    if (options.lazy) {
       var mappedEntries =
           _entries.map<String, dynamic>((k, e) => MapEntry(k, e.value));
       return Future.value(mappedEntries);
@@ -249,14 +244,12 @@ class BoxImpl extends BoxBase {
   }
 
   @override
-  Future<void> close({bool compact = false}) async {
+  Future<void> close() async {
     if (!_open) return;
-    await waitForRunningTransactions();
-    if (compact) {
-      await _backend.compact(_entries);
-    }
 
+    await waitForRunningTransactions();
     await _streamController.close();
+
     _open = false;
     hive.unregisterBox(name);
     await _backend.close();

@@ -11,13 +11,13 @@ import 'common.dart';
 
 BoxImpl getBox(
     {String name,
-    bool cached,
+    bool lazy,
     StorageBackend backend,
     Map<String, BoxEntry> entries}) {
   return BoxImpl.debug(
     HiveImpl(),
     name ?? 'testBox',
-    BoxOptions(cached: cached ?? true),
+    BoxOptions(lazy: lazy ?? true),
     backend ?? BackendMock(),
     entries ?? {},
   );
@@ -25,6 +25,16 @@ BoxImpl getBox(
 
 void main() {
   group('BoxImpl', () {
+    test('.keys', () {
+      var entries = {
+        'key1': const BoxEntry(null, 0, 0),
+        'key2': const BoxEntry(null, 0, 0),
+        'key4': const BoxEntry(null, 0, 0)
+      };
+      var box = getBox(entries: entries);
+      expect(box.keys, ['key1', 'key2', 'key4']);
+    });
+
     test('.watch()', () async {
       var box = getBox(entries: {
         'key1': const BoxEntry(123, 0, 0),
@@ -70,7 +80,7 @@ void main() {
         verifyZeroInteractions(backend);
       });
 
-      test('returns cached value if it exists', () async {
+      test('returns lazy value if it exists', () async {
         var backend = BackendMock();
         var box = getBox(backend: backend, entries: {
           'testKey': const BoxEntry('testVal', null, null),
@@ -86,7 +96,7 @@ void main() {
         when(backend.readValue(any, any, any))
             .thenAnswer((i) async => 'testVal');
         var box = getBox(
-          cached: false,
+          lazy: false,
           backend: backend,
           entries: {'testKey': const BoxEntry('testVal', 123, 456)},
         );
@@ -97,15 +107,15 @@ void main() {
     });
 
     group('[]', () {
-      test('returns cached value', () {
+      test('returns lazy value', () {
         var box = getBox(entries: {'key': const BoxEntry('value', 0, 0)});
         expect(box['key'], 'value');
         expect(box['nonexistantKey'], null);
       });
 
-      test('throws if box not cached', () {
-        var box = getBox(cached: false, entries: {});
-        expect(() => box['key'], throwsHiveError('only cached boxes'));
+      test('throws if box not lazy', () {
+        var box = getBox(lazy: false, entries: {});
+        expect(() => box['key'], throwsHiveError('only lazy boxes'));
       });
     });
 
@@ -145,13 +155,6 @@ void main() {
       expect(box.debugDeletedEntries, 2);
     });
 
-    test('[]=', () {
-      var backend = BackendMock();
-      var box = getBox(backend: backend, entries: {});
-      box['key'] = 123;
-      verify(backend.writeFrame(const Frame('key', 123), true));
-    });
-
     test('.putAll()', () async {
       var backend = BackendMock();
       var offset = 0;
@@ -180,18 +183,8 @@ void main() {
       expect(box.debugDeletedEntries, 2);
     });
 
-    test('.allKeys()', () {
-      var entries = {
-        'key1': const BoxEntry(null, 0, 0),
-        'key2': const BoxEntry(null, 0, 0),
-        'key4': const BoxEntry(null, 0, 0)
-      };
-      var box = getBox(entries: entries);
-      expect(box.allKeys(), ['key1', 'key2', 'key4']);
-    });
-
     group('.toMap()', () {
-      test('cached', () async {
+      test('lazy', () async {
         var entries = {
           'key1': const BoxEntry(1, 0, 0),
           'key2': const BoxEntry(2, 0, 0),
@@ -201,7 +194,7 @@ void main() {
         expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
       });
 
-      test('not cached', () async {
+      test('not lazy', () async {
         var backend = BackendMock();
         when(backend.readAll(any))
             .thenAnswer((i) async => {'key1': 1, 'key2': 2, 'key4': 444});
@@ -210,7 +203,7 @@ void main() {
           'key2': const BoxEntry(null, 0, 0),
           'key4': const BoxEntry(null, 0, 0)
         };
-        var box = getBox(entries: entries, cached: false, backend: backend);
+        var box = getBox(entries: entries, lazy: false, backend: backend);
         expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
         verify(backend.readAll(['key1', 'key2', 'key4']));
       });

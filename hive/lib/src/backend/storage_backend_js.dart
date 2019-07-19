@@ -106,9 +106,9 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(Map<String, BoxEntry> entries, bool cached) async {
+  Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
     var keys = await getKeys();
-    if (cached) {
+    if (lazy) {
       var values = await getValues();
       for (var i = 0; i < keys.length; i++) {
         entries[keys[i]] = BoxEntry(values[i], null, null);
@@ -134,18 +134,18 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<BoxEntry> writeFrame(Frame frame, bool cached) async {
+  Future<BoxEntry> writeFrame(Frame frame, bool lazy) async {
     if (frame.deleted) {
       await getStore(true).delete(frame.key);
       return null;
     } else {
       await getStore(true).put(encodeValue(frame.value), frame.key);
-      return BoxEntry(cached ? frame.value : null, null, null);
+      return BoxEntry(lazy ? frame.value : null, null, null);
     }
   }
 
   @override
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool cached) async {
+  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool lazy) async {
     var store = getStore(true);
     var entries = List<BoxEntry>(frames.length);
     var i = 0;
@@ -155,7 +155,7 @@ class StorageBackendJs extends StorageBackend {
         entries[i++] = null;
       } else {
         await store.put(encodeValue(frame.value), frame.key);
-        entries[i++] = BoxEntry(cached ? frame.value : null, null, null);
+        entries[i++] = BoxEntry(lazy ? frame.value : null, null, null);
       }
     }
     return entries;
