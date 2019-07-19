@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/leisim/hive/dev/.github/logo_transparent.svg?sanitize=true" width="500"></img>
+<img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true" width="500"></img>
 
 > Amazing key-value store for Flutter & Dart
 
