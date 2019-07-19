@@ -4,10 +4,23 @@
 
 Hive is a lightweight and blazing fast key-value store written in pure Dart.
 
-It is fun to use and stronly encrypted using AES-256.<br>
-Read, write and delete operations only need a single disk access.
+[Go here for documentation](https://leisim.github.io/hive/) 📖
 
-**Hive is not ready for production yet**
+## Features
+
+### Blazing Fast ⚡
+- More than twice the speed of other datastores
+- Binary data format
+
+### Simple to use ❤️
+- Supports all types
+- Strong encryption built in
+- Runs on desktop, mobile & in browser
+
+### Lightweight 🎈
+- Small runtime
+- **NO** native dependencies
+
 
 ## Getting Started
 
@@ -46,7 +59,7 @@ await box.put('myDog', dog);
 Dog myDog = await box.get('myDog');
 ```
 
-## Hive & Flutter
+## Hive ❤️ Flutter
 
 Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. Here is a sample how that may look like:
 
