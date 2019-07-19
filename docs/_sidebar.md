@@ -1,5 +1,3 @@
-* [Getting started](getting_started.md)
-
 * Boxes
     * [What are boxes?](boxes.md)
     * [Lazy box](lazy_box.md)
@@ -10,12 +8,14 @@
     * [Write](write.md)
     * [Delete](delete.md)
     * [Watch changes](watch_changes.md)
-
-* Advanced
     * [Transactions](transactions.md)
-    * [TypeAdapters](type_adapters.md)
     * [Compactation](compactation.md)
 
-* Support
-    * [Limitations](limitations.md)
-    * [Changelog](changelog.md)
+* TypeAdapters
+    * [What is a TypeAdapter?](type_adapters.md)
+    * [Generate adapter](generate_adapter.md)
+    * [Register adapter](register_adapter.md)
+    * [Create adapter manually](create_adapter_manually.md)
+    
+* [Limitations](limitations.md)
+* [Changelog](changelog.md)

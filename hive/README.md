@@ -36,7 +36,7 @@ var box = await Hive.box('secureBox', encryptionKey: key);
 
 ### Read & Write
 
-Hive supports all primitive types, `List`, `Map`, `DateTime`, `Uint8List` and `null`. Any object can be can stored using [TypeAdapters](#typeadapters)
+Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](#typeadapters)
 
 ```dart
 var dog = Dog(name: 'Nero', age: 4);
@@ -61,15 +61,17 @@ class SettingsPage extends StatelessWidget {
         SwitchListTile(
           value: box['darkMode'],
           title: Text("Dark Mode"),
-          onChanged: (value) {
-            box.put('darkMode', !box['darkMode']);
+          onChanged: (value) async {
+            await box.put('darkMode', !box['darkMode']);
+            setState({});
           },
         ),
         SwitchListTile(
           value: box['pushMessages'],
           title: Text('Send push messages'),
           onChanged: (value) {
-            box.put('pushMessages', !box['pushMessages']);
+            await box.put('darkMode', !box['darkMode']);
+            setState({});
           },
         ),
       ],
@@ -80,7 +82,7 @@ class SettingsPage extends StatelessWidget {
 
 Boxes are cached and therefore fast enough to be used directly in the `build()` method of Flutter widgets.
 
-## Licence
+### Licence
 
 ```
 Copyright 2019 Simon Leier

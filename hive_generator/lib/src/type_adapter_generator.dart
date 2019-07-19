@@ -16,14 +16,22 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     assert(cls.isAbstract,
         'Classes annotated with @HiveType must not be abstract.');
 
+    var hasDefaultConstructor =
+        cls.constructors.any((it) => it.isDefaultConstructor);
+    assert(hasDefaultConstructor,
+        'Classes annotated with @HiveType must have a default constructor.');
+
     var typeFields = Map<int, FieldElement>();
     for (var field in cls.fields) {
-      var index = getHiveFieldAnn(field)?.index;
-      if (index != null) {
-        assert(
-            typeFields.containsKey(index), 'Duplicate field index ${index}.');
-        typeFields[index] = field;
-      }
+      var fieldAnn = getHiveFieldAnn(field);
+      if (fieldAnn == null) continue;
+
+      var filedNum = fieldAnn.index;
+      assert(filedNum >= 0 || filedNum <= 255,
+          'Field numbers can only be in the range 0-255.');
+      assert(typeFields.containsKey(filedNum),
+          'Duplicate field number $filedNum.');
+      typeFields[filedNum] = field;
     }
 
     var type = element.name;

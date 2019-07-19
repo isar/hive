@@ -21,7 +21,7 @@ class TypeRegistryImpl implements TypeRegistry {
 
   @override
   void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
-    if (typeId < TypeRegistry.minCustomTypeId) {
+    if (typeId < TypeRegistry.minCustomTypeId || typeId > 255) {
       throw HiveError('TypeId $typeId not allowed.');
     }
 

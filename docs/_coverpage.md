@@ -7,4 +7,4 @@
 * Strongly encrypted
 
 [GitHub](https://github.com/leisim/hive)
-[Docs](#hive)
+[Get Started](#getting-started)
