@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Hive Docs</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+  <style>
+    :root {
+      --theme-color: #070f34;
+
+      --cover-button-border-radius: 25px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      alias: {
+        "/getting_started": "https://raw.githubusercontent.com/leisim/hive/master/hive/README.md",
+        "/changelog": "https://raw.githubusercontent.com/leisim/hive/master/CHANGELOG.md",
+        "/contributing": "https://raw.githubusercontent.com/leisim/hive/master/CONTRIBUTING",
+        "/version": "https://github.com/leisim/hive/blob/master/version.txt"
+      },
+      repo: 'https://github.com/leisim/hive/',
+      loadSidebar: true,
+      coverpage: true,
+      auto2top: true,
+      name: 'hive',
+      homepage: "https://raw.githubusercontent.com/leisim/hive/master/hive/README.md",
+      mergeNavbar: true,
+      maxLevel: 4,
+      subMaxLevel: 2,
+      plugins: [
+        function (hook, vm) {
+          hook.beforeEach(function (html) {
+            if (!vm.route.file.startsWith('http')) {
+              var url = 'https://github.com/leisim/hive/master/docs/' + vm.route.file
+              var editHtml = '[:memo: Edit on Github](' + url + ')<br>'
+              return editHtml + '\n' + html
+            } else {
+              return html
+            }
+          })
+        }
+      ]
+    }
+  </script>
+  <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0"></script>
+  <script src="//unpkg.com/docsify-copy-code"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/emoji.min.js"></script>
+  <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="//unpkg.com/prismjs/components/prism-dart.min.js"></script>
+</body>
+
+</html>

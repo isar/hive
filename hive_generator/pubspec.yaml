@@ -1,0 +1,20 @@
+name: hive_generator
+description: Automatic code generator for Hive TypeAdapters.
+version: 0.1.0
+author: Simon Leier <simonleier@gmail.com>
+homepage: https://github.com/leisim/hive
+
+environment:
+  sdk: ">=2.2.2 <3.0.0"
+
+dependencies:
+  build: ^1.1.4
+  source_gen: ^0.9.4
+  hive:
+    path: ../hive
+
+dev_dependencies:
+  test: ^1.6.4
+  build_test: ^0.10.8
+  build_runner: ^1.1.6
+  pedantic: '1.7.0'
