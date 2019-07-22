@@ -105,7 +105,7 @@ The work on Hive has just started. If you want to contribute, it would be amazin
 - [ ] Finalizing API
 - [ ] Writing binary format spec
 - [ ] Even more tests
-- [ ] Benchmark and comparison
+- [ ] Benchmarks and comparison
 
 ### Licence
 

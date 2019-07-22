@@ -36,7 +36,7 @@ class TransactionBox extends BoxBase {
 
   @override
   Stream<BoxEvent> watch() {
-    throw UnsupportedError('Watching is not supported within a transaction.');
+    throw UnsupportedError('Watching a transaction is not supported.');
   }
 
   @override
