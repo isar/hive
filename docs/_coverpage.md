@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true" width="500"></img>
+<img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true"></img>
 
 > Amazing key-value store for Flutter & Dart
 
@@ -6,5 +6,5 @@
 * Simple and lightweight
 * Strongly encrypted
 
-[GitHub](https://github.com/leisim/hive)
 [Get Started](#getting-started)
+[GitHub](https://github.com/leisim/hive)

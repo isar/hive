@@ -13,4 +13,4 @@ box.registerAdapter(MyOtherAdapter(), 34); // Register MyOtherAdapter for the bo
 
 Box adapters always have precedence over global adapters.
 
-**SUPER IMPORTANT:** Make sure to use `typeId`s consistently. Your changes have to be compatible to previous versions of the box.
+!> Make sure to use `typeId`s consistently. Your changes have to be compatible to previous versions of the box.
