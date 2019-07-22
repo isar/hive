@@ -4,7 +4,8 @@
 
 Hive is a lightweight and blazing fast key-value store written in pure Dart.
 
-[Go here for documentation](https://leisim.github.io/hive/) 📖
+[Go here for documentation](https://leisim.github.io/hive/) 📖<br>
+*Not finished yet and may contain typos. Please open pull requests ;)*
 
 ## Features
 
@@ -94,6 +95,17 @@ class SettingsPage extends StatelessWidget {
 ```
 
 Boxes are cached and therefore fast enough to be used directly in the `build()` method of Flutter widgets.
+
+## Todo
+
+The work on Hive has just started. If you want to contribute, it would be amazing if you helped me with one of these:
+
+- [x] Good test coverage
+- [ ] Many examples, especially for Flutter
+- [ ] Finalizing API
+- [ ] Writing binary format spec
+- [ ] Even more tests
+- [ ] Benchmark and comparison
 
 ### Licence
 
