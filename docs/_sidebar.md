@@ -16,6 +16,7 @@
     * [Generate adapter](generate_adapter.md)
     * [Register adapter](register_adapter.md)
     * [Create adapter manually](create_adapter_manually.md)
-    
+
+* [Browser support](browser.md)
 * [Limitations](limitations.md)
 * [Changelog](changelog.md)

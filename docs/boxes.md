@@ -31,7 +31,7 @@ This is especially useful for Flutter apps because you don't need a `FutureBuild
 
 If you don't need a box again, you should close it. All cached keys and values of the box will be dropped from memory and the box file will be closed after all active read and write operations finished.
 
-It is not recommended to open and close the same box frequently because this leads to unnecessary disk accesses. If you need a box again in the future, just leave it open.
+?> It is not recommended to open and close the same box frequently because this leads to unnecessary disk access and takes time. If you need a box again in the future, just leave it open.
 
 ```dart
 var box = await Hive.open('myBox');

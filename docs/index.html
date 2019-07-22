@@ -24,8 +24,7 @@
     window.$docsify = {
       alias: {
         "/getting_started": "https://raw.githubusercontent.com/leisim/hive/master/hive/README.md",
-        "/changelog": "https://raw.githubusercontent.com/leisim/hive/master/CHANGELOG.md",
-        "/contributing": "https://raw.githubusercontent.com/leisim/hive/master/CONTRIBUTING",
+        "/changelog": "https://raw.githubusercontent.com/leisim/hive/master/hive/CHANGELOG.md",
         "/version": "https://github.com/leisim/hive/blob/master/version.txt"
       },
       repo: 'https://github.com/leisim/hive/',
@@ -41,7 +40,7 @@
         function (hook, vm) {
           hook.beforeEach(function (html) {
             if (!vm.route.file.startsWith('http')) {
-              var url = 'https://github.com/leisim/hive/master/docs/' + vm.route.file
+              var url = 'https://github.com/leisim/hive/blob/master/docs/' + vm.route.file
               var editHtml = '[:memo: Edit on Github](' + url + ')<br>'
               return editHtml + '\n' + html
             } else {

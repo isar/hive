@@ -8,4 +8,4 @@ await box.put('name', 'Paul');
 await box.put('friends', ['Dave', 'Simon', 'Lisa']);
 ```
 
-**Important:** Writing `null` the same as [deleting](delete.md) a value.
+?> Writing `null` the same as [deleting](delete.md) a value.
