@@ -3,28 +3,38 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
+import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
 
-BoxImpl getBox(
-    {String name,
-    bool lazy,
-    StorageBackend backend,
-    Map<String, BoxEntry> entries}) {
+BoxImpl getBox({
+  String name,
+  bool lazy,
+  StorageBackend backend,
+  ChangeNotifier notifier,
+  Map<String, BoxEntry> entries,
+}) {
   return BoxImpl.debug(
-    HiveImpl(),
-    name ?? 'testBox',
-    BoxOptions(lazy: lazy ?? true),
-    backend ?? BackendMock(),
-    entries ?? {},
-  );
+      HiveImpl(),
+      name ?? 'testBox',
+      BoxOptions(lazy: lazy ?? true),
+      backend ?? BackendMock(),
+      entries ?? {},
+      notifier);
 }
 
 void main() {
   group('BoxImpl', () {
+    test('path', () {
+      var backend = BackendMock();
+      when(backend.path).thenReturn('some/path');
+      var box = getBox(backend: backend);
+      expect(box.path, 'some/path');
+    });
+
     test('.keys', () {
       var entries = {
         'key1': const BoxEntry(null, 0, 0),
@@ -33,41 +43,6 @@ void main() {
       };
       var box = getBox(entries: entries);
       expect(box.keys, ['key1', 'key2', 'key4']);
-    });
-
-    test('.watch()', () async {
-      var box = getBox(entries: {
-        'key1': const BoxEntry(123, 0, 0),
-        'key2': const BoxEntry(123, 0, 0),
-      });
-
-      var allEvents = <BoxEvent>[];
-      box.watch().listen((e) {
-        allEvents.add(e);
-      });
-
-      var filteredEvents = <BoxEvent>[];
-      box.watch(key: 'key1').listen((e) {
-        filteredEvents.add(e);
-      });
-
-      await box.delete('key1');
-      await box.delete('someOtherKey');
-      await box.put('key1', 'newVal');
-      await box.put('key2', 'newVal2');
-
-      await Future.delayed(Duration(milliseconds: 1));
-
-      expect(allEvents, [
-        BoxEvent('key1', null),
-        BoxEvent('key1', 'newVal'),
-        BoxEvent('key2', 'newVal2'),
-      ]);
-
-      expect(filteredEvents, [
-        BoxEvent('key1', null),
-        BoxEvent('key1', 'newVal'),
-      ]);
     });
 
     group('.get()', () {
@@ -135,24 +110,30 @@ void main() {
       var backend = BackendMock();
       when(backend.writeFrame(any, true))
           .thenAnswer((i) async => const BoxEntry(null, null, null));
+
+      var notifier = ChangeNotifierMock();
       var entries = <String, BoxEntry>{};
-      var box = getBox(backend: backend, entries: entries);
+      var box = getBox(backend: backend, notifier: notifier, entries: entries);
 
       await box.put('key1', null);
       expect(box.debugDeletedEntries, 0);
       verifyZeroInteractions(backend);
+      verifyNoMoreInteractions(notifier);
 
       await box.put('key1', 'value1');
       expect(entries.containsKey('key1'), true);
       expect(box.debugDeletedEntries, 0);
       verify(backend.writeFrame(const Frame('key1', 'value1'), true));
+      verify(notifier.notify('key1', 'value1'));
 
       await box.put('key1', 'value2');
       expect(box.debugDeletedEntries, 1);
+      verify(notifier.notify('key1', 'value2'));
 
       await box.put('key1', null);
       expect(entries.containsKey('key1'), false);
       expect(box.debugDeletedEntries, 2);
+      verify(notifier.notify('key1', null));
     });
 
     test('.putAll()', () async {
@@ -162,8 +143,10 @@ void main() {
         return List.generate((i.positionalArguments[0] as List).length,
             (i) => BoxEntry(null, offset++, 0));
       });
+
+      var notifier = ChangeNotifierMock();
       var entries = <String, BoxEntry>{};
-      var box = getBox(backend: backend, entries: entries);
+      var box = getBox(backend: backend, notifier: notifier, entries: entries);
 
       await box.putAll({'key1': 'val1', 'key2': 'val2', 'key3': null});
       expect(entries, {
@@ -175,13 +158,25 @@ void main() {
         const Frame('key1', 'val1'),
         const Frame('key2', 'val2'),
       ], true));
+      verifyInOrder([
+        notifier.notify('key1', 'val1'),
+        notifier.notify('key2', 'val2'),
+      ]);
 
       await box.putAll({'key1': 'val3', 'key2': null});
       expect(entries, {
         'key1': const BoxEntry(null, 2, 0),
       });
       expect(box.debugDeletedEntries, 2);
+      verifyInOrder([
+        notifier.notify('key1', 'val3'),
+        notifier.notify('key2', null),
+      ]);
     });
+
+    test('delete()', () {});
+
+    test('deleteAll()', () {});
 
     group('.toMap()', () {
       test('lazy', () async {
@@ -212,15 +207,18 @@ void main() {
     group('.clear()', () {
       test('does nothing if there are no entries', () async {
         var backend = BackendMock();
-        var box = getBox(backend: backend, entries: {});
+        var notifier = ChangeNotifierMock();
+        var box = getBox(backend: backend, notifier: notifier, entries: {});
 
         expect(await box.clear(), 0);
         verifyZeroInteractions(backend);
+        verifyZeroInteractions(notifier);
       });
 
       test('multiple entries', () async {
         var backend = BackendMock();
-        var box = getBox(backend: backend, entries: {
+        var notifier = ChangeNotifierMock();
+        var box = getBox(backend: backend, notifier: notifier, entries: {
           'key1': const BoxEntry(null, null, null),
           'key2': const BoxEntry(null, null, null)
         });
@@ -229,6 +227,7 @@ void main() {
         expect(await box.clear(), 1);
         expect(box.debugDeletedEntries, 0);
         verify(backend.clear());
+        verify(notifier.notify('key1', null));
       });
     });
 
@@ -249,6 +248,17 @@ void main() {
         await box.compact();
         expect(box.debugEntries, entries);
       });
+    });
+
+    test('.close()', () {});
+
+    test('.deleteFromDisk()', () {});
+  });
+
+  group('BoxEvent', () {
+    test('.deleted', () {
+      expect(BoxEvent('someKey', null).deleted, true);
+      expect(BoxEvent('someKey', 'someVal').deleted, false);
     });
   });
 }

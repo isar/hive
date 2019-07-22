@@ -46,6 +46,8 @@ import 'package:hive/src/util/crc32.dart';
 /// | uint8 value1 type
 /// | List<uint8> value1 bytes
 /// | ...
+/// | uint8 valueN type
+/// | List<uint8> valueN bytes
 /// --------------------------
 ///
 /// map
@@ -56,6 +58,10 @@ import 'package:hive/src/util/crc32.dart';
 /// | uint8 value1 type
 /// | List<uint8> value1 bytes
 /// | ...
+/// | uint8 keyN type
+/// | List<uint8> keyN bytes
+/// | uint8 valueN type
+/// | List<uint8> valueN bytes
 /// --------------------------
 class Frame {
   static const maxFrameLength = 1000 * 64;
@@ -65,7 +71,12 @@ class Frame {
 
   final int length;
 
-  const Frame(this.key, this.value, [this.length]);
+  final bool overrideExisting;
+
+  const Frame(this.key, this.value, [this.length]) : overrideExisting = false;
+
+  const Frame.override(this.key, this.value, [this.length])
+      : overrideExisting = true;
 
   bool get deleted => value == null;
 

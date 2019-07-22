@@ -6,6 +6,7 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
+import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
@@ -35,23 +36,27 @@ class BoxImpl extends BoxBase {
   static const deletedRatio = 0.15;
   static const deletedThreshold = 40;
 
-  final HiveImpl hive;
   @override
   final String name;
+  final HiveImpl hive;
   final BoxOptions options;
   final StorageBackend _backend;
-  final _streamController = StreamController<BoxEvent>.broadcast();
-
+  final ChangeNotifier _notifier;
   Map<String, BoxEntry> _entries = HashMap();
 
   bool _open = true;
   int _deletedEntries = 0;
 
-  BoxImpl(this.hive, this.name, this.options, this._backend) : super(hive);
+  BoxImpl(this.hive, this.name, this.options, this._backend)
+      : _notifier = ChangeNotifier(),
+        super(hive);
 
+  @visibleForTesting
   BoxImpl.debug(
-      this.hive, this.name, this.options, this._backend, this._entries)
-      : super(hive);
+      this.hive, this.name, this.options, this._backend, this._entries,
+      [ChangeNotifier notifier])
+      : _notifier = notifier ?? ChangeNotifier(),
+        super(hive);
 
   @override
   bool get isOpen => _open;
@@ -75,15 +80,7 @@ class BoxImpl extends BoxBase {
   @override
   Stream<BoxEvent> watch({String key}) {
     checkOpen();
-    if (key != null) {
-      return _streamController.stream.where((it) => it.key == key);
-    } else {
-      return _streamController.stream;
-    }
-  }
-
-  void _notifyChange(String key, dynamic value) {
-    _streamController.add(BoxEvent(key, value));
+    return _notifier.watch(key: key);
   }
 
   Future initialize() async {
@@ -136,7 +133,7 @@ class BoxImpl extends BoxBase {
 
     await performCompactationIfNeeded();
 
-    _notifyChange(key, value);
+    _notifier.notify(key, value);
   }
 
   @override
@@ -180,8 +177,8 @@ class BoxImpl extends BoxBase {
 
     await performCompactationIfNeeded();
 
-    if (_streamController.hasListener) {
-      kvPairs.forEach(_notifyChange);
+    for (var frame in frames) {
+      _notifier.notify(frame.key, frame.value);
     }
   }
 
@@ -215,7 +212,7 @@ class BoxImpl extends BoxBase {
     _deletedEntries = 0;
 
     for (var key in oldEntries.keys) {
-      _notifyChange(key, null);
+      _notifier.notify(key, null);
     }
 
     return oldEntries.length;
@@ -225,11 +222,8 @@ class BoxImpl extends BoxBase {
   Future<void> compact() async {
     checkOpen();
     if (_deletedEntries == 0) return;
-    var newEntries = await _backend.compact(_entries);
-    if (newEntries != null) {
-      _entries = newEntries;
-      _deletedEntries = 0;
-    }
+    _entries = await _backend.compact(_entries);
+    _deletedEntries = 0;
   }
 
   @visibleForTesting
@@ -248,7 +242,7 @@ class BoxImpl extends BoxBase {
     if (!_open) return;
 
     await waitForRunningTransactions();
-    await _streamController.close();
+    await _notifier.close();
 
     _open = false;
     hive.unregisterBox(name);
@@ -257,8 +251,9 @@ class BoxImpl extends BoxBase {
 
   @override
   Future<void> deleteFromDisk() async {
-    await _streamController.close();
     await waitForRunningTransactions();
+    await _notifier.close();
+
     _open = false;
     hive.unregisterBox(name);
     await _backend.deleteFromDisk();
