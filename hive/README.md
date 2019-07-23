@@ -33,6 +33,8 @@ Hive needs a directory where it can store its data. Call `Hive.init()` the first
 Hive.init('path/to/hive');
 ```
 
+In the browser you don't have to call `ìnit()`.
+
 ### Open a Box
 
 All of your data is stored in boxes.
