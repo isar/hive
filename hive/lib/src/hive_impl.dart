@@ -37,7 +37,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<Box> box(
     String name, {
     List<int> encryptionKey,
-    bool lazy = true,
+    bool lazy = false,
   }) async {
     var existingBox = _boxes[name.toLowerCase()];
     if (existingBox != null) return existingBox;

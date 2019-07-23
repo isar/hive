@@ -105,12 +105,12 @@ void main() {
     });
 
     group('.initialize()', () {
-      test('lazy', () async {
+      test('not lazy', () async {
         var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
         var entries = <String, BoxEntry>{};
-        expect(await backend.initialize(entries, true), 0);
+        expect(await backend.initialize(entries, false), 0);
         expect(entries, {
           'key1': const BoxEntry(1, null, null),
           'key2': const BoxEntry(2, null, null),
@@ -118,12 +118,12 @@ void main() {
         });
       });
 
-      test('not lazy', () async {
+      test('lazy', () async {
         var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
         var entries = <String, BoxEntry>{};
-        expect(await backend.initialize(entries, false), 0);
+        expect(await backend.initialize(entries, true), 0);
         expect(entries, {
           'key1': const BoxEntry(null, null, null),
           'key2': const BoxEntry(null, null, null),
@@ -151,15 +151,15 @@ void main() {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entry = await backend.writeFrame(const Frame('key1', 123), true);
+      var entry = await backend.writeFrame(const Frame('key1', 123), false);
       expect(entry, const BoxEntry(123, null, null));
       expect(await backend.getKeys(), ['key1']);
 
-      entry = await backend.writeFrame(const Frame('key2', 456), false);
+      entry = await backend.writeFrame(const Frame('key2', 456), true);
       expect(entry, const BoxEntry(null, null, null));
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      entry = await backend.writeFrame(const Frame('key1', null), true);
+      entry = await backend.writeFrame(const Frame('key1', null), false);
       expect(entry, null);
       expect(await backend.getKeys(), ['key2']);
     });
@@ -171,7 +171,7 @@ void main() {
       var entries = await backend.writeFrames([
         const Frame('key1', 123),
         const Frame('key2', 456),
-      ], true);
+      ], false);
       expect(entries, [
         const BoxEntry(123, null, null),
         const BoxEntry(456, null, null),
@@ -181,7 +181,7 @@ void main() {
       entries = await backend.writeFrames([
         const Frame('key1', null),
         const Frame('key3', 789),
-      ], false);
+      ], true);
       expect(entries, [null, const BoxEntry(null, null, null)]);
       expect(await backend.getKeys(), ['key2', 'key3']);
     });
