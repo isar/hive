@@ -1,10 +1,13 @@
+## 0.3.0+1
+- Bugfix: `Hive['yourBox']` didn't work with uppercase box names
+
 ## 0.3.0
 - Big step towards stable API
 - Support for transactions
 - Annotations for hive_generator
 - Bugfixes
 - Improved web support
-- **Breaking:** `inMemory` -> `cached`
+- **Breaking:** `inMemory` -> `lazy`
 - **Breaking:** Binary format changed
 
 ## 0.2.0

@@ -2,7 +2,7 @@
 
 [![Travis](https://img.shields.io/travis/com/leisim/hive/master.svg)](https://travis-ci.com/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Version](https://img.shields.io/pub/v/hive.svg)](https://pub.dartlang.org/packages/hive) ![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)
 
-Hive is a lightweight and blazing fast key-value store written in pure Dart.
+Hive is a lightweight and blazing fast key-value store written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
 [Go here for documentation](https://leisim.github.io/hive/) 📖<br>
 *Not finished yet and may contain typos. Please open pull requests ;)*
@@ -33,7 +33,7 @@ Hive needs a directory where it can store its data. Call `Hive.init()` the first
 Hive.init('path/to/hive');
 ```
 
-In the browser you don't have to call `ìnit()`.
+In the browser you don't have to call `init()`.
 
 ### Open a Box
 

@@ -60,7 +60,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   Box operator [](String name) {
-    return _boxes[name];
+    return _boxes[name.toLowerCase()];
   }
 
   @override
