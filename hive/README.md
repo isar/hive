@@ -84,7 +84,7 @@ class SettingsPage extends StatelessWidget {
           value: box['pushMessages'],
           title: Text('Send push messages'),
           onChanged: (value) {
-            await box.put('darkMode', !box['darkMode']);
+            await box.put('pushMessages', !box['pushMessages']);
             setState({});
           },
         ),
