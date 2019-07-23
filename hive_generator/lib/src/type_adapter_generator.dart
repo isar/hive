@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:build/src/builder/build_step.dart';
+import 'package:build/build.dart';
 import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:hive/hive.dart';
@@ -21,7 +21,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     assert(hasDefaultConstructor,
         'Classes annotated with @HiveType must have a default constructor.');
 
-    var typeFields = Map<int, FieldElement>();
+    var typeFields = <int, FieldElement>{};
     for (var field in cls.fields) {
       var fieldAnn = getHiveFieldAnn(field);
       if (fieldAnn == null) continue;

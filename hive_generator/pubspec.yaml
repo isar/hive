@@ -1,5 +1,5 @@
 name: hive_generator
-description: Automatic code generator for Hive TypeAdapters.
+description: Automatically generates Hive TypeAdapters for any class.
 version: 0.1.0
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/leisim/hive
