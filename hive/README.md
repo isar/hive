@@ -50,7 +50,7 @@ var box = await Hive.box('secureBox', encryptionKey: key);
 
 ### Read & Write
 
-Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](#typeadapters)
+Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](https://leisim.github.io/hive/#/generate_adapter)
 
 ```dart
 var dog = Dog(name: 'Nero', age: 4);
@@ -102,8 +102,9 @@ The work on Hive has just started. If you want to contribute, it would be amazin
 
 - [x] Good test coverage
 - [ ] Many examples, especially for Flutter
-- [ ] Finalizing API
-- [ ] Writing binary format spec
+- [ ] Finalize API
+- [ ] Improve documentation
+- [ ] Write binary format spec
 - [ ] Even more tests
 - [ ] Benchmarks and comparison
 
