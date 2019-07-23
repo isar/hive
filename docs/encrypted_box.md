@@ -2,7 +2,7 @@
 
 Sometimes it is necessary to store data securely on the disk. Hive supports AES-256 encryption out of the box (literally).
 
-The only thing you need is a 256-bit (32 bytes) encryption key. Hive provides a helper function to generate a secure encryption key using the [Fortuna](https://www.wikiwand.com/en/Fortuna_\(PRNG\)) random number generator:
+The only thing you need is a 256-bit (32 bytes) encryption key. Hive provides a helper function to generate a secure encryption key using the [Fortuna](https://en.wikipedia.org/wiki/Fortuna_\(PRNG\)) random number generator:
 
 ```dart
 var key = Hive.generateSecureKey();
