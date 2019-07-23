@@ -92,7 +92,7 @@ class BoxImpl extends BoxBase {
     checkOpen();
 
     if (!_entries.containsKey(key)) return Future.value(defaultValue);
-    if (options.lazy) return Future.value(_entries[key]?.value as T);
+    if (!options.lazy) return Future.value(_entries[key]?.value as T);
 
     var entry = _entries[key];
     return _backend.readValue(key, entry.offset, entry.length) as Future<T>;
@@ -100,8 +100,8 @@ class BoxImpl extends BoxBase {
 
   @override
   dynamic operator [](String key) {
-    if (!options.lazy) {
-      throw HiveError('Only lazy boxes can be accessed using [].');
+    if (options.lazy) {
+      throw HiveError('Lazy boxes cannot be accessed using [].');
     }
 
     return _entries[key]?.value;
@@ -192,7 +192,7 @@ class BoxImpl extends BoxBase {
   Future<Map<String, dynamic>> toMap() {
     checkOpen();
 
-    if (options.lazy) {
+    if (!options.lazy) {
       var mappedEntries =
           _entries.map<String, dynamic>((k, e) => MapEntry(k, e.value));
       return Future.value(mappedEntries);

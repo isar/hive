@@ -2,7 +2,7 @@
 
 The [hive_generator](https://pub.dev/packages/hive_generator) automatically generates `TypeAdapter`s for almost any class.
 
-1. Add `hive_generator` to your `pubspec.yaml`
+1. Add `hive_generator` to your `pubspec.yaml` (as `dev_dependency`)
 2. To generate a `TypeAdapter` for a class, annotate it with `@HiveType`
 3. Annotate all fileds which should be stored with `@HiveField`
 4. Run build task

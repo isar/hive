@@ -108,7 +108,7 @@ class StorageBackendJs extends StorageBackend {
   @override
   Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
     var keys = await getKeys();
-    if (lazy) {
+    if (!lazy) {
       var values = await getValues();
       for (var i = 0; i < keys.length; i++) {
         entries[keys[i]] = BoxEntry(values[i], null, null);
@@ -140,7 +140,7 @@ class StorageBackendJs extends StorageBackend {
       return null;
     } else {
       await getStore(true).put(encodeValue(frame.value), frame.key);
-      return BoxEntry(lazy ? frame.value : null, null, null);
+      return BoxEntry(!lazy ? frame.value : null, null, null);
     }
   }
 
@@ -155,7 +155,7 @@ class StorageBackendJs extends StorageBackend {
         entries[i++] = null;
       } else {
         await store.put(encodeValue(frame.value), frame.key);
-        entries[i++] = BoxEntry(lazy ? frame.value : null, null, null);
+        entries[i++] = BoxEntry(!lazy ? frame.value : null, null, null);
       }
     }
     return entries;

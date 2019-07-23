@@ -96,11 +96,11 @@ void main() {
       var frame = const Frame('key', 'value');
       var bytes = frame.toBytes(true, null, null);
 
-      var entry = await backend.writeFrame(frame, true);
+      var entry = await backend.writeFrame(frame, false);
       verify(mockFile.write(bytes));
       expect(entry, BoxEntry('value', 123, bytes.length));
 
-      entry = await backend.writeFrame(frame, false);
+      entry = await backend.writeFrame(frame, true);
       verify(mockFile.write(bytes));
       expect(entry, BoxEntry(null, 123, bytes.length));
     });
@@ -117,14 +117,14 @@ void main() {
       var bytes2 = frame2.toBytes(true, null, null);
       var bytes = [...bytes1, ...bytes2];
 
-      var entries = await backend.writeFrames([frame1, frame2], true);
+      var entries = await backend.writeFrames([frame1, frame2], false);
       verify(mockFile.write(bytes));
       expect(entries, [
         BoxEntry('value', 10, bytes1.length),
         BoxEntry(null, 10 + bytes1.length, bytes2.length)
       ]);
 
-      entries = await backend.writeFrames([frame1, frame2], false);
+      entries = await backend.writeFrames([frame1, frame2], true);
       verify(mockFile.write(bytes));
       expect(entries, [
         BoxEntry(null, 10, bytes1.length),

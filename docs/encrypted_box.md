@@ -1,8 +1,8 @@
 # Encrypted box
 
-Sometimes it is necessary to store data securely on the disk. Hive supports AES-256 encryption out of the box (literally). Bear in mind that encrypted boxes are a little bit slower than regular boxes...
+Sometimes it is necessary to store data securely on the disk. Hive supports AES-256 encryption out of the box (literally).
 
-The only thing you need is a 32-bit (8 bytes) encryption key. Hive provides a helper function to generate a secure encryption key using the [Fortuna](https://www.wikiwand.com/en/Fortuna_\(PRNG\)) random number generator:
+The only thing you need is a 256-bit (32 bytes) encryption key. Hive provides a helper function to generate a secure encryption key using the [Fortuna](https://www.wikiwand.com/en/Fortuna_\(PRNG\)) random number generator:
 
 ```dart
 var key = Hive.generateSecureKey();
