@@ -85,7 +85,7 @@ class SettingsPage extends StatelessWidget {
         SwitchListTile(
           value: box['pushMessages'],
           title: Text('Send push messages'),
-          onChanged: (value) {
+          onChanged: (value) async {
             await box.put('pushMessages', !box['pushMessages']);
             setState({});
           },
