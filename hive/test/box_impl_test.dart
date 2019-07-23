@@ -20,7 +20,7 @@ BoxImpl getBox({
   return BoxImpl.debug(
       HiveImpl(),
       name ?? 'testBox',
-      BoxOptions(lazy: lazy ?? true),
+      BoxOptions(lazy: lazy ?? false),
       backend ?? BackendMock(),
       entries ?? {},
       notifier);
@@ -71,7 +71,7 @@ void main() {
         when(backend.readValue(any, any, any))
             .thenAnswer((i) async => 'testVal');
         var box = getBox(
-          lazy: false,
+          lazy: true,
           backend: backend,
           entries: {'testKey': const BoxEntry('testVal', 123, 456)},
         );
@@ -89,8 +89,8 @@ void main() {
       });
 
       test('throws if box not lazy', () {
-        var box = getBox(lazy: false, entries: {});
-        expect(() => box['key'], throwsHiveError('only lazy boxes'));
+        var box = getBox(lazy: true, entries: {});
+        expect(() => box['key'], throwsHiveError('lazy boxes'));
       });
     });
 
@@ -123,7 +123,7 @@ void main() {
       await box.put('key1', 'value1');
       expect(entries.containsKey('key1'), true);
       expect(box.debugDeletedEntries, 0);
-      verify(backend.writeFrame(const Frame('key1', 'value1'), true));
+      verify(backend.writeFrame(const Frame('key1', 'value1'), false));
       verify(notifier.notify('key1', 'value1'));
 
       await box.put('key1', 'value2');
@@ -139,7 +139,7 @@ void main() {
     test('.putAll()', () async {
       var backend = BackendMock();
       var offset = 0;
-      when(backend.writeFrames(any, true)).thenAnswer((i) async {
+      when(backend.writeFrames(any, false)).thenAnswer((i) async {
         return List.generate((i.positionalArguments[0] as List).length,
             (i) => BoxEntry(null, offset++, 0));
       });
@@ -157,7 +157,7 @@ void main() {
       verify(backend.writeFrames([
         const Frame('key1', 'val1'),
         const Frame('key2', 'val2'),
-      ], true));
+      ], false));
       verifyInOrder([
         notifier.notify('key1', 'val1'),
         notifier.notify('key2', 'val2'),
@@ -179,7 +179,7 @@ void main() {
     test('deleteAll()', () {});
 
     group('.toMap()', () {
-      test('lazy', () async {
+      test('not lazy', () async {
         var entries = {
           'key1': const BoxEntry(1, 0, 0),
           'key2': const BoxEntry(2, 0, 0),
@@ -189,7 +189,7 @@ void main() {
         expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
       });
 
-      test('not lazy', () async {
+      test('lazy', () async {
         var backend = BackendMock();
         when(backend.readAll(any))
             .thenAnswer((i) async => {'key1': 1, 'key2': 2, 'key4': 444});
@@ -198,7 +198,7 @@ void main() {
           'key2': const BoxEntry(null, 0, 0),
           'key4': const BoxEntry(null, 0, 0)
         };
-        var box = getBox(entries: entries, lazy: false, backend: backend);
+        var box = getBox(entries: entries, lazy: true, backend: backend);
         expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
         verify(backend.readAll(['key1', 'key2', 'key4']));
       });

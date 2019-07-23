@@ -24,6 +24,7 @@ Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
     crypto = Crypto(Uint8List.fromList(options.encryptionKey));
   }
   var syncedFile = SyncedFile(file.path);
+  await syncedFile.open();
   var backend = StorageBackendVm(syncedFile, crypto);
   var box = BoxImpl(hive, name, options, backend);
   backend._registry = box;
@@ -82,7 +83,7 @@ class StorageBackendVm extends StorageBackend {
   @override
   Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
     List<Frame> frames;
-    if (lazy) {
+    if (!lazy) {
       frames = await readFramesFromFile(path, _registry, _crypto);
     } else {
       frames = await readFrameKeysFromFile(path, _crypto);
@@ -134,7 +135,7 @@ class StorageBackendVm extends StorageBackend {
 
     var offset = await _file.write(bytes);
 
-    var value = lazy ? frame.value : null;
+    var value = !lazy ? frame.value : null;
     return BoxEntry(value, offset, bytes.length);
   }
 
@@ -154,7 +155,7 @@ class StorageBackendVm extends StorageBackend {
     for (var i = 0; i < frames.length; i++) {
       var frame = frames[i];
       var frameLength = frameLengths[i];
-      var value = lazy ? frame.value : null;
+      var value = !lazy ? frame.value : null;
       keyEntries[i] = BoxEntry(value, offset, frameLength);
       offset += frameLength;
     }
