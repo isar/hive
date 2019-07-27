@@ -31,7 +31,7 @@ abstract class Box implements TypeRegistry {
   /// This is a very fast operation and doesn't need a disk access.
   Iterable<String> get keys;
 
-  Stream<BoxEvent> watch();
+  Stream<BoxEvent> watch({String key});
 
   /// Returns the value associated with the given key.
   ///
