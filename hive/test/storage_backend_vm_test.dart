@@ -133,7 +133,7 @@ void main() {
     });
 
     group('.compact()', () {
-      test('check compactation', () async {
+      test('check compaction', () async {
         var bytes = BytesBuilder();
         var comparisonBytes = BytesBuilder();
         var entries = <String, BoxEntry>{};

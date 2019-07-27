@@ -34,9 +34,6 @@ class BoxEntry {
 }
 
 class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
-  static const deletedRatio = 0.15;
-  static const deletedThreshold = 40;
-
   @override
   final String name;
   final HiveImpl hive;
@@ -132,7 +129,7 @@ class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
       _entries.remove(key);
     }
 
-    await performCompactationIfNeeded();
+    await performCompactionIfNeeded();
 
     _notifier.notify(key, value);
   }
@@ -176,7 +173,7 @@ class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
 
     _deletedEntries += toBeDeletedEntries;
 
-    await performCompactationIfNeeded();
+    await performCompactionIfNeeded();
 
     for (var frame in frames) {
       _notifier.notify(frame.key, frame.value);
@@ -228,11 +225,9 @@ class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
   }
 
   @visibleForTesting
-  Future<void> performCompactationIfNeeded() {
-    if (_deletedEntries > deletedThreshold) {
-      if (_deletedEntries / _entries.length > deletedRatio) {
-        return compact();
-      }
+  Future<void> performCompactionIfNeeded() {
+    if (options.compactionStrategy(_entries.length, _deletedEntries)) {
+      return compact();
     }
 
     return Future.value();
