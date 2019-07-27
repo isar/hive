@@ -21,8 +21,6 @@ class MyApp extends StatelessWidget {
           future: _openBox(),
           builder: (BuildContext context, AsyncSnapshot<Box> snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              var h = Hive;
-              var box = Hive['myBox'];
               return IceCreamPage();
             } else {
               return Center(
@@ -48,7 +46,7 @@ class _IceCreamPageState extends State<IceCreamPage> {
   void initState() {
     super.initState();
 
-    Hive['myBox'].watch().listen((e) {
+    box.watch().listen((e) {
       setState(() {});
     });
   }
