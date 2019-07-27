@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_buffer.dart';
+import 'package:hive/src/binary/bytes_builder.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:meta/meta.dart';
 
@@ -161,12 +162,15 @@ class BinaryWriterImpl extends BinaryWriter {
     if (writeLength) {
       writeWord(list.length);
     }
-    var bytes = BytesBuilder(copy: false);
+    var bytes = BytesBuilder();
     for (var i = 0; i < list.length; i++) {
       var str = list[i];
       var strBytes = encoder.convert(str);
-      bytes.addByte(strBytes.length);
-      bytes.addByte(strBytes.length << 8);
+      bytes.add(
+        Uint8List(2)
+          ..[0] = strBytes.length
+          ..[1] = strBytes.length << 8,
+      );
       bytes.add(strBytes);
     }
     _buffer.addBytes(bytes.toBytes());
