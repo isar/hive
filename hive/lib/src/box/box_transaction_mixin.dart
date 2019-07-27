@@ -2,13 +2,10 @@ import 'dart:async';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/box/transaction_box.dart';
-import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
-abstract class BoxBase extends TypeRegistryImpl implements Box {
+abstract class BoxTransactionMixin implements Box {
   final _runningTransactions = <Future<void>>[];
-
-  BoxBase(TypeRegistry parent) : super(parent);
 
   @override
   Future<void> transaction(Future Function(Box box) transaction) async {

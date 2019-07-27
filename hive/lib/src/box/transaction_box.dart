@@ -2,19 +2,17 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_transaction_mixin.dart';
 import 'package:meta/meta.dart';
 
-class TransactionBox extends BoxBase {
+class TransactionBox with BoxTransactionMixin implements Box {
   final Box _box;
   final Map<String, dynamic> _newEntries;
 
-  TransactionBox(this._box)
-      : _newEntries = HashMap<String, dynamic>(),
-        super(_box);
+  TransactionBox(this._box) : _newEntries = HashMap<String, dynamic>();
 
   @visibleForTesting
-  TransactionBox.debug(this._box, this._newEntries) : super(_box);
+  TransactionBox.debug(this._box, this._newEntries);
 
   @override
   String get name => _box.name;
@@ -35,7 +33,7 @@ class TransactionBox extends BoxBase {
   }
 
   @override
-  Stream<BoxEvent> watch() {
+  Stream<BoxEvent> watch({String key}) {
     throw UnsupportedError('Watching a transaction is not supported.');
   }
 
@@ -127,12 +125,17 @@ class TransactionBox extends BoxBase {
   }
 
   @override
-  void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
-    throw UnsupportedError('Cannot add new adapters within a transaction.');
+  ResolvedAdapter findAdapterForType(Type type) {
+    return _box.findAdapterForType(type);
   }
 
   @override
-  void resetAdapters() {
-    throw UnsupportedError('Cannot reset adapters within a transaction.');
+  ResolvedAdapter findAdapterForTypeId(int typeId) {
+    return _box.findAdapterForTypeId(typeId);
+  }
+
+  @override
+  void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
+    throw UnsupportedError('Cannot add new adapters within a transaction.');
   }
 }

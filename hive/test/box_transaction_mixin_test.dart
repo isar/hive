@@ -1,16 +1,13 @@
-import 'package:hive/hive.dart';
-import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_transaction_mixin.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-class BoxBaseMock extends BoxBase with Mock {
-  BoxBaseMock(TypeRegistry parent) : super(parent);
-}
+class BoxTrxMixinMock extends BoxTransactionMixin with Mock {}
 
 void main() {
   group('BoxBase', () {
     test('.transaction() & .waitForRunningTransactions()', () async {
-      var boxMock = BoxBaseMock(null);
+      var boxMock = BoxTrxMixinMock();
 
       var finished = false;
       // ignore: unawaited_futures

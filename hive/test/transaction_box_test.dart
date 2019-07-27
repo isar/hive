@@ -175,10 +175,5 @@ void main() {
       var trxBox = TransactionBox(null);
       expect(() => trxBox.registerAdapter(null, null), throwsUnsupportedError);
     });
-
-    test('.resetAdapters()', () {
-      var trxBox = TransactionBox(null);
-      expect(() => trxBox.resetAdapters(), throwsUnsupportedError);
-    });
   });
 }

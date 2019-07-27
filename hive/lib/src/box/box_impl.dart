@@ -4,10 +4,11 @@ import 'dart:collection';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
+import 'package:hive/src/box/box_transaction_mixin.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 export 'package:hive/src/backend/storage_backend_stub.dart'
@@ -32,7 +33,7 @@ class BoxEntry {
   }
 }
 
-class BoxImpl extends BoxBase {
+class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
   static const deletedRatio = 0.15;
   static const deletedThreshold = 40;
 
