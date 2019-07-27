@@ -14,6 +14,7 @@ abstract class HiveInterface implements TypeRegistry {
     String name, {
     List<int> encryptionKey,
     bool lazy = false,
+    CompactionStrategy compactionStrategy,
   });
 
   /// Checks if a specific box is currently open.
@@ -32,3 +33,5 @@ abstract class HiveInterface implements TypeRegistry {
   /// Generates a secure encryption key using the fortuna random algorithm.
   List<int> generateSecureKey();
 }
+
+typedef CompactionStrategy = bool Function(int entries, int deletedEntries);

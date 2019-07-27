@@ -1,10 +1,14 @@
+import 'package:hive/hive.dart';
+
 class BoxOptions {
   final List<int> encryptionKey;
   final bool lazy;
+  final CompactionStrategy compactionStrategy;
 
   BoxOptions({
     this.encryptionKey,
-    this.lazy = true,
+    this.lazy,
+    this.compactionStrategy,
   }) {
     if (encryptionKey != null) {
       if (encryptionKey.length != 32 ||

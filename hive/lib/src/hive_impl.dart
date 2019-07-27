@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/box/box_options.dart';
+import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/crypto.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
@@ -40,6 +41,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String name, {
     List<int> encryptionKey,
     bool lazy = false,
+    CompactionStrategy compactionStrategy,
   }) async {
     var existingBox = _boxes[name.toLowerCase()];
     if (existingBox != null) return existingBox;
@@ -47,6 +49,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     var options = BoxOptions(
       encryptionKey: encryptionKey,
       lazy: lazy,
+      compactionStrategy: defaultCompactionStrategy,
     );
 
     var box = await openBox(this, name.toLowerCase(), options);

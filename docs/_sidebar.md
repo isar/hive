@@ -9,7 +9,7 @@
     * [Delete](delete.md)
     * [Watch changes](watch_changes.md)
     * [Transactions](transactions.md)
-    * [Compactation](compactation.md)
+    * [Compaction](compaction.md)
 
 * TypeAdapters
     * [What is a TypeAdapter?](type_adapters.md)
