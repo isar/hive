@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/crypto.dart';
@@ -15,6 +16,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   HiveImpl() {
     registerInternal(DateTimeAdapter(), 16);
+    registerInternal(BigIntAdapter(), 17);
   }
 
   @override
