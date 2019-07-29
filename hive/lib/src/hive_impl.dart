@@ -5,7 +5,7 @@ import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
-import 'package:hive/src/crypto.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
 import 'box/box_impl.dart';
@@ -92,7 +92,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   List<int> generateSecureKey() {
-    var secureRandom = Crypto.createSecureRandom();
+    var secureRandom = CryptoHelper.createSecureRandom();
     return secureRandom.nextBytes(32);
   }
 }

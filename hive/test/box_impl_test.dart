@@ -14,13 +14,14 @@ import 'common.dart';
 BoxImpl getBox({
   String name,
   bool lazy,
+  HiveImpl hive,
   StorageBackend backend,
   ChangeNotifier notifier,
   Map<String, BoxEntry> entries,
   CompactionStrategy cStrategy,
 }) {
   return BoxImpl.debug(
-      HiveImpl(),
+      hive ?? HiveImpl(),
       name ?? 'testBox',
       BoxOptions(
         lazy: lazy ?? false,
@@ -323,9 +324,45 @@ void main() {
       });
     });
 
-    test('.close()', () {});
+    test('.close()', () async {
+      var hive = HiveMock();
+      var notifier = ChangeNotifierMock();
+      var backend = BackendMock();
+      var box = getBox(
+        name: 'myBox',
+        hive: hive,
+        notifier: notifier,
+        backend: backend,
+      );
 
-    test('.deleteFromDisk()', () {});
+      await box.close();
+      verifyInOrder([
+        notifier.close(),
+        hive.unregisterBox('myBox'),
+        backend.close(),
+      ]);
+      expect(box.isOpen, false);
+    });
+
+    test('.deleteFromDisk()', () async {
+      var hive = HiveMock();
+      var notifier = ChangeNotifierMock();
+      var backend = BackendMock();
+      var box = getBox(
+        name: 'myBox',
+        hive: hive,
+        notifier: notifier,
+        backend: backend,
+      );
+
+      await box.deleteFromDisk();
+      verifyInOrder([
+        notifier.close(),
+        hive.unregisterBox('myBox'),
+        backend.deleteFromDisk(),
+      ]);
+      expect(box.isOpen, false);
+    });
   });
 
   group('BoxEvent', () {

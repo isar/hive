@@ -5,18 +5,18 @@ import 'package:hive/src/util/crc32.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
 
-class Crypto {
+class CryptoHelper {
   final Uint8List keyBytes;
   final int keyCrc;
   final BlockCipher cipher;
   final SecureRandom random;
 
-  Crypto(this.keyBytes)
+  CryptoHelper(this.keyBytes)
       : keyCrc = Crc32.compute(Digest('SHA-256').process(keyBytes)),
         cipher = PaddedBlockCipher('AES/CBC/PKCS7'),
         random = createSecureRandom();
 
-  Crypto.debug(this.keyBytes, this.random)
+  CryptoHelper.debug(this.keyBytes, this.random)
       : keyCrc = Crc32.compute(Digest('SHA-256').process(keyBytes)),
         cipher = PaddedBlockCipher('AES/CBC/PKCS7');
 

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
-import 'package:hive/src/crypto.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/util/crc32.dart';
 
 /// Frame
@@ -70,18 +70,20 @@ class Frame {
   final dynamic value;
 
   final int length;
+  final bool deleted;
+  final bool lazy;
 
-  final bool overrideExisting;
+  const Frame(this.key, this.value, [this.length])
+      : lazy = false,
+        deleted = value == null;
 
-  const Frame(this.key, this.value, [this.length]) : overrideExisting = false;
-
-  const Frame.override(this.key, this.value, [this.length])
-      : overrideExisting = true;
-
-  bool get deleted => value == null;
+  const Frame.lazy(this.key, [this.length])
+      : value = null,
+        lazy = true,
+        deleted = false;
 
   static Frame fromBytes(
-      Uint8List bytes, TypeRegistry registry, Crypto crypto) {
+      Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
     var lengthBytes = Uint8List.view(bytes.buffer, 0, 4);
     var frameBytes = Uint8List.view(bytes.buffer, 4);
     checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
@@ -92,7 +94,7 @@ class Frame {
   }
 
   static Frame bodyFromBytes(
-      Uint8List bytes, TypeRegistry registry, Crypto crypto) {
+      Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
     checkCrc(null, bytes, crypto?.keyCrc);
     var frameReader = BinaryReaderImpl(bytes, registry, bytes.length - 4);
     return decodeBody(frameReader, false, true, bytes.length, crypto);
@@ -103,7 +105,7 @@ class Frame {
     bool decodeKey,
     bool decodeValue,
     int frameLength,
-    Crypto crypto,
+    CryptoHelper crypto,
   ) {
     String key;
     if (decodeKey) {
@@ -130,7 +132,7 @@ class Frame {
 
       return Frame(key, value, frameLength);
     } else {
-      return Frame(key, null, frameLength);
+      return Frame.lazy(key, frameLength);
     }
   }
 
@@ -150,7 +152,7 @@ class Frame {
   }
 
   Uint8List toBytes(
-      bool writeKeyAndLength, TypeRegistry registry, Crypto crypto) {
+      bool writeKeyAndLength, TypeRegistry registry, CryptoHelper crypto) {
     if (key.length > 255) {
       throw HiveError('Key must not be longer than 255 characters');
     }

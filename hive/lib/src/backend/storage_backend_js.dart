@@ -8,7 +8,7 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/crypto.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
@@ -20,9 +20,9 @@ Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
     }
   });
 
-  Crypto crypto;
+  CryptoHelper crypto;
   if (options.encrypted) {
-    crypto = Crypto(Uint8List.fromList(options.encryptionKey));
+    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
   }
 
   var backend = StorageBackendJs(db, crypto);
@@ -36,7 +36,7 @@ Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
 
 class StorageBackendJs extends StorageBackend {
   final Database _db;
-  final Crypto _crypto;
+  final CryptoHelper _crypto;
 
   TypeRegistry _registry;
 
@@ -47,18 +47,17 @@ class StorageBackendJs extends StorageBackend {
 
   @visibleForTesting
   dynamic encodeValue(dynamic value) {
-    var noEncodingNeeded = _crypto == null &&
-        (value is num ||
-            value is bool ||
-            value is String ||
-            (value is List<num> && value is! Uint8List) ||
-            value is List<bool> ||
-            value is List<String>);
+    var noEncodingNeeded = value is num ||
+        value is bool ||
+        value is String ||
+        (value is List<num> && value is! Uint8List) ||
+        value is List<bool> ||
+        value is List<String>;
 
-    if (noEncodingNeeded) {
+    if (noEncodingNeeded && _crypto == null) {
       return value;
     } else {
-      var bytes = Frame('', value).toBytes(false, _registry, _crypto as Crypto);
+      var bytes = Frame('', value).toBytes(false, _registry, _crypto);
       return bytes.buffer;
     }
   }
@@ -67,7 +66,7 @@ class StorageBackendJs extends StorageBackend {
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
-      return Frame.bodyFromBytes(bytes, _registry, _crypto as Crypto).value;
+      return Frame.bodyFromBytes(bytes, _registry, _crypto).value;
     } else {
       return value;
     }
