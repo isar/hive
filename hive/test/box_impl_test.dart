@@ -4,6 +4,7 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
+import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -16,11 +17,15 @@ BoxImpl getBox({
   StorageBackend backend,
   ChangeNotifier notifier,
   Map<String, BoxEntry> entries,
+  CompactionStrategy cStrategy,
 }) {
   return BoxImpl.debug(
       HiveImpl(),
       name ?? 'testBox',
-      BoxOptions(lazy: lazy ?? false),
+      BoxOptions(
+        lazy: lazy ?? false,
+        compactionStrategy: cStrategy ?? (total, deleted) => false,
+      ),
       backend ?? BackendMock(),
       entries ?? {},
       notifier);
@@ -106,72 +111,140 @@ void main() {
       verifyZeroInteractions(backend);
     });
 
-    test('.put()', () async {
-      var backend = BackendMock();
-      when(backend.writeFrame(any, true))
-          .thenAnswer((i) async => const BoxEntry(null, null, null));
+    group('.put()', () {
+      BackendMock getWriteFrameMock() {
+        var backend = BackendMock();
+        when(backend.writeFrame(any, any))
+            .thenAnswer((i) async => const BoxEntry(null, null, null));
+        return backend;
+      }
 
-      var notifier = ChangeNotifierMock();
-      var entries = <String, BoxEntry>{};
-      var box = getBox(backend: backend, notifier: notifier, entries: entries);
+      test('writeFrame', () async {
+        var backend = getWriteFrameMock();
+        var entries = <String, BoxEntry>{};
+        var box = getBox(backend: backend, entries: entries);
 
-      await box.put('key1', null);
-      expect(box.debugDeletedEntries, 0);
-      verifyZeroInteractions(backend);
-      verifyNoMoreInteractions(notifier);
+        await box.put('key1', null);
+        verifyZeroInteractions(backend);
 
-      await box.put('key1', 'value1');
-      expect(entries.containsKey('key1'), true);
-      expect(box.debugDeletedEntries, 0);
-      verify(backend.writeFrame(const Frame('key1', 'value1'), false));
-      verify(notifier.notify('key1', 'value1'));
+        await box.put('key1', 'value1');
+        expect(entries.containsKey('key1'), true);
+        verify(backend.writeFrame(const Frame('key1', 'value1'), false));
 
-      await box.put('key1', 'value2');
-      expect(box.debugDeletedEntries, 1);
-      verify(notifier.notify('key1', 'value2'));
+        await box.put('key1', null);
+        expect(entries.containsKey('key1'), false);
+      });
 
-      await box.put('key1', null);
-      expect(entries.containsKey('key1'), false);
-      expect(box.debugDeletedEntries, 2);
-      verify(notifier.notify('key1', null));
+      test('compaction', () async {
+        var backend = getWriteFrameMock();
+        var entries = 0;
+        var deletedEntries = 0;
+        var shouldCompact = false;
+        var box = getBox(
+          backend: backend,
+          cStrategy: (e, d) {
+            entries = e;
+            deletedEntries = d;
+            return shouldCompact;
+          },
+        );
+
+        await box.put('key1', null);
+        expect(entries, 0);
+        expect(deletedEntries, 0);
+
+        await box.put('key1', 'value1');
+        expect(entries, 1);
+        expect(deletedEntries, 0);
+
+        await box.put('key1', 'value2');
+        expect(entries, 1);
+        expect(deletedEntries, 1);
+
+        await box.put('key1', null);
+        expect(entries, 0);
+        expect(deletedEntries, 2);
+
+        verifyNever(backend.compact(any));
+        shouldCompact = true;
+
+        await box.put('key1', 'abc');
+        expect(entries, 1);
+        expect(deletedEntries, 2);
+        verify(backend.compact({'key1': const BoxEntry(null, null, null)}));
+      });
     });
 
-    test('.putAll()', () async {
-      var backend = BackendMock();
-      var offset = 0;
-      when(backend.writeFrames(any, false)).thenAnswer((i) async {
-        return List.generate((i.positionalArguments[0] as List).length,
-            (i) => BoxEntry(null, offset++, 0));
+    group('.putAll()', () {
+      BackendMock getWriteFramesMock() {
+        var backend = BackendMock();
+        when(backend.writeFrames(any, false)).thenAnswer((i) async {
+          return List.filled((i.positionalArguments[0] as List).length,
+              const BoxEntry(null, null, null));
+        });
+        return backend;
+      }
+
+      test('writeFrame', () async {
+        var backend = getWriteFramesMock();
+
+        var entries = <String, BoxEntry>{};
+        var box = getBox(backend: backend, entries: entries);
+
+        await box.putAll({'key1': null});
+        verifyZeroInteractions(backend);
+
+        await box.putAll({'key1': 'val1', 'key2': 'val2', 'key3': null});
+        expect(entries.keys, ['key1', 'key2']);
+        verify(backend.writeFrames([
+          const Frame('key1', 'val1'),
+          const Frame('key2', 'val2'),
+        ], false));
+
+        await box.putAll({'key1': null});
+        expect(entries.keys, ['key2']);
+        verify(backend.writeFrames([const Frame('key1', null)], false));
       });
 
-      var notifier = ChangeNotifierMock();
-      var entries = <String, BoxEntry>{};
-      var box = getBox(backend: backend, notifier: notifier, entries: entries);
+      test('compaction', () async {
+        var backend = getWriteFramesMock();
+        var entries = 0;
+        var deletedEntries = 0;
+        var shouldCompact = false;
+        var box = getBox(
+          backend: backend,
+          cStrategy: (e, d) {
+            entries = e;
+            deletedEntries = d;
+            return shouldCompact;
+          },
+        );
 
-      await box.putAll({'key1': 'val1', 'key2': 'val2', 'key3': null});
-      expect(entries, {
-        'key1': const BoxEntry(null, 0, 0),
-        'key2': const BoxEntry(null, 1, 0),
-      });
-      expect(box.debugDeletedEntries, 0);
-      verify(backend.writeFrames([
-        const Frame('key1', 'val1'),
-        const Frame('key2', 'val2'),
-      ], false));
-      verifyInOrder([
-        notifier.notify('key1', 'val1'),
-        notifier.notify('key2', 'val2'),
-      ]);
+        await box.putAll({'key1': null});
+        expect(entries, 0);
+        expect(deletedEntries, 0);
 
-      await box.putAll({'key1': 'val3', 'key2': null});
-      expect(entries, {
-        'key1': const BoxEntry(null, 2, 0),
+        await box
+            .putAll({'key1': 'value1', 'key1': 'value2', 'key1': 'value3'});
+        expect(entries, 1);
+        expect(deletedEntries, 0);
+
+        await box.putAll({'key1': 'value4'});
+        expect(entries, 1);
+        expect(deletedEntries, 1);
+
+        await box.putAll({'key1': null});
+        expect(entries, 0);
+        expect(deletedEntries, 2);
+
+        verifyNever(backend.compact(any));
+        shouldCompact = true;
+
+        await box.putAll({'key1': 'abc'});
+        expect(entries, 1);
+        expect(deletedEntries, 2);
+        verify(backend.compact({'key1': const BoxEntry(null, null, null)}));
       });
-      expect(box.debugDeletedEntries, 2);
-      verifyInOrder([
-        notifier.notify('key1', 'val3'),
-        notifier.notify('key2', null),
-      ]);
     });
 
     test('delete()', () {});

@@ -1,3 +1,11 @@
+## 0.4.0
+- Added BigInt support
+- Added `compactionStrategy` parameter
+- Added crash recovery
+- Bugfixes
+- More samples
+- More tests
+
 ## 0.3.0+1
 - Bugfix: `Hive['yourBox']` didn't work with uppercase box names
 

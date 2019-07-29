@@ -1,7 +1,8 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 class BinaryWriterBuffer {
-  static const _chunkLength = 512;
+  static const _chunkLength = 256;
 
   /// Current chunk used to write data into. Once it is full it is
   /// pushed into outputChunks and a new one is allocated.
@@ -53,10 +54,7 @@ class BinaryWriterBuffer {
     }
 
     if (allocateNew) {
-      var newChunkSize = _chunkLength;
-      if (minChunkSize != null && minChunkSize > newChunkSize) {
-        newChunkSize = minChunkSize;
-      }
+      var newChunkSize = max(_chunkLength, minChunkSize ?? 0);
       _outputChunk = Uint8List(newChunkSize);
       _bytesInChunk = 0;
       _outputChunkData = ByteData.view(_outputChunk.buffer);
