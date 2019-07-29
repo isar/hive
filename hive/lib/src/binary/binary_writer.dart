@@ -19,9 +19,11 @@ abstract class BinaryWriter {
 
   void writeBool(bool value);
 
-  void writeString(String value,
-      {bool writeByteCount = true,
-      Converter<String, List<int>> encoder = utf8Encoder});
+  void writeString(
+    String value, {
+    bool writeByteCount = true,
+    Converter<String, List<int>> encoder = utf8Encoder,
+  });
 
   void writeAsciiString(String value, {bool writeLength = true});
 
@@ -33,9 +35,11 @@ abstract class BinaryWriter {
 
   void writeBoolList(List<bool> list, {bool writeLength = true});
 
-  void writeStringList(List<String> list,
-      {bool writeLength = true,
-      Converter<String, List<int>> encoder = utf8Encoder});
+  void writeStringList(
+    List<String> list, {
+    bool writeLength = true,
+    Converter<String, List<int>> encoder = utf8Encoder,
+  });
 
   void writeList(List list, {bool writeLength = true});
 

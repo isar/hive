@@ -79,7 +79,7 @@ class SettingsPage extends StatelessWidget {
           title: Text("Dark Mode"),
           onChanged: (value) async {
             await box.put('darkMode', !box['darkMode']);
-            setState({});
+            setState(() {});
           },
         ),
         SwitchListTile(
@@ -87,7 +87,7 @@ class SettingsPage extends StatelessWidget {
           title: Text('Send push messages'),
           onChanged: (value) async {
             await box.put('pushMessages', !box['pushMessages']);
-            setState({});
+            setState(() {});
           },
         ),
       ],

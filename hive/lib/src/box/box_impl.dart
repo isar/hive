@@ -161,6 +161,8 @@ class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
       }
     });
 
+    if (frames.isEmpty) return;
+
     var newEntries = await _backend.writeFrames(frames, options.lazy);
     for (var i = 0; i < frames.length; i++) {
       var frame = frames[i];
