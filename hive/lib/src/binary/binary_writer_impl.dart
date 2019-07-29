@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_buffer.dart';
-import 'package:hive/src/binary/bytes_builder.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:meta/meta.dart';
 
@@ -83,9 +82,11 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeString(String value,
-      {bool writeByteCount = true,
-      Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder}) {
+  void writeString(
+    String value, {
+    bool writeByteCount = true,
+    Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
+  }) {
     var bytes = encoder.convert(value);
     if (writeByteCount) {
       writeWord(bytes.length);
@@ -156,24 +157,22 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeStringList(List<String> list,
-      {bool writeLength = true,
-      Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder}) {
+  void writeStringList(
+    List<String> list, {
+    bool writeLength = true,
+    Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
+  }) {
     if (writeLength) {
       writeWord(list.length);
     }
-    var bytes = BytesBuilder();
-    for (var i = 0; i < list.length; i++) {
-      var str = list[i];
+    var bytes = <int>[];
+    for (var str in list) {
       var strBytes = encoder.convert(str);
-      bytes.add(
-        Uint8List(2)
-          ..[0] = strBytes.length
-          ..[1] = strBytes.length << 8,
-      );
-      bytes.add(strBytes);
+      bytes.add(strBytes.length);
+      bytes.add(strBytes.length << 8);
+      bytes.addAll(strBytes);
     }
-    _buffer.addBytes(bytes.toBytes());
+    _buffer.addBytes(bytes);
   }
 
   @override
