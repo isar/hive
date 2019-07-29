@@ -5,12 +5,15 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/change_notifier.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:hive/src/util/lock.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
 import 'package:pointycastle/pointycastle.dart';
 import 'package:test/test.dart';
+
+class HiveMock extends Mock implements HiveImpl {}
 
 class RAFMock extends Mock implements RandomAccessFile {}
 

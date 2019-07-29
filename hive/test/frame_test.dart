@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/crypto.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -68,14 +68,14 @@ final testFrames = [
   }),
 ];
 
-Crypto getDebugCrypto() {
+CryptoHelper getDebugCrypto() {
   var secMock = SecureRandomMock();
   when(secMock.nextUint8()).thenReturn(1);
   when(secMock.nextUint16()).thenReturn(2);
   when(secMock.nextUint32()).thenReturn(3);
   when(secMock.nextBytes(any)).thenAnswer((i) =>
       Uint8List.fromList(List.filled(i.positionalArguments[0] as int, 4)));
-  return Crypto.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
+  return CryptoHelper.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
 }
 
 void fEqual(Frame f1, Frame f2) {
@@ -88,7 +88,6 @@ void fEqual(Frame f1, Frame f2) {
 }
 
 void main() {
-  //test('t', buildGoldens);
   group('Frame', () {
     group('.toBytes()', () {
       test('validates key length', () async {

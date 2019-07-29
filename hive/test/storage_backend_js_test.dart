@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'package:hive/src/backend/storage_backend_js.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/crypto.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:test/test.dart';
 
 Future<Database> openDb() async {
@@ -51,7 +51,7 @@ void main() {
       });
 
       test('primitive crypto', () {
-        var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
+        var crypto = CryptoHelper(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
         var bytes = Uint8List.view(backend.encodeValue(1) as ByteBuffer);
         var frame = Frame.bodyFromBytes(bytes, null, crypto);
@@ -82,7 +82,7 @@ void main() {
       });
 
       test('primitive crypto', () {
-        var crypto = Crypto(Uint8List.fromList(List.filled(32, 1)));
+        var crypto = CryptoHelper(Uint8List.fromList(List.filled(32, 1)));
         var backend = StorageBackendJs(null, crypto);
         var bytes = const Frame('', 1).toBytes(false, null, crypto);
         var value = backend.decodeValue(bytes.buffer);

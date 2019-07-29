@@ -5,12 +5,15 @@ import 'dart:typed_data';
 import 'package:hive/src/backend/storage_backend_vm.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_impl.dart';
+import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
 import 'common.dart';
+
+class FrameIoHelperMock extends Mock implements FrameIoHelper {}
 
 const testMap = {
   'SomeKey': 123,
@@ -58,7 +61,55 @@ void main() {
   });
 
   group('StorageBackendVm', () {
-    test('.initialize()', () async {});
+    group('.initialize()', () {
+      test('not lazy', () async {
+        var ioHelper = FrameIoHelperMock();
+        when(ioHelper.readFramesFromFile(any, any, any)).thenAnswer((i) async {
+          return [
+            const Frame('key1', 'value1', 1),
+            const Frame('key2', 'value2', 2),
+            const Frame('key1', 'value3', 3),
+            const Frame('key2', null, 4),
+            const Frame('key3', 'value4', 5)
+          ];
+        });
+
+        var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
+
+        var entries = <String, BoxEntry>{};
+        var deleted = await backend.initialize(entries, false);
+
+        expect(entries, {
+          'key1': const BoxEntry('value3', 3, 3),
+          'key3': const BoxEntry('value4', 10, 5)
+        });
+        expect(deleted, 2);
+      });
+
+      test('lazy', () async {
+        var ioHelper = FrameIoHelperMock();
+        when(ioHelper.readFrameKeysFromFile(any, any)).thenAnswer((i) async {
+          return [
+            const Frame.lazy('key1', 1),
+            const Frame.lazy('key2', 2),
+            const Frame.lazy('key1', 3),
+            const Frame('key2', null, 4),
+            const Frame.lazy('key3', 5)
+          ];
+        });
+
+        var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
+
+        var entries = <String, BoxEntry>{};
+        var deleted = await backend.initialize(entries, true);
+
+        expect(entries, {
+          'key1': const BoxEntry(null, 3, 3),
+          'key3': const BoxEntry(null, 10, 5)
+        });
+        expect(deleted, 2);
+      });
+    });
 
     test('.readValue()', () async {
       var file = SyncedFileMock();
@@ -193,6 +244,27 @@ void main() {
 
         expect(() => box.compact(), throwsHiveError('unexpected eof'));
       });*/
+    });
+
+    test('.clear()', () {
+      var mockFile = SyncedFileMock();
+      var backend = StorageBackendVm(mockFile, null);
+      backend.clear();
+      verify(mockFile.truncate(0));
+    });
+
+    test('.close()', () {
+      var mockFile = SyncedFileMock();
+      var backend = StorageBackendVm(mockFile, null);
+      backend.close();
+      verify(mockFile.close());
+    });
+
+    test('.delete()', () {
+      var mockFile = SyncedFileMock();
+      var backend = StorageBackendVm(mockFile, null);
+      backend.deleteFromDisk();
+      verify(mockFile.delete());
     });
   });
 }

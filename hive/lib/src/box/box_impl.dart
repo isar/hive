@@ -146,9 +146,9 @@ class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
 
     var toBeDeletedEntries = 0;
     var frames = <Frame>[];
-    kvPairs.forEach((key, dynamic val) {
-      var frame = Frame(key, val);
-      if (val != null) {
+    kvPairs.forEach((key, dynamic value) {
+      var frame = Frame(key, value);
+      if (value != null) {
         frames.add(frame);
         if (_entries.containsKey(key)) {
           toBeDeletedEntries++;
