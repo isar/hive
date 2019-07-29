@@ -8,7 +8,7 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/crypto.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
@@ -19,9 +19,9 @@ import 'package:path/path.dart' as p;
 Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
   var file = await findHiveFileAndCleanUp(name, hive.path);
 
-  Crypto crypto;
+  CryptoHelper crypto;
   if (options.encrypted) {
-    crypto = Crypto(Uint8List.fromList(options.encryptionKey));
+    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
   }
   var syncedFile = SyncedFile(file.path);
   await syncedFile.open();
@@ -70,12 +70,15 @@ Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
 }
 
 class StorageBackendVm extends StorageBackend {
-  final Crypto _crypto;
+  final CryptoHelper _crypto;
   final SyncedFile _file;
+  final FrameIoHelper _helper;
 
   TypeRegistry _registry;
 
-  StorageBackendVm(this._file, this._crypto);
+  StorageBackendVm(this._file, this._crypto) : _helper = FrameIoHelper();
+
+  StorageBackendVm.debug(this._file, this._crypto, this._helper);
 
   @override
   String get path => _file.path;
@@ -84,9 +87,9 @@ class StorageBackendVm extends StorageBackend {
   Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
     List<Frame> frames;
     if (!lazy) {
-      frames = await readFramesFromFile(path, _registry, _crypto);
+      frames = await _helper.readFramesFromFile(path, _registry, _crypto);
     } else {
-      frames = await readFrameKeysFromFile(path, _crypto);
+      frames = await _helper.readFrameKeysFromFile(path, _crypto);
     }
     var offset = 0;
     var deletedEntries = 0;
@@ -119,7 +122,7 @@ class StorageBackendVm extends StorageBackend {
   @override
   Future<Map<String, dynamic>> readAll(Iterable<String> keys) async {
     var frames = await _file.writeLock.synchronized(() {
-      return readFramesFromFile(path, _registry, _crypto);
+      return _helper.readFramesFromFile(path, _registry, _crypto);
     });
 
     var map = <String, dynamic>{};
@@ -221,8 +224,7 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future deleteFromDisk() async {
-    await _file.close();
-    await File(path).delete();
+  Future deleteFromDisk() {
+    return _file.delete();
   }
 }

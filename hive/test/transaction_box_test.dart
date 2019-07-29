@@ -171,6 +171,20 @@ void main() {
       expect(() => trxBox.deleteFromDisk(), throwsUnsupportedError);
     });
 
+    test('.findAdapterForType()', () {
+      var box = BoxMock();
+      var trxBox = TransactionBox(box);
+      trxBox.findAdapterForType(int);
+      verify(box.findAdapterForType(int));
+    });
+
+    test('.findAdapterForTypeId()', () {
+      var box = BoxMock();
+      var trxBox = TransactionBox(box);
+      trxBox.findAdapterForTypeId(134);
+      verify(box.findAdapterForTypeId(134));
+    });
+
     test('.registerAdapter()', () {
       var trxBox = TransactionBox(null);
       expect(() => trxBox.registerAdapter(null, null), throwsUnsupportedError);
