@@ -13,7 +13,7 @@ abstract class StorageBackend {
 
   Future<dynamic> readValue(String key, int offset, int length);
 
-  Future<Map<String, dynamic>> readAll(Iterable<String> keys);
+  Future<Map<String, dynamic>> readAll();
 
   Future writeFrame(Frame frame, BoxEntry entry);
 

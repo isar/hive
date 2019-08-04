@@ -6,25 +6,16 @@ import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:meta/meta.dart';
 
 class LazyBox extends BoxBase {
   LazyBox(
     HiveImpl hive,
     String name,
     BoxOptions options,
-    StorageBackend backend,
-  ) : super(hive, name, options, backend);
-
-  @visibleForTesting
-  LazyBox.debug(
-    HiveImpl hive,
-    String name,
-    BoxOptions options,
-    StorageBackend backend,
-    Keystore keystore, [
+    StorageBackend backend, [
+    Keystore keystore,
     ChangeNotifier notifier,
-  ]) : super.debug(hive, name, options, backend, keystore, notifier);
+  ]) : super(hive, name, options, backend, keystore, notifier);
 
   @override
   Future<dynamic> get(String key, {dynamic defaultValue}) {
@@ -51,15 +42,10 @@ class LazyBox extends BoxBase {
     var keyExists = keystore.containsKey(key);
     if (value == null && !keyExists) return;
 
-    var frame = Frame(key, value);
-    var entry = BoxEntry(null);
-
-    keystore.entries[key] = entry;
-
-    await backend.writeFrame(frame, entry);
-    if (keyExists) {
-      deletedEntries++;
-    }
+    var entry = value != null ? BoxEntry(null) : null;
+    await backend.writeFrame(Frame(key, value), entry);
+    keystore.addAll({key: entry});
+    if (keyExists) deletedEntries++;
     notifier.notify(key, value);
 
     await performCompactionIfNeeded();
@@ -75,17 +61,24 @@ class LazyBox extends BoxBase {
     var frames = <Frame>[];
     var entries = <String, BoxEntry>{};
     kvPairs.forEach((key, dynamic value) {
-      frames.add(Frame(key, value));
-      entries[key] = BoxEntry(null);
-
       var keyExists = keystore.containsKey(key);
-      if (keyExists) toBeDeletedEntries++;
+      if (value != null) {
+        frames.add(Frame(key, value));
+        entries[key] = BoxEntry(null);
+        if (keyExists) toBeDeletedEntries++;
+      } else if (keyExists) {
+        frames.add(Frame(key, null));
+        entries[key] = null;
+        toBeDeletedEntries++;
+      }
     });
+
+    if (frames.isEmpty) return;
 
     await backend.writeFrames(frames, entries.values);
     deletedEntries += toBeDeletedEntries;
 
-    keystore.entries.addAll(entries);
+    keystore.addAll(entries);
 
     for (var frame in frames) {
       notifier.notify(frame.key, frame.value);
@@ -98,6 +91,6 @@ class LazyBox extends BoxBase {
   Future<Map<String, dynamic>> toMap() {
     checkOpen();
 
-    return backend.readAll(keystore.getAll().keys);
+    return backend.readAll();
   }
 }

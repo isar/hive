@@ -143,8 +143,7 @@ void main() {
       var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
       var backend = StorageBackendJs(db, null);
 
-      expect(await backend.readAll(['key1', 'key2', 'key3']),
-          {'key1': 1, 'key2': 2, 'key3': 3});
+      expect(await backend.readAll(), {'key1': 1, 'key2': 2, 'key3': 3});
     });
 
     test('.writeFrame()', () async {

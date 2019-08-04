@@ -137,8 +137,10 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<Map<String, dynamic>> readAll(Iterable<String> keys) async {
-    return Map<String, dynamic>.fromIterables(keys, await getValues());
+  Future<Map<String, dynamic>> readAll() async {
+    var keys = await getKeys();
+    var values = await getValues();
+    return Map<String, dynamic>.fromIterables(keys, values);
   }
 
   @override

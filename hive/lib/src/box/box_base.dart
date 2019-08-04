@@ -30,18 +30,20 @@ abstract class BoxBase extends TypeRegistryImpl
   final Keystore keystore;
 
   @protected
+  @visibleForTesting
   int deletedEntries = 0;
 
   bool _open = true;
 
-  BoxBase(this.hive, this.name, this.options, this.backend)
-      : notifier = ChangeNotifier(),
-        keystore = Keystore(),
-        super(hive);
-
-  BoxBase.debug(this.hive, this.name, this.options, this.backend, this.keystore,
-      [ChangeNotifier notifier])
-      : notifier = notifier ?? ChangeNotifier(),
+  BoxBase(
+    this.hive,
+    this.name,
+    this.options,
+    this.backend, [
+    Keystore keystore,
+    ChangeNotifier notifier,
+  ])  : keystore = keystore ?? Keystore(),
+        notifier = notifier ?? ChangeNotifier(),
         super(hive);
 
   @override
@@ -70,8 +72,10 @@ abstract class BoxBase extends TypeRegistryImpl
   }
 
   Future initialize() async {
-    deletedEntries = await backend.initialize(
-        keystore.entries, options.lazy, options.crashRecovery);
+    var entries = <String, BoxEntry>{};
+    deletedEntries =
+        await backend.initialize(entries, options.lazy, options.crashRecovery);
+    keystore.clear(entries);
   }
 
   @override
@@ -96,8 +100,7 @@ abstract class BoxBase extends TypeRegistryImpl
     checkOpen();
 
     await backend.clear();
-    var oldEntries = keystore.entries;
-    keystore.clear();
+    var oldEntries = keystore.clear();
     deletedEntries = 0;
 
     for (var key in oldEntries.keys) {
@@ -111,7 +114,8 @@ abstract class BoxBase extends TypeRegistryImpl
   Future<void> compact() async {
     checkOpen();
     if (deletedEntries == 0) return;
-    var newEntries = await backend.compact(keystore.entries);
+    var entries = keystore.getAll();
+    var newEntries = await backend.compact(entries);
     keystore.clear(newEntries);
     deletedEntries = 0;
   }

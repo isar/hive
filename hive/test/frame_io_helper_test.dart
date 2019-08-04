@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:test/test.dart';
 
@@ -25,8 +26,10 @@ void main() {
     group('.readFrameKeysFromFile()', () {
       test('frame', () async {
         var file = await getByteFile(frameBytes);
-        var frames =
-            await FrameIoHelper().readFrameKeysFromFile(file.path, null);
+        var frames = <Frame>[];
+        var recoveryOffset = await FrameIoHelper()
+            .readFrameKeysFromFile(file.path, frames, null);
+        expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
           expect(frames[i].key, testFrames[i].key);
@@ -37,8 +40,10 @@ void main() {
 
       test('encrypted', () async {
         var file = await getByteFile(frameBytesEncrypted);
-        var frames = await FrameIoHelper()
-            .readFrameKeysFromFile(file.path, getDebugCrypto());
+        var frames = <Frame>[];
+        var recoveryOffset = await FrameIoHelper()
+            .readFrameKeysFromFile(file.path, frames, getDebugCrypto());
+        expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
           expect(frames[i].key, testFrames[i].key);
@@ -51,8 +56,10 @@ void main() {
     group('.readFramesFromFile()', () {
       test('frame', () async {
         var file = await getByteFile(frameBytes);
-        var frames =
-            await FrameIoHelper().readFramesFromFile(file.path, null, null);
+        var frames = <Frame>[];
+        var recoveryOffset = await FrameIoHelper()
+            .readFramesFromFile(file.path, frames, null, null);
+        expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
           expect(frames[i].key, testFrames[i].key);
@@ -64,8 +71,11 @@ void main() {
 
       test('encrypted', () async {
         var file = await getByteFile(frameBytesEncrypted);
-        var frames = await FrameIoHelper()
-            .readFramesFromFile(file.path, null, getDebugCrypto());
+        var frames = <Frame>[];
+        var recoveryOffset = await FrameIoHelper()
+            .readFramesFromFile(file.path, frames, null, getDebugCrypto());
+        expect(recoveryOffset, null);
+
         for (var i = 0; i < testFrames.length; i++) {
           expect(frames[i].key, testFrames[i].key);
           expect(frames[i].value, testFrames[i].value);

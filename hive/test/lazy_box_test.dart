@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
@@ -18,7 +19,7 @@ LazyBox getBox({
   Keystore keystore,
   CompactionStrategy cStrategy,
 }) {
-  return LazyBox.debug(
+  return LazyBox(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     BoxOptions(
@@ -57,160 +58,218 @@ void main() {
       });
     });
 
-    test('[]', () {
+    test('[] throws exception', () {
       var box = getBox();
       expect(() => box['key'], throwsHiveError('lazy boxes'));
     });
-  });
 
-  group('.put()', () {
-    BackendMock getWriteFrameMock() {
-      var backend = BackendMock();
-      when(backend.writeFrame(any, any))
-          .thenAnswer((i) async => const BoxEntry(null));
-      return backend;
-    }
+    group('.put()', () {
+      test('does nothing when deleting a non existing key', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(false);
 
-    test('writeFrame', () async {
-      var backend = getWriteFrameMock();
-      var entries = <String, BoxEntry>{};
-      var box = getBox(backend: backend, entries: entries);
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
 
-      await box.put('key1', null);
-      verifyZeroInteractions(backend);
-
-      await box.put('key1', 'value1');
-      expect(entries.containsKey('key1'), true);
-      verify(backend.writeFrame(const Frame('key1', 'value1'), false));
-
-      await box.put('key1', null);
-      expect(entries.containsKey('key1'), false);
-    });
-
-    test('compaction', () async {
-      var backend = getWriteFrameMock();
-      var entries = 0;
-      var deletedEntries = 0;
-      var shouldCompact = false;
-      var box = getBox(
-        backend: backend,
-        cStrategy: (e, d) {
-          entries = e;
-          deletedEntries = d;
-          return shouldCompact;
-        },
-      );
-
-      await box.put('key1', null);
-      expect(entries, 0);
-      expect(deletedEntries, 0);
-
-      await box.put('key1', 'value1');
-      expect(entries, 1);
-      expect(deletedEntries, 0);
-
-      await box.put('key1', 'value2');
-      expect(entries, 1);
-      expect(deletedEntries, 1);
-
-      await box.put('key1', null);
-      expect(entries, 0);
-      expect(deletedEntries, 2);
-
-      verifyNever(backend.compact(any));
-      shouldCompact = true;
-
-      await box.put('key1', 'abc');
-      expect(entries, 1);
-      expect(deletedEntries, 2);
-      verify(backend.compact({'key1': const BoxEntry(null)}));
-    });
-  });
-
-  group('.putAll()', () {
-    BackendMock getWriteFramesMock() {
-      var backend = BackendMock();
-      when(backend.writeFrames(any, false)).thenAnswer((i) async {
-        return List.filled(
-            (i.positionalArguments[0] as List).length, const BoxEntry(null));
+        await box.put('testKey', null);
+        verifyZeroInteractions(backend);
+        verifyZeroInteractions(notifier);
+        expect(box.deletedEntries, 0);
       });
-      return backend;
-    }
 
-    test('writeFrame', () async {
-      var backend = getWriteFramesMock();
+      test('value', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(false);
 
-      var entries = <String, BoxEntry>{};
-      var box = getBox(backend: backend, entries: entries);
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
 
-      await box.putAll({'key1': null});
-      verifyZeroInteractions(backend);
+        await box.put('key1', 'value1');
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          backend.writeFrame(const Frame('key1', 'value1'), BoxEntry(null)),
+          keystore.addAll({'key1': BoxEntry(null)}),
+          notifier.notify('key1', 'value1'),
+        ]);
+        expect(box.deletedEntries, 0);
+      });
 
-      await box.putAll({'key1': 'val1', 'key2': 'val2', 'key3': null});
-      expect(entries.keys, ['key1', 'key2']);
-      verify(backend.writeFrames([
-        const Frame('key1', 'val1'),
-        const Frame('key2', 'val2'),
-      ], false));
+      test('delete key', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(true);
 
-      await box.putAll({'key1': null});
-      expect(entries.keys, ['key2']);
-      verify(backend.writeFrames([const Frame('key1', null)], false));
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.put('key1', null);
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          backend.writeFrame(const Frame('key1', null), null),
+          keystore.addAll({'key1': null}),
+          notifier.notify('key1', null),
+        ]);
+        expect(box.deletedEntries, 1);
+      });
+
+      test('handles exceptions', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+
+        when(backend.writeFrame(any, any)).thenThrow('Some error');
+        when(keystore.containsKey(any)).thenReturn(true);
+
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        expect(
+            () async => await box.put('key1', 'newValue'), throwsA(anything));
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          backend.writeFrame(const Frame('key1', 'newValue'), BoxEntry(null))
+        ]);
+        verifyNoMoreInteractions(keystore);
+        verifyNoMoreInteractions(notifier);
+        expect(box.deletedEntries, 0);
+      });
     });
 
-    test('compaction', () async {
-      var backend = getWriteFramesMock();
-      var entries = 0;
-      var deletedEntries = 0;
-      var shouldCompact = false;
+    group('.putAll()', () {
+      test('do nothing when deleting non existing keys', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(false);
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.putAll({'key1': null, 'key2': null, 'key3': null});
+        verifyZeroInteractions(backend);
+        verifyZeroInteractions(notifier);
+        expect(box.deletedEntries, 0);
+      });
+
+      test('values', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(false);
+
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.putAll({'key1': 'value1', 'key2': 'value2'});
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          keystore.containsKey('key2'),
+          backend.writeFrames(
+            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
+            [BoxEntry(null), BoxEntry(null)],
+          ),
+          keystore.addAll({'key1': BoxEntry(null), 'key2': BoxEntry(null)}),
+          notifier.notify('key1', 'value1'),
+          notifier.notify('key2', 'value2'),
+        ]);
+        expect(box.deletedEntries, 0);
+      });
+
+      test('delete keys', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(true);
+
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.putAll({'key1': null, 'key2': null});
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          keystore.containsKey('key2'),
+          backend.writeFrames(
+            [const Frame('key1', null), const Frame('key2', null)],
+            [null, null],
+          ),
+          keystore.addAll({'key1': null, 'key2': null}),
+          notifier.notify('key1', null),
+          notifier.notify('key2', null),
+        ]);
+        expect(box.deletedEntries, 2);
+      });
+
+      test('handles exceptions', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+
+        when(backend.writeFrames(any, any)).thenThrow('Some error');
+        when(keystore.containsKey(any)).thenReturn(true);
+
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await expectLater(
+          () async => await box.putAll({'key1': 'value1', 'key2': 'value2'}),
+          throwsA(anything),
+        );
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          keystore.containsKey('key2'),
+          backend.writeFrames(
+            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
+            [BoxEntry(null), BoxEntry(null)],
+          ),
+        ]);
+        verifyNoMoreInteractions(keystore);
+        verifyNoMoreInteractions(notifier);
+        expect(box.deletedEntries, 0);
+      });
+    });
+
+    test('.toMap()', () async {
+      var backend = BackendMock();
+      when(backend.readAll())
+          .thenAnswer((i) async => {'key1': 1, 'key2': 2, 'key4': 444});
       var box = getBox(
         backend: backend,
-        cStrategy: (e, d) {
-          entries = e;
-          deletedEntries = d;
-          return shouldCompact;
-        },
+        keystore: Keystore({
+          'key1': BoxEntry(null, 0, 0),
+          'key2': BoxEntry(null, 0, 0),
+          'key4': BoxEntry(null, 0, 0),
+        }),
       );
-
-      await box.putAll({'key1': null});
-      expect(entries, 0);
-      expect(deletedEntries, 0);
-
-      await box.putAll({'key1': 'value1', 'key1': 'value2', 'key1': 'value3'});
-      expect(entries, 1);
-      expect(deletedEntries, 0);
-
-      await box.putAll({'key1': 'value4'});
-      expect(entries, 1);
-      expect(deletedEntries, 1);
-
-      await box.putAll({'key1': null});
-      expect(entries, 0);
-      expect(deletedEntries, 2);
-
-      verifyNever(backend.compact(any));
-      shouldCompact = true;
-
-      await box.putAll({'key1': 'abc'});
-      expect(entries, 1);
-      expect(deletedEntries, 2);
-      verify(backend.compact({'key1': const BoxEntry(null)}));
+      expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
+      verify(backend.readAll());
     });
-  });
-
-  test('.toMap()', () async {
-    var backend = BackendMock();
-    when(backend.readAll(any))
-        .thenAnswer((i) async => {'key1': 1, 'key2': 2, 'key4': 444});
-    var box = getBox(
-      backend: backend,
-      keystore: Keystore({
-        'key1': BoxEntry(null, 0, 0),
-        'key2': BoxEntry(null, 0, 0),
-        'key4': BoxEntry(null, 0, 0),
-      }),
-    );
-    expect(await box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
-    verify(backend.readAll(['key1', 'key2', 'key4']));
   });
 }

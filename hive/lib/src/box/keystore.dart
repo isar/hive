@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 class BoxEntry {
   final dynamic value;
   int offset;
@@ -20,6 +22,7 @@ class KeyTransaction {
   final Map<String, BoxEntry> entries;
   final KeyTransaction _root;
   final List<KeyTransaction> _transactions;
+  int deletedEntries;
 
   KeyTransaction._(this.entries, this._root, this._transactions);
 
@@ -38,9 +41,7 @@ class Keystore {
   final List<KeyTransaction> _transactions;
 
   Keystore([Map<String, BoxEntry> entries])
-      : _transactions = [KeyTransaction._(entries ?? {}, null, null)];
-
-  Map<String, BoxEntry> get entries => _transactions.first.entries;
+      : _transactions = [KeyTransaction._(entries ?? HashMap(), null, null)];
 
   bool containsKey(String key) {
     for (var i = _transactions.length - 1; i >= 0; i--) {
@@ -61,12 +62,21 @@ class Keystore {
   }
 
   Map<String, BoxEntry> getAll() {
-    var entries = <String, BoxEntry>{};
+    var entries = HashMap<String, BoxEntry>();
     for (var i = 0; i < _transactions.length; i++) {
-      entries.addAll(_transactions[i].entries);
+      var trxEntries = _transactions[i].entries;
+      for (var key in trxEntries.keys) {
+        var value = trxEntries[key];
+        if (value != null) {
+          entries[key] = value;
+        }
+      }
     }
-    entries.removeWhere((k, v) => v == null);
     return entries;
+  }
+
+  void addAll(Map<String, BoxEntry> entries) {
+    _transactions.first.entries.addAll(entries);
   }
 
   KeyTransaction keyTransaction(Map<String, BoxEntry> entries) {
@@ -76,8 +86,10 @@ class Keystore {
     return transaction;
   }
 
-  void clear([Map<String, BoxEntry> newEntries]) {
+  Map<String, BoxEntry> clear([Map<String, BoxEntry> newEntries]) {
+    var oldEntries = _transactions.first.entries;
     _transactions.clear();
     _transactions.add(KeyTransaction._(newEntries ?? {}, null, null));
+    return oldEntries;
   }
 }

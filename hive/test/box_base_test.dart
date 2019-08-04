@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/box_base.dart';
@@ -11,9 +13,7 @@ import 'package:test/test.dart';
 import 'common.dart';
 
 class BoxBaseMock extends BoxBase with Mock {
-  BoxBaseMock() : super(null, null, null, null);
-
-  BoxBaseMock.debug({
+  BoxBaseMock({
     HiveImpl hive,
     String name,
     bool lazy,
@@ -21,7 +21,7 @@ class BoxBaseMock extends BoxBase with Mock {
     Keystore keystore,
     ChangeNotifier notifier,
     CompactionStrategy cStrategy,
-  }) : super.debug(
+  }) : super(
           hive ?? HiveImpl(),
           name ?? 'testBox',
           BoxOptions(
@@ -37,14 +37,14 @@ class BoxBaseMock extends BoxBase with Mock {
 void main() {
   group('BoxBase', () {
     test('.name', () {
-      var box = BoxBaseMock.debug(name: 'testName');
+      var box = BoxBaseMock(name: 'testName');
       expect(box.name, 'testName');
     });
 
     test('.path', () {
       var backend = BackendMock();
       when(backend.path).thenReturn('some/path');
-      var box = BoxBaseMock.debug(backend: backend);
+      var box = BoxBaseMock(backend: backend);
       expect(box.path, 'some/path');
     });
 
@@ -54,13 +54,13 @@ void main() {
         'key2': BoxEntry(null),
         'key4': BoxEntry(null)
       });
-      var box = BoxBaseMock.debug(keystore: keystore);
-      expect(box.keys, ['key1', 'key2', 'key4']);
+      var box = BoxBaseMock(keystore: keystore);
+      expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
     });
 
     test('.has()', () {
       var backend = BackendMock();
-      var box = BoxBaseMock.debug(
+      var box = BoxBaseMock(
         backend: backend,
         keystore: Keystore({
           'existingKey': BoxEntry(null),
@@ -73,13 +73,13 @@ void main() {
     });
 
     test('.delete()', () {
-      var box = BoxBaseMock.debug();
+      var box = BoxBaseMock();
       box.delete('testKey');
       verify(box.put('testKey', null));
     });
 
     test('.deleteAll()', () {
-      var box = BoxBaseMock.debug();
+      var box = BoxBaseMock();
       box.deleteAll(['key1', 'key2', 'key3']);
       verify(box.putAll({'key1': null, 'key2': null, 'key3': null}));
     });
@@ -87,7 +87,7 @@ void main() {
     test('.clear()', () async {
       var backend = BackendMock();
       var notifier = ChangeNotifierMock();
-      var box = BoxBaseMock.debug(
+      var box = BoxBaseMock(
         backend: backend,
         notifier: notifier,
         keystore: Keystore({'key1': BoxEntry(null), 'key2': BoxEntry(null)}),
@@ -102,7 +102,7 @@ void main() {
     group('.compact()', () {
       test('does nothing if there are no deleted entries', () async {
         var backend = BackendMock();
-        var box = BoxBaseMock.debug(
+        var box = BoxBaseMock(
           backend: backend,
           keystore: Keystore({
             'key1': BoxEntry(null),
@@ -117,7 +117,7 @@ void main() {
       var hive = HiveMock();
       var notifier = ChangeNotifierMock();
       var backend = BackendMock();
-      var box = BoxBaseMock.debug(
+      var box = BoxBaseMock(
         name: 'myBox',
         hive: hive,
         notifier: notifier,
@@ -137,7 +137,7 @@ void main() {
       var hive = HiveMock();
       var notifier = ChangeNotifierMock();
       var backend = BackendMock();
-      var box = BoxBaseMock.debug(
+      var box = BoxBaseMock(
         name: 'myBox',
         hive: hive,
         notifier: notifier,

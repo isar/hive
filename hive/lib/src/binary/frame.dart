@@ -150,7 +150,7 @@ class Frame {
         crc: computedCrc, length: frameBytes.length - 4);
 
     var crc = bytesToUint32(frameBytes, frameBytes.length - 4);
-    return computedCrc != crc;
+    return computedCrc == crc;
   }
 
   Uint8List toBytes(

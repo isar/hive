@@ -142,7 +142,7 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<Map<String, dynamic>> readAll(Iterable<String> keys) async {
+  Future<Map<String, dynamic>> readAll() async {
     var frames = <Frame>[];
     await _file.writeLock.synchronized(() {
       return _helper.readFramesFromFile(path, frames, _registry, _crypto);
@@ -158,27 +158,29 @@ class StorageBackendVm extends StorageBackend {
   @override
   Future writeFrame(Frame frame, BoxEntry entry) async {
     var bytes = frame.toBytes(true, _registry, _crypto);
-    entry.offset = await _file.write(bytes);
-    entry.length = bytes.length;
+    entry?.offset = await _file.write(bytes);
+    entry?.length = bytes.length;
   }
 
   @override
   Future writeFrames(List<Frame> frames, Iterable<BoxEntry> entries) async {
     var bytes = BytesBuilder(copy: false);
-    var entryIterator = entries.iterator;
+    var lengths = List<int>(frames.length);
+    var i = 0;
     for (var frame in frames) {
       var frameBytes = frame.toBytes(true, _registry, _crypto);
       bytes.add(frameBytes);
-
-      entryIterator.moveNext();
-      entryIterator.current.length = frameBytes.length;
+      lengths[i++] = frameBytes.length;
     }
 
     var offset = await _file.write(bytes.toBytes());
 
+    i = 0;
     for (var entry in entries) {
-      entry.offset = offset;
-      offset += entry.length;
+      var length = lengths[i++];
+      entry?.offset = offset;
+      entry?.length = length;
+      offset += length;
     }
   }
 

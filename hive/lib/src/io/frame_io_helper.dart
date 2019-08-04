@@ -20,7 +20,6 @@ class FrameIoHelper {
         var frameLength = bytesToUint32(lengthBytes);
         var frameBytes = await bufferedFile.read(frameLength - 4);
         if (!Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
-          await bufferedFile.close();
           return frameOffset;
         }
         var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);

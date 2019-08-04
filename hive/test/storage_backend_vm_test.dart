@@ -64,14 +64,16 @@ void main() {
     group('.initialize()', () {
       test('not lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.readFramesFromFile(any, any, any)).thenAnswer((i) async {
-          return [
+        when(ioHelper.readFramesFromFile(any, any, any, any))
+            .thenAnswer((i) async {
+          i.positionalArguments[1].addAll([
             const Frame('key1', 'value1', 1),
             const Frame('key2', 'value2', 2),
             const Frame('key1', 'value3', 3),
             const Frame('key2', null, 4),
             const Frame('key3', 'value4', 5)
-          ];
+          ]);
+          return null;
         });
 
         var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
@@ -88,14 +90,16 @@ void main() {
 
       test('lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.readFrameKeysFromFile(any, any)).thenAnswer((i) async {
-          return [
+        when(ioHelper.readFrameKeysFromFile(any, any, any))
+            .thenAnswer((i) async {
+          i.positionalArguments[1].addAll([
             const Frame.lazy('key1', 1),
             const Frame.lazy('key2', 2),
             const Frame.lazy('key1', 3),
             const Frame('key2', null, 4),
             const Frame.lazy('key3', 5)
-          ];
+          ]);
+          return null;
         });
 
         var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
@@ -132,7 +136,7 @@ void main() {
       await file.write(frameBytes);
 
       var backend = StorageBackendVm(file, null);
-      var map = await backend.readAll(null);
+      var map = await backend.readAll();
       expect(map, {'key1': 1, 'key2': 2, 'key3': 3});
     });
 
