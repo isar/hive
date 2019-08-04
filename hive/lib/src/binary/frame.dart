@@ -86,7 +86,9 @@ class Frame {
       Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
     var lengthBytes = Uint8List.view(bytes.buffer, 0, 4);
     var frameBytes = Uint8List.view(bytes.buffer, 4);
-    checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
+    if (!checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
+      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+    }
 
     var frameReader =
         BinaryReaderImpl(frameBytes, registry, frameBytes.length - 4);
@@ -95,7 +97,9 @@ class Frame {
 
   static Frame bodyFromBytes(
       Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
-    checkCrc(null, bytes, crypto?.keyCrc);
+    if (!checkCrc(null, bytes, crypto?.keyCrc)) {
+      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+    }
     var frameReader = BinaryReaderImpl(bytes, registry, bytes.length - 4);
     return decodeBody(frameReader, false, true, bytes.length, crypto);
   }
@@ -136,7 +140,7 @@ class Frame {
     }
   }
 
-  static void checkCrc(
+  static bool checkCrc(
       List<int> lengthBytes, List<int> frameBytes, int keyCrc) {
     var computedCrc = keyCrc ?? 0;
     if (lengthBytes != null) {
@@ -146,9 +150,7 @@ class Frame {
         crc: computedCrc, length: frameBytes.length - 4);
 
     var crc = bytesToUint32(frameBytes, frameBytes.length - 4);
-    if (computedCrc != crc) {
-      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
-    }
+    return computedCrc != crc;
   }
 
   Uint8List toBytes(

@@ -15,6 +15,7 @@ abstract class HiveInterface implements TypeRegistry {
     List<int> encryptionKey,
     bool lazy = false,
     CompactionStrategy compactionStrategy,
+    bool crashRecovery = true,
   });
 
   /// Checks if a specific box is currently open.

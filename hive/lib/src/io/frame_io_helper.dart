@@ -8,18 +8,21 @@ import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 
 class FrameIoHelper {
-  Future<List<Frame>> readFrameKeysFromFile(
-      String path, CryptoHelper crypto) async {
+  Future<int> readFrameKeysFromFile(
+      String path, List<Frame> frames, CryptoHelper crypto) async {
     var bufferedFile = await BufferedFileReader.fromFile(path);
-    var frames = <Frame>[];
     try {
       while (true) {
+        var frameOffset = bufferedFile.offset;
         var lengthBytes = (await bufferedFile.read(4)).toList();
         if (lengthBytes.isEmpty) break;
 
         var frameLength = bytesToUint32(lengthBytes);
         var frameBytes = await bufferedFile.read(frameLength - 4);
-        Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
+        if (!Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
+          await bufferedFile.close();
+          return frameOffset;
+        }
         var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);
         var frame =
             Frame.decodeBody(frameReader, true, false, frameLength, null);
@@ -29,27 +32,31 @@ class FrameIoHelper {
       await bufferedFile.close();
     }
 
-    return frames;
+    return null;
   }
 
-  Future<List<Frame>> readFramesFromFile(
-      String path, TypeRegistry registry, CryptoHelper crypto) async {
+  Future<int> readFramesFromFile(String path, List<Frame> frames,
+      TypeRegistry registry, CryptoHelper crypto) async {
     var bytes = await File(path).readAsBytes() as Uint8List;
     var reader = BinaryReaderImpl(bytes, registry);
-    var frames = <Frame>[];
-    while (true) {
-      if (reader.availableBytes == 0) break;
+
+    while (reader.availableBytes != 0) {
+      var frameOffset = reader.usedBytes;
 
       var lengthBytes = reader.readByteList(4);
       var frameLength = bytesToUint32(lengthBytes);
       var frameBytes = reader.viewBytes(frameLength - 4);
-      Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
+
+      if (!Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
+        return frameOffset;
+      }
+
       var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
       var frame =
           Frame.decodeBody(frameReader, true, true, frameLength, crypto);
       frames.add(frame);
     }
 
-    return frames;
+    return null;
   }
 }

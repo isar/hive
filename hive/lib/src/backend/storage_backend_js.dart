@@ -6,13 +6,16 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/box_impl.dart';
+import 'package:hive/src/box/cached_box.dart';
+import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/box/lazy_box.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
+Future<Box> openBox(HiveImpl hive, String name, BoxOptions options) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
@@ -26,7 +29,12 @@ Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
   }
 
   var backend = StorageBackendJs(db, crypto);
-  var box = BoxImpl(hive, name, options, backend);
+  BoxBase box;
+  if (options.lazy) {
+    box = LazyBox(hive, name, options, backend);
+  } else {
+    box = CachedBox(hive, name, options, backend);
+  }
   backend._registry = box;
 
   await box.initialize();
@@ -105,7 +113,8 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
+  Future<int> initialize(
+      Map<String, BoxEntry> entries, bool lazy, bool crashRecovery) async {
     var keys = await getKeys();
     if (!lazy) {
       var values = await getValues();
@@ -114,7 +123,7 @@ class StorageBackendJs extends StorageBackend {
       }
     } else {
       for (var i = 0; i < keys.length; i++) {
-        entries[keys[i]] = const BoxEntry(null, null, null);
+        entries[keys[i]] = BoxEntry(null);
       }
     }
 
@@ -133,31 +142,24 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<BoxEntry> writeFrame(Frame frame, bool lazy) async {
+  Future writeFrame(Frame frame, BoxEntry entry) async {
     if (frame.deleted) {
       await getStore(true).delete(frame.key);
-      return null;
     } else {
       await getStore(true).put(encodeValue(frame.value), frame.key);
-      return BoxEntry(!lazy ? frame.value : null, null, null);
     }
   }
 
   @override
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool lazy) async {
+  Future writeFrames(List<Frame> frames, Iterable<BoxEntry> entries) async {
     var store = getStore(true);
-    var entries = List<BoxEntry>(frames.length);
-    var i = 0;
     for (var frame in frames) {
       if (frame.deleted) {
         await store.delete(frame.key);
-        entries[i++] = null;
       } else {
         await store.put(encodeValue(frame.value), frame.key);
-        entries[i++] = BoxEntry(!lazy ? frame.value : null, null, null);
       }
     }
-    return entries;
   }
 
   @override

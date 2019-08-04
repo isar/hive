@@ -1,9 +1,9 @@
 ## 0.4.0
 - Added BigInt support
 - Added `compactionStrategy` parameter
-- Added crash recovery
+- Added automatic crash recovery
+- Cached boxes now notify their listeners immediately
 - Bugfixes
-- More samples
 - More tests
 
 ## 0.3.0+1

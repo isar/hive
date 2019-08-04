@@ -8,7 +8,7 @@ import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
-import 'box/box_impl.dart';
+import 'backend/storage_backend.dart';
 
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, Box>();
@@ -42,9 +42,18 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     List<int> encryptionKey,
     bool lazy = false,
     CompactionStrategy compactionStrategy,
+    bool crashRecovery = true,
   }) async {
     var existingBox = _boxes[name.toLowerCase()];
     if (existingBox != null) return existingBox;
+
+    if (encryptionKey != null) {
+      if (encryptionKey.length != 32 ||
+          encryptionKey.any((it) => it < 0 || it > 255)) {
+        throw ArgumentError(
+            'The encryption key has to be a 32 byte (256 bit) array.');
+      }
+    }
 
     var options = BoxOptions(
       encryptionKey: encryptionKey,

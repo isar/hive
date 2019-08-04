@@ -38,9 +38,9 @@ class TransactionBox with BoxTransactionMixin implements Box {
   }
 
   @override
-  Future<T> get<T>(String key, {T defaultValue}) {
+  Future<dynamic> get(String key, {dynamic defaultValue}) {
     if (_newEntries.containsKey(key)) {
-      return Future.value(_newEntries[key] as T ?? defaultValue);
+      return Future.value(_newEntries[key] ?? defaultValue);
     } else {
       return _box.get(key, defaultValue: defaultValue);
     }

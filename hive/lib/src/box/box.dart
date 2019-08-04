@@ -37,7 +37,7 @@ abstract class Box implements TypeRegistry {
   ///
   /// The value is loaded from the disk and returned. If the [key] does not
   /// exist, [defaultValue] is returned instead.
-  Future<T> get<T>(String key, {T defaultValue});
+  Future<dynamic> get(String key, {dynamic defaultValue});
 
   /// Identical to [get].
   ///

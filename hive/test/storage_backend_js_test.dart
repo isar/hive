@@ -7,7 +7,7 @@ import 'dart:typed_data';
 
 import 'package:hive/src/backend/storage_backend_js.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_impl.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:test/test.dart';
 
@@ -110,11 +110,11 @@ void main() {
         var backend = StorageBackendJs(db, null);
 
         var entries = <String, BoxEntry>{};
-        expect(await backend.initialize(entries, false), 0);
+        expect(await backend.initialize(entries, false, false), 0);
         expect(entries, {
-          'key1': const BoxEntry(1, null, null),
-          'key2': const BoxEntry(2, null, null),
-          'key3': const BoxEntry(3, null, null)
+          'key1': BoxEntry(1, null, null),
+          'key2': BoxEntry(2, null, null),
+          'key3': BoxEntry(3, null, null)
         });
       });
 
@@ -123,11 +123,11 @@ void main() {
         var backend = StorageBackendJs(db, null);
 
         var entries = <String, BoxEntry>{};
-        expect(await backend.initialize(entries, true), 0);
+        expect(await backend.initialize(entries, true, false), 0);
         expect(entries, {
-          'key1': const BoxEntry(null, null, null),
-          'key2': const BoxEntry(null, null, null),
-          'key3': const BoxEntry(null, null, null)
+          'key1': BoxEntry(null),
+          'key2': BoxEntry(null),
+          'key3': BoxEntry(null)
         });
       });
     });
@@ -151,16 +151,15 @@ void main() {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entry = await backend.writeFrame(const Frame('key1', 123), false);
-      expect(entry, const BoxEntry(123, null, null));
+      var entry = BoxEntry(null);
+      await backend.writeFrame(const Frame('key1', 123), entry);
+      expect(entry, BoxEntry(null));
       expect(await backend.getKeys(), ['key1']);
 
-      entry = await backend.writeFrame(const Frame('key2', 456), true);
-      expect(entry, const BoxEntry(null, null, null));
+      await backend.writeFrame(const Frame('key2', 456), entry);
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      entry = await backend.writeFrame(const Frame('key1', null), false);
-      expect(entry, null);
+      await backend.writeFrame(const Frame('key1', null), entry);
       expect(await backend.getKeys(), ['key2']);
     });
 
@@ -168,32 +167,20 @@ void main() {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entries = await backend.writeFrames([
+      var entries = [BoxEntry(null), BoxEntry(null)];
+      await backend.writeFrames([
         const Frame('key1', 123),
         const Frame('key2', 456),
-      ], false);
-      expect(entries, [
-        const BoxEntry(123, null, null),
-        const BoxEntry(456, null, null),
-      ]);
+      ], entries);
+      expect(entries, [BoxEntry(null), BoxEntry(null)]);
       expect(await backend.getKeys(), ['key1', 'key2']);
-
-      entries = await backend.writeFrames([
-        const Frame('key1', null),
-        const Frame('key3', 789),
-      ], true);
-      expect(entries, [null, const BoxEntry(null, null, null)]);
-      expect(await backend.getKeys(), ['key2', 'key3']);
     });
 
     test('.compact()', () async {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entries = {
-        'key1': const BoxEntry(null, null, null),
-        'key2': const BoxEntry(null, null, null)
-      };
+      var entries = {'key1': BoxEntry(null), 'key2': BoxEntry(null)};
       expect(await backend.compact(entries), entries);
     });
 
