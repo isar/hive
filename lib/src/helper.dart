@@ -6,6 +6,7 @@ final _hiveFieldChecker = const TypeChecker.fromRuntime(HiveField);
 
 HiveField getHiveFieldAnn(Element element) {
   var obj = _hiveFieldChecker.firstAnnotationOfExact(element);
+  if (obj == null) return null;
   return HiveField(
     obj.getField('index').toIntValue(),
   );
