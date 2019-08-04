@@ -50,10 +50,12 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     return '''
 
     class $adapterName extends TypeAdapter<$type> {
+      @override
       $type read(BinaryReader reader) {
         ${_buildRead(type, typeFields)}
       }
 
+      @override
       void write(BinaryWriter writer, $type obj) {
         ${_buildWrite(type, typeFields)}
       }
@@ -72,7 +74,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     fields.forEach((index, field) {
       code.writeln('''
         case $index:
-          obj.${field.name} = ${_buildReadType(field.type)};
+          obj.${field.name} = reader.read()${_cast(field.type)};
           break;''');
     });
 
@@ -83,45 +85,19 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     return code.toString();
   }
 
-  String _buildReadType(DartType type) {
-    if (type.isDartCoreInt) {
-      return 'reader.readInt()';
-    } else if (type.isDartCoreDouble) {
-      return 'reader.readDouble()';
-    } else if (type.isDartCoreBool) {
-      return 'reader.readBool()';
-    } else if (type.isDartCoreString) {
-      return 'reader.readString()';
-    } else {
-      return 'reader.read()${_cast(type) ?? ''}';
-    }
-  }
-
   String _cast(DartType type) {
     if (listChecker.isExactlyType(type)) {
-      print('list of $type');
       var paramType = type as ParameterizedType;
       var arg = paramType.typeArguments[0];
-      return '${_castList(arg)}?.toList()';
+      return '?.map((e)=> e${_cast(arg)})?.toList()';
     } else if (mapChecker.isExactlyType(type)) {
       var paramType = type as ParameterizedType;
       var arg1 = paramType.typeArguments[0];
       var arg2 = paramType.typeArguments[1];
-      return '${_castMap(arg1, arg2)}?.toMap()';
+      return '?.map((k,v)=> MapEntry(k${_cast(arg1)},v${_cast(arg2)}))?.toMap()';
     } else {
-      return null;
+      return ' as ${type.name}';
     }
-  }
-
-  String _castList(DartType type) {
-    var subMap = _cast(type) ?? ' as ${type.name}';
-    return '?.map((e)=> e$subMap)';
-  }
-
-  String _castMap(DartType keyType, DartType valType) {
-    var keyMap = _cast(keyType) ?? ' as ${keyType.name}';
-    var valMap = _cast(valType) ?? ' as ${valType.name}';
-    return '?.map((k,v)=> MapEntry(k$keyMap,v$valMap))';
   }
 
   String _buildWrite(String cls, Map<int, FieldElement> fields) {
