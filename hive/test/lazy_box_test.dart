@@ -152,6 +152,11 @@ void main() {
       });
     });
 
+    test('[]= throws exception', () {
+      var box = getBox();
+      expect(() => box['key'] = 123, throwsHiveError('lazy boxes'));
+    });
+
     group('.putAll()', () {
       test('do nothing when deleting non existing keys', () async {
         var backend = BackendMock();

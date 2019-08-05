@@ -51,6 +51,11 @@ abstract class Box implements TypeRegistry {
   /// be handled by a registered [TypeAdapter].
   Future<void> put(String key, dynamic value);
 
+  /// Identical to [put].
+  ///
+  /// See: [put]
+  void operator []=(String key, dynamic value);
+
   /// Removes a key-value pair from the box if the given [key] exists.
   ///
   /// Returns whether the key existed.

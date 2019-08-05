@@ -1,8 +1,9 @@
 ## 0.4.0
-- Added BigInt support
+- Added []= operator to boxes
+- Added `BigInt` support
 - Added `compactionStrategy` parameter
 - Added automatic crash recovery
-- Cached boxes now notify their listeners immediately
+- Cached boxes now notify their listeners immediately about changes
 - Bugfixes
 - More tests
 

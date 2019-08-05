@@ -25,7 +25,7 @@ Hive stores a reference to all open boxes. If you want to get an already opened 
 var box = Hive['myBox'];
 ```
 
-This is especially useful for Flutter apps because you don't need a `FutureBuilder` to get a box.
+This is especially useful for Flutter apps because you don't need to pass the box between widgets.
 
 ## Close box
 

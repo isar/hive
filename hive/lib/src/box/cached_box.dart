@@ -22,12 +22,12 @@ class CachedBox extends BoxBase {
   @override
   Future<dynamic> get(String key, {dynamic defaultValue}) {
     checkOpen();
-
     return Future.value(keystore.get(key)?.value ?? defaultValue);
   }
 
   @override
   dynamic operator [](String key) {
+    checkOpen();
     return keystore.get(key)?.value;
   }
 
@@ -53,6 +53,11 @@ class CachedBox extends BoxBase {
     }
 
     await performCompactionIfNeeded();
+  }
+
+  @override
+  void operator []=(String key, dynamic value) {
+    put(key, value);
   }
 
   @override

@@ -169,6 +169,16 @@ void main() {
       });
     });
 
+    test('[]=', () {
+      var box = getBox(keystore: Keystore());
+
+      box['key'] = 'value';
+      expect(box['key'], 'value');
+
+      box['key'] = null;
+      expect(box.has('key'), false);
+    });
+
     group('.putAll()', () {
       test('do nothing when deleting non existing keys', () async {
         var backend = BackendMock();

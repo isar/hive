@@ -38,6 +38,15 @@ class TransactionBox with BoxTransactionMixin implements Box {
   }
 
   @override
+  bool has(String key) {
+    if (_newEntries.containsKey(key)) {
+      return _newEntries[key] != null;
+    } else {
+      return _box.has(key);
+    }
+  }
+
+  @override
   Future<dynamic> get(String key, {dynamic defaultValue}) {
     if (_newEntries.containsKey(key)) {
       return Future.value(_newEntries[key] ?? defaultValue);
@@ -56,18 +65,14 @@ class TransactionBox with BoxTransactionMixin implements Box {
   }
 
   @override
-  bool has(String key) {
-    if (_newEntries.containsKey(key)) {
-      return _newEntries[key] != null;
-    } else {
-      return _box.has(key);
-    }
-  }
-
-  @override
   Future<void> put(String key, value) {
     _newEntries[key] = value;
     return Future.value();
+  }
+
+  @override
+  void operator []=(String key, dynamic value) {
+    put(key, value);
   }
 
   @override

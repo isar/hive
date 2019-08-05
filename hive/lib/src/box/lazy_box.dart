@@ -52,6 +52,11 @@ class LazyBox extends BoxBase {
   }
 
   @override
+  void operator []=(String key, dynamic value) {
+    throw HiveError('Lazy boxes cannot be accessed using []=.');
+  }
+
+  @override
   Future putAll(Map<String, dynamic> kvPairs) async {
     checkOpen();
 
