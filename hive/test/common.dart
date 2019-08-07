@@ -36,8 +36,6 @@ class BoxMock extends Mock implements Box {}
 
 class KeystoreMock extends Mock implements Keystore {}
 
-class KeyTransactionMock extends Mock implements KeyTransaction {}
-
 Matcher throwsHiveError([String contains]) {
   return throwsA(
     allOf(

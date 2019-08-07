@@ -4,14 +4,14 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/box/lazy_box.dart';
+import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
 
-LazyBox getBox({
+LazyBoxImpl getBox({
   String name,
   HiveImpl hive,
   StorageBackend backend,
@@ -19,11 +19,10 @@ LazyBox getBox({
   Keystore keystore,
   CompactionStrategy cStrategy,
 }) {
-  return LazyBox(
+  return LazyBoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     BoxOptions(
-      lazy: true,
       compactionStrategy: cStrategy ?? (total, deleted) => false,
     ),
     backend ?? BackendMock(),
@@ -33,7 +32,7 @@ LazyBox getBox({
 }
 
 void main() {
-  group('LazyBox', () {
+  group('LazyBoxImpl', () {
     group('.get()', () {
       test('returns defaultValue if key does not exist', () async {
         var backend = BackendMock();
@@ -56,11 +55,6 @@ void main() {
         expect(await box.get('testKey'), 'testVal');
         verify(backend.readValue('testKey', 123, 456));
       });
-    });
-
-    test('[] throws exception', () {
-      var box = getBox();
-      expect(() => box['key'], throwsHiveError('lazy boxes'));
     });
 
     group('.put()', () {
@@ -150,11 +144,6 @@ void main() {
         verifyNoMoreInteractions(notifier);
         expect(box.deletedEntries, 0);
       });
-    });
-
-    test('[]= throws exception', () {
-      var box = getBox();
-      expect(() => box['key'] = 123, throwsHiveError('lazy boxes'));
     });
 
     group('.putAll()', () {

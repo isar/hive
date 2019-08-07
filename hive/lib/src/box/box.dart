@@ -26,6 +26,8 @@ abstract class Box implements TypeRegistry {
   /// to write to this file while the box is open.
   String get path;
 
+  bool get lazy;
+
   /// Returns a list of all keys in the box.
   ///
   /// This is a very fast operation and doesn't need a disk access.

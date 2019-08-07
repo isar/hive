@@ -11,11 +11,11 @@ class ChangeNotifier {
   @visibleForTesting
   ChangeNotifier.debug(this._streamController);
 
-  void notify(String key, dynamic value) {
+  void notify(dynamic key, dynamic value) {
     _streamController.add(BoxEvent(key, value));
   }
 
-  Stream<BoxEvent> watch({String key}) {
+  Stream<BoxEvent> watch({dynamic key}) {
     if (key != null) {
       return _streamController.stream.where((it) => it.key == key);
     } else {

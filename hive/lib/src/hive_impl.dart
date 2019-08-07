@@ -91,8 +91,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       compactionStrategy: defaultCompactionStrategy,
     );
 
-    var box = await openBox(this, name.toLowerCase(), options);
+    var box = await openBox(this, name.toLowerCase(), lazy, options);
     _boxes[name.toLowerCase()] = box;
+
     return box;
   }
 

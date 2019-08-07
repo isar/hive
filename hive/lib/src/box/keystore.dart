@@ -111,11 +111,11 @@ class Keystore {
   }
 
   Map<String, BoxEntry> clear([Map<String, BoxEntry> newEntries]) {
-    var oldEntries = _transactions.first.entries;
+    /*var oldEntries = _transactions.first.entries;
     _transactions.clear();
     _transactions.add(KeyTransaction._(
         SplayTreeMap.from(newEntries) ?? SplayTreeMap(), null, null));
-    return oldEntries;
+    return oldEntries;*/
   }
 }
 

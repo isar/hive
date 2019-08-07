@@ -33,7 +33,7 @@ class CachedBoxImpl extends BoxBase<CachedBox> implements CachedBox {
   @override
   dynamic get(dynamic key, {dynamic defaultValue}) {
     checkOpen();
-    return Future.value(keystore.get(key)?.value ?? defaultValue);
+    return keystore.get(key)?.value ?? defaultValue;
   }
 
   @override
@@ -43,7 +43,7 @@ class CachedBoxImpl extends BoxBase<CachedBox> implements CachedBox {
   }
 
   @override
-  Future put(dynamic key, dynamic value) async {
+  Future<void> put(dynamic key, dynamic value) async {
     checkOpen();
 
     var keyExists = keystore.containsKey(key);
@@ -76,7 +76,7 @@ class CachedBoxImpl extends BoxBase<CachedBox> implements CachedBox {
   }
 
   @override
-  Future putAll(Map<dynamic, dynamic> kvPairs) async {
+  Future<void> putAll(Map<dynamic, dynamic> kvPairs) async {
     checkOpen();
 
     var toBeDeletedEntries = 0;

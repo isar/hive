@@ -16,7 +16,6 @@ class BoxBaseMock extends BoxBase with Mock {
   BoxBaseMock({
     HiveImpl hive,
     String name,
-    bool lazy,
     StorageBackend backend,
     Keystore keystore,
     ChangeNotifier notifier,
@@ -25,7 +24,6 @@ class BoxBaseMock extends BoxBase with Mock {
           hive ?? HiveImpl(),
           name ?? 'testBox',
           BoxOptions(
-            lazy: lazy ?? false,
             compactionStrategy: cStrategy ?? (total, deleted) => false,
           ),
           backend ?? BackendMock(),
@@ -58,7 +56,7 @@ void main() {
       expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
     });
 
-    test('.has()', () {
+    test('.containsKey()', () {
       var backend = BackendMock();
       var box = BoxBaseMock(
         backend: backend,
@@ -67,8 +65,8 @@ void main() {
         }),
       );
 
-      expect(box.has('existingKey'), true);
-      expect(box.has('nonExistingKey'), false);
+      expect(box.containsKey('existingKey'), true);
+      expect(box.containsKey('nonExistingKey'), false);
       verifyZeroInteractions(backend);
     });
 

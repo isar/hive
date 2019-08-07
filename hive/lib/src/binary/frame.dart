@@ -97,7 +97,7 @@ class Frame {
 
     var frameReader =
         BinaryReaderImpl(frameBytes, registry, frameBytes.length - 4);
-    return decodeBody(frameReader, true, true, bytes.length, crypto);
+    return decode(frameReader, true, true, bytes.length, crypto);
   }
 
   static Frame bodyFromBytes(
@@ -106,10 +106,10 @@ class Frame {
       throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
     }
     var frameReader = BinaryReaderImpl(bytes, registry, bytes.length - 4);
-    return decodeBody(frameReader, false, true, bytes.length, crypto);
+    return decode(frameReader, false, true, bytes.length, crypto);
   }
 
-  static Frame decodeBody(
+  static Frame decode(
     BinaryReaderImpl reader,
     bool decodeKey,
     bool decodeValue,
@@ -128,7 +128,7 @@ class Frame {
     }
 
     if (reader.availableBytes == 0) {
-      return Frame(key, null, frameLength);
+      return Frame.deleted(key);
     } else if (decodeValue) {
       dynamic value;
       if (crypto == null) {
@@ -174,7 +174,7 @@ class Frame {
       var localKey = key;
       if (localKey is int) {
         writer
-          ..writeByte(FrameKeyType.asciiStringT.index)
+          ..writeByte(FrameKeyType.uintT.index)
           ..writeUint32(localKey); // Write key
       } else if (localKey is String) {
         if (localKey.length > 255) {

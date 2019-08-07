@@ -14,12 +14,17 @@ abstract class TransactionBase<T extends Box>
   @protected
   final Map<dynamic, dynamic> newEntries;
 
+  final Set<dynamic> deletedKeys;
+
   final int Function() _autoIncrement;
 
-  TransactionBase(this.box, this._autoIncrement) : newEntries = HashMap();
+  TransactionBase(this.box, this._autoIncrement)
+      : newEntries = HashMap(),
+        deletedKeys = <dynamic>{};
 
   @visibleForTesting
-  TransactionBase.debug(this.box, this._autoIncrement, this.newEntries);
+  TransactionBase.debug(
+      this.box, this._autoIncrement, this.newEntries, this.deletedKeys);
 
   @override
   String get name => box.name;
@@ -51,8 +56,10 @@ abstract class TransactionBase<T extends Box>
 
   @override
   bool containsKey(dynamic key) {
-    if (newEntries.containsKey(key)) {
-      return newEntries[key] != null;
+    if (deletedKeys.contains(key)) {
+      return false;
+    } else if (newEntries.containsKey(key)) {
+      return true;
     } else {
       return box.containsKey(key);
     }
@@ -61,25 +68,29 @@ abstract class TransactionBase<T extends Box>
   @override
   Future<void> put(dynamic key, value) {
     newEntries[key] = value;
+    deletedKeys.remove(key);
     return Future.value();
   }
 
   @override
   Future<bool> delete(dynamic key) {
-    newEntries[key] = null;
+    deletedKeys.add(key);
+    newEntries.remove(key);
     return Future.value();
   }
 
   @override
   Future<void> putAll(Map<dynamic, dynamic> entries) {
     newEntries.addAll(entries);
+    deletedKeys.removeAll(entries.keys);
     return Future.value();
   }
 
   @override
   Future<List<bool>> deleteAll(Iterable<dynamic> keys) {
     for (var key in keys) {
-      newEntries[key] = null;
+      deletedKeys.add(key);
+      newEntries.remove(key);
     }
     return Future.value();
   }

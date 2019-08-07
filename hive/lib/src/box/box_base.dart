@@ -89,7 +89,7 @@ abstract class BoxBase<T extends Box> extends TypeRegistryImpl
     var entries = <String, BoxEntry>{};
     deletedEntries =
         await backend.initialize(entries, lazy, options.crashRecovery);
-    keystore.clear(entries);
+    keystore.addAll(entries);
   }
 
   @override
@@ -129,12 +129,12 @@ abstract class BoxBase<T extends Box> extends TypeRegistryImpl
 
   @override
   Future<void> compact() async {
-    checkOpen();
+    /*checkOpen();
     if (deletedEntries == 0) return;
     var entries = keystore.getAll();
     var newEntries = await backend.compact(entries);
     keystore.clear(newEntries);
-    deletedEntries = 0;
+    deletedEntries = 0;*/
   }
 
   @protected

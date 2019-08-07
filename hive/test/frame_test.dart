@@ -17,11 +17,30 @@ import 'generated/frames_encrypted_body_only.g.dart';
 TypeRegistry get registry => TypeRegistryImpl();
 
 Frame frameWithLength(Frame frame, int length) {
-  return Frame(frame.key, frame.value, length);
+  if (frame.deleted) {
+    return Frame.deleted(frame.key, length);
+  } else {
+    return Frame(frame.key, frame.value, length);
+  }
 }
 
-final testFrames = [
-  const Frame('Tombstone frame', null),
+Frame frameBodyWithLength(Frame frame, int length) {
+  if (frame.deleted) {
+    return Frame.deleted(null, length);
+  } else {
+    return Frame(null, frame.value, length);
+  }
+}
+
+final testFrames = <Frame>[
+  const Frame.deleted(0),
+  const Frame.deleted(555),
+  const Frame(123, null),
+  const Frame(0, 'Int key1'),
+  const Frame(1, 'Int key2'),
+  const Frame(2 ^ 32 - 1, 'Int key3'),
+  const Frame.deleted('Tombstone frame'),
+  const Frame('Null frame', null),
   const Frame('Int', 123123123),
   const Frame('Large int', 2 ^ 32),
   const Frame('Bool true', true),
@@ -167,7 +186,7 @@ void main() {
         for (var testFrame in testFrames) {
           var bytes = frameBytesBodyOnly[i];
           var frame = Frame.bodyFromBytes(bytes, registry, null);
-          fEqual(frame, Frame(null, testFrame.value, bytes.length));
+          fEqual(frame, frameBodyWithLength(testFrame, bytes.length));
           i++;
         }
       });
@@ -177,7 +196,7 @@ void main() {
         for (var testFrame in testFrames) {
           var bytes = frameBytesEncryptedBodyOnly[i];
           var frame = Frame.bodyFromBytes(bytes, registry, getDebugCrypto());
-          fEqual(frame, Frame(null, testFrame.value, bytes.length));
+          fEqual(frame, frameBodyWithLength(testFrame, bytes.length));
           i++;
         }
       });
