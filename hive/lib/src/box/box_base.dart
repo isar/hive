@@ -8,8 +8,8 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
-abstract class BoxBase extends TypeRegistryImpl
-    with BoxTransactionMixin
+abstract class BoxBase<T extends Box> extends TypeRegistryImpl
+    with BoxTransactionMixin<T>
     implements Box {
   @override
   final String name;
@@ -35,6 +35,8 @@ abstract class BoxBase extends TypeRegistryImpl
 
   bool _open = true;
 
+  int _autoIncrement = -1;
+
   BoxBase(
     this.hive,
     this.name,
@@ -53,9 +55,9 @@ abstract class BoxBase extends TypeRegistryImpl
   String get path => backend.path;
 
   @override
-  Iterable<String> get keys {
+  Iterable<dynamic> get keys {
     checkOpen();
-    return keystore.getAll().keys;
+    return keystore.getKeys();
   }
 
   @protected
@@ -66,7 +68,19 @@ abstract class BoxBase extends TypeRegistryImpl
   }
 
   @override
-  Stream<BoxEvent> watch({String key}) {
+  int autoIncrement() {
+    return ++_autoIncrement;
+  }
+
+  @protected
+  void updateAutoIncrement(int key) {
+    if (key > _autoIncrement) {
+      _autoIncrement = key;
+    }
+  }
+
+  @override
+  Stream<BoxEvent> watch({dynamic key}) {
     checkOpen();
     return notifier.watch(key: key);
   }
@@ -74,25 +88,28 @@ abstract class BoxBase extends TypeRegistryImpl
   Future initialize() async {
     var entries = <String, BoxEntry>{};
     deletedEntries =
-        await backend.initialize(entries, options.lazy, options.crashRecovery);
+        await backend.initialize(entries, lazy, options.crashRecovery);
     keystore.clear(entries);
   }
 
   @override
-  bool has(String key) {
+  bool containsKey(dynamic key) {
     checkOpen();
     return keystore.containsKey(key);
   }
 
   @override
-  Future delete(String key) {
+  Future delete(dynamic key) {
     return put(key, null);
   }
 
   @override
-  Future deleteAll(Iterable<String> keysToDelete) {
-    var nullValues = List.filled(keysToDelete.length, null);
-    return putAll(Map<String, void>.fromIterables(keysToDelete, nullValues));
+  Future deleteAll(Iterable<dynamic> keysToDelete) {
+    var map = <dynamic, void>{};
+    for (var key in keysToDelete) {
+      map[key] = null;
+    }
+    return putAll(map);
   }
 
   @override

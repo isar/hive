@@ -66,7 +66,7 @@ import 'package:hive/src/util/crc32.dart';
 class Frame {
   static const maxFrameLength = 1000 * 64;
 
-  final String key;
+  final dynamic key;
   final dynamic value;
 
   final int length;
@@ -75,7 +75,12 @@ class Frame {
 
   const Frame(this.key, this.value, [this.length])
       : lazy = false,
-        deleted = value == null;
+        deleted = false;
+
+  const Frame.deleted(this.key, [this.length])
+      : value = null,
+        lazy = false,
+        deleted = true;
 
   const Frame.lazy(this.key, [this.length])
       : value = null,
@@ -111,10 +116,15 @@ class Frame {
     int frameLength,
     CryptoHelper crypto,
   ) {
-    String key;
+    dynamic key;
     if (decodeKey) {
-      var keyLength = reader.readByte(); // Read length of key
-      key = reader.readAsciiString(keyLength); // Read key
+      var keyType = reader.readByte();
+      if (keyType == FrameKeyType.uintT.index) {
+        key = reader.readUint32();
+      } else {
+        var keyLength = reader.readByte(); // Read length of key
+        key = reader.readAsciiString(keyLength); // Read key
+      }
     }
 
     if (reader.availableBytes == 0) {
@@ -155,17 +165,28 @@ class Frame {
 
   Uint8List toBytes(
       bool writeKeyAndLength, TypeRegistry registry, CryptoHelper crypto) {
-    if (key.length > 255) {
-      throw HiveError('Key must not be longer than 255 characters');
-    }
     var writer = BinaryWriterImpl(registry);
 
     if (writeKeyAndLength) {
-      writer
-        ..writeByteList([0, 0, 0, 0],
-            writeLength: false) // Placeholder for length
-        ..writeByte(key.length) // Write key length
-        ..writeAsciiString(key, writeLength: false); // Write key
+      // Placeholder for length
+      writer.writeByteList([0, 0, 0, 0], writeLength: false);
+
+      var localKey = key;
+      if (localKey is int) {
+        writer
+          ..writeByte(FrameKeyType.asciiStringT.index)
+          ..writeUint32(localKey); // Write key
+      } else if (localKey is String) {
+        if (localKey.length > 255) {
+          throw HiveError('Key must not be longer than 255 characters');
+        }
+        writer
+          ..writeByte(FrameKeyType.asciiStringT.index)
+          ..writeByte(localKey.length) // Write key length
+          ..writeAsciiString(localKey, writeLength: false); // Write key
+      } else {
+        throw HiveError('Unsupported key type');
+      }
     }
 
     if (!deleted) {
@@ -206,6 +227,11 @@ class Frame {
 }
 
 typedef ByteSource = Future<List<int>> Function(int bytes);
+
+enum FrameKeyType {
+  uintT,
+  asciiStringT,
+}
 
 enum FrameValueType {
   nullT,

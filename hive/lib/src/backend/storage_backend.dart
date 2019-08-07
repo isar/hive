@@ -9,17 +9,17 @@ abstract class StorageBackend {
   String get path;
 
   Future<int> initialize(
-      Map<String, BoxEntry> entries, bool lazy, bool crashRecovery);
+      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery);
 
-  Future<dynamic> readValue(String key, int offset, int length);
+  Future<dynamic> readValue(dynamic key, int offset, int length);
 
-  Future<Map<String, dynamic>> readAll();
+  Future<Map<dynamic, dynamic>> readAll();
 
   Future writeFrame(Frame frame, BoxEntry entry);
 
   Future writeFrames(List<Frame> frames, Iterable<BoxEntry> entries);
 
-  Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries);
+  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries);
 
   Future clear();
 

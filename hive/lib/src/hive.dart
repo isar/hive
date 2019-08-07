@@ -10,10 +10,16 @@ abstract class HiveInterface implements TypeRegistry {
   void init(String path);
 
   /// Open a box
-  Future<Box> box(
+  Future<CachedBox> box(
     String name, {
     List<int> encryptionKey,
-    bool lazy = false,
+    CompactionStrategy compactionStrategy,
+    bool crashRecovery = true,
+  });
+
+  Future<LazyBox> lazyBox(
+    String name, {
+    List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
   });

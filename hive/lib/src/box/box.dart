@@ -1,7 +1,7 @@
 part of hive;
 
 class BoxEvent {
-  final String key;
+  final dynamic key;
   final dynamic value;
 
   BoxEvent(this.key, this.value);
@@ -29,59 +29,51 @@ abstract class Box implements TypeRegistry {
   /// Returns a list of all keys in the box.
   ///
   /// This is a very fast operation and doesn't need a disk access.
-  Iterable<String> get keys;
+  Iterable<dynamic> get keys;
 
-  Stream<BoxEvent> watch({String key});
+  Stream<BoxEvent> watch({dynamic key});
 
   /// Returns the value associated with the given key.
   ///
   /// The value is loaded from the disk and returned. If the [key] does not
   /// exist, [defaultValue] is returned instead.
-  Future<dynamic> get(String key, {dynamic defaultValue});
-
-  /// Identical to [get].
-  ///
-  /// See: [get]
-  dynamic operator [](String key);
+  dynamic get(dynamic key, {dynamic defaultValue});
 
   /// Store a key-value pair in the box.
   ///
   /// Key has to be a non-null String with a maximum length of 255. Value may
   /// be any primitive, [List] or [Map]. Also supported are objects which can
   /// be handled by a registered [TypeAdapter].
-  Future<void> put(String key, dynamic value);
-
-  /// Identical to [put].
-  ///
-  /// See: [put]
-  void operator []=(String key, dynamic value);
-
-  /// Removes a key-value pair from the box if the given [key] exists.
-  ///
-  /// Returns whether the key existed.
-  Future<void> delete(String key);
+  Future<void> put(dynamic key, dynamic value);
 
   /// Stores multiple key-value pairs in the box.
   ///
   /// This saves disk accesses compared to multiple calls to [put].
   ///
   /// See: [put]
-  Future<void> putAll(Map<String, dynamic> entries);
+  Future<void> putAll(Map<dynamic, dynamic> entries);
+
+  Future<int> add(dynamic value);
+
+  Future<List<int>> addAll(List<dynamic> values);
+
+  /// Removes a key-value pair from the box if the given [key] exists.
+  ///
+  /// Returns whether the key existed.
+  Future<void> delete(dynamic key);
 
   /// Deletes all values associated with the given [keys].
   ///
   /// Returns for each key whether it existed.
-  Future<void> deleteAll(Iterable<String> keys);
+  Future<void> deleteAll(Iterable<dynamic> keys);
 
   /// Checks if the box contains the given [key].
   ///
   /// This is a very fast operation and doesn't need a disk access.
-  bool has(String key);
+  bool containsKey(dynamic key);
 
   /// Reads all key-value pairs from the box and returns them.
-  Future<Map<String, dynamic>> toMap();
-
-  Future<void> transaction(Future Function(Box box) transaction);
+  FutureOr<Map<dynamic, dynamic>> toMap();
 
   /// Compacts the box. Unused space in the box file is being freed. You don't
   /// have to call this manually. Hive will automatically compact the box if it

@@ -37,15 +37,46 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<Box> box(
+  Future<CachedBox> box(
     String name, {
     List<int> encryptionKey,
-    bool lazy = false,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
   }) async {
+    var box = await _box(
+        name, encryptionKey, compactionStrategy, crashRecovery, false);
+    return box as CachedBox;
+  }
+
+  @override
+  Future<LazyBox> lazyBox(
+    String name, {
+    List<int> encryptionKey,
+    CompactionStrategy compactionStrategy,
+    bool crashRecovery = true,
+  }) async {
+    var box = await _box(
+        name, encryptionKey, compactionStrategy, crashRecovery, true);
+    return box as LazyBox;
+  }
+
+  Future<Box> _box(
+    String name,
+    List<int> encryptionKey,
+    CompactionStrategy compactionStrategy,
+    bool crashRecovery,
+    bool lazy,
+  ) async {
     var existingBox = _boxes[name.toLowerCase()];
-    if (existingBox != null) return existingBox;
+    if (existingBox != null) {
+      if (existingBox is LazyBox && !lazy) {
+        throw HiveError('The box has already been opened as lazy box.');
+      } else if (existingBox is CachedBox && lazy) {
+        throw HiveError('The box has already been opened as non lazy box.');
+      } else {
+        return existingBox;
+      }
+    }
 
     if (encryptionKey != null) {
       if (encryptionKey.length != 32 ||
@@ -57,13 +88,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
     var options = BoxOptions(
       encryptionKey: encryptionKey,
-      lazy: lazy,
       compactionStrategy: defaultCompactionStrategy,
     );
 
     var box = await openBox(this, name.toLowerCase(), options);
     _boxes[name.toLowerCase()] = box;
-
     return box;
   }
 

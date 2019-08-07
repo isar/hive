@@ -8,14 +8,15 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/cached_box.dart';
+import 'package:hive/src/box/cached_box_impl.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/box/lazy_box.dart';
+import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-Future<Box> openBox(HiveImpl hive, String name, BoxOptions options) async {
+Future<Box> openBox(
+    HiveImpl hive, String name, bool lazy, BoxOptions options) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
@@ -30,10 +31,10 @@ Future<Box> openBox(HiveImpl hive, String name, BoxOptions options) async {
 
   var backend = StorageBackendJs(db, crypto);
   BoxBase box;
-  if (options.lazy) {
-    box = LazyBox(hive, name, options, backend);
+  if (lazy) {
+    box = LazyBoxImpl(hive, name, options, backend);
   } else {
-    box = CachedBox(hive, name, options, backend);
+    box = CachedBoxImpl(hive, name, options, backend);
   }
   backend._registry = box;
 
@@ -114,7 +115,7 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<int> initialize(
-      Map<String, BoxEntry> entries, bool lazy, bool crashRecovery) async {
+      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery) async {
     var keys = await getKeys();
     if (!lazy) {
       var values = await getValues();
@@ -131,16 +132,16 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(String key, int offset, int length) async {
+  Future<dynamic> readValue(dynamic key, int offset, int length) async {
     var value = await getStore(false).getObject(key);
     return decodeValue(value);
   }
 
   @override
-  Future<Map<String, dynamic>> readAll() async {
+  Future<Map<dynamic, dynamic>> readAll() async {
     var keys = await getKeys();
     var values = await getValues();
-    return Map<String, dynamic>.fromIterables(keys, values);
+    return Map<dynamic, dynamic>.fromIterables(keys, values);
   }
 
   @override
@@ -165,7 +166,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries) {
+  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) {
     return Future.value(entries);
   }
 

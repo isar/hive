@@ -1,55 +1,120 @@
 import 'dart:collection';
 
+class _KeyTransaction {
+  final List<dynamic> added = [];
+  final Map<dynamic, BoxEntry> deleted = {};
+}
+
+int _compareKeys(dynamic k1, dynamic k2) {
+  if (k1.runtimeType == k2.runtimeType) {
+    return (k1 as Comparable).compareTo(k2);
+  } else {
+    return k1 is int ? -1 : 1;
+  }
+}
+
 class Keystore {
-  final List<KeyTransaction> _transactions;
+  final Map<dynamic, BoxEntry> entries;
+  final ListQueue<_KeyTransaction> _transactions = ListQueue();
+  var _deletedEntries = 0;
 
-  Keystore([Map<String, BoxEntry> entries])
-      : _transactions = [KeyTransaction._(entries ?? HashMap(), null, null)];
+  Keystore([Map<dynamic, BoxEntry> entries])
+      : entries = SplayTreeMap.from(entries ?? {}, _compareKeys);
 
-  bool containsKey(String key) {
-    return get(key) != null;
+  int get deletedEntries => _deletedEntries;
+
+  bool containsKey(dynamic key) {
+    return entries.containsKey(key);
   }
 
-  BoxEntry get(String key) {
-    for (var i = _transactions.length - 1; i >= 0; i--) {
-      if (_transactions[i].entries.containsKey(key)) {
-        return _transactions[i].entries[key];
+  BoxEntry get(dynamic key) {
+    return entries[key];
+  }
+
+  Iterable<dynamic> getKeys() {
+    return entries.keys;
+  }
+
+  Iterable<BoxEntry> getValues() {
+    return entries.values;
+  }
+
+  Map<dynamic, dynamic> toMap() {
+    var map = <dynamic, dynamic>{};
+    for (var key in entries.keys) {
+      map[key] = entries[key].value;
+    }
+    return map;
+  }
+
+  void addAll(Map<dynamic, BoxEntry> newEntries) {
+    for (var key in newEntries.keys) {
+      var entry = newEntries[key];
+      if (entry != null) {
+        entries[key] = entry;
+      } else {
+        entries.remove(key);
+        _deletedEntries++;
       }
     }
-    return null;
   }
 
-  Map<String, BoxEntry> getAll() {
-    var entries = HashMap<String, BoxEntry>();
-    for (var i = 0; i < _transactions.length; i++) {
-      var trxEntries = _transactions[i].entries;
-      for (var key in trxEntries.keys) {
-        var value = trxEntries[key];
-        if (value != null) {
-          entries[key] = value;
-        } else {
-          entries.remove(key);
+  void keyTransaction(Map<dynamic, BoxEntry> newEntries) {
+    var transaction = _KeyTransaction();
+    for (var key in newEntries.keys) {
+      var entry = newEntries[key];
+      if (entry == null || entries.containsKey(key)) {
+        transaction.deleted[key] = entries[key];
+        entries.remove(key);
+        _deletedEntries++;
+      }
+      if (entry != null) {
+        transaction.added.add(key);
+        entries[key] = entry;
+      }
+    }
+    _transactions.add(transaction);
+  }
+
+  void commitKeyTransaction() {
+    _transactions.removeFirst();
+  }
+
+  void cancelKeyTransaction() {
+    var transaction = _transactions.removeFirst();
+    for (var key in transaction.added) {
+      var shouldRemove = true;
+      for (var t in _transactions) {
+        if (t.added.contains(key)) {
+          shouldRemove = false;
+          break;
         }
       }
+      if (shouldRemove) {
+        entries.remove(key);
+      }
     }
-    return entries;
-  }
 
-  void addAll(Map<String, BoxEntry> entries) {
-    _transactions.first.entries.addAll(entries);
-  }
-
-  KeyTransaction keyTransaction(Map<String, BoxEntry> entries) {
-    var transaction =
-        KeyTransaction._(entries, _transactions.first, _transactions);
-    _transactions.add(transaction);
-    return transaction;
+    for (var key in transaction.deleted.keys) {
+      var shouldAdd = true;
+      for (var t in _transactions) {
+        if (t.added.contains(key)) {
+          shouldAdd = false;
+          t.deleted[key] = transaction.deleted[key];
+          break;
+        }
+      }
+      if (shouldAdd) {
+        entries[key] = transaction.deleted[key];
+      }
+    }
   }
 
   Map<String, BoxEntry> clear([Map<String, BoxEntry> newEntries]) {
     var oldEntries = _transactions.first.entries;
     _transactions.clear();
-    _transactions.add(KeyTransaction._(newEntries ?? {}, null, null));
+    _transactions.add(KeyTransaction._(
+        SplayTreeMap.from(newEntries) ?? SplayTreeMap(), null, null));
     return oldEntries;
   }
 }
@@ -69,24 +134,5 @@ class BoxEntry {
           other.length == length;
     }
     return false;
-  }
-}
-
-class KeyTransaction {
-  final Map<String, BoxEntry> entries;
-  final KeyTransaction _root;
-  final List<KeyTransaction> _transactions;
-  int deletedEntries;
-
-  KeyTransaction._(this.entries, this._root, this._transactions);
-
-  void commit() {
-    _root.entries.addAll(entries);
-    _transactions.remove(this);
-  }
-
-  Map<String, BoxEntry> cancel() {
-    _transactions.remove(this);
-    return entries;
   }
 }
