@@ -44,3 +44,24 @@ If an existing class needs to be changed – for example, you'd like the class t
 - Fields can be renamed and even changed from public to private or vice versa as long as the field number stays the same.
 - Fields can be removed, as long as the field number is not used again in your updated class.
 - Changing the type of a field is not supported. You should create a new one instead.
+
+
+## Enums
+
+Generating an adapter for enums works almost like it does for classes:
+
+```dart
+@HiveType()
+enum HairColor {
+  @HiveField(0)
+  brown,
+
+  @HiveField(1)
+  blond,
+
+  @HiveField(2)
+  black,
+}
+```
+
+For updating the enum the same rules apply as above.
