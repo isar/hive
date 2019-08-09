@@ -11,3 +11,9 @@ HiveField getHiveFieldAnn(Element element) {
     obj.getField('index').toIntValue(),
   );
 }
+
+void check(bool condition, dynamic error) {
+  if (!condition) {
+    throw error;
+  }
+}
