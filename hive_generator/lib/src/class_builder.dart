@@ -6,6 +6,8 @@ import 'package:source_gen/source_gen.dart';
 class ClassBuilder extends Builder {
   var listChecker = const TypeChecker.fromRuntime(List);
   var mapChecker = const TypeChecker.fromRuntime(Map);
+  var setChecker = const TypeChecker.fromRuntime(Set);
+  var iterableChecker = const TypeChecker.fromRuntime(Iterable);
 
   ClassBuilder(String cls, Map<int, FieldElement> fields) : super(cls, fields);
 
@@ -34,17 +36,29 @@ class ClassBuilder extends Builder {
 
   String _cast(DartType type) {
     if (listChecker.isExactlyType(type)) {
-      var paramType = type as ParameterizedType;
-      var arg = paramType.typeArguments[0];
-      return '?.map((dynamic e)=> e${_cast(arg)})?.toList()';
+      return '${_castIterable(type)}?.toList()';
+    } else if (setChecker.isExactlyType(type)) {
+      return '${_castIterable(type)}?.toSet()';
+    } else if (iterableChecker.isExactlyType(type)) {
+      return _castIterable(type);
     } else if (mapChecker.isExactlyType(type)) {
-      var paramType = type as ParameterizedType;
-      var arg1 = paramType.typeArguments[0];
-      var arg2 = paramType.typeArguments[1];
-      return '?.map((dynamic k, dynamic v)=> MapEntry(k${_cast(arg1)},v${_cast(arg2)}))?.toMap()';
+      return _castMap(type);
     } else {
       return ' as ${type.name}';
     }
+  }
+
+  String _castIterable(DartType type) {
+    var paramType = type as ParameterizedType;
+    var arg = paramType.typeArguments[0];
+    return '?.map((dynamic e)=> e${_cast(arg)})';
+  }
+
+  String _castMap(DartType type) {
+    var paramType = type as ParameterizedType;
+    var arg1 = paramType.typeArguments[0];
+    var arg2 = paramType.typeArguments[1];
+    return '?.map((dynamic k, dynamic v)=> MapEntry(k${_cast(arg1)},v${_cast(arg2)}))?.toMap()';
   }
 
   @override
@@ -52,11 +66,20 @@ class ClassBuilder extends Builder {
     var code = StringBuffer();
     code.writeln('writer.writeByte(${fields.length});');
     fields.forEach((index, field) {
+      var value = _convertIterable(field.type, 'obj.${field.name}');
       code.writeln('''
       writer.writeByte($index);
-      writer.write(obj.${field.name});''');
+      writer.write($value)''');
     });
 
     return code.toString();
+  }
+
+  String _convertIterable(DartType type, String accessor) {
+    if (setChecker.isExactlyType(type) || iterableChecker.isExactlyType(type)) {
+      return '$accessor?.toList()';
+    } else {
+      return accessor;
+    }
   }
 }
