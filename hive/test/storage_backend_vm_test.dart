@@ -64,13 +64,13 @@ void main() {
     group('.initialize()', () {
       test('not lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.allFromFile(any, any, any, any)).thenAnswer((i) async {
+        when(ioHelper.framesFromFile(any, any, any, any)).thenAnswer((i) async {
           i.positionalArguments[1].addAll([
             const Frame('key1', 'value1', 1),
             const Frame('key2', 'value2', 2),
-            const Frame('key1', 'value3', 3),
-            const Frame('key2', null, 4),
-            const Frame('key3', 'value4', 5)
+            const Frame('key1', null, 3),
+            const Frame.deleted('key2', 4),
+            const Frame('key3', 'value3', 5),
           ]);
           return null;
         });
@@ -81,8 +81,8 @@ void main() {
         var deleted = await backend.initialize(entries, false, false);
 
         expect(entries, {
-          'key1': BoxEntry('value3', 3, 3),
-          'key3': BoxEntry('value4', 10, 5)
+          'key1': BoxEntry(null, 3, 3),
+          'key3': BoxEntry('value3', 10, 5),
         });
         expect(deleted, 2);
       });
@@ -94,8 +94,8 @@ void main() {
             const Frame.lazy('key1', 1),
             const Frame.lazy('key2', 2),
             const Frame.lazy('key1', 3),
-            const Frame('key2', null, 4),
-            const Frame.lazy('key3', 5)
+            const Frame.deleted('key2', 4),
+            const Frame.lazy('key3', 5),
           ]);
           return null;
         });

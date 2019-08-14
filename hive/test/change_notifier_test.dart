@@ -22,21 +22,21 @@ void main() {
         filteredEvents.add(e);
       });
 
-      notifier.notify('key1', null);
-      notifier.notify('key1', 'newVal');
-      notifier.notify('key2', 'newVal2');
+      notifier.notify('key1', null, true);
+      notifier.notify('key1', 'newVal', false);
+      notifier.notify('key2', 'newVal2', false);
 
       await Future.delayed(Duration(milliseconds: 1));
 
       expect(allEvents, [
-        BoxEvent('key1', null),
-        BoxEvent('key1', 'newVal'),
-        BoxEvent('key2', 'newVal2'),
+        BoxEvent('key1', null, true),
+        BoxEvent('key1', 'newVal', false),
+        BoxEvent('key2', 'newVal2', false),
       ]);
 
       expect(filteredEvents, [
-        BoxEvent('key1', null),
-        BoxEvent('key1', 'newVal'),
+        BoxEvent('key1', null, true),
+        BoxEvent('key1', 'newVal', false),
       ]);
     });
 

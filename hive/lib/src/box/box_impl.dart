@@ -25,13 +25,18 @@ class BoxImpl extends BoxBase implements Box {
   @override
   Iterable<dynamic> get values {
     checkOpen();
-    return keystore.getValues().map((it) => it.value);
+    return keystore.getValues();
   }
 
   @override
   dynamic get(dynamic key, {dynamic defaultValue}) {
     checkOpen();
-    return keystore.get(key)?.value ?? defaultValue;
+    var entry = keystore.get(key);
+    if (entry != null) {
+      return entry.value;
+    } else {
+      return defaultValue;
+    }
   }
 
   @override
@@ -62,8 +67,8 @@ class BoxImpl extends BoxBase implements Box {
       keystore.commitTransaction();
     } catch (e) {
       keystore.cancelTransaction();
-      var oldValue = keystore.get(frame.key)?.value;
-      notifier.notify(frame.key, oldValue, !frame.deleted);
+      var oldEntry = keystore.get(frame.key);
+      notifier.notify(frame.key, oldEntry?.value, oldEntry == null);
       rethrow;
     }
 
@@ -100,6 +105,8 @@ class BoxImpl extends BoxBase implements Box {
       }
     }
 
+    if (frames.isEmpty) return Future.value();
+
     keystore.beginDeleteTransaction(keys);
     return _writeFrames(frames, null);
   }
@@ -116,8 +123,8 @@ class BoxImpl extends BoxBase implements Box {
     } catch (e) {
       keystore.cancelTransaction();
       for (var frame in frames) {
-        var oldValue = keystore.get(frame.key)?.value;
-        notifier.notify(frame.key, oldValue, !frame.deleted);
+        var oldEntry = keystore.get(frame.key);
+        notifier.notify(frame.key, oldEntry?.value, oldEntry == null);
       }
       rethrow;
     }
@@ -128,6 +135,6 @@ class BoxImpl extends BoxBase implements Box {
   @override
   Map<dynamic, dynamic> toMap() {
     checkOpen();
-    return keystore.toMap();
+    return keystore.toValueMap();
   }
 }

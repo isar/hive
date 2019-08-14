@@ -1,5 +1,8 @@
 import 'dart:collection';
 
+import 'package:hive/src/box/change_notifier.dart';
+import 'package:meta/meta.dart';
+
 class _KeyTransaction {
   final List<dynamic> added = [];
   final Map<dynamic, BoxEntry> deleted = {};
@@ -14,13 +17,17 @@ int _compareKeys(dynamic k1, dynamic k2) {
 }
 
 class Keystore {
+  @visibleForTesting
   final Map<dynamic, BoxEntry> entries;
-  final ListQueue<_KeyTransaction> _transactions = ListQueue();
+
+  @visibleForTesting
+  final ListQueue<_KeyTransaction> transactions = ListQueue();
+
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
   Keystore([Map<dynamic, BoxEntry> entries])
-      : entries = SplayTreeMap.from(entries ?? {}, _compareKeys);
+      : entries = SplayTreeMap.of(entries ?? {}, _compareKeys);
 
   int get deletedEntries => _deletedEntries;
 
@@ -40,7 +47,9 @@ class Keystore {
     return entries.containsKey(key);
   }
 
-  dynamic keyAt(int index) {}
+  dynamic keyAt(int index) {
+    return entries.keys.elementAt(index);
+  }
 
   BoxEntry get(dynamic key) {
     return entries[key];
@@ -50,11 +59,11 @@ class Keystore {
     return entries.keys;
   }
 
-  Iterable<BoxEntry> getValues() {
-    return entries.values;
+  Iterable<dynamic> getValues() {
+    return entries.values.map((e) => e.value);
   }
 
-  Map<dynamic, dynamic> toMap() {
+  Map<dynamic, dynamic> toValueMap() {
     var map = <dynamic, dynamic>{};
     for (var key in entries.keys) {
       map[key] = entries[key].value;
@@ -74,78 +83,88 @@ class Keystore {
 
   void deleteAll(List<dynamic> keys) {
     for (var key in keys) {
-      entries.remove(key);
-      _deletedEntries++;
+      if (entries.remove(key) != null) {
+        _deletedEntries++;
+      }
     }
   }
 
   void beginAddTransaction(Map<dynamic, BoxEntry> newEntries) {
     var transaction = _KeyTransaction();
     for (var key in newEntries.keys) {
-      var existingEntry = entries[key];
-      if (existingEntry != null) {
-        transaction.deleted[key] = existingEntry;
+      var deletedEntry = entries.remove(key);
+      if (deletedEntry != null) {
+        transaction.deleted[key] = deletedEntry;
         _deletedEntries++;
       }
+
       transaction.added.add(key);
       entries[key] = newEntries[key];
       if (key is int && key > _autoIncrement) {
         _autoIncrement = key;
       }
     }
-    _transactions.add(transaction);
+    transactions.add(transaction);
   }
 
   void beginDeleteTransaction(Iterable<dynamic> keys) {
     var transaction = _KeyTransaction();
     for (var key in keys) {
-      transaction.deleted[key] = entries[key];
-      entries.remove(key);
-      _deletedEntries++;
+      var deletedEntry = entries.remove(key);
+      if (deletedEntry != null) {
+        transaction.deleted[key] = deletedEntry;
+        _deletedEntries++;
+      }
     }
-    _transactions.add(transaction);
+    transactions.add(transaction);
   }
 
   void commitTransaction() {
-    _transactions.removeFirst();
+    transactions.removeFirst();
   }
 
   void cancelTransaction() {
-    var transaction = _transactions.removeFirst();
-    for (var key in transaction.added) {
-      var shouldRemove = true;
-      for (var t in _transactions) {
-        if (t.added.contains(key)) {
-          shouldRemove = false;
+    var canceled = transactions.removeFirst();
+    var keys = Set.of(canceled.added);
+    keys.addAll(canceled.deleted.keys);
+
+    for (var key in keys) {
+      var shouldAdd = canceled.deleted.containsKey(key);
+      var shouldDelete = canceled.added.contains(key);
+      for (var t in transactions) {
+        if (t.added.contains(key) || t.deleted.containsKey(key)) {
+          if (canceled.deleted.containsKey(key)) {
+            t.deleted[key] = canceled.deleted[key];
+          } else {
+            t.deleted.remove(key);
+          }
           break;
         }
       }
-      if (shouldRemove) {
-        entries.remove(key);
-      }
-    }
 
-    for (var key in transaction.deleted.keys) {
-      var shouldAdd = true;
-      for (var t in _transactions) {
+      for (var t in transactions) {
         if (t.added.contains(key)) {
           shouldAdd = false;
-          t.deleted[key] = transaction.deleted[key];
-          break;
+          shouldDelete = false;
+        } else if (t.deleted.containsKey(key)) {
+          shouldAdd = false;
         }
       }
+
       if (shouldAdd) {
-        entries[key] = transaction.deleted[key];
+        entries[key] = canceled.deleted[key];
+      } else if (shouldDelete) {
+        entries.remove(key);
       }
     }
   }
 
-  Map<String, BoxEntry> clear([Map<String, BoxEntry> newEntries]) {
-    /*var oldEntries = _transactions.first.entries;
-    _transactions.clear();
-    _transactions.add(KeyTransaction._(
-        SplayTreeMap.from(newEntries) ?? SplayTreeMap(), null, null));
-    return oldEntries;*/
+  Map<dynamic, BoxEntry> clear() {
+    var oldEntries = Map.of(entries);
+    entries.clear();
+    _deletedEntries = 0;
+    transactions.clear();
+    return oldEntries;
   }
 }
 

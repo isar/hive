@@ -70,18 +70,6 @@ void main() {
       verifyZeroInteractions(backend);
     });
 
-    test('.delete()', () {
-      var box = BoxBaseMock();
-      box.delete('testKey');
-      verify(box.put('testKey', null));
-    });
-
-    test('.deleteAll()', () {
-      var box = BoxBaseMock();
-      box.deleteAll(['key1', 'key2', 'key3']);
-      verify(box.putAll({'key1': null, 'key2': null, 'key3': null}));
-    });
-
     test('.clear()', () async {
       var backend = BackendMock();
       var notifier = ChangeNotifierMock();
@@ -94,7 +82,7 @@ void main() {
       expect(await box.clear(), 2);
       //expect(box.debugDeletedEntries, 0);
       verify(backend.clear());
-      verify(notifier.notify('key1', null));
+      verify(notifier.notify('key1', null, true));
     });
 
     group('.compact()', () {

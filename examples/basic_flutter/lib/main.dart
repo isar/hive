@@ -53,7 +53,7 @@ class _IceCreamPageState extends State<IceCreamPage> {
 
   @override
   Widget build(BuildContext context) {
-    var userLikesIceCream = box['userLikesIceCream'] ?? false;
+    var userLikesIceCream = box.get('userLikesIceCream', defaultValue: false);
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min,

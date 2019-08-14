@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/cached_box_impl.dart';
+import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 
 import 'common.dart';
 
-CachedBoxImpl getBox({
+BoxImpl getBox({
   String name,
   HiveImpl hive,
   StorageBackend backend,
@@ -19,7 +19,7 @@ CachedBoxImpl getBox({
   Keystore keystore,
   CompactionStrategy cStrategy,
 }) {
-  return CachedBoxImpl(
+  return BoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     BoxOptions(
@@ -61,25 +61,6 @@ void main() {
     });
 
     group('.put()', () {
-      test('does nothing when deleting a non existing key', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-        when(keystore.containsKey(any)).thenReturn(false);
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-        );
-
-        await box.put('testKey', null);
-        await box.put(123, null);
-        verifyZeroInteractions(backend);
-        verifyZeroInteractions(notifier);
-        expect(box.deletedEntries, 0);
-      });
-
       test('value', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
@@ -94,36 +75,11 @@ void main() {
 
         await box.put('key1', 'value1');
         verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.keyTransaction({'key1': BoxEntry('value1')}),
-          notifier.notify('key1', 'value1'),
+          keystore.beginAddTransaction({'key1': BoxEntry('value1')}),
+          notifier.notify('key1', 'value1', false),
           backend.writeFrame(const Frame('key1', 'value1'), BoxEntry('value1')),
-          keystore.commitKeyTransaction(),
+          keystore.commitTransaction(),
         ]);
-        expect(box.deletedEntries, 0);
-      });
-
-      test('delete key', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-        when(keystore.containsKey(any)).thenReturn(true);
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-        );
-
-        await box.put('key1', null);
-        verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.keyTransaction({'key1': null}),
-          notifier.notify('key1', null),
-          backend.writeFrame(const Frame('key1', null), null),
-          keystore.commitKeyTransaction(),
-        ]);
-        expect(box.deletedEntries, 1);
       });
 
       test('handles exceptions', () async {
@@ -144,37 +100,60 @@ void main() {
         expect(
             () async => await box.put('key1', 'newValue'), throwsA(anything));
         verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.keyTransaction({'key1': BoxEntry('newValue')}),
-          notifier.notify('key1', 'newValue'),
+          keystore.beginAddTransaction({'key1': BoxEntry('newValue')}),
+          notifier.notify('key1', 'newValue', false),
           backend.writeFrame(
               const Frame('key1', 'newValue'), BoxEntry('newValue')),
-          keystore.cancelKeyTransaction(),
+          keystore.cancelTransaction(),
           keystore.get('key1'),
-          notifier.notify('key1', 'oldValue'),
+          notifier.notify('key1', 'oldValue', false),
         ]);
-        expect(box.deletedEntries, 0);
       });
     });
 
-    group('.putAll()', () {
-      test('do nothing when deleting non existing keys', () async {
+    group('.delete()', () {
+      test('does nothing when deleting a non existing key', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(keystore.containsKey(any)).thenReturn(false);
+
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
         );
 
-        await box.putAll({'key1': null, 'key2': null, 'key3': null});
+        await box.delete('testKey');
+        await box.delete(123);
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
 
+      test('delete key', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(true);
+
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.delete('key1');
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          keystore.beginDeleteTransaction(['key1']),
+          notifier.notify('key1', null, true),
+          backend.writeFrame(const Frame.deleted('key1'), null),
+          keystore.commitTransaction(),
+        ]);
+      });
+    });
+
+    group('.putAll()', () {
       test('values', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
@@ -189,49 +168,18 @@ void main() {
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
         verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.containsKey('key2'),
-          keystore.keyTransaction({
+          keystore.beginAddTransaction({
             'key1': BoxEntry('value1'),
             'key2': BoxEntry('value2'),
           }),
-          notifier.notify('key1', 'value1'),
-          notifier.notify('key2', 'value2'),
+          notifier.notify('key1', 'value1', false),
+          notifier.notify('key2', 'value2', false),
           backend.writeFrames(
             [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
             [BoxEntry('value1'), BoxEntry('value2')],
           ),
-          keystore.commitKeyTransaction(),
+          keystore.commitTransaction(),
         ]);
-        expect(box.deletedEntries, 0);
-      });
-
-      test('delete keys', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-        when(keystore.containsKey(any)).thenReturn(true);
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-        );
-
-        await box.putAll({'key1': null, 'key2': null});
-        verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.containsKey('key2'),
-          keystore.keyTransaction({'key1': null, 'key2': null}),
-          notifier.notify('key1', null),
-          notifier.notify('key2', null),
-          backend.writeFrames(
-            [const Frame('key1', null), const Frame('key2', null)],
-            [null, null],
-          ),
-          keystore.commitKeyTransaction(),
-        ]);
-        expect(box.deletedEntries, 2);
       });
 
       test('handles exceptions', () async {
@@ -255,25 +203,67 @@ void main() {
           throwsA(anything),
         );
         verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.containsKey('key2'),
-          keystore.keyTransaction({
+          keystore.beginAddTransaction({
             'key1': BoxEntry('value1'),
             'key2': BoxEntry('value2'),
           }),
-          notifier.notify('key1', 'value1'),
-          notifier.notify('key2', 'value2'),
+          notifier.notify('key1', 'value1', false),
+          notifier.notify('key2', 'value2', false),
           backend.writeFrames(
             [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
             [BoxEntry('value1'), BoxEntry('value2')],
           ),
-          keystore.cancelKeyTransaction(),
+          keystore.cancelTransaction(),
           keystore.get('key1'),
-          notifier.notify('key1', 'oldValue1'),
+          notifier.notify('key1', 'oldValue1', false),
           keystore.get('key2'),
-          notifier.notify('key2', 'oldValue2'),
+          notifier.notify('key2', 'oldValue2', false),
         ]);
-        expect(box.deletedEntries, 0);
+      });
+    });
+
+    group('.deleteAll()', () {
+      test('do nothing when deleting non existing keys', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(false);
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.deleteAll(['key1', 'key2', 'key3']);
+        verifyZeroInteractions(backend);
+        verifyZeroInteractions(notifier);
+      });
+
+      test('delete keys', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+        var notifier = ChangeNotifierMock();
+        when(keystore.containsKey(any)).thenReturn(true);
+
+        var box = getBox(
+          backend: backend,
+          keystore: keystore,
+          notifier: notifier,
+        );
+
+        await box.deleteAll(['key1', 'key2']);
+        verifyInOrder([
+          keystore.containsKey('key1'),
+          keystore.containsKey('key2'),
+          keystore.beginDeleteTransaction(['key1', 'key2']),
+          notifier.notify('key1', null, true),
+          notifier.notify('key2', null, true),
+          backend.writeFrames(
+            [const Frame.deleted('key1'), const Frame.deleted('key2')],
+            null,
+          ),
+          keystore.commitTransaction(),
+        ]);
       });
     });
 

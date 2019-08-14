@@ -64,9 +64,8 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
 
     if (!keystore.containsKey(key)) return;
 
-    var entry = BoxEntry(null);
-    await backend.writeFrame(Frame.deleted(key), entry);
-    keystore.addAll({key: entry});
+    await backend.writeFrame(Frame.deleted(key), null);
+    keystore.deleteAll([key]);
     notifier.notify(key, null, true);
 
     await performCompactionIfNeeded();
@@ -103,8 +102,12 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
 
     var frames = <Frame>[];
     for (var key in keys) {
-      frames.add(Frame.deleted(key));
+      if (keystore.containsKey(key)) {
+        frames.add(Frame.deleted(key));
+      }
     }
+
+    if (frames.isEmpty) return;
 
     await backend.writeFrames(frames, null);
 
