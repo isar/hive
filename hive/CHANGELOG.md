@@ -1,15 +1,18 @@
 ## 0.4.0
-- Added []= operator to lazy boxes
 - Added `BigInt` support
 - Added `compactionStrategy` parameter
 - Added automatic crash recovery
 - Added `add()` and `addAll()` for auto increment keys
 - Support for int (32 bit unsigned) keys
-- Cached boxes now notify their listeners immediately about changes
+- `CachedBox`es now notify their listeners immediately about changes
 - Bugfixes
 - More tests
+- **Breaking:** Writing `null` is no longer equivalent to deleting a key
+- **Breaking:** Temporarily removed support for transactions. New API design needed. Will be coming back in a future version.
 - **Breaking:** Binary format changed
 - **Breaking:** Minor API changes
+
+*Note: This is probably the last version that breaks binary format. From version 1.0.0 onwards, there will be no breaking changes at all.*
 
 ## 0.3.0+1
 - Bugfix: `Hive['yourBox']` didn't work with uppercase box names

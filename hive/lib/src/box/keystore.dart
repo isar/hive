@@ -17,15 +17,30 @@ class Keystore {
   final Map<dynamic, BoxEntry> entries;
   final ListQueue<_KeyTransaction> _transactions = ListQueue();
   var _deletedEntries = 0;
+  var _autoIncrement = -1;
 
   Keystore([Map<dynamic, BoxEntry> entries])
       : entries = SplayTreeMap.from(entries ?? {}, _compareKeys);
 
   int get deletedEntries => _deletedEntries;
 
+  int get length => entries.length;
+
+  int autoIncrement() {
+    return ++_autoIncrement;
+  }
+
+  void updateAutoIncrement(int key) {
+    if (key > _autoIncrement) {
+      _autoIncrement = key;
+    }
+  }
+
   bool containsKey(dynamic key) {
     return entries.containsKey(key);
   }
+
+  dynamic keyAt(int index) {}
 
   BoxEntry get(dynamic key) {
     return entries[key];
@@ -50,37 +65,52 @@ class Keystore {
   void addAll(Map<dynamic, BoxEntry> newEntries) {
     for (var key in newEntries.keys) {
       var entry = newEntries[key];
-      if (entry != null) {
-        entries[key] = entry;
-      } else {
-        entries.remove(key);
-        _deletedEntries++;
+      entries[key] = entry;
+      if (key is int && key > _autoIncrement) {
+        _autoIncrement = key;
       }
     }
   }
 
-  void keyTransaction(Map<dynamic, BoxEntry> newEntries) {
+  void deleteAll(List<dynamic> keys) {
+    for (var key in keys) {
+      entries.remove(key);
+      _deletedEntries++;
+    }
+  }
+
+  void beginAddTransaction(Map<dynamic, BoxEntry> newEntries) {
     var transaction = _KeyTransaction();
     for (var key in newEntries.keys) {
-      var entry = newEntries[key];
-      if (entry == null || entries.containsKey(key)) {
-        transaction.deleted[key] = entries[key];
-        entries.remove(key);
+      var existingEntry = entries[key];
+      if (existingEntry != null) {
+        transaction.deleted[key] = existingEntry;
         _deletedEntries++;
       }
-      if (entry != null) {
-        transaction.added.add(key);
-        entries[key] = entry;
+      transaction.added.add(key);
+      entries[key] = newEntries[key];
+      if (key is int && key > _autoIncrement) {
+        _autoIncrement = key;
       }
     }
     _transactions.add(transaction);
   }
 
-  void commitKeyTransaction() {
+  void beginDeleteTransaction(Iterable<dynamic> keys) {
+    var transaction = _KeyTransaction();
+    for (var key in keys) {
+      transaction.deleted[key] = entries[key];
+      entries.remove(key);
+      _deletedEntries++;
+    }
+    _transactions.add(transaction);
+  }
+
+  void commitTransaction() {
     _transactions.removeFirst();
   }
 
-  void cancelKeyTransaction() {
+  void cancelTransaction() {
     var transaction = _transactions.removeFirst();
     for (var key in transaction.added) {
       var shouldRemove = true;

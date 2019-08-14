@@ -11,8 +11,8 @@ class ChangeNotifier {
   @visibleForTesting
   ChangeNotifier.debug(this._streamController);
 
-  void notify(dynamic key, dynamic value) {
-    _streamController.add(BoxEvent(key, value));
+  void notify(dynamic key, dynamic value, bool deleted) {
+    _streamController.add(BoxEvent(key, value, deleted));
   }
 
   Stream<BoxEvent> watch({dynamic key}) {
@@ -23,7 +23,7 @@ class ChangeNotifier {
     }
   }
 
-  Future close() {
+  Future<void> close() {
     return _streamController.close();
   }
 }

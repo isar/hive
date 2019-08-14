@@ -15,15 +15,15 @@ abstract class StorageBackend {
 
   Future<Map<dynamic, dynamic>> readAll();
 
-  Future writeFrame(Frame frame, BoxEntry entry);
+  Future<void> writeFrame(Frame frame, BoxEntry entry);
 
-  Future writeFrames(List<Frame> frames, Iterable<BoxEntry> entries);
+  Future<void> writeFrames(List<Frame> frames, Iterable<BoxEntry> entries);
 
   Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries);
 
-  Future clear();
+  Future<void> clear();
 
-  Future close();
+  Future<void> close();
 
-  Future deleteFromDisk();
+  Future<void> deleteFromDisk();
 }

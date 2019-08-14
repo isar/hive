@@ -37,15 +37,19 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<CachedBox> box(
+  Future<Box> box(
     String name, {
     List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
   }) async {
-    var box = await _box(
-        name, encryptionKey, compactionStrategy, crashRecovery, false);
-    return box as CachedBox;
+    return await _openBox(
+      name,
+      encryptionKey,
+      compactionStrategy,
+      crashRecovery,
+      false,
+    );
   }
 
   @override
@@ -55,12 +59,12 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
   }) async {
-    var box = await _box(
+    var box = await _openBox(
         name, encryptionKey, compactionStrategy, crashRecovery, true);
     return box as LazyBox;
   }
 
-  Future<Box> _box(
+  Future<Box> _openBox(
     String name,
     List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
@@ -71,7 +75,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (existingBox != null) {
       if (existingBox is LazyBox && !lazy) {
         throw HiveError('The box has already been opened as lazy box.');
-      } else if (existingBox is CachedBox && lazy) {
+      } else if (existingBox is! LazyBox && lazy) {
         throw HiveError('The box has already been opened as non lazy box.');
       } else {
         return existingBox;
@@ -108,7 +112,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future close() {
+  Future<void> close() {
     var closeFutures = _boxes.values.map((box) {
       return box.close();
     });
@@ -121,7 +125,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future deleteFromDisk() {
+  Future<void> deleteFromDisk() {
     var deleteFutures = _boxes.values.toList().map((box) {
       return box.deleteFromDisk();
     });

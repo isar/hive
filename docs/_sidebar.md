@@ -8,7 +8,6 @@
     * [Write](write.md)
     * [Delete](delete.md)
     * [Watch changes](watch_changes.md)
-    * [Transactions](transactions.md)
     * [Compaction](compaction.md)
 
 * TypeAdapters

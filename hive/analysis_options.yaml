@@ -9,6 +9,7 @@ analyzer:
     include_file_not_found: ignore
 linter:
   rules:
+    - always_declare_return_types
     - annotate_overrides
     - avoid_empty_else
     - avoid_function_literals_in_foreach_calls

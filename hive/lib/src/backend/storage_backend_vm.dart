@@ -7,8 +7,8 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/cached_box_impl.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
@@ -35,7 +35,7 @@ Future<Box> openBox(
   if (lazy) {
     box = LazyBoxImpl(hive, name, options, backend);
   } else {
-    box = CachedBoxImpl(hive, name, options, backend);
+    box = BoxImpl(hive, name, options, backend);
   }
   backend._registry = box;
 
@@ -100,10 +100,9 @@ class StorageBackendVm extends StorageBackend {
     int recoveryOffset;
     if (!lazy) {
       recoveryOffset =
-          await _helper.readFramesFromFile(path, frames, _registry, _crypto);
+          await _helper.framesFromFile(path, frames, _registry, _crypto);
     } else {
-      recoveryOffset =
-          await _helper.readFrameKeysFromFile(path, frames, _crypto);
+      recoveryOffset = await _helper.keysFromFile(path, frames, _crypto);
     }
 
     if (recoveryOffset != null) {
@@ -146,7 +145,7 @@ class StorageBackendVm extends StorageBackend {
   Future<Map<dynamic, dynamic>> readAll() async {
     var frames = <Frame>[];
     await _file.writeLock.synchronized(() {
-      return _helper.readFramesFromFile(path, frames, _registry, _crypto);
+      return _helper.framesFromFile(path, frames, _registry, _crypto);
     });
 
     var map = <dynamic, dynamic>{};
@@ -157,31 +156,34 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future writeFrame(Frame frame, BoxEntry entry) async {
+  Future<void> writeFrame(Frame frame, BoxEntry entry) async {
     var bytes = frame.toBytes(true, _registry, _crypto);
-    entry?.offset = await _file.write(bytes);
-    entry?.length = bytes.length;
+    if (entry != null) {
+      entry.offset = await _file.write(bytes);
+      entry.length = bytes.length;
+    }
   }
 
   @override
-  Future writeFrames(List<Frame> frames, Iterable<BoxEntry> entries) async {
+  Future<void> writeFrames(
+      List<Frame> frames, Iterable<BoxEntry> entries) async {
     var bytes = BytesBuilder(copy: false);
-    var lengths = List<int>(frames.length);
-    var i = 0;
+    var lengths = <int>[];
     for (var frame in frames) {
       var frameBytes = frame.toBytes(true, _registry, _crypto);
       bytes.add(frameBytes);
-      lengths[i++] = frameBytes.length;
+      lengths.add(frameBytes.length);
     }
 
     var offset = await _file.write(bytes.toBytes());
 
-    i = 0;
-    for (var entry in entries) {
-      var length = lengths[i++];
-      entry?.offset = offset;
-      entry?.length = length;
-      offset += length;
+    if (entries != null) {
+      var i = 0;
+      for (var entry in entries) {
+        entry.offset = offset;
+        entry.length = lengths[i++];
+        offset += entry.length;
+      }
     }
   }
 
@@ -194,7 +196,8 @@ class StorageBackendVm extends StorageBackend {
 
     await _file.readLock.synchronized(() {
       return _file.writeLock.synchronized(() async {
-        var reader = await BufferedFileReader.fromFile(path);
+        var raf = await File(path).open();
+        var reader = BufferedFileReader(raf);
         var writer = BinaryWriterImpl(_registry);
 
         var compactOffset = 0;
@@ -220,7 +223,7 @@ class StorageBackendVm extends StorageBackend {
           }
           await compactFile.writeFrom(writer.outputAndClear());
         } finally {
-          await reader.close();
+          await raf.close();
           await compactFile.close();
         }
       });
@@ -233,17 +236,17 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future clear() {
+  Future<void> clear() {
     return _file.truncate(0);
   }
 
   @override
-  Future close() {
+  Future<void> close() {
     return _file.close();
   }
 
   @override
-  Future deleteFromDisk() {
+  Future<void> deleteFromDisk() {
     return _file.delete();
   }
 }

@@ -60,16 +60,6 @@ void main() {
       });
     });
 
-    test('[]', () {
-      var box = getBox(
-        keystore: Keystore({'key': BoxEntry('value'), 123: BoxEntry(456)}),
-      );
-      expect(box['key'], 'value');
-      expect(box['nonexistantKey'], null);
-      expect(box[123], 456);
-      expect(box[999], null);
-    });
-
     group('.put()', () {
       test('does nothing when deleting a non existing key', () async {
         var backend = BackendMock();
@@ -165,16 +155,6 @@ void main() {
         ]);
         expect(box.deletedEntries, 0);
       });
-    });
-
-    test('[]=', () {
-      var box = getBox(keystore: Keystore());
-
-      box['key'] = 'value';
-      expect(box['key'], 'value');
-
-      box['key'] = null;
-      expect(box.containsKey('key'), false);
     });
 
     group('.putAll()', () {

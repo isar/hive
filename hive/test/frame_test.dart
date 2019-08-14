@@ -32,6 +32,14 @@ Frame frameBodyWithLength(Frame frame, int length) {
   }
 }
 
+Frame lazyFrameWithLength(Frame frame, int length) {
+  if (frame.deleted) {
+    return Frame.deleted(frame.key, length);
+  } else {
+    return Frame.lazy(frame.key, length);
+  }
+}
+
 final testFrames = <Frame>[
   const Frame.deleted(0),
   const Frame.deleted(555),
@@ -99,11 +107,13 @@ CryptoHelper getDebugCrypto() {
 
 void fEqual(Frame f1, Frame f2) {
   expect(f1.key, f2.key);
-  expect(f1.deleted, f2.deleted);
   if (f1.value is double && f2.value is double) {
     if (f1.value.isNaN as bool && f1.value.isNaN as bool) return;
   }
   expect(f1.value, f2.value);
+  expect(f1.length, f2.length);
+  expect(f1.deleted, f2.deleted);
+  expect(f1.lazy, f2.lazy);
 }
 
 void main() {
@@ -205,7 +215,7 @@ void main() {
 }
 
 void buildGoldens() async {
-  Future generate(String fileName, String varName,
+  Future<void> generate(String fileName, String varName,
       Uint8List Function(Frame frame) transformer) async {
     var file = File('test/generated/$fileName.g.dart');
     await file.create();

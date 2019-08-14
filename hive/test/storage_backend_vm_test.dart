@@ -34,7 +34,7 @@ Uint8List getFrameBytes(List<Frame> frames) {
 
 void main() {
   group('findHiveFileAndCleanUp', () {
-    Future checkFindHiveFileAndCleanUp(String folder) async {
+    Future<void> checkFindHiveFileAndCleanUp(String folder) async {
       var hiveFileDir =
           await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
       var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir.path);
@@ -64,8 +64,7 @@ void main() {
     group('.initialize()', () {
       test('not lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.readFramesFromFile(any, any, any, any))
-            .thenAnswer((i) async {
+        when(ioHelper.allFromFile(any, any, any, any)).thenAnswer((i) async {
           i.positionalArguments[1].addAll([
             const Frame('key1', 'value1', 1),
             const Frame('key2', 'value2', 2),
@@ -90,8 +89,7 @@ void main() {
 
       test('lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.readFrameKeysFromFile(any, any, any))
-            .thenAnswer((i) async {
+        when(ioHelper.keysFromFile(any, any, any)).thenAnswer((i) async {
           i.positionalArguments[1].addAll([
             const Frame.lazy('key1', 1),
             const Frame.lazy('key2', 2),

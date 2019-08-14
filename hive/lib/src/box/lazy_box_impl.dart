@@ -5,11 +5,9 @@ import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/box/lazy_transaction.dart';
-import 'package:hive/src/box/transaction_base.dart';
 import 'package:hive/src/hive_impl.dart';
 
-class LazyBoxImpl extends BoxBase<LazyBox> implements LazyBox {
+class LazyBoxImpl extends BoxBase implements LazyBox {
   LazyBoxImpl(
     HiveImpl hive,
     String name,
@@ -21,6 +19,10 @@ class LazyBoxImpl extends BoxBase<LazyBox> implements LazyBox {
 
   @override
   final bool lazy = true;
+
+  @override
+  Iterable get values =>
+      throw UnsupportedError('Only non-lazy boxes have this property.');
 
   @override
   Future<dynamic> get(dynamic key, {dynamic defaultValue}) {
@@ -36,74 +38,87 @@ class LazyBoxImpl extends BoxBase<LazyBox> implements LazyBox {
   }
 
   @override
-  Future put(dynamic key, dynamic value) async {
+  Future<dynamic> getAt(int index) {
+    return get(keystore.keyAt(index));
+  }
+
+  @override
+  Future<void> put(dynamic key, dynamic value) async {
     checkOpen();
 
-    var keyExists = keystore.containsKey(key);
-    if (value == null && !keyExists) return;
-
     if (key is int) {
-      updateAutoIncrement(key);
+      keystore.updateAutoIncrement(key);
     }
 
-    var entry = value != null ? BoxEntry(null) : null;
+    var entry = BoxEntry(null);
     await backend.writeFrame(Frame(key, value), entry);
     keystore.addAll({key: entry});
-    if (keyExists) deletedEntries++;
-    notifier.notify(key, value);
+    notifier.notify(key, value, false);
 
     await performCompactionIfNeeded();
   }
 
   @override
-  Future putAll(Map<dynamic, dynamic> kvPairs) async {
+  Future<void> delete(dynamic key) async {
     checkOpen();
 
-    if (kvPairs.isEmpty) return;
+    if (!keystore.containsKey(key)) return;
 
-    var toBeDeletedEntries = 0;
+    var entry = BoxEntry(null);
+    await backend.writeFrame(Frame.deleted(key), entry);
+    keystore.addAll({key: entry});
+    notifier.notify(key, null, true);
+
+    await performCompactionIfNeeded();
+  }
+
+  @override
+  Future<void> putAll(Map<dynamic, dynamic> kvPairs) async {
+    checkOpen();
+
     var frames = <Frame>[];
     var entries = <dynamic, BoxEntry>{};
-    kvPairs.forEach((key, dynamic value) {
-      var keyExists = keystore.containsKey(key);
-      if (value != null) {
-        frames.add(Frame(key, value));
-        entries[key] = BoxEntry(null);
-        if (keyExists) {
-          toBeDeletedEntries++;
-        } else if (key is int) {
-          updateAutoIncrement(key);
-        }
-      } else if (keyExists) {
-        frames.add(Frame(key, null));
-        entries[key] = null;
-        toBeDeletedEntries++;
+    for (var key in kvPairs.keys) {
+      frames.add(Frame(key, kvPairs[key]));
+      entries[key] = BoxEntry(null);
+      if (key is int) {
+        keystore.updateAutoIncrement(key);
       }
-    });
-
-    if (frames.isEmpty) return;
+    }
 
     await backend.writeFrames(frames, entries.values);
-    deletedEntries += toBeDeletedEntries;
 
     keystore.addAll(entries);
 
     for (var frame in frames) {
-      notifier.notify(frame.key, frame.value);
+      notifier.notify(frame.key, frame.value, false);
     }
 
     await performCompactionIfNeeded();
   }
 
   @override
-  Future<Map<dynamic, dynamic>> toMap() {
+  Future<void> deleteAll(List<dynamic> keys) async {
     checkOpen();
 
-    return backend.readAll();
+    var frames = <Frame>[];
+    for (var key in keys) {
+      frames.add(Frame.deleted(key));
+    }
+
+    await backend.writeFrames(frames, null);
+
+    keystore.deleteAll(keys);
+
+    for (var frame in frames) {
+      notifier.notify(frame.key, frame.value, true);
+    }
+
+    await performCompactionIfNeeded();
   }
 
   @override
-  TransactionBase<LazyBox> getTransaction() {
-    return LazyTransaction(this, autoIncrement);
+  Map<dynamic, dynamic> toMap() {
+    throw UnsupportedError('Only non-lazy boxes support toMap().');
   }
 }

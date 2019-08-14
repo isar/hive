@@ -128,7 +128,7 @@ class Frame {
     }
 
     if (reader.availableBytes == 0) {
-      return Frame.deleted(key);
+      return Frame.deleted(key, frameLength);
     } else if (decodeValue) {
       dynamic value;
       if (crypto == null) {
@@ -215,14 +215,6 @@ class Frame {
     byteData.setUint32(bytes.length - 4, checksum, Endian.little);
 
     return bytes;
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    if (other is Frame) {
-      return other.key == key && other.value == value && other.length == length;
-    }
-    return false;
   }
 }
 

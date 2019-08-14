@@ -7,8 +7,8 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/cached_box_impl.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
@@ -34,7 +34,7 @@ Future<Box> openBox(
   if (lazy) {
     box = LazyBoxImpl(hive, name, options, backend);
   } else {
-    box = CachedBoxImpl(hive, name, options, backend);
+    box = BoxImpl(hive, name, options, backend);
   }
   backend._registry = box;
 
@@ -145,7 +145,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future writeFrame(Frame frame, BoxEntry entry) async {
+  Future<void> writeFrame(Frame frame, BoxEntry entry) async {
     if (frame.deleted) {
       await getStore(true).delete(frame.key);
     } else {
@@ -154,7 +154,8 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future writeFrames(List<Frame> frames, Iterable<BoxEntry> entries) async {
+  Future<void> writeFrames(
+      List<Frame> frames, Iterable<BoxEntry> entries) async {
     var store = getStore(true);
     for (var frame in frames) {
       if (frame.deleted) {
