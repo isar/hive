@@ -15,7 +15,7 @@ import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-Future<Box> openBox(
+Future<Box> openBoxInternal(
     HiveImpl hive, String name, bool lazy, BoxOptions options) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;

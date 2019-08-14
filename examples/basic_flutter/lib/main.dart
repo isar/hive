@@ -40,7 +40,7 @@ class IceCreamPage extends StatefulWidget {
 }
 
 class _IceCreamPageState extends State<IceCreamPage> {
-  var box = Hive['myBox'];
+  var box = Hive.box('myBox');
 
   @override
   void initState() {

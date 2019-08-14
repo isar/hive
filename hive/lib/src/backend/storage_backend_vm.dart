@@ -19,7 +19,7 @@ import 'package:hive/src/io/synced_file.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<Box> openBox(
+Future<Box> openBoxInternal(
     HiveImpl hive, String name, bool lazy, BoxOptions options) async {
   var file = await findHiveFileAndCleanUp(name, hive.path);
 

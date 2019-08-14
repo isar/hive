@@ -37,31 +37,64 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<Box> box(
+  Future<Box> openBox(
     String name, {
     List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
   }) async {
-    return await _openBox(
-      name,
-      encryptionKey,
-      compactionStrategy,
-      crashRecovery,
-      false,
-    );
+    var existingBox = box(name);
+    if (existingBox != null) {
+      return existingBox;
+    } else {
+      return await _openBox(
+        name,
+        encryptionKey,
+        compactionStrategy,
+        crashRecovery,
+        false,
+      );
+    }
   }
 
   @override
-  Future<LazyBox> lazyBox(
+  Box box(String name) {
+    var existingBox = _boxes[name.toLowerCase()];
+    if (existingBox != null && existingBox is LazyBox) {
+      throw HiveError('The box has already been opened as lazy box.');
+    }
+    return existingBox;
+  }
+
+  @override
+  Future<LazyBox> openLazyBox(
     String name, {
     List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
   }) async {
-    var box = await _openBox(
-        name, encryptionKey, compactionStrategy, crashRecovery, true);
-    return box as LazyBox;
+    var existingBox = lazyBox(name);
+    if (existingBox != null) {
+      return existingBox;
+    } else {
+      var lazy = await _openBox(
+        name,
+        encryptionKey,
+        compactionStrategy,
+        crashRecovery,
+        false,
+      );
+      return lazy as LazyBox;
+    }
+  }
+
+  @override
+  LazyBox lazyBox(String name) {
+    var existingBox = _boxes[name.toLowerCase()];
+    if (existingBox != null && existingBox is! LazyBox) {
+      throw HiveError('The box has already been opened as non lazy box.');
+    }
+    return existingBox as LazyBox;
   }
 
   Future<Box> _openBox(
@@ -71,17 +104,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool crashRecovery,
     bool lazy,
   ) async {
-    var existingBox = _boxes[name.toLowerCase()];
-    if (existingBox != null) {
-      if (existingBox is LazyBox && !lazy) {
-        throw HiveError('The box has already been opened as lazy box.');
-      } else if (existingBox is! LazyBox && lazy) {
-        throw HiveError('The box has already been opened as non lazy box.');
-      } else {
-        return existingBox;
-      }
-    }
-
     if (encryptionKey != null) {
       if (encryptionKey.length != 32 ||
           encryptionKey.any((it) => it < 0 || it > 255)) {
@@ -95,7 +117,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       compactionStrategy: defaultCompactionStrategy,
     );
 
-    var box = await openBox(this, name.toLowerCase(), lazy, options);
+    var box = await openBoxInternal(this, name.toLowerCase(), lazy, options);
     _boxes[name.toLowerCase()] = box;
 
     return box;
@@ -104,11 +126,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @override
   bool isBoxOpen(String name) {
     return _boxes.containsKey(name.toLowerCase());
-  }
-
-  @override
-  Box operator [](String name) {
-    return _boxes[name.toLowerCase()];
   }
 
   @override
