@@ -26,7 +26,6 @@ jobs:
         
     - name: hive_generator
       script:
-        - set -e
         - cd hive_generator
         - pub get
         - pub run test
@@ -40,5 +39,5 @@ jobs:
       script:
         - pub global activate test_coverage
         - test_coverage --exclude "**_js_test.dart"
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
