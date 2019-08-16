@@ -1,7 +1,9 @@
 language: dart
 os:
-  - linux
-sudo: false
+  - osx
+addons:
+  chrome: stable
+  firefox: latest
 jobs:
   include:
     - name: hive
@@ -20,7 +22,6 @@ jobs:
       script:
         - cd hive
         - pub get
-        - export DISPLAY=:0
         - pub run test -p "firefox"
         
     - name: hive_generator
