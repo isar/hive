@@ -4,21 +4,29 @@ os:
 sudo: false
 dart:
   - stable
-script:
-  - cd hive_generator
-  - pub get
-  - pub run test
-
-  - cd ../hive
-  - pub get
-  - pub run test -p "vm,chrome"
+  - "2.2.2"
+jobs:
+  include:
+    - stage: test
+      name: hive
+      script:
+        - cd hive
+        - pub get
+        - pub run test -p "vm,chrome"
+        
+    - script:
+        - set -e
+        - cd hive_generator
+        - pub get
+        - pub run test
+      name: hive_generator
+    - script:
+        - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
+      name: format
   
-  - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
-  
-  - pub global activate test_coverage
-  - test_coverage --exclude "**_js_test.dart"
+    - stage: coverage
+      script:
+        - pub global activate test_coverage
+        - test_coverage --exclude "**_js_test.dart"
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-cache:
-  directories:
-    - $HOME/.pub-cache
