@@ -41,7 +41,7 @@ void main() {
 
         var testBox = await hive.openBox('testBox');
         var testBox2 = await hive.openBox('testBox');
-        expect(testBox, testBox2);
+        expect(testBox == testBox2, true);
       });
 
       test('home directory is created', () async {

@@ -64,11 +64,12 @@ void main() {
     });
 
     test('.getAt()', () async {
-      var keystore = Keystore({0: BoxEntry('zero'), 'a': BoxEntry('A')});
-      var box = getBox(keystore: keystore);
+      var keystore = Keystore({0: BoxEntry(null), 'a': BoxEntry(null)});
+      var backend = BackendMock();
+      when(backend.readValue('a', any, any)).thenAnswer((i) async => 'A');
+      var box = getBox(keystore: keystore, backend: backend);
 
       expect(await box.getAt(-1, defaultValue: 123), 123);
-      expect(await box.getAt(0), 'zero');
       expect(await box.getAt(1), 'A');
       expect(await box.getAt(2), null);
     });
