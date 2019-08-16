@@ -2,9 +2,6 @@ language: dart
 os:
   - linux
 sudo: false
-dart:
-  - stable
-  - "2.2.2"
 jobs:
   include:
     - stage: test
