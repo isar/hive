@@ -1,23 +1,15 @@
 # Read from box
 
-Reading from a box is almost like accessing a Map:
+Reading from a box is very straightforward:
 
 ```dart
-String name = box['name'];
+String name = box.get('name');
 
-DateTime birthday = box['birthday'];
-```
-
-If your box is [lazy](lazy_box.md) the above code will not work. You have to access the box using `get()`:
-
-```dart
-String name = await box.get('name');
-
-DateTime birthday = await box.get('birthday');
+DateTime birthday = box.get('birthday');
 ```
 
 If the key does not exist, `null` is returned. Optionally you can specify a `defaultValue` which will be returned in case the key does not exist.
 
 ```dart
-double height = await box.get('randomKey', defaultValue: 17.5);
+double height = box.get('randomKey', defaultValue: 17.5);
 ```

@@ -10,7 +10,7 @@ Boxes can also be encrypted to store sensitive data.
 Before a box can be used, you have to open it:
 
 ```dart
-var box = await Hive.box('testBox');
+var box = await Hive.openBox('testBox');
 ```
 
 If the box is already open, it will be returned immediately. All supplied parameters will be ignored.
@@ -22,7 +22,7 @@ Once you obtained a box instance, you can read, write and delete entries.
 Hive stores a reference to all open boxes. If you want to get an already opened box, you can use 
 
 ```dart
-var box = Hive['myBox'];
+var box = Hive.box('myBox');
 ```
 
 This is especially useful for Flutter apps because you don't need to pass the box between widgets.
@@ -34,10 +34,9 @@ If you don't need a box again, you should close it. All cached keys and values o
 ?> It is perfectly fine to leave a box open for the runtime of the app. If you need a box again in the future, just leave it open.
 
 ```dart
-var box = await Hive.open('myBox');
+var box = await Hive.openBox('myBox');
 await box.put('hello', 'world');
 await box.close();
 ```
 
 Before your application exits, you should call `Hive.close()` to close all open boxes.
-

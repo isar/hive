@@ -5,6 +5,7 @@ Hive is an append-only data store. When you change or delete a value, the change
 It may benefit the start time of your app if you induce compaction manually before you close a box.
 
 ```dart
+var box = Hive.box('myBox');
 await box.compact();
 await box.close();
 ```
@@ -12,7 +13,7 @@ await box.close();
 You can specify your own rules for automatic compaction. Just pass the `compactionStrategy` parameter when you open a box:
 
 ```dart
-var box = await Hive.box('myBox', compactionStrategy: (entries, deletedEntries) {
+var box = await Hive.openBox('myBox', compactionStrategy: (entries, deletedEntries) {
   return deletedEntries > 50;
 });
 ```
