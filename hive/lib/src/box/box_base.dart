@@ -24,6 +24,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   final ChangeNotifier notifier;
 
   @protected
+  @visibleForTesting
   final Keystore keystore;
 
   @protected
@@ -50,7 +51,10 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   String get path => backend.path;
 
   @override
-  int get length => keystore.length;
+  int get length {
+    checkOpen();
+    return keystore.length;
+  }
 
   @override
   Iterable<dynamic> get keys {
@@ -66,14 +70,14 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   }
 
   @override
-  dynamic keyAt(int index) {
-    return keystore.keyAt(index);
-  }
-
-  @override
   Stream<BoxEvent> watch({dynamic key}) {
     checkOpen();
     return notifier.watch(key: key);
+  }
+
+  @override
+  dynamic keyAt(int index) {
+    return keystore.keyAt(index);
   }
 
   Future<void> initialize() async {
@@ -81,6 +85,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     deletedEntries =
         await backend.initialize(entries, lazy, options.crashRecovery);
     keystore.addAll(entries);
+  }
+
+  @override
+  bool containsKey(dynamic key) {
+    checkOpen();
+    return keystore.containsKey(key);
   }
 
   @override
@@ -103,12 +113,6 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   @override
   Future<void> putAt(int index, dynamic value) {
     return put(keystore.keyAt(index), value);
-  }
-
-  @override
-  bool containsKey(dynamic key) {
-    checkOpen();
-    return keystore.containsKey(key);
   }
 
   @override

@@ -46,6 +46,17 @@ void main() {
       expect(box.path, 'some/path');
     });
 
+    test('.length', () {
+      var keystore = Keystore(
+        {
+          'key1': BoxEntry(null),
+          'key2': BoxEntry(null),
+        },
+      );
+      var box = BoxBaseMock(keystore: keystore);
+      expect(box.length, 2);
+    });
+
     test('.keys', () {
       var keystore = Keystore({
         'key1': BoxEntry(null),
@@ -54,6 +65,33 @@ void main() {
       });
       var box = BoxBaseMock(keystore: keystore);
       expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
+    });
+
+    test('.watch()', () {
+      var notifier = ChangeNotifierMock();
+      var box = BoxBaseMock(notifier: notifier);
+      box.watch(key: 123);
+      verify(notifier.watch(key: 123));
+    });
+
+    test('.keyAt()', () {
+      var keystore = Keystore({0: BoxEntry(null), 'test': BoxEntry(null)});
+      var box = BoxBaseMock(keystore: keystore);
+      expect(box.keyAt(1), 'test');
+    });
+
+    test('initialize', () async {
+      var backend = BackendMock();
+      var box = BoxBaseMock(backend: backend);
+
+      when(backend.initialize(any, any, any)).thenAnswer((i) async {
+        i.positionalArguments[0]['key1'] = BoxEntry(1);
+        return 2;
+      });
+
+      await box.initialize();
+      expect(box.deletedEntries, 2);
+      expect(box.keystore.toValueMap(), {'key1': 1});
     });
 
     test('.containsKey()', () {
@@ -68,6 +106,58 @@ void main() {
       expect(box.containsKey('existingKey'), true);
       expect(box.containsKey('nonExistingKey'), false);
       verifyZeroInteractions(backend);
+    });
+
+    test('add', () async {
+      var keystore = Keystore();
+      var box = BoxBaseMock(keystore: keystore);
+
+      keystore.updateAutoIncrement(4);
+
+      expect(await box.add(123), 5);
+      verifyInOrder([
+        keystore.autoIncrement(),
+        box.put(5, 123),
+      ]);
+    });
+
+    test('addAll', () async {
+      var keystore = Keystore();
+      var box = BoxBaseMock(keystore: keystore);
+
+      keystore.updateAutoIncrement(4);
+
+      expect(await box.addAll([1, 2, 3]), [5, 6, 7]);
+      verifyInOrder([
+        keystore.autoIncrement(),
+        keystore.autoIncrement(),
+        keystore.autoIncrement(),
+        box.putAll({5: 1, 6: 2, 7: 3}),
+      ]);
+    });
+
+    test('putAt', () async {
+      var keystore = Keystore({
+        'a': BoxEntry(null),
+        'b': BoxEntry(null),
+        'c': BoxEntry(null),
+      });
+      var box = BoxBaseMock(keystore: keystore);
+
+      await box.putAt(1, 'test');
+      verify(box.put('b', 'test'));
+    });
+
+    test('deleteAt', () async {
+      var keystore = Keystore({
+        'a': BoxEntry(null),
+        'b': BoxEntry(null),
+        'c': BoxEntry(null),
+      });
+      var box = BoxBaseMock(keystore: keystore);
+
+      await box.deleteAt(1);
+      verify(box.delete('b'));
     });
 
     test('.clear()', () async {

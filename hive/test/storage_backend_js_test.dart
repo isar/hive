@@ -42,6 +42,7 @@ void main() {
     group('.encodeValue()', () {
       test('primitive', () {
         var backend = StorageBackendJs(null, null);
+        expect(backend.encodeValue(null), null);
         expect(backend.encodeValue(11), 11);
         expect(backend.encodeValue(17.25), 17.25);
         expect(backend.encodeValue(true), true);
@@ -73,6 +74,7 @@ void main() {
     group('.decodeValue()', () {
       test('primitive', () {
         var backend = StorageBackendJs(null, null);
+        expect(backend.decodeValue(null), null);
         expect(backend.decodeValue(11), 11);
         expect(backend.decodeValue(17.25), 17.25);
         expect(backend.decodeValue(true), true);
@@ -98,28 +100,25 @@ void main() {
     });
 
     test('.getValues()', () async {
-      var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+      var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
       var backend = StorageBackendJs(db, null);
 
-      expect(await backend.getValues(), [1, 2, 3]);
+      expect(await backend.getValues(), [1, null, 3]);
     });
 
     group('.initialize()', () {
       test('not lazy', () async {
-        var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+        var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
         var entries = <String, BoxEntry>{};
         expect(await backend.initialize(entries, false, false), 0);
-        expect(entries, {
-          'key1': BoxEntry(1, null, null),
-          'key2': BoxEntry(2, null, null),
-          'key3': BoxEntry(3, null, null)
-        });
+        expect(entries,
+            {'key1': BoxEntry(1), 'key2': BoxEntry(null), 'key3': BoxEntry(3)});
       });
 
       test('lazy', () async {
-        var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+        var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
         var entries = <String, BoxEntry>{};
@@ -133,17 +132,18 @@ void main() {
     });
 
     test('.readValue()', () async {
-      var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+      var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
       var backend = StorageBackendJs(db, null);
 
-      expect(await backend.readValue('key2', null, null), 2);
+      expect(await backend.readValue('key1', null, null), 1);
+      expect(await backend.readValue('key2', null, null), null);
     });
 
     test('.readAll()', () async {
-      var db = await getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+      var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
       var backend = StorageBackendJs(db, null);
 
-      expect(await backend.readAll(), {'key1': 1, 'key2': 2, 'key3': 3});
+      expect(await backend.readAll(), {'key1': 1, 'key2': null, 'key3': 3});
     });
 
     test('.writeFrame()', () async {
@@ -155,10 +155,10 @@ void main() {
       expect(entry, BoxEntry(null));
       expect(await backend.getKeys(), ['key1']);
 
-      await backend.writeFrame(const Frame('key2', 456), entry);
+      await backend.writeFrame(const Frame('key2', null), entry);
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      await backend.writeFrame(const Frame('key1', null), entry);
+      await backend.writeFrame(const Frame.deleted('key1'), entry);
       expect(await backend.getKeys(), ['key2']);
     });
 
@@ -169,7 +169,7 @@ void main() {
       var entries = [BoxEntry(null), BoxEntry(null)];
       await backend.writeFrames([
         const Frame('key1', 123),
-        const Frame('key2', 456),
+        const Frame('key2', null),
       ], entries);
       expect(entries, [BoxEntry(null), BoxEntry(null)]);
       expect(await backend.getKeys(), ['key1', 'key2']);

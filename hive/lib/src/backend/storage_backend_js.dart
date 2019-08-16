@@ -56,7 +56,8 @@ class StorageBackendJs extends StorageBackend {
 
   @visibleForTesting
   dynamic encodeValue(dynamic value) {
-    var noEncodingNeeded = value is num ||
+    var noEncodingNeeded = value == null ||
+        value is num ||
         value is bool ||
         value is String ||
         (value is List<num> && value is! Uint8List) ||

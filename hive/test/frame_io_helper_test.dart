@@ -17,7 +17,7 @@ Uint8List getBytes(List<Uint8List> list) {
   for (var b in list) {
     builder.add(b);
   }
-  return Uint8List.fromList(builder.toBytes());
+  return builder.toBytes();
 }
 
 class FrameIoHelperTest extends FrameIoHelper {
@@ -47,7 +47,7 @@ void main() {
 
         for (var i = 0; i < testFrames.length; i++) {
           fEqual(frames[i],
-              lazyFrameWithLength(testFrames[i], testFrames[i].length));
+              lazyFrameWithLength(testFrames[i], frameBytes[i].length));
         }
       });
 
@@ -98,7 +98,7 @@ void main() {
 
         for (var i = 0; i < testFrames.length; i++) {
           fEqual(
-              frames[i], frameWithLength(testFrames[i], testFrames[i].length));
+              frames[i], frameWithLength(testFrames[i], frameBytes[i].length));
         }
       });
 

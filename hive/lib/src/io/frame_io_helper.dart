@@ -15,7 +15,7 @@ class FrameIoHelper {
   }
 
   @visibleForTesting
-  Future<Uint8List> readFile(String path) {
+  Future<List<int>> readFile(String path) {
     return File(path).readAsBytes();
   }
 
@@ -53,7 +53,7 @@ class FrameIoHelper {
   Future<int> framesFromFile(String path, List<Frame> frames,
       TypeRegistry registry, CryptoHelper crypto) async {
     var bytes = await readFile(path);
-    var reader = BinaryReaderImpl(bytes, registry);
+    var reader = BinaryReaderImpl(bytes as Uint8List, registry);
 
     while (reader.availableBytes != 0) {
       var frameOffset = reader.usedBytes;

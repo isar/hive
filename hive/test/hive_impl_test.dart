@@ -33,14 +33,14 @@ void main() {
       expect(hive.findAdapterForTypeId(16).adapter, isA<DateTimeAdapter>());
     });
 
-    group('.box()', () {
+    group('.openBox()', () {
       test('opened box is returned if it exists', () async {
         var tempDir = await getTempDir();
         var hive = HiveImpl();
         hive.init(tempDir.path);
 
-        var testBox = await hive.box('testBox');
-        var testBox2 = await hive.box('testBox');
+        var testBox = await hive.openBox('testBox');
+        var testBox2 = await hive.openBox('testBox');
         expect(testBox, testBox2);
       });
 
@@ -50,7 +50,7 @@ void main() {
 
         var hivePath = path.join(tempDir.path, 'somePath');
         hive.init(hivePath);
-        await hive.box('testBox');
+        await hive.openBox('testBox');
 
         expect(await Directory(hivePath).exists(), true);
       });
@@ -61,8 +61,8 @@ void main() {
       var hive = HiveImpl();
       hive.init(tempDir.path);
 
-      var box1 = await hive.box('box1');
-      var box2 = await hive.box('box2');
+      var box1 = await hive.openBox('box1');
+      var box2 = await hive.openBox('box2');
       expect(box1.isOpen, true);
       expect(box2.isOpen, true);
 
