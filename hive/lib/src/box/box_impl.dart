@@ -40,8 +40,13 @@ class BoxImpl extends BoxBase implements Box {
   }
 
   @override
-  dynamic getAt(int index) {
-    return get(keystore.keyAt(index));
+  dynamic getAt(int index, {dynamic defaultValue}) {
+    var key = keystore.keyAt(index);
+    if (key != null) {
+      return get(key);
+    } else {
+      return defaultValue;
+    }
   }
 
   @override

@@ -42,85 +42,39 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
+    bool lazy = false,
   }) async {
-    var existingBox = box(name);
-    if (existingBox != null) {
-      return existingBox;
+    if (isBoxOpen(name)) {
+      return box(name);
     } else {
-      return await _openBox(
-        name,
-        encryptionKey,
-        compactionStrategy,
-        crashRecovery,
-        false,
+      if (encryptionKey != null) {
+        if (encryptionKey.length != 32 ||
+            encryptionKey.any((it) => it < 0 || it > 255)) {
+          throw ArgumentError(
+              'The encryption key has to be a 32 byte (256 bit) array.');
+        }
+      }
+
+      var options = BoxOptions(
+        encryptionKey: encryptionKey,
+        compactionStrategy: defaultCompactionStrategy,
       );
+
+      var lowercaseName = name.toLowerCase();
+      var box = await openBoxInternal(this, lowercaseName, lazy, options);
+      _boxes[lowercaseName] = box;
+
+      return box;
     }
   }
 
   @override
   Box box(String name) {
-    var existingBox = _boxes[name.toLowerCase()];
-    if (existingBox != null && existingBox is LazyBox) {
-      throw HiveError('The box has already been opened as lazy box.');
-    }
-    return existingBox;
-  }
-
-  @override
-  Future<LazyBox> openLazyBox(
-    String name, {
-    List<int> encryptionKey,
-    CompactionStrategy compactionStrategy,
-    bool crashRecovery = true,
-  }) async {
-    var existingBox = lazyBox(name);
-    if (existingBox != null) {
-      return existingBox;
+    if (isBoxOpen(name)) {
+      return _boxes[name];
     } else {
-      var lazy = await _openBox(
-        name,
-        encryptionKey,
-        compactionStrategy,
-        crashRecovery,
-        false,
-      );
-      return lazy as LazyBox;
+      throw HiveError('Box not found. Did you forget to call Hive.openBox()?');
     }
-  }
-
-  @override
-  LazyBox lazyBox(String name) {
-    var existingBox = _boxes[name.toLowerCase()];
-    if (existingBox != null && existingBox is! LazyBox) {
-      throw HiveError('The box has already been opened as non lazy box.');
-    }
-    return existingBox as LazyBox;
-  }
-
-  Future<Box> _openBox(
-    String name,
-    List<int> encryptionKey,
-    CompactionStrategy compactionStrategy,
-    bool crashRecovery,
-    bool lazy,
-  ) async {
-    if (encryptionKey != null) {
-      if (encryptionKey.length != 32 ||
-          encryptionKey.any((it) => it < 0 || it > 255)) {
-        throw ArgumentError(
-            'The encryption key has to be a 32 byte (256 bit) array.');
-      }
-    }
-
-    var options = BoxOptions(
-      encryptionKey: encryptionKey,
-      compactionStrategy: defaultCompactionStrategy,
-    );
-
-    var box = await openBoxInternal(this, name.toLowerCase(), lazy, options);
-    _boxes[name.toLowerCase()] = box;
-
-    return box;
   }
 
   @override

@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   Future<Box> _openBox() async {
     final directory = await getApplicationDocumentsDirectory();
     Hive.init(directory.path);
-    return await Hive.box('myBox');
+    return await Hive.openBox('myBox');
   }
 
   @override

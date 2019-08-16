@@ -5,11 +5,11 @@ We already know that Hive supports integer keys. You can use auto increment keys
 ```dart
 var friends = Hive.box('friends');
 
-friends.add('Lisa'); //key: 0
+friends.add('Lisa');       //index 0, key 0
 
-friends.add('Dave'); //key: 1
+friends.add('Dave');       //index 1, key 1
 
-friends.put(123, 'Marco');
+friends.put(123, 'Marco'); //index 2, key 123
 
 print(friends.values); // Lisa, Dave, Marco
 ```
@@ -24,8 +24,8 @@ friends.putAt(2, 'Ben');
 frinds.put(123, 'Ben');
 ```
 
-Both of these operations do the same thing. They replace the `Marco` entry with `Ben`. `putAt()` uses the index (in this case `2`), `put()` uses the key (in this case `123`).
+Both of these operations do the same thing. They replace the `Marco` with `Ben`. `putAt()` uses the index (in this case `2`), `put()` uses the key (in this case `123`).
 
 This also works with String keys.
 
-?> Even if you only use auto increment keys, you should not rely on keys and indices being equal.
+?> Even if you only use auto increment keys, you should not rely on keys and indices being the same.

@@ -35,9 +35,11 @@ abstract class Box implements TypeRegistry {
 
   Stream<BoxEvent> watch({dynamic key});
 
+  bool containsKey(dynamic key);
+
   dynamic get(dynamic key, {dynamic defaultValue});
 
-  dynamic getAt(int index);
+  dynamic getAt(int index, {dynamic defaultValue});
 
   Future<void> put(dynamic key, dynamic value);
 
@@ -54,8 +56,6 @@ abstract class Box implements TypeRegistry {
   Future<void> deleteAt(int index);
 
   Future<void> deleteAll(List<dynamic> keys);
-
-  bool containsKey(dynamic key);
 
   Map<dynamic, dynamic> toMap();
 

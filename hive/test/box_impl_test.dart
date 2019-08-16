@@ -32,7 +32,18 @@ BoxImpl getBox({
 }
 
 void main() {
-  group('CachedBoxImpl', () {
+  group('BoxImpl', () {
+    test('.values', () {
+      var keystore = Keystore({
+        0: BoxEntry(123),
+        'key1': BoxEntry('value1'),
+        1: BoxEntry(null),
+      });
+      var box = getBox(keystore: keystore);
+
+      expect(box.values, [123, null, 'value1']);
+    });
+
     group('.get()', () {
       test('returns defaultValue if key does not exist', () {
         var backend = BackendMock();
@@ -53,11 +64,20 @@ void main() {
           }),
         );
 
-        reset(backend);
         expect(box.get('testKey'), 'testVal');
         expect(box.get(123), 456);
         verifyZeroInteractions(backend);
       });
+    });
+
+    test('.getAt()', () {
+      var keystore = Keystore({0: BoxEntry('zero'), 'a': BoxEntry('A')});
+      var box = getBox(keystore: keystore);
+
+      expect(box.getAt(-1, defaultValue: 123), 123);
+      expect(box.getAt(0), 'zero');
+      expect(box.getAt(1), 'A');
+      expect(box.getAt(2), null);
     });
 
     group('.put()', () {

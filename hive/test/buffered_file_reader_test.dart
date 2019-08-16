@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 @TestOn('vm')
 import 'package:hive/src/io/buffered_file_reader.dart';

@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:hive/src/box/change_notifier.dart';
 import 'package:meta/meta.dart';
 
 class _KeyTransaction {
@@ -48,7 +47,13 @@ class Keystore {
   }
 
   dynamic keyAt(int index) {
-    return entries.keys.elementAt(index);
+    var keys = entries.keys;
+    var keyIndex = 0;
+    for (var key in keys) {
+      if (index == keyIndex) return key;
+      keyIndex++;
+    }
+    return null;
   }
 
   BoxEntry get(dynamic key) {

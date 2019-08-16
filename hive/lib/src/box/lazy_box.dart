@@ -5,5 +5,5 @@ abstract class LazyBox extends Box {
   Future<dynamic> get(dynamic key, {dynamic defaultValue});
 
   @override
-  Future<dynamic> getAt(int index);
+  Future<dynamic> getAt(int index, {dynamic defaultValue});
 }

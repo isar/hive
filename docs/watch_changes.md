@@ -6,11 +6,11 @@ This can be very useful for Flutter apps: You can rebuild widgets every time the
 
 ```dart
 var box = Hive.box('myBox');
-box.watch().listen((key, val, deleted) {
-  if (deleted) {
-    print('$key has been deleted');
+box.watch().listen((event) {
+  if (event.deleted) {
+    print('${event.key} has been deleted');
   } else {
-    print('$key is now assigned to $val');
+    print('${event.key} is now assigned to ${event.value}');
   }
 });
 
@@ -21,7 +21,7 @@ box.delete('someKey'); // > someKey has been deleted
 If you specify the `key` parameter, you will be notified about all changes of a specific key.
 
 ```dart
-box.watch(key: 'someKey').listen((key, val, deleted) {
+box.watch(key: 'someKey').listen((event) {
     // ...
 });
 ```

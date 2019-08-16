@@ -15,18 +15,10 @@ abstract class HiveInterface implements TypeRegistry {
     List<int> encryptionKey,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
+    bool lazy = false,
   });
 
   Box box(String name);
-
-  Future<LazyBox> openLazyBox(
-    String name, {
-    List<int> encryptionKey,
-    CompactionStrategy compactionStrategy,
-    bool crashRecovery = true,
-  });
-
-  LazyBox lazyBox(String name);
 
   /// Checks if a specific box is currently open.
   bool isBoxOpen(String name);

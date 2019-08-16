@@ -5,7 +5,7 @@
 - Added `add()` and `addAll()` for auto increment keys
 - Added `getAt()`, `putAt()` and `deleteAt()` for working with indices
 - Support for int (32 bit unsigned) keys
-- `CachedBox`es now notify their listeners immediately about changes
+- Non-lazy boxes now notify their listeners immediately about changes
 - Bugfixes
 - More tests
 - **Breaking:** Open boxes with `openBox()` and `openLazyBox()`

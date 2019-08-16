@@ -33,6 +33,12 @@ LazyBoxImpl getBox({
 
 void main() {
   group('LazyBoxImpl', () {
+    test('.values', () {
+      var box = getBox();
+
+      expect(() => box.values, throwsUnsupportedError);
+    });
+
     group('.get()', () {
       test('returns defaultValue if key does not exist', () async {
         var backend = BackendMock();
@@ -55,6 +61,16 @@ void main() {
         expect(await box.get('testKey'), 'testVal');
         verify(backend.readValue('testKey', 123, 456));
       });
+    });
+
+    test('.getAt()', () async {
+      var keystore = Keystore({0: BoxEntry('zero'), 'a': BoxEntry('A')});
+      var box = getBox(keystore: keystore);
+
+      expect(await box.getAt(-1, defaultValue: 123), 123);
+      expect(await box.getAt(0), 'zero');
+      expect(await box.getAt(1), 'A');
+      expect(await box.getAt(2), null);
     });
 
     group('.put()', () {
