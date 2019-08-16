@@ -8,7 +8,7 @@ jobs:
       script:
         - cd hive
         - pub get
-        - pub run test -p "vm,chrome"
+        - pub run test
 
     - name: hive chrome
       script:
