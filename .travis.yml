@@ -4,22 +4,35 @@ os:
 sudo: false
 jobs:
   include:
-    - stage: test
-      name: hive
+    - name: hive
       script:
         - cd hive
         - pub get
         - pub run test -p "vm,chrome"
+
+    - name: hive chrome
+      script:
+        - cd hive
+        - pub get
+        - pub run test -p "chrome"
+
+    - name: hive firefox
+      script:
+        - cd hive
+        - pub get
+        - pub run test -p "firefox"
         
-    - script:
+    - name: hive_generator
+      script:
         - set -e
         - cd hive_generator
         - pub get
         - pub run test
-      name: hive_generator
-    - script:
+      
+    - name: format
+      script:
         - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
-      name: format
+      
   
     - stage: coverage
       script:
