@@ -1,21 +1,37 @@
-@TestOn('vm')
+import 'dart:io';
+import 'dart:math';
 
+@TestOn('vm')
 import 'package:hive/src/io/buffered_file_reader.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
 
-Future<BufferedFileReader> openReaderWithBytes(
-    List<int> bytes, int chunkSize) async {
-  var file = await getTempFile();
-  await file.writeAsBytes(bytes);
-  return await BufferedFileReader.fromFile(file.path, chunkSize);
+RandomAccessFile getRafMock(List<int> bytes) {
+  var raf = RAFMock();
+  var offset = 0;
+  when(raf.readInto(any, any)).thenAnswer((i) async {
+    var buffer = i.positionalArguments[0] as List<int>;
+    var bufferOffset = i.positionalArguments[1] as int;
+    var readBytes = min(buffer.length - bufferOffset, bytes.length - offset);
+    for (var i = 0; i < readBytes; i++) {
+      buffer[bufferOffset + i] = bytes[offset + i];
+    }
+    offset += readBytes;
+    return readBytes;
+  });
+  return raf;
+}
+
+BufferedFileReader openReaderWithBytes(List<int> bytes, int chunkSize) {
+  return BufferedFileReader(getRafMock(bytes), chunkSize);
 }
 
 void main() {
   group('BufferedFileReader', () {
     test('.skip()', () async {
-      var reader = await openReaderWithBytes(
+      var reader = openReaderWithBytes(
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 3);
 
       var bytes = await reader.read(1);
@@ -47,12 +63,10 @@ void main() {
       skipped = await reader.skip(3);
       expect(skipped, 1);
       expect(reader.offset, 14);
-
-      await reader.close();
     });
 
     test('.read()', () async {
-      var reader = await openReaderWithBytes(
+      var reader = openReaderWithBytes(
           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 4);
 
       var bytes = await reader.read(1);
@@ -78,22 +92,8 @@ void main() {
       bytes = await reader.read(1);
       expect(bytes, []);
       expect(reader.offset, 14);
-
-      await reader.close();
     });
 
     test('.setPosition()', () {});
-
-    test('.close()', () async {
-      var reader = await openReaderWithBytes([1, 2, 3, 4], 3);
-
-      var bytes = await reader.read(1);
-      expect(bytes.first, 1);
-      expect(reader.offset, 1);
-
-      await reader.close();
-
-      expect(() => reader.file.read(1), throwsA(anything));
-    });
   });
 }

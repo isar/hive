@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   Future<Box> _openBox() async {
     final directory = await getApplicationDocumentsDirectory();
     Hive.init(directory.path);
-    return await Hive.box('myBox');
+    return await Hive.openBox('myBox');
   }
 
   @override
@@ -40,7 +40,7 @@ class IceCreamPage extends StatefulWidget {
 }
 
 class _IceCreamPageState extends State<IceCreamPage> {
-  var box = Hive['myBox'];
+  var box = Hive.box('myBox');
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _IceCreamPageState extends State<IceCreamPage> {
 
   @override
   Widget build(BuildContext context) {
-    var userLikesIceCream = box['userLikesIceCream'] ?? false;
+    var userLikesIceCream = box.get('userLikesIceCream', defaultValue: false);
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min,

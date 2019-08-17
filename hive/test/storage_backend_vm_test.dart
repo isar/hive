@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:hive/src/backend/storage_backend_vm.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_impl.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:mockito/mockito.dart';
@@ -34,7 +34,7 @@ Uint8List getFrameBytes(List<Frame> frames) {
 
 void main() {
   group('findHiveFileAndCleanUp', () {
-    Future checkFindHiveFileAndCleanUp(String folder) async {
+    Future<void> checkFindHiveFileAndCleanUp(String folder) async {
       var hiveFileDir =
           await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
       var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir.path);
@@ -64,48 +64,50 @@ void main() {
     group('.initialize()', () {
       test('not lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.readFramesFromFile(any, any, any)).thenAnswer((i) async {
-          return [
+        when(ioHelper.framesFromFile(any, any, any, any)).thenAnswer((i) async {
+          i.positionalArguments[1].addAll([
             const Frame('key1', 'value1', 1),
             const Frame('key2', 'value2', 2),
-            const Frame('key1', 'value3', 3),
-            const Frame('key2', null, 4),
-            const Frame('key3', 'value4', 5)
-          ];
+            const Frame('key1', null, 3),
+            const Frame.deleted('key2', 4),
+            const Frame('key3', 'value3', 5),
+          ]);
+          return null;
         });
 
         var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
 
         var entries = <String, BoxEntry>{};
-        var deleted = await backend.initialize(entries, false);
+        var deleted = await backend.initialize(entries, false, false);
 
         expect(entries, {
-          'key1': const BoxEntry('value3', 3, 3),
-          'key3': const BoxEntry('value4', 10, 5)
+          'key1': BoxEntry(null, 3, 3),
+          'key3': BoxEntry('value3', 10, 5),
         });
         expect(deleted, 2);
       });
 
       test('lazy', () async {
         var ioHelper = FrameIoHelperMock();
-        when(ioHelper.readFrameKeysFromFile(any, any)).thenAnswer((i) async {
-          return [
+        when(ioHelper.keysFromFile(any, any, any)).thenAnswer((i) async {
+          i.positionalArguments[1].addAll([
             const Frame.lazy('key1', 1),
             const Frame.lazy('key2', 2),
             const Frame.lazy('key1', 3),
-            const Frame('key2', null, 4),
-            const Frame.lazy('key3', 5)
-          ];
+            const Frame.deleted('key2', 4),
+            const Frame.lazy('key3', 5),
+          ]);
+          return null;
         });
 
         var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
 
         var entries = <String, BoxEntry>{};
-        var deleted = await backend.initialize(entries, true);
+        var deleted = await backend.initialize(entries, true, false);
 
         expect(entries, {
-          'key1': const BoxEntry(null, 3, 3),
-          'key3': const BoxEntry(null, 10, 5)
+          'key1': BoxEntry(null, 3, 3),
+          'key3': BoxEntry(null, 10, 5),
         });
         expect(deleted, 2);
       });
@@ -134,7 +136,7 @@ void main() {
       await file.write(frameBytes);
 
       var backend = StorageBackendVm(file, null);
-      var map = await backend.readAll(null);
+      var map = await backend.readAll();
       expect(map, {'key1': 1, 'key2': 2, 'key3': 3});
     });
 
@@ -147,11 +149,8 @@ void main() {
       var frame = const Frame('key', 'value');
       var bytes = frame.toBytes(true, null, null);
 
-      var entry = await backend.writeFrame(frame, false);
-      verify(mockFile.write(bytes));
-      expect(entry, BoxEntry('value', 123, bytes.length));
-
-      entry = await backend.writeFrame(frame, true);
+      var entry = BoxEntry(null);
+      await backend.writeFrame(frame, entry);
       verify(mockFile.write(bytes));
       expect(entry, BoxEntry(null, 123, bytes.length));
     });
@@ -168,14 +167,8 @@ void main() {
       var bytes2 = frame2.toBytes(true, null, null);
       var bytes = [...bytes1, ...bytes2];
 
-      var entries = await backend.writeFrames([frame1, frame2], false);
-      verify(mockFile.write(bytes));
-      expect(entries, [
-        BoxEntry('value', 10, bytes1.length),
-        BoxEntry(null, 10 + bytes1.length, bytes2.length)
-      ]);
-
-      entries = await backend.writeFrames([frame1, frame2], true);
+      var entries = [BoxEntry(null), BoxEntry(null)];
+      await backend.writeFrames([frame1, frame2], entries);
       verify(mockFile.write(bytes));
       expect(entries, [
         BoxEntry(null, 10, bytes1.length),

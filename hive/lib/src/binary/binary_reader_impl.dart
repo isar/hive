@@ -124,7 +124,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<int> readIntList([int length]) {
     length ??= readWord();
     _requireBytes(length * 8);
-    var list = List<int>(length);
+    var list = <int>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = _data.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
@@ -136,7 +136,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<double> readDoubleList([int length]) {
     length ??= readWord();
     _requireBytes(length * 8);
-    var list = List<double>(length);
+    var list = <double>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = _data.getFloat64(_offset, Endian.little);
       _offset += 8;
@@ -148,7 +148,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<bool> readBoolList([int length]) {
     length ??= readWord();
     _requireBytes(length);
-    var list = List<bool>(length);
+    var list = <bool>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = _buffer[_offset++] > 0;
     }
@@ -160,7 +160,7 @@ class BinaryReaderImpl extends BinaryReader {
       [int length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
     length ??= readWord();
-    var list = List<String>(length);
+    var list = <String>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
     }
@@ -170,7 +170,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   List readList([int length]) {
     length ??= readWord();
-    var list = List<dynamic>(length);
+    var list = <dynamic>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = read();
     }
@@ -223,7 +223,8 @@ class BinaryReaderImpl extends BinaryReader {
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);
       if (resolved == null) {
-        throw HiveError('Cannot read, unknown typeId: $typeId.');
+        throw HiveError(
+            'Cannot read, unknown typeId: $typeId. Did you forget to register an adapter?');
       }
       return resolved.adapter.read(this);
     }

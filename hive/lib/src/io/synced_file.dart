@@ -23,7 +23,7 @@ class SyncedFile {
   SyncedFile.internal(this.path, this._readFile, this._writeFile, this.readLock,
       this.writeLock);
 
-  Future open() async {
+  Future<void> open() async {
     var file = File(path);
 
     _readFile = await file.open();

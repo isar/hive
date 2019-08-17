@@ -18,13 +18,7 @@ class BufferedFileReader {
 
   int get offset => _fileOffset - _remainingInBuffer;
 
-  BufferedFileReader._(this.file, this.chunkSize);
-
-  static Future<BufferedFileReader> fromFile(String path,
-      [int chunkSize = defaultChunkSize]) async {
-    var raf = await File(path).open();
-    return BufferedFileReader._(raf, chunkSize);
-  }
+  BufferedFileReader(this.file, [this.chunkSize = defaultChunkSize]);
 
   Future<int> skip(int bytes) async {
     if (_remainingInBuffer >= bytes) {
@@ -61,7 +55,7 @@ class BufferedFileReader {
     }
   }
 
-  Future _readChunk(Uint8List oldChunk, int offset, int remaining) async {
+  Future<void> _readChunk(Uint8List oldChunk, int offset, int remaining) async {
     if (oldChunk != null) {
       for (var i = 0; i < remaining; i++) {
         _buffer[i] = _buffer[offset + i];
@@ -72,10 +66,5 @@ class BufferedFileReader {
     var readBytes = await file.readInto(_buffer, remaining);
     _bufferSize = remaining + readBytes;
     _fileOffset += readBytes;
-  }
-
-  Future close() {
-    _buffer = null;
-    return file.close();
   }
 }

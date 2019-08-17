@@ -1,24 +1,43 @@
 language: dart
 os:
-  - linux
-sudo: false
-dart:
-  - stable
-script:
-  - cd hive_generator
-  - pub get
-  - pub run test
+  - osx
+addons:
+  chrome: stable
+  firefox: latest
+jobs:
+  include:
+    - name: hive
+      script:
+        - cd hive
+        - pub get
+        - pub run test
 
-  - cd ../hive
-  - pub get
-  - pub run test -p "vm,chrome"
+    - name: hive chrome
+      script:
+        - cd hive
+        - pub get
+        - pub run test -p "chrome"
+
+    - name: hive firefox
+      script:
+        - cd hive
+        - pub get
+        - pub run test -p "firefox"
+        
+    - name: hive_generator
+      script:
+        - cd hive_generator
+        - pub get
+        - pub run test
+      
+    - name: format
+      script:
+        - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
+      
   
-  - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
-  
-  - pub global activate test_coverage
-  - test_coverage --exclude "**_js_test.dart"
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-cache:
-  directories:
-    - $HOME/.pub-cache
+    - stage: coverage
+      script:
+        - pub global activate test_coverage
+        - test_coverage --exclude "**_js_test.dart"
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)

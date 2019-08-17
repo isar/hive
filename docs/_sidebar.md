@@ -4,11 +4,10 @@
     * [Encrypted box](encrypted_box.md)
 
 * Using boxes
-    * [Read](read.md)
     * [Write](write.md)
+    * [Read](read.md)
     * [Delete](delete.md)
     * [Watch changes](watch_changes.md)
-    * [Transactions](transactions.md)
     * [Compaction](compaction.md)
 
 * TypeAdapters

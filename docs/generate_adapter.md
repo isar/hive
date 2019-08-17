@@ -30,7 +30,7 @@ class Person {
 }
 ```
 
-As you can see, each field has a **unique** number. These field numbers are used to identify the fields in the hive binary format, and should not be changed once your class is in use.
+As you can see, each field has a **unique** number (unique per class). These field numbers are used to identify the fields in the hive binary format, and should not be changed once your class is in use.
 
 *Field numbers can be in the range 0-255*.
 

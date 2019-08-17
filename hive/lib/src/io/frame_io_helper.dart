@@ -6,50 +6,78 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
+import 'package:meta/meta.dart';
 
 class FrameIoHelper {
-  Future<List<Frame>> readFrameKeysFromFile(
-      String path, CryptoHelper crypto) async {
-    var bufferedFile = await BufferedFileReader.fromFile(path);
-    var frames = <Frame>[];
+  @visibleForTesting
+  Future<RandomAccessFile> openFile(String path) {
+    return File(path).open();
+  }
+
+  @visibleForTesting
+  Future<List<int>> readFile(String path) {
+    return File(path).readAsBytes();
+  }
+
+  Future<int> keysFromFile(
+      String path, List<Frame> frames, CryptoHelper crypto) async {
+    var raf = await openFile(path);
+    var fileReader = BufferedFileReader(raf);
     try {
       while (true) {
-        var lengthBytes = (await bufferedFile.read(4)).toList();
-        if (lengthBytes.isEmpty) break;
+        var frameOffset = fileReader.offset;
+        var lengthBytes = (await fileReader.read(4)).toList();
+        if (lengthBytes.isEmpty) {
+          break;
+        } else if (lengthBytes.length < 4) {
+          return frameOffset;
+        }
 
         var frameLength = bytesToUint32(lengthBytes);
-        var frameBytes = await bufferedFile.read(frameLength - 4);
-        Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
+        var frameBytes = await fileReader.read(frameLength - 4);
+        if (frameBytes.length < frameLength - 4 ||
+            !Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
+          return frameOffset;
+        }
         var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);
-        var frame =
-            Frame.decodeBody(frameReader, true, false, frameLength, null);
+        var frame = Frame.decode(frameReader, true, false, frameLength, null);
         frames.add(frame);
       }
     } finally {
-      await bufferedFile.close();
+      await raf.close();
     }
 
-    return frames;
+    return null;
   }
 
-  Future<List<Frame>> readFramesFromFile(
-      String path, TypeRegistry registry, CryptoHelper crypto) async {
-    var bytes = await File(path).readAsBytes() as Uint8List;
-    var reader = BinaryReaderImpl(bytes, registry);
-    var frames = <Frame>[];
-    while (true) {
-      if (reader.availableBytes == 0) break;
+  Future<int> framesFromFile(String path, List<Frame> frames,
+      TypeRegistry registry, CryptoHelper crypto) async {
+    var bytes = await readFile(path);
+    var reader = BinaryReaderImpl(bytes as Uint8List, registry);
+
+    while (reader.availableBytes != 0) {
+      var frameOffset = reader.usedBytes;
+
+      if (reader.availableBytes < 4) {
+        return frameOffset;
+      }
 
       var lengthBytes = reader.readByteList(4);
       var frameLength = bytesToUint32(lengthBytes);
+      if (reader.availableBytes < frameLength - 4) {
+        return frameOffset;
+      }
       var frameBytes = reader.viewBytes(frameLength - 4);
-      Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
+
+      if (!Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
+        return frameOffset;
+      }
+
       var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-      var frame =
-          Frame.decodeBody(frameReader, true, true, frameLength, crypto);
+      var frame = Frame.decode(frameReader, true, true, frameLength, crypto);
       frames.add(frame);
     }
 
-    return frames;
+    return null;
   }
 }

@@ -1,10 +1,20 @@
 ## 0.4.0
-- Added BigInt support
+- Added `BigInt` support
 - Added `compactionStrategy` parameter
-- Added crash recovery
+- Added automatic crash recovery
+- Added `add()` and `addAll()` for auto increment keys
+- Added `getAt()`, `putAt()` and `deleteAt()` for working with indices
+- Support for int (32 bit unsigned) keys
+- Non-lazy boxes now notify their listeners immediately about changes
 - Bugfixes
-- More samples
 - More tests
+- **Breaking:** Open boxes with `openBox()`
+- **Breaking:** Writing `null` is no longer equivalent to deleting a key
+- **Breaking:** Temporarily removed support for transactions. New API design needed. Will be coming back in a future version.
+- **Breaking:** Binary format changed
+- **Breaking:** API changes
+
+*Note: This is probably the last version that breaks binary format. From version 1.0.0 onwards, there will be no breaking changes at all.*
 
 ## 0.3.0+1
 - Bugfix: `Hive['yourBox']` didn't work with uppercase box names
