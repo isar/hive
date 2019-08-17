@@ -7,6 +7,7 @@
     * [Write](write.md)
     * [Read](read.md)
     * [Delete](delete.md)
+    * [Auto increment & indices](auto_increment.md)
     * [Watch changes](watch_changes.md)
     * [Compaction](compaction.md)
 
