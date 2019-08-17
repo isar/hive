@@ -8,7 +8,7 @@
 - Non-lazy boxes now notify their listeners immediately about changes
 - Bugfixes
 - More tests
-- **Breaking:** Open boxes with `openBox()` and `openLazyBox()`
+- **Breaking:** Open boxes with `openBox()`
 - **Breaking:** Writing `null` is no longer equivalent to deleting a key
 - **Breaking:** Temporarily removed support for transactions. New API design needed. Will be coming back in a future version.
 - **Breaking:** Binary format changed

@@ -105,8 +105,10 @@ void main() {
         var entries = <String, BoxEntry>{};
         var deleted = await backend.initialize(entries, true, false);
 
-        expect(entries,
-            {'key1': BoxEntry(null, 3, 3), 'key3': BoxEntry(null, 10, 5)});
+        expect(entries, {
+          'key1': BoxEntry(null, 3, 3),
+          'key3': BoxEntry(null, 10, 5),
+        });
         expect(deleted, 2);
       });
     });
