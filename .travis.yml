@@ -9,20 +9,19 @@ jobs:
     - name: hive
       script:
         - cd hive
-        - pub get
-        - pub run test
+        - ./tool/test.sh
 
     - name: hive chrome
       script:
         - cd hive
-        - pub get
-        - pub run test -p "chrome"
+        - TEST_PLATFORM = "chrome"
+        - ./tool/test.sh
 
     - name: hive firefox
       script:
         - cd hive
-        - pub get
-        - pub run test -p "firefox"
+        - TEST_PLATFORM = "firefox"
+        - ./tool/test.sh
         
     - name: hive_generator
       script:
@@ -30,15 +29,6 @@ jobs:
         - pub get
         - pub run test
       
-    - name: format
-      script:
-        - dartfmt -n --set-exit-if-changed ./lib ./test ./example || travis_terminate 1
-      
   
     - stage: coverage
-      script:
-        - cd hive
-        - pub global activate test_coverage
-        - test_coverage --exclude "**_js_test.dart"
-      after_success:
-        - bash <(curl -s https://codecov.io/bash)
+      script: ./hive/tool/coverage.sh
