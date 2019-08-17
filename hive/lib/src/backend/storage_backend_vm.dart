@@ -6,8 +6,11 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_options.dart';
+import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_impl.dart';
+import 'package:hive/src/box/box_options.dart';
+import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
@@ -16,7 +19,8 @@ import 'package:hive/src/io/synced_file.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
+Future<Box> openBoxInternal(
+    HiveImpl hive, String name, bool lazy, BoxOptions options) async {
   var file = await findHiveFileAndCleanUp(name, hive.path);
 
   CryptoHelper crypto;
@@ -25,8 +29,14 @@ Future<BoxImpl> openBox(HiveImpl hive, String name, BoxOptions options) async {
   }
   var syncedFile = SyncedFile(file.path);
   await syncedFile.open();
+
   var backend = StorageBackendVm(syncedFile, crypto);
-  var box = BoxImpl(hive, name, options, backend);
+  BoxBase box;
+  if (lazy) {
+    box = LazyBoxImpl(hive, name, options, backend);
+  } else {
+    box = BoxImpl(hive, name, options, backend);
+  }
   backend._registry = box;
 
   await box.initialize();
@@ -84,13 +94,25 @@ class StorageBackendVm extends StorageBackend {
   String get path => _file.path;
 
   @override
-  Future<int> initialize(Map<String, BoxEntry> entries, bool lazy) async {
-    List<Frame> frames;
+  Future<int> initialize(
+      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery) async {
+    var frames = <Frame>[];
+    int recoveryOffset;
     if (!lazy) {
-      frames = await _helper.readFramesFromFile(path, _registry, _crypto);
+      recoveryOffset =
+          await _helper.framesFromFile(path, frames, _registry, _crypto);
     } else {
-      frames = await _helper.readFrameKeysFromFile(path, _crypto);
+      recoveryOffset = await _helper.keysFromFile(path, frames, _crypto);
     }
+
+    if (recoveryOffset != null) {
+      if (crashRecovery) {
+        await _file.truncate(recoveryOffset);
+      } else {
+        throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+      }
+    }
+
     var offset = 0;
     var deletedEntries = 0;
     for (var frame in frames) {
@@ -113,19 +135,20 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(String key, int offset, int length) async {
+  Future<dynamic> readValue(dynamic key, int offset, int length) async {
     var bytes = await _file.readAt(offset, length);
     var frame = Frame.fromBytes(bytes, _registry, _crypto);
     return frame.value;
   }
 
   @override
-  Future<Map<String, dynamic>> readAll(Iterable<String> keys) async {
-    var frames = await _file.writeLock.synchronized(() {
-      return _helper.readFramesFromFile(path, _registry, _crypto);
+  Future<Map<dynamic, dynamic>> readAll() async {
+    var frames = <Frame>[];
+    await _file.writeLock.synchronized(() {
+      return _helper.framesFromFile(path, frames, _registry, _crypto);
     });
 
-    var map = <String, dynamic>{};
+    var map = <dynamic, dynamic>{};
     for (var frame in frames) {
       map[frame.key] = frame.value;
     }
@@ -133,49 +156,48 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<BoxEntry> writeFrame(Frame frame, bool lazy) async {
+  Future<void> writeFrame(Frame frame, BoxEntry entry) async {
     var bytes = frame.toBytes(true, _registry, _crypto);
-
-    var offset = await _file.write(bytes);
-
-    var value = !lazy ? frame.value : null;
-    return BoxEntry(value, offset, bytes.length);
+    if (entry != null) {
+      entry.offset = await _file.write(bytes);
+      entry.length = bytes.length;
+    }
   }
 
   @override
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool lazy) async {
+  Future<void> writeFrames(
+      List<Frame> frames, Iterable<BoxEntry> entries) async {
     var bytes = BytesBuilder(copy: false);
-    var frameLengths = List<int>(frames.length);
-    for (var i = 0; i < frames.length; i++) {
-      var frameBytes = frames[i].toBytes(true, _registry, _crypto);
+    var lengths = <int>[];
+    for (var frame in frames) {
+      var frameBytes = frame.toBytes(true, _registry, _crypto);
       bytes.add(frameBytes);
-      frameLengths[i] = frameBytes.length;
+      lengths.add(frameBytes.length);
     }
 
     var offset = await _file.write(bytes.toBytes());
 
-    var keyEntries = List<BoxEntry>(frames.length);
-    for (var i = 0; i < frames.length; i++) {
-      var frame = frames[i];
-      var frameLength = frameLengths[i];
-      var value = !lazy ? frame.value : null;
-      keyEntries[i] = BoxEntry(value, offset, frameLength);
-      offset += frameLength;
+    if (entries != null) {
+      var i = 0;
+      for (var entry in entries) {
+        entry.offset = offset;
+        entry.length = lengths[i++];
+        offset += entry.length;
+      }
     }
-
-    return keyEntries;
   }
 
   @override
-  Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries) async {
+  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) async {
     var compactPath = '${p.withoutExtension(path)}.hivec';
     var compactFile = await File(compactPath).open(mode: FileMode.write);
 
-    var newEntries = HashMap<String, BoxEntry>();
+    var newEntries = HashMap<dynamic, BoxEntry>();
 
     await _file.readLock.synchronized(() {
       return _file.writeLock.synchronized(() async {
-        var reader = await BufferedFileReader.fromFile(path);
+        var raf = await File(path).open();
+        var reader = BufferedFileReader(raf);
         var writer = BinaryWriterImpl(_registry);
 
         var compactOffset = 0;
@@ -201,7 +223,7 @@ class StorageBackendVm extends StorageBackend {
           }
           await compactFile.writeFrom(writer.outputAndClear());
         } finally {
-          await reader.close();
+          await raf.close();
           await compactFile.close();
         }
       });
@@ -214,17 +236,17 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future clear() {
+  Future<void> clear() {
     return _file.truncate(0);
   }
 
   @override
-  Future close() {
+  Future<void> close() {
     return _file.close();
   }
 
   @override
-  Future deleteFromDisk() {
+  Future<void> deleteFromDisk() {
     return _file.delete();
   }
 }

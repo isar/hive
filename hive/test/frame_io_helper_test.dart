@@ -3,74 +3,136 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import 'buffered_file_reader_test.dart';
 import 'frame_test.dart';
 import 'generated/frames.g.dart';
 import 'generated/frames_encrypted.g.dart';
 
-Future<File> getByteFile(List<Uint8List> list) {
+Uint8List getBytes(List<Uint8List> list) {
   var builder = BytesBuilder();
   for (var b in list) {
     builder.add(b);
   }
-  var bytes = Uint8List.fromList(builder.toBytes());
-  return getTempFile(bytes);
+  return builder.toBytes();
+}
+
+class FrameIoHelperTest extends FrameIoHelper {
+  final Uint8List bytes;
+
+  FrameIoHelperTest(this.bytes);
+
+  @override
+  Future<RandomAccessFile> openFile(String path) async {
+    return getRafMock(bytes);
+  }
+
+  @override
+  Future<Uint8List> readFile(String path) async {
+    return bytes;
+  }
 }
 
 void main() {
   group('FrameIoHelper', () {
-    group('.readFrameKeysFromFile()', () {
+    group('.keysFromFile()', () {
       test('frame', () async {
-        var file = await getByteFile(frameBytes);
-        var frames =
-            await FrameIoHelper().readFrameKeysFromFile(file.path, null);
+        var frames = <Frame>[];
+        var ioHelper = FrameIoHelperTest(getBytes(frameBytes));
+        var recoveryOffset = await ioHelper.keysFromFile(null, frames, null);
+        expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
-          expect(frames[i].key, testFrames[i].key);
-          expect(frames[i].length, frameBytes[i].length);
-          expect(frames[i].deleted, testFrames[i].deleted);
+          fEqual(frames[i],
+              lazyFrameWithLength(testFrames[i], frameBytes[i].length));
         }
       });
 
       test('encrypted', () async {
-        var file = await getByteFile(frameBytesEncrypted);
-        var frames = await FrameIoHelper()
-            .readFrameKeysFromFile(file.path, getDebugCrypto());
+        var frames = <Frame>[];
+        var ioHelper = FrameIoHelperTest(getBytes(frameBytesEncrypted));
+        var recoveryOffset =
+            await ioHelper.keysFromFile(null, frames, getDebugCrypto());
+        expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
-          expect(frames[i].key, testFrames[i].key);
-          expect(frames[i].length, frameBytesEncrypted[i].length);
-          expect(frames[i].deleted, testFrames[i].deleted);
+          fEqual(
+              frames[i],
+              lazyFrameWithLength(
+                  testFrames[i], frameBytesEncrypted[i].length));
+        }
+      });
+
+      test('returns offset if problem occurs', () async {
+        for (var n = 0; n < frameBytes.length; n++) {
+          var frame = frameBytes[n];
+          var bytesBefore = getBytes(frameBytes.sublist(0, n));
+          for (var i = 1; i < frame.length - 1; i++) {
+            var bytes = bytesBefore + frame.sublist(0, i);
+            var ioHelper = FrameIoHelperTest(Uint8List.fromList(bytes));
+            var frames = <Frame>[];
+            var recoveryOffset =
+                await ioHelper.keysFromFile(null, frames, null);
+            expect(recoveryOffset, bytesBefore.length);
+
+            var framesBefore = testFrames.sublist(0, n);
+            for (var i = 0; i < framesBefore.length; i++) {
+              fEqual(frames[i],
+                  lazyFrameWithLength(framesBefore[i], frameBytes[i].length));
+            }
+          }
         }
       });
     });
 
-    group('.readFramesFromFile()', () {
+    group('.allFromFile()', () {
       test('frame', () async {
-        var file = await getByteFile(frameBytes);
-        var frames =
-            await FrameIoHelper().readFramesFromFile(file.path, null, null);
+        var frames = <Frame>[];
+        var ioHelper = FrameIoHelperTest(getBytes(frameBytes));
+        var recoveryOffset =
+            await ioHelper.framesFromFile(null, frames, null, null);
+        expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
-          expect(frames[i].key, testFrames[i].key);
-          expect(frames[i].value, testFrames[i].value);
-          expect(frames[i].length, frameBytes[i].length);
-          expect(frames[i].deleted, testFrames[i].deleted);
+          fEqual(
+              frames[i], frameWithLength(testFrames[i], frameBytes[i].length));
         }
       });
 
       test('encrypted', () async {
-        var file = await getByteFile(frameBytesEncrypted);
-        var frames = await FrameIoHelper()
-            .readFramesFromFile(file.path, null, getDebugCrypto());
+        var frames = <Frame>[];
+        var ioHelper = FrameIoHelperTest(getBytes(frameBytesEncrypted));
+        var recoveryOffset =
+            await ioHelper.framesFromFile(null, frames, null, getDebugCrypto());
+        expect(recoveryOffset, null);
+
         for (var i = 0; i < testFrames.length; i++) {
-          expect(frames[i].key, testFrames[i].key);
-          expect(frames[i].value, testFrames[i].value);
-          expect(frames[i].length, frameBytesEncrypted[i].length);
-          expect(frames[i].deleted, testFrames[i].deleted);
+          fEqual(frames[i],
+              frameWithLength(testFrames[i], frameBytesEncrypted[i].length));
+        }
+      });
+
+      test('returns offset if problem occurs', () async {
+        for (var n = 0; n < frameBytes.length; n++) {
+          var frame = frameBytes[n];
+          var bytesBefore = getBytes(frameBytes.sublist(0, n));
+          for (var i = 0; i < frame.length - 1; i++) {
+            var bytes = bytesBefore + frame.sublist(0, i);
+            var ioHelper = FrameIoHelperTest(Uint8List.fromList(bytes));
+            var frames = <Frame>[];
+            var recoveryOffset =
+                await ioHelper.framesFromFile(null, frames, null, null);
+            expect(recoveryOffset, i == 0 ? null : bytesBefore.length);
+
+            var framesBefore = testFrames.sublist(0, n);
+            for (var i = 0; i < framesBefore.length; i++) {
+              fEqual(frames[i],
+                  frameWithLength(framesBefore[i], frameBytes[i].length));
+            }
+          }
         }
       });
     });

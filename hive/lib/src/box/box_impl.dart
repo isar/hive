@@ -1,265 +1,145 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/box_transaction_mixin.dart';
 import 'package:hive/src/box/change_notifier.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:meta/meta.dart';
 
-export 'package:hive/src/backend/storage_backend_stub.dart'
-    if (dart.library.io) 'package:hive/src/backend/storage_backend_vm.dart'
-    if (dart.library.html) 'package:hive/src/backend/storage_backend_js.dart';
-
-class BoxEntry {
-  final dynamic value;
-  final int offset;
-  final int length;
-
-  const BoxEntry(this.value, this.offset, this.length);
+class BoxImpl extends BoxBase implements Box {
+  BoxImpl(
+    HiveImpl hive,
+    String name,
+    BoxOptions options,
+    StorageBackend backend, [
+    Keystore keystore,
+    ChangeNotifier notifier,
+  ]) : super(hive, name, options, backend, keystore, notifier);
 
   @override
-  bool operator ==(dynamic other) {
-    if (other is BoxEntry) {
-      return other.value == value &&
-          other.offset == offset &&
-          other.length == length;
-    }
-    return false;
-  }
-}
-
-class BoxImpl extends TypeRegistryImpl with BoxTransactionMixin implements Box {
-  @override
-  final String name;
-  final HiveImpl hive;
-  final BoxOptions options;
-  final StorageBackend _backend;
-  final ChangeNotifier _notifier;
-  Map<String, BoxEntry> _entries = HashMap();
-
-  bool _open = true;
-  int _deletedEntries = 0;
-
-  BoxImpl(this.hive, this.name, this.options, this._backend)
-      : _notifier = ChangeNotifier(),
-        super(hive);
-
-  @visibleForTesting
-  BoxImpl.debug(
-      this.hive, this.name, this.options, this._backend, this._entries,
-      [ChangeNotifier notifier])
-      : _notifier = notifier ?? ChangeNotifier(),
-        super(hive);
+  final bool lazy = false;
 
   @override
-  bool get isOpen => _open;
-
-  @override
-  String get path => _backend.path;
-
-  @override
-  Iterable<String> get keys {
+  Iterable<dynamic> get values {
     checkOpen();
-    return _entries.keys;
-  }
-
-  @protected
-  void checkOpen() {
-    if (!_open) {
-      throw HiveError('Box has already been closed.');
-    }
+    return keystore.getValues();
   }
 
   @override
-  Stream<BoxEvent> watch({String key}) {
+  dynamic get(dynamic key, {dynamic defaultValue}) {
     checkOpen();
-    return _notifier.watch(key: key);
-  }
-
-  Future initialize() async {
-    _deletedEntries = await _backend.initialize(_entries, options.lazy);
-  }
-
-  @override
-  Future<T> get<T>(String key, {T defaultValue}) {
-    checkOpen();
-
-    if (!_entries.containsKey(key)) return Future.value(defaultValue);
-    if (!options.lazy) return Future.value(_entries[key]?.value as T);
-
-    var entry = _entries[key];
-    return _backend.readValue(key, entry.offset, entry.length) as Future<T>;
-  }
-
-  @override
-  dynamic operator [](String key) {
-    if (options.lazy) {
-      throw HiveError('Lazy boxes cannot be accessed using [].');
-    }
-
-    return _entries[key]?.value;
-  }
-
-  @override
-  bool has(String key) {
-    checkOpen();
-    return _entries.containsKey(key);
-  }
-
-  @override
-  Future put(String key, dynamic value) async {
-    checkOpen();
-
-    var frame = Frame(key, value);
-    if (value != null) {
-      var entry = await _backend.writeFrame(frame, options.lazy);
-      if (_entries.containsKey(key)) {
-        _deletedEntries++;
-      }
-      _entries[key] = entry;
+    var entry = keystore.get(key);
+    if (entry != null) {
+      return entry.value;
     } else {
-      if (!_entries.containsKey(key)) return;
-      await _backend.writeFrame(frame, options.lazy);
-      _deletedEntries++;
-      _entries.remove(key);
+      return defaultValue;
+    }
+  }
+
+  @override
+  dynamic getAt(int index, {dynamic defaultValue}) {
+    var key = keystore.keyAt(index);
+    if (key != null) {
+      return get(key);
+    } else {
+      return defaultValue;
+    }
+  }
+
+  @override
+  Future<void> put(dynamic key, dynamic value) {
+    checkOpen();
+    var entry = BoxEntry(value);
+    keystore.beginAddTransaction({key: entry});
+    return _writeFrame(Frame(key, value), entry);
+  }
+
+  @override
+  Future<void> delete(dynamic key) {
+    checkOpen();
+    if (!keystore.containsKey(key)) return Future.value();
+    keystore.beginDeleteTransaction([key]);
+    return _writeFrame(Frame.deleted(key), null);
+  }
+
+  Future<void> _writeFrame(Frame frame, BoxEntry entry) async {
+    notifier.notify(frame.key, frame.value, frame.deleted);
+    try {
+      await backend.writeFrame(frame, entry);
+      keystore.commitTransaction();
+    } catch (e) {
+      keystore.cancelTransaction();
+      var oldEntry = keystore.get(frame.key);
+      notifier.notify(frame.key, oldEntry?.value, oldEntry == null);
+      rethrow;
     }
 
     await performCompactionIfNeeded();
-
-    _notifier.notify(key, value);
   }
 
   @override
-  Future delete(String key) {
-    return put(key, null);
-  }
-
-  @override
-  Future putAll(Map<String, dynamic> kvPairs) async {
+  Future<void> putAll(Map<dynamic, dynamic> kvPairs) {
     checkOpen();
-    if (kvPairs.isEmpty) return;
 
-    var toBeDeletedEntries = 0;
+    if (kvPairs.isEmpty) return Future.value();
+
     var frames = <Frame>[];
-    kvPairs.forEach((key, dynamic value) {
-      var frame = Frame(key, value);
-      if (value != null) {
-        frames.add(frame);
-        if (_entries.containsKey(key)) {
-          toBeDeletedEntries++;
-        }
-      } else {
-        if (_entries.containsKey(key)) {
-          frames.add(frame);
-          toBeDeletedEntries++;
-        }
-      }
-    });
+    var entries = <dynamic, BoxEntry>{};
+    for (var key in kvPairs.keys) {
+      var value = kvPairs[key];
+      frames.add(Frame(key, value));
+      entries[key] = BoxEntry(value);
+    }
 
-    if (frames.isEmpty) return;
+    keystore.beginAddTransaction(entries);
 
-    var newEntries = await _backend.writeFrames(frames, options.lazy);
-    for (var i = 0; i < frames.length; i++) {
-      var frame = frames[i];
-      if (frame.value != null) {
-        _entries[frame.key] = newEntries[i];
-      } else {
-        _entries.remove(frame.key);
+    return _writeFrames(frames, entries.values);
+  }
+
+  @override
+  Future<void> deleteAll(List<dynamic> keys) {
+    checkOpen();
+
+    var frames = <Frame>[];
+    for (var key in keys) {
+      if (keystore.containsKey(key)) {
+        frames.add(Frame.deleted(key));
       }
     }
 
-    _deletedEntries += toBeDeletedEntries;
+    if (frames.isEmpty) return Future.value();
+
+    keystore.beginDeleteTransaction(keys);
+    return _writeFrames(frames, null);
+  }
+
+  Future<void> _writeFrames(
+      List<Frame> frames, Iterable<BoxEntry> entries) async {
+    for (var frame in frames) {
+      notifier.notify(frame.key, frame.value, frame.deleted);
+    }
+
+    try {
+      await backend.writeFrames(frames, entries);
+      keystore.commitTransaction();
+    } catch (e) {
+      keystore.cancelTransaction();
+      for (var frame in frames) {
+        var oldEntry = keystore.get(frame.key);
+        notifier.notify(frame.key, oldEntry?.value, oldEntry == null);
+      }
+      rethrow;
+    }
 
     await performCompactionIfNeeded();
-
-    for (var frame in frames) {
-      _notifier.notify(frame.key, frame.value);
-    }
   }
 
   @override
-  Future deleteAll(Iterable<String> keysToDelete) {
-    var nullValues = List.filled(keysToDelete.length, null);
-    return putAll(Map<String, void>.fromIterables(keysToDelete, nullValues));
-  }
-
-  @override
-  Future<Map<String, dynamic>> toMap() {
+  Map<dynamic, dynamic> toMap() {
     checkOpen();
-
-    if (!options.lazy) {
-      var mappedEntries =
-          _entries.map<String, dynamic>((k, e) => MapEntry(k, e.value));
-      return Future.value(mappedEntries);
-    }
-
-    return _backend.readAll(_entries.keys);
+    return keystore.toValueMap();
   }
-
-  @override
-  Future<int> clear() async {
-    checkOpen();
-    if (_entries.isEmpty) return 0;
-
-    await _backend.clear();
-    var oldEntries = _entries;
-    _entries = HashMap();
-    _deletedEntries = 0;
-
-    for (var key in oldEntries.keys) {
-      _notifier.notify(key, null);
-    }
-
-    return oldEntries.length;
-  }
-
-  @override
-  Future<void> compact() async {
-    checkOpen();
-    if (_deletedEntries == 0) return;
-    _entries = await _backend.compact(_entries);
-    _deletedEntries = 0;
-  }
-
-  @visibleForTesting
-  Future<void> performCompactionIfNeeded() {
-    if (options.compactionStrategy(_entries.length, _deletedEntries)) {
-      return compact();
-    }
-
-    return Future.value();
-  }
-
-  @override
-  Future<void> close() async {
-    if (!_open) return;
-
-    await waitForRunningTransactions();
-    await _notifier.close();
-
-    _open = false;
-    hive.unregisterBox(name);
-    await _backend.close();
-  }
-
-  @override
-  Future<void> deleteFromDisk() async {
-    await waitForRunningTransactions();
-    await _notifier.close();
-
-    _open = false;
-    hive.unregisterBox(name);
-    await _backend.deleteFromDisk();
-  }
-
-  @visibleForTesting
-  Map<String, BoxEntry> get debugEntries => _entries;
-
-  @visibleForTesting
-  int get debugDeletedEntries => _deletedEntries;
 }

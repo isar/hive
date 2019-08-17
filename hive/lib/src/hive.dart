@@ -10,25 +10,26 @@ abstract class HiveInterface implements TypeRegistry {
   void init(String path);
 
   /// Open a box
-  Future<Box> box(
+  Future<Box> openBox(
     String name, {
     List<int> encryptionKey,
-    bool lazy = false,
     CompactionStrategy compactionStrategy,
+    bool crashRecovery = true,
+    bool lazy = false,
   });
+
+  Box box(String name);
 
   /// Checks if a specific box is currently open.
   bool isBoxOpen(String name);
 
-  Box operator [](String name);
-
   /// Closes all open boxes and then Hive itself.
-  Future close();
+  Future<void> close();
 
   /// Deletes all boxes from disk.
   ///
   /// The home directoy will not be deleted.
-  Future deleteFromDisk();
+  Future<void> deleteFromDisk();
 
   /// Generates a secure encryption key using the fortuna random algorithm.
   List<int> generateSecureKey();

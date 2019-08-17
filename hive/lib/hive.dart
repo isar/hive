@@ -15,6 +15,7 @@ part 'src/binary/binary_writer.dart';
 part 'src/registry/type_registry.dart';
 part 'src/registry/type_adapter.dart';
 part 'src/box/box.dart';
+part 'src/box/lazy_box.dart';
 part 'src/hive_error.dart';
 part 'src/hive.dart';
 
