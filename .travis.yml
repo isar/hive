@@ -9,19 +9,19 @@ jobs:
     - name: hive
       script:
         - cd hive
-        - ./tool/test.sh
+        - sh tool/test.sh
 
     - name: hive chrome
       script:
         - cd hive
         - TEST_PLATFORM = "chrome"
-        - ./tool/test.sh
+        - sh tool/test.sh
 
     - name: hive firefox
       script:
         - cd hive
         - TEST_PLATFORM = "firefox"
-        - ./tool/test.sh
+        - sh tool/test.sh
         
     - name: hive_generator
       script:
@@ -31,4 +31,4 @@ jobs:
       
   
     - stage: coverage
-      script: ./hive/tool/coverage.sh
+      script: sh hive/tool/coverage.sh
