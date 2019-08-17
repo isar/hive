@@ -40,14 +40,14 @@ In the browser you don't have to call `init()`.
 All of your data is stored in boxes.
 
 ```dart
-var box = await Hive.box('testBox');
+var box = await Hive.openBox('testBox');
 ```
 
 Just provide an `encryptionKey` to encrypt a box:
 
 ```dart
 var key = Hive.generateSecureKey();
-var box = await Hive.box('secureBox', encryptionKey: key);
+var box = await Hive.openBox('secureBox', encryptionKey: key);
 ```
 
 ### Read & Write
@@ -57,9 +57,9 @@ Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. An
 ```dart
 var dog = Dog(name: 'Nero', age: 4);
 
-await box.put('myDog', dog);
+box.put('myDog', dog);
 
-Dog myDog = await box.get('myDog');
+Dog myDog = box.get('myDog');
 ```
 
 ## Hive ❤️ Flutter
@@ -70,23 +70,23 @@ Hive was written with Flutter in mind. It is a perfect fit if you need a lightwe
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var box = Hive['settings'];
+    var box = Hive.box('settings');
 
     return Column(
       children: <Widget>[
         SwitchListTile(
-          value: box['darkMode'],
+          value: box.get('darkMode'),
           title: Text("Dark Mode"),
-          onChanged: (value) async {
-            await box.put('darkMode', !box['darkMode']);
+          onChanged: (value) {
+            box.put('darkMode', value);
             setState(() {});
           },
         ),
         SwitchListTile(
-          value: box['pushMessages'],
+          value: box.get('pushMessages'),
           title: Text('Send push messages'),
-          onChanged: (value) async {
-            await box.put('pushMessages', !box['pushMessages']);
+          onChanged: (value) {
+            box.put('pushMessages', value);
             setState(() {});
           },
         ),

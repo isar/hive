@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/change_notifier.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:hive/src/util/lock.dart';
@@ -32,6 +33,10 @@ class SyncedFileMock extends Mock implements SyncedFile {}
 class SecureRandomMock extends Mock implements SecureRandom {}
 
 class BoxMock extends Mock implements Box {}
+
+class KeystoreMock extends Mock implements Keystore {}
+
+class FileMock extends Mock implements File {}
 
 Matcher throwsHiveError([String contains]) {
   return throwsA(
@@ -96,11 +101,12 @@ Future<Directory> getAssetDir(String part1,
   return tempDir;
 }
 
-Future expectDirsEqual(Directory dir1, Directory dir2) {
+Future<void> expectDirsEqual(Directory dir1, Directory dir2) {
   return _expectDirsEqual(dir1, dir2, false);
 }
 
-Future _expectDirsEqual(Directory dir1, Directory dir2, bool round2) async {
+Future<void> _expectDirsEqual(
+    Directory dir1, Directory dir2, bool round2) async {
   await for (var entity in dir1.list(recursive: true)) {
     if (entity is File) {
       var fileName = path.basename(entity.path);
@@ -121,30 +127,8 @@ Future _expectDirsEqual(Directory dir1, Directory dir2, bool round2) async {
   }
 }
 
-Future expectDirEqualsAssetDir(Directory dir1, String part1,
+Future<void> expectDirEqualsAssetDir(Directory dir1, String part1,
     [String part2, String part3, String part4]) {
   var assetDir = Directory(path.join(assetsPath, part1, part2, part3, part4));
   return expectDirsEqual(dir1, assetDir);
-}
-
-Uint8List u8(List<int> list) => Uint8List.fromList(list);
-
-class Pair<V1, V2> {
-  V1 first;
-  V2 second;
-
-  Pair(this.first, this.second);
-}
-
-class ByteListReader {
-  final Uint8List bytes;
-  int offset = 0;
-
-  ByteListReader(this.bytes);
-
-  Future<Uint8List> read(int count) {
-    var list = bytes.sublist(offset, offset + count);
-    offset += count;
-    return Future.value(list as Uint8List);
-  }
 }

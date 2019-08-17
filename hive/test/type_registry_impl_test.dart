@@ -121,5 +121,14 @@ void main() {
         expect(resolvedAdapter.adapter, adapter2);
       });
     });
+
+    test('.resetAdapters()', () {
+      var registry = TypeRegistryImpl();
+      var adapter = TestAdapter();
+      registry.registerAdapter(adapter, 33);
+
+      registry.resetAdapters();
+      expect(registry.findAdapterForType(int), null);
+    });
   });
 }

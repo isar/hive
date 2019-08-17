@@ -8,7 +8,7 @@ import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
-import 'box/box_impl.dart';
+import 'backend/storage_backend.dart';
 
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, Box>();
@@ -37,25 +37,44 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<Box> box(
+  Future<Box> openBox(
     String name, {
     List<int> encryptionKey,
-    bool lazy = false,
     CompactionStrategy compactionStrategy,
+    bool crashRecovery = true,
+    bool lazy = false,
   }) async {
-    var existingBox = _boxes[name.toLowerCase()];
-    if (existingBox != null) return existingBox;
+    if (isBoxOpen(name)) {
+      return box(name);
+    } else {
+      if (encryptionKey != null) {
+        if (encryptionKey.length != 32 ||
+            encryptionKey.any((it) => it < 0 || it > 255)) {
+          throw ArgumentError(
+              'The encryption key has to be a 32 byte (256 bit) array.');
+        }
+      }
 
-    var options = BoxOptions(
-      encryptionKey: encryptionKey,
-      lazy: lazy,
-      compactionStrategy: defaultCompactionStrategy,
-    );
+      var options = BoxOptions(
+        encryptionKey: encryptionKey,
+        compactionStrategy: defaultCompactionStrategy,
+      );
 
-    var box = await openBox(this, name.toLowerCase(), options);
-    _boxes[name.toLowerCase()] = box;
+      var lowercaseName = name.toLowerCase();
+      var box = await openBoxInternal(this, lowercaseName, lazy, options);
+      _boxes[lowercaseName] = box;
 
-    return box;
+      return box;
+    }
+  }
+
+  @override
+  Box box(String name) {
+    if (isBoxOpen(name)) {
+      return _boxes[name.toLowerCase()];
+    } else {
+      throw HiveError('Box not found. Did you forget to call Hive.openBox()?');
+    }
   }
 
   @override
@@ -64,12 +83,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Box operator [](String name) {
-    return _boxes[name.toLowerCase()];
-  }
-
-  @override
-  Future close() {
+  Future<void> close() {
     var closeFutures = _boxes.values.map((box) {
       return box.close();
     });
@@ -82,7 +96,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future deleteFromDisk() {
+  Future<void> deleteFromDisk() {
     var deleteFutures = _boxes.values.toList().map((box) {
       return box.deleteFromDisk();
     });

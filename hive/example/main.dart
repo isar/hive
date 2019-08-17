@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 void main() async {
   Hive.init(Directory.current.path);
 
-  var box = await Hive.box('demoBox');
+  var box = await Hive.openBox('demoBox');
 
   await box.put('name', 'David');
   await box.put('age', 27);

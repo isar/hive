@@ -1,24 +1,29 @@
-import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/keystore.dart';
+
+export 'package:hive/src/backend/storage_backend_stub.dart'
+    if (dart.library.io) 'package:hive/src/backend/storage_backend_vm.dart'
+    if (dart.library.html) 'package:hive/src/backend/storage_backend_js.dart';
 
 abstract class StorageBackend {
   String get path;
 
-  Future<int> initialize(Map<String, BoxEntry> entries, bool lazy);
+  Future<int> initialize(
+      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery);
 
-  Future<dynamic> readValue(String key, int offset, int length);
+  Future<dynamic> readValue(dynamic key, int offset, int length);
 
-  Future<Map<String, dynamic>> readAll(Iterable<String> keys);
+  Future<Map<dynamic, dynamic>> readAll();
 
-  Future<BoxEntry> writeFrame(Frame frame, bool lazy);
+  Future<void> writeFrame(Frame frame, BoxEntry entry);
 
-  Future<List<BoxEntry>> writeFrames(List<Frame> frames, bool lazy);
+  Future<void> writeFrames(List<Frame> frames, Iterable<BoxEntry> entries);
 
-  Future<Map<String, BoxEntry>> compact(Map<String, BoxEntry> entries);
+  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries);
 
-  Future clear();
+  Future<void> clear();
 
-  Future close();
+  Future<void> close();
 
-  Future deleteFromDisk();
+  Future<void> deleteFromDisk();
 }

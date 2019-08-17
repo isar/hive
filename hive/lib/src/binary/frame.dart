@@ -66,7 +66,7 @@ import 'package:hive/src/util/crc32.dart';
 class Frame {
   static const maxFrameLength = 1000 * 64;
 
-  final String key;
+  final dynamic key;
   final dynamic value;
 
   final int length;
@@ -75,7 +75,12 @@ class Frame {
 
   const Frame(this.key, this.value, [this.length])
       : lazy = false,
-        deleted = value == null;
+        deleted = false;
+
+  const Frame.deleted(this.key, [this.length])
+      : value = null,
+        lazy = false,
+        deleted = true;
 
   const Frame.lazy(this.key, [this.length])
       : value = null,
@@ -86,35 +91,44 @@ class Frame {
       Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
     var lengthBytes = Uint8List.view(bytes.buffer, 0, 4);
     var frameBytes = Uint8List.view(bytes.buffer, 4);
-    checkCrc(lengthBytes, frameBytes, crypto?.keyCrc);
+    if (!checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
+      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+    }
 
     var frameReader =
         BinaryReaderImpl(frameBytes, registry, frameBytes.length - 4);
-    return decodeBody(frameReader, true, true, bytes.length, crypto);
+    return decode(frameReader, true, true, bytes.length, crypto);
   }
 
   static Frame bodyFromBytes(
       Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
-    checkCrc(null, bytes, crypto?.keyCrc);
+    if (!checkCrc(null, bytes, crypto?.keyCrc)) {
+      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+    }
     var frameReader = BinaryReaderImpl(bytes, registry, bytes.length - 4);
-    return decodeBody(frameReader, false, true, bytes.length, crypto);
+    return decode(frameReader, false, true, bytes.length, crypto);
   }
 
-  static Frame decodeBody(
+  static Frame decode(
     BinaryReaderImpl reader,
     bool decodeKey,
     bool decodeValue,
     int frameLength,
     CryptoHelper crypto,
   ) {
-    String key;
+    dynamic key;
     if (decodeKey) {
-      var keyLength = reader.readByte(); // Read length of key
-      key = reader.readAsciiString(keyLength); // Read key
+      var keyType = reader.readByte();
+      if (keyType == FrameKeyType.uintT.index) {
+        key = reader.readUint32();
+      } else {
+        var keyLength = reader.readByte(); // Read length of key
+        key = reader.readAsciiString(keyLength); // Read key
+      }
     }
 
     if (reader.availableBytes == 0) {
-      return Frame(key, null, frameLength);
+      return Frame.deleted(key, frameLength);
     } else if (decodeValue) {
       dynamic value;
       if (crypto == null) {
@@ -136,7 +150,7 @@ class Frame {
     }
   }
 
-  static void checkCrc(
+  static bool checkCrc(
       List<int> lengthBytes, List<int> frameBytes, int keyCrc) {
     var computedCrc = keyCrc ?? 0;
     if (lengthBytes != null) {
@@ -146,24 +160,33 @@ class Frame {
         crc: computedCrc, length: frameBytes.length - 4);
 
     var crc = bytesToUint32(frameBytes, frameBytes.length - 4);
-    if (computedCrc != crc) {
-      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
-    }
+    return computedCrc == crc;
   }
 
   Uint8List toBytes(
       bool writeKeyAndLength, TypeRegistry registry, CryptoHelper crypto) {
-    if (key.length > 255) {
-      throw HiveError('Key must not be longer than 255 characters');
-    }
     var writer = BinaryWriterImpl(registry);
 
     if (writeKeyAndLength) {
-      writer
-        ..writeByteList([0, 0, 0, 0],
-            writeLength: false) // Placeholder for length
-        ..writeByte(key.length) // Write key length
-        ..writeAsciiString(key, writeLength: false); // Write key
+      // Placeholder for length
+      writer.writeByteList([0, 0, 0, 0], writeLength: false);
+
+      var localKey = key;
+      if (localKey is int) {
+        writer
+          ..writeByte(FrameKeyType.uintT.index)
+          ..writeUint32(localKey); // Write key
+      } else if (localKey is String) {
+        if (localKey.length > 255) {
+          throw HiveError('Key must not be longer than 255 characters');
+        }
+        writer
+          ..writeByte(FrameKeyType.asciiStringT.index)
+          ..writeByte(localKey.length) // Write key length
+          ..writeAsciiString(localKey, writeLength: false); // Write key
+      } else {
+        throw HiveError('Unsupported key type');
+      }
     }
 
     if (!deleted) {
@@ -197,13 +220,22 @@ class Frame {
   @override
   bool operator ==(dynamic other) {
     if (other is Frame) {
-      return other.key == key && other.value == value && other.length == length;
+      return key == other.key &&
+          value == other.value &&
+          length == other.length &&
+          deleted == other.deleted;
+    } else {
+      return false;
     }
-    return false;
   }
 }
 
 typedef ByteSource = Future<List<int>> Function(int bytes);
+
+enum FrameKeyType {
+  uintT,
+  asciiStringT,
+}
 
 enum FrameValueType {
   nullT,

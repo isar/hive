@@ -1,8 +1,25 @@
 import 'dart:typed_data';
 
 final frameBytesBodyOnly = [
+// 0
+  Uint8List.fromList([0, 0, 0, 0]),
+// 555
+  Uint8List.fromList([0, 0, 0, 0]),
+// 123
+  Uint8List.fromList([0, 141, 239, 2, 210]),
+// 0
+  Uint8List.fromList(
+      [4, 8, 0, 73, 110, 116, 32, 107, 101, 121, 49, 123, 183, 184, 121]),
+// 1
+  Uint8List.fromList(
+      [4, 8, 0, 73, 110, 116, 32, 107, 101, 121, 50, 193, 230, 177, 224]),
+// 29
+  Uint8List.fromList(
+      [4, 8, 0, 73, 110, 116, 32, 107, 101, 121, 51, 87, 214, 182, 151]),
 // Tombstone frame
   Uint8List.fromList([0, 0, 0, 0]),
+// Null frame
+  Uint8List.fromList([0, 141, 239, 2, 210]),
 // Int
   Uint8List.fromList([1, 0, 0, 0, 204, 214, 90, 157, 65, 69, 205, 183, 122]),
 // Large int

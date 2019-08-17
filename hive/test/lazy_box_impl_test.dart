@@ -2,16 +2,16 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
-import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
 
-BoxImpl getBox({
+LazyBoxImpl getBox({
   String name,
   HiveImpl hive,
   StorageBackend backend,
@@ -19,7 +19,7 @@ BoxImpl getBox({
   Keystore keystore,
   CompactionStrategy cStrategy,
 }) {
-  return BoxImpl(
+  return LazyBoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     BoxOptions(
@@ -32,52 +32,46 @@ BoxImpl getBox({
 }
 
 void main() {
-  group('BoxImpl', () {
+  group('LazyBoxImpl', () {
     test('.values', () {
-      var keystore = Keystore({
-        0: BoxEntry(123),
-        'key1': BoxEntry('value1'),
-        1: BoxEntry(null),
-      });
-      var box = getBox(keystore: keystore);
+      var box = getBox();
 
-      expect(box.values, [123, null, 'value1']);
+      expect(() => box.values, throwsUnsupportedError);
     });
 
     group('.get()', () {
-      test('returns defaultValue if key does not exist', () {
+      test('returns defaultValue if key does not exist', () async {
         var backend = BackendMock();
         var box = getBox(backend: backend);
 
-        expect(box.get('someKey'), null);
-        expect(box.get('otherKey', defaultValue: -12), -12);
+        expect(await box.get('someKey'), null);
+        expect(await box.get('otherKey', defaultValue: -12), -12);
         verifyZeroInteractions(backend);
       });
 
-      test('returns cached value if it exists', () {
+      test('reads value from backend', () async {
         var backend = BackendMock();
+        when(backend.readValue(any, any, any))
+            .thenAnswer((i) async => 'testVal');
         var box = getBox(
           backend: backend,
-          keystore: Keystore({
-            'testKey': BoxEntry('testVal'),
-            123: BoxEntry(456),
-          }),
+          keystore: Keystore({'testKey': BoxEntry('testVal', 123, 456)}),
         );
 
-        expect(box.get('testKey'), 'testVal');
-        expect(box.get(123), 456);
-        verifyZeroInteractions(backend);
+        expect(await box.get('testKey'), 'testVal');
+        verify(backend.readValue('testKey', 123, 456));
       });
     });
 
-    test('.getAt()', () {
-      var keystore = Keystore({0: BoxEntry('zero'), 'a': BoxEntry('A')});
-      var box = getBox(keystore: keystore);
+    test('.getAt()', () async {
+      var keystore = Keystore({0: BoxEntry(null), 'a': BoxEntry(null)});
+      var backend = BackendMock();
+      when(backend.readValue('a', any, any)).thenAnswer((i) async => 'A');
+      var box = getBox(keystore: keystore, backend: backend);
 
-      expect(box.getAt(-1, defaultValue: 123), 123);
-      expect(box.getAt(0), 'zero');
-      expect(box.getAt(1), 'A');
-      expect(box.getAt(2), null);
+      expect(await box.getAt(-1, defaultValue: 123), 123);
+      expect(await box.getAt(1), 'A');
+      expect(await box.getAt(2), null);
     });
 
     group('.put()', () {
@@ -95,11 +89,11 @@ void main() {
 
         await box.put('key1', 'value1');
         verifyInOrder([
-          keystore.beginAddTransaction({'key1': BoxEntry('value1')}),
+          backend.writeFrame(const Frame('key1', 'value1'), BoxEntry(null)),
+          keystore.addAll({'key1': BoxEntry(null)}),
           notifier.notify('key1', 'value1', false),
-          backend.writeFrame(const Frame('key1', 'value1'), BoxEntry('value1')),
-          keystore.commitTransaction(),
         ]);
+        expect(box.deletedEntries, 0);
       });
 
       test('handles exceptions', () async {
@@ -109,7 +103,6 @@ void main() {
 
         when(backend.writeFrame(any, any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
-        when(keystore.get(any)).thenReturn(BoxEntry('oldValue'));
 
         var box = getBox(
           backend: backend,
@@ -120,14 +113,11 @@ void main() {
         expect(
             () async => await box.put('key1', 'newValue'), throwsA(anything));
         verifyInOrder([
-          keystore.beginAddTransaction({'key1': BoxEntry('newValue')}),
-          notifier.notify('key1', 'newValue', false),
-          backend.writeFrame(
-              const Frame('key1', 'newValue'), BoxEntry('newValue')),
-          keystore.cancelTransaction(),
-          keystore.get('key1'),
-          notifier.notify('key1', 'oldValue', false),
+          backend.writeFrame(const Frame('key1', 'newValue'), BoxEntry(null))
         ]);
+        verifyNoMoreInteractions(keystore);
+        verifyNoMoreInteractions(notifier);
+        expect(box.deletedEntries, 0);
       });
     });
 
@@ -145,9 +135,9 @@ void main() {
         );
 
         await box.delete('testKey');
-        await box.delete(123);
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
+        expect(box.deletedEntries, 0);
       });
 
       test('delete key', () async {
@@ -165,10 +155,9 @@ void main() {
         await box.delete('key1');
         verifyInOrder([
           keystore.containsKey('key1'),
-          keystore.beginDeleteTransaction(['key1']),
-          notifier.notify('key1', null, true),
           backend.writeFrame(const Frame.deleted('key1'), null),
-          keystore.commitTransaction(),
+          keystore.deleteAll(['key1']),
+          notifier.notify('key1', null, true),
         ]);
       });
     });
@@ -188,18 +177,15 @@ void main() {
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
         verifyInOrder([
-          keystore.beginAddTransaction({
-            'key1': BoxEntry('value1'),
-            'key2': BoxEntry('value2'),
-          }),
-          notifier.notify('key1', 'value1', false),
-          notifier.notify('key2', 'value2', false),
           backend.writeFrames(
             [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
-            [BoxEntry('value1'), BoxEntry('value2')],
+            [BoxEntry(null), BoxEntry(null)],
           ),
-          keystore.commitTransaction(),
+          keystore.addAll({'key1': BoxEntry(null), 'key2': BoxEntry(null)}),
+          notifier.notify('key1', 'value1', false),
+          notifier.notify('key2', 'value2', false),
         ]);
+        expect(box.deletedEntries, 0);
       });
 
       test('handles exceptions', () async {
@@ -209,8 +195,6 @@ void main() {
 
         when(backend.writeFrames(any, any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
-        var n = 1;
-        when(keystore.get(any)).thenAnswer((i) => BoxEntry('oldValue${n++}'));
 
         var box = getBox(
           backend: backend,
@@ -223,27 +207,19 @@ void main() {
           throwsA(anything),
         );
         verifyInOrder([
-          keystore.beginAddTransaction({
-            'key1': BoxEntry('value1'),
-            'key2': BoxEntry('value2'),
-          }),
-          notifier.notify('key1', 'value1', false),
-          notifier.notify('key2', 'value2', false),
           backend.writeFrames(
             [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
-            [BoxEntry('value1'), BoxEntry('value2')],
+            [BoxEntry(null), BoxEntry(null)],
           ),
-          keystore.cancelTransaction(),
-          keystore.get('key1'),
-          notifier.notify('key1', 'oldValue1', false),
-          keystore.get('key2'),
-          notifier.notify('key2', 'oldValue2', false),
         ]);
+        verifyNoMoreInteractions(keystore);
+        verifyNoMoreInteractions(notifier);
+        expect(box.deletedEntries, 0);
       });
     });
 
     group('.deleteAll()', () {
-      test('do nothing when deleting non existing keys', () async {
+      test('does nothing when deleting non existing keys', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
@@ -257,6 +233,7 @@ void main() {
         await box.deleteAll(['key1', 'key2', 'key3']);
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
+        expect(box.deletedEntries, 0);
       });
 
       test('delete keys', () async {
@@ -275,27 +252,20 @@ void main() {
         verifyInOrder([
           keystore.containsKey('key1'),
           keystore.containsKey('key2'),
-          keystore.beginDeleteTransaction(['key1', 'key2']),
-          notifier.notify('key1', null, true),
-          notifier.notify('key2', null, true),
           backend.writeFrames(
             [const Frame.deleted('key1'), const Frame.deleted('key2')],
             null,
           ),
-          keystore.commitTransaction(),
+          keystore.deleteAll(['key1', 'key2']),
+          notifier.notify('key1', null, true),
+          notifier.notify('key2', null, true),
         ]);
       });
     });
 
-    test('.toMap()', () {
-      var box = getBox(
-        keystore: Keystore({
-          'key1': BoxEntry(1, 0, 0),
-          'key2': BoxEntry(2, 0, 0),
-          'key4': BoxEntry(444, 0, 0),
-        }),
-      );
-      expect(box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
+    test('.toMap()', () async {
+      var box = getBox();
+      expect(box.toMap, throwsUnsupportedError);
     });
   });
 }
