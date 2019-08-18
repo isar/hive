@@ -30,7 +30,7 @@ Hive is a lightweight and blazing fast key-value store written in pure Dart. Ins
 |	![](https://raw.githubusercontent.com/leisim/hive/master/.github/benchmark_read.png) |	![](https://raw.githubusercontent.com/leisim/hive/master/.github/benchmark_write.png) |
 | SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
 
-This benchmark was performed on a Oneplus 6T with Android Q. You can [run the benchmark yourself](https://github.com/leisim/hive_benchmark).
+This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/leisim/hive_benchmark).
 
 ## Getting Started
 
