@@ -1,3 +1,6 @@
+## 0.4.1
+- Allow different versions of the `path` package
+
 ## 0.4.0
 - Added `BigInt` support
 - Added `compactionStrategy` parameter
