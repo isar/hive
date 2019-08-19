@@ -5,7 +5,8 @@
 Hive is a lightweight and blazing fast key-value store written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
 [Go here for documentation](https://leisim.github.io/hive/) 📖<br>
-*Not finished yet and may contain typos. Please open pull requests ;)*
+
+**Hive is not ready for production yet. I'm working hard on a stable version.**
 
 ## Features
 
@@ -79,27 +80,22 @@ Hive was written with Flutter in mind. It is a perfect fit if you need a lightwe
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var box = Hive.box('settings');
-
-    return Column(
-      children: <Widget>[
-        SwitchListTile(
+    return HiveBuilder.openBox(
+      openBox: () {
+        return Hive.openBox('settings');
+      },
+      builder: (context, box) {
+        return Switch(
           value: box.get('darkMode'),
-          title: Text("Dark Mode"),
-          onChanged: (value) {
-            box.put('darkMode', value);
-            setState(() {});
-          },
-        ),
-        SwitchListTile(
-          value: box.get('pushMessages'),
-          title: Text('Send push messages'),
-          onChanged: (value) {
-            box.put('pushMessages', value);
-            setState(() {});
-          },
-        ),
-      ],
+          onChanged: (val) {
+            box.put('darkMode', val);
+          }
+        )
+      },
+      child: Center(
+        // Shown when app starts until Hive is ready
+        child: Text('Please wait...'), 
+      ),
     );
   }
 }
