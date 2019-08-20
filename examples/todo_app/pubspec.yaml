@@ -1,0 +1,27 @@
+name: todo_app
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  hive_flutter:
+    path: ../../hive_flutter
+
+  path_provider: ^1.2.0
+  device_preview: ^0.1.9-beta
+
+dev_dependencies:
+  hive_generator:
+    path: ../../hive_generator
+  build_runner: any
+  test: any
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: OpenSans
+      fonts:
+        - asset: fonts/OpenSans-Regular.ttf

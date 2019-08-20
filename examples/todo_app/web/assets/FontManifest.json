@@ -1,0 +1,18 @@
+[
+    {
+        "family": "MaterialIcons",
+        "fonts": [
+            {
+                "asset": "https://fonts.gstatic.com/s/materialicons/v42/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2"
+            }
+        ]
+    },
+    {
+        "family": "OpenSans",
+        "fonts": [
+            {
+                "asset": "https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFWJ0bbck.woff2"
+            }
+        ]
+    }
+]
