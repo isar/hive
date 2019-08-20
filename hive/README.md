@@ -1,12 +1,10 @@
-![logo](https://raw.githubusercontent.com/leisim/hive/master/.github/logo.svg?sanitize=true)
+<img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
 
 [![Travis](https://img.shields.io/travis/com/leisim/hive/master.svg)](https://travis-ci.com/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) ![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)
 
 | Core          | Flutter           | Generator  |
 |:-------------:|:-------------:|:-----:|
 | [![Generator version](https://img.shields.io/pub/v/hive.svg)](https://pub.dev/packages/hive) | [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg)](https://pub.dev/packages/hive_flutter) | [![Generator version](https://img.shields.io/pub/v/hive_generator.svg)](https://pub.dev/packages/hive_generator) |
-
-> Hive is a lightweight and blazing fast key-value store written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
 - [Documentation](https://leisim.github.io/hive/) 📖
 - [Frequently Asked Questions](https://leisim.github.io/hive/#/faq) 🙋
