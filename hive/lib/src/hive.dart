@@ -1,5 +1,6 @@
 part of hive;
 
+/// The API interface of the globally
 abstract class HiveInterface implements TypeRegistry {
   /// The home directory of Hive.
   ///
@@ -9,7 +10,10 @@ abstract class HiveInterface implements TypeRegistry {
   /// Initialize Hive by giving it a home directory.
   void init(String path);
 
-  /// Open a box
+  /// Opens a box.
+  ///
+  /// If the box is already open, the instance is returned and all provided
+  /// parameters are being ignored.
   Future<Box> openBox(
     String name, {
     List<int> encryptionKey,
@@ -18,6 +22,7 @@ abstract class HiveInterface implements TypeRegistry {
     bool lazy = false,
   });
 
+  /// Returns a previously opened box.
   Box box(String name);
 
   /// Checks if a specific box is currently open.
@@ -35,4 +40,5 @@ abstract class HiveInterface implements TypeRegistry {
   List<int> generateSecureKey();
 }
 
+/// A function which decides when to compact a box.
 typedef CompactionStrategy = bool Function(int entries, int deletedEntries);
