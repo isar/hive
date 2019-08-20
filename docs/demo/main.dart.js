@@ -39738,8 +39738,8 @@ if(u!=null){P.Ue(u)
 return M.Pp(new T.dG(C.a3,t,t,L.bL("Something went wrong :/",t,t,t,t,t),t),t)}else return new F.Hv(t)}},
 $S:248}
 F.Hv.prototype={
-L:function(a){var u=null
-return M.Pp(Q.S9(new T.bH(C.oK,T.xh(H.d([L.bL("Hive To-Do App",u,u,u,A.fz(u,u,u,u,u,u,u,u,u,u,u,40,u,u,u,u,!0,u,u,u,u,u,u),u),new T.c_(u,10,u,u),L.bL("Refresh your tab or restart the app to test persistance.",u,u,u,u,C.ei),new T.c_(u,40,u,u),new T.oH(1,C.cx,new T.rx($.jB().jK("todos"),new F.Hy(),u),u)],[N.Z]),C.cs,C.c2),u),!0),E.Rc(L.OX(C.oY),!1,new F.Hz(a)))}}
+L:function(a){var u=null,t=L.bL("Hive To-Do App",u,u,u,A.fz(u,u,u,u,u,u,u,u,u,u,u,40,u,u,u,u,!0,u,u,u,u,u,u),u)
+return M.Pp(Q.S9(new T.bH(C.oK,T.xh(H.d([t,new T.c_(u,10,u,u),L.bL("Refresh this tab to test persistence.",u,u,u,u,C.ei),new T.c_(u,40,u,u),new T.oH(1,C.cx,new T.rx($.jB().jK("todos"),new F.Hy(),u),u)],[N.Z]),C.cs,C.c2),u),!0),E.Rc(L.OX(C.oY),!1,new F.Hz(a)))}}
 F.Hy.prototype={
 $2:function(a,b){var u,t,s=H.d([],[N.cS]),r=b.y.a,q=H.n(r,0)
 q=new P.dz(r,H.d([],[[P.bC,q]]),r.b,r.c,[q])
@@ -39805,7 +39805,7 @@ $S:1}
 F.iR.prototype={
 aI:function(){return new F.Lq(D.Xx(),C.q)}}
 F.Lq.prototype={
-L:function(a){var u=null,t=L.bL("Create Todo Entry",u,u,u,u,u),s=L.Rq(u,new F.e_(C.eG,C.it),u,u,u,u,u,!0,u,u,u,u,u,u,u,u,u,u,!0,u,u,u,u,"Enter a name",u,u,u,u,u,u,u,u,u,u,u,u,u,u),r=[N.Z]
+L:function(a){var u=null,t=L.bL("Create To-Do Entry",u,u,u,u,u),s=L.Rq(u,new F.e_(C.eG,C.it),u,u,u,u,u,!0,u,u,u,u,u,u,u,u,u,u,!0,u,u,u,u,"Enter a task",u,u,u,u,u,u,u,u,u,u,u,u,u,u),r=[N.Z]
 return new E.w2(t,T.xh(H.d([new T.c_(u,10,u,u),new Z.rc(this.d,s,C.uh,C.w2,u),new T.c_(u,10,u,u)],r),C.cs,C.e3),H.d([N.ki(L.bL("Cancel",u,u,u,u,u),new F.Lr(a)),N.ki(L.bL("Add",u,u,u,u,u),new F.Ls(this,a))],r),u)},
 $aa_:function(){return[F.iR]}}
 F.Lr.prototype={
