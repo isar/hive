@@ -1,3 +1,7 @@
+## 0.4.1+1
+- Document all public APIs
+- Fix flutter_web error
+
 ## 0.4.1
 - Allow different versions of the `path` package
 
