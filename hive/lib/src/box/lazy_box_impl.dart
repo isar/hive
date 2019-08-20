@@ -64,19 +64,6 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
   }
 
   @override
-  Future<void> delete(dynamic key) async {
-    checkOpen();
-
-    if (!keystore.containsKey(key)) return;
-
-    await backend.writeFrame(Frame.deleted(key), null);
-    keystore.deleteAll([key]);
-    notifier.notify(key, null, true);
-
-    await performCompactionIfNeeded();
-  }
-
-  @override
   Future<void> putAll(Map<dynamic, dynamic> kvPairs) async {
     checkOpen();
 
@@ -97,6 +84,19 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     for (var frame in frames) {
       notifier.notify(frame.key, frame.value, false);
     }
+
+    await performCompactionIfNeeded();
+  }
+
+  @override
+  Future<void> delete(dynamic key) async {
+    checkOpen();
+
+    if (!keystore.containsKey(key)) return;
+
+    await backend.writeFrame(Frame.deleted(key), null);
+    keystore.deleteAll([key]);
+    notifier.notify(key, null, true);
 
     await performCompactionIfNeeded();
   }
