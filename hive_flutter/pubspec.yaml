@@ -1,6 +1,6 @@
 name: hive_flutter
-description: Extension for Hive. Utils for using Hive with Flutter.
-version: 0.1.0
+description: Extension for Hive. Makes it easier to use Hive in Flutter apps.
+version: 0.2.0
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/leisim/hive
 
