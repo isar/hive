@@ -75,7 +75,9 @@ class TodoMainScreen extends StatelessWidget {
               ),
               SizedBox(height: 10),
               Text(
-                'Refresh your tab or restart the app to test persistance.',
+                isBrowser
+                    ? 'Refresh this tab to test persistence.'
+                    : 'Restart the app to test persistence.',
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 40),
@@ -167,7 +169,6 @@ class TodoList extends StatelessWidget {
                 Hive.box('todos').put(todo.id, newTodo);
               },
             ),
-            //SizedBox(width: 10),
             IconButton(
               iconSize: 30,
               icon: Icon(Icons.delete),
@@ -193,7 +194,7 @@ class _NewTodoDialogState extends State<NewTodoDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: new Text('Create Todo Entry'),
+      title: new Text('Create To-Do Entry'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -201,7 +202,7 @@ class _NewTodoDialogState extends State<NewTodoDialog> {
           TextField(
             decoration: InputDecoration(
               border: UnderlineInputBorder(),
-              hintText: 'Enter a name',
+              hintText: 'Enter a task',
             ),
             controller: controller,
           ),
@@ -209,7 +210,6 @@ class _NewTodoDialogState extends State<NewTodoDialog> {
         ],
       ),
       actions: <Widget>[
-        // usually buttons at the bottom of the dialog
         FlatButton(
           child: Text("Cancel"),
           onPressed: () {
