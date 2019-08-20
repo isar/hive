@@ -18,5 +18,6 @@
     * [Create adapter manually](create_adapter_manually.md)
 
 * [Browser support](browser.md)
+* [Frequently Asked Questions](faq.md)
 * [Limitations](limitations.md)
 * [Changelog](changelog.md)
