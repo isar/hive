@@ -5,13 +5,13 @@ We already know that Hive supports integer keys. You can use auto increment keys
 ```dart
 var friends = Hive.box('friends');
 
-friends.add('Lisa');       //index 0, key 0
+friends.add('Lisa');            // index 0, key 0
 
-friends.add('Dave');       //index 1, key 1
+friends.add('Dave');            // index 1, key 1
 
-friends.put(123, 'Marco'); //index 2, key 123
+friends.put(123, 'Marco');      // index 2, key 123
 
-print(friends.values); // Lisa, Dave, Marco
+print(friends.values);          // Lisa, Dave, Marco
 ```
 
 There are also `getAt()`, `putAt()` and `deleteAt()` methods to access or change values by their index.
