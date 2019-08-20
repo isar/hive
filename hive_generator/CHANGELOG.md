@@ -1,6 +1,7 @@
-## 0.4.0
+## 0.4.0+1
 - Support for enums
 - Sanity checks
+- Bugfixes
 
 ## 0.3.0
 - Support for typed lists

@@ -69,7 +69,7 @@ class ClassBuilder extends Builder {
       var value = _convertIterable(field.type, 'obj.${field.name}');
       code.writeln('''
       writer.writeByte($index);
-      writer.write($value)''');
+      writer.write($value);''');
     });
 
     return code.toString();
