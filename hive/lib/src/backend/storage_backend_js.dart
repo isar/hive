@@ -88,12 +88,11 @@ class StorageBackendJs extends StorageBackend {
         .objectStore(box);
   }
 
-  Future<List<String>> getKeys() {
-    var completer = Completer<List<String>>();
+  Future<List<dynamic>> getKeys() {
+    var completer = Completer<List<dynamic>>();
     var request = getStore(false).getAllKeys(null);
     request.onSuccess.listen((_) {
-      var keys = request.result.cast<String>() as List<String>;
-      completer.complete(keys);
+      completer.complete(request.result as List<dynamic>);
     });
     request.onError.listen((_) {
       completer.completeError(request.error);
