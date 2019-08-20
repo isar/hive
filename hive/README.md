@@ -83,10 +83,8 @@ Hive was written with Flutter in mind. It is a perfect fit if you need a lightwe
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return HiveBuilder.openBox(
-      openBox: () {
-        return Hive.openBox('settings');
-      },
+    return WatchBoxBuilder(
+      box: Hive.box('settings');
       builder: (context, box) {
         return Switch(
           value: box.get('darkMode'),
@@ -95,10 +93,6 @@ class SettingsPage extends StatelessWidget {
           }
         )
       },
-      child: Center(
-        // Shown when app starts until Hive is ready
-        child: Text('Please wait...'), 
-      ),
     );
   }
 }
