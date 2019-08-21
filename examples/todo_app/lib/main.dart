@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:todo_app/new_todo_dialog.dart';
 import 'package:todo_app/todo.dart';
+import 'package:todo_app/todo_list.dart';
 import 'is_browser/vm.dart' if (dart.library.html) 'is_browser/js.dart';
 
 void main() {
@@ -85,12 +87,7 @@ class TodoMainScreen extends StatelessWidget {
                 child: WatchBoxBuilder(
                   box: Hive.box('todos'),
                   builder: (context, box) {
-                    var todos = List<Todo>();
-                    for (var key in box.keys) {
-                      var todo = (box.get(key) as Todo)..id = key as int;
-                      todos.add(todo);
-                    }
-                    todos.sort((t1, t2) => t1.created.compareTo(t2.created));
+                    var todos = box.values.toList().cast<Todo>();
                     return TodoList(todos);
                   },
                 ),
@@ -110,125 +107,6 @@ class TodoMainScreen extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class TodoList extends StatelessWidget {
-  final List<Todo> todos;
-
-  TodoList(this.todos);
-
-  @override
-  Widget build(BuildContext context) {
-    if (todos.isEmpty) {
-      return Center(
-        child: Text('Noting to do... Great!'),
-      );
-    } else {
-      return ListView.builder(
-        itemCount: todos.length,
-        itemBuilder: (BuildContext context, int index) {
-          var todo = todos[index];
-          return _buildTodo(todo);
-        },
-      );
-    }
-  }
-
-  Widget _buildTodo(Todo todo) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  todo.name,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    decoration: todo.done ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                Text(
-                  "${todo.created.hour}:${todo.created.minute}:${todo.created.second}",
-                  style: TextStyle(fontSize: 16, color: Colors.grey[800]),
-                ),
-              ],
-            ),
-            Spacer(),
-            IconButton(
-              iconSize: 30,
-              icon: Icon(todo.done ? Icons.clear : Icons.check),
-              onPressed: () {
-                var newTodo = todo.copyWith(done: !todo.done);
-                Hive.box('todos').put(todo.id, newTodo);
-              },
-            ),
-            IconButton(
-              iconSize: 30,
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                Hive.box('todos').delete(todo.id);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class NewTodoDialog extends StatefulWidget {
-  @override
-  _NewTodoDialogState createState() => _NewTodoDialogState();
-}
-
-class _NewTodoDialogState extends State<NewTodoDialog> {
-  TextEditingController controller = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: new Text('Create To-Do Entry'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SizedBox(height: 10),
-          TextField(
-            decoration: InputDecoration(
-              border: UnderlineInputBorder(),
-              hintText: 'Enter a task',
-            ),
-            controller: controller,
-          ),
-          SizedBox(height: 10),
-        ],
-      ),
-      actions: <Widget>[
-        FlatButton(
-          child: Text("Cancel"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        FlatButton(
-          child: Text("Add"),
-          onPressed: () {
-            if (controller.text.isNotEmpty) {
-              var todo = Todo()
-                ..name = controller.text
-                ..created = DateTime.now();
-              Hive.box('todos').add(todo);
-            }
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
     );
   }
 }
