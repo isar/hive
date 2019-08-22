@@ -13,6 +13,15 @@ Before a box can be used, you have to open it:
 var box = await Hive.openBox('testBox');
 ```
 
+| Parameter | Description |
+|-----------|-------------|
+| name | The name of the box specifies the storage location and is used to check if a box already exists. It is **case-insensitive**. |
+| encryptionKey | The key has to be a byte array with length 32 and is used to encrypt and decrypt all values in the box. |
+| keyComparator | By default, keys are sorted lexicographically. This parameters allows you to provide a custom sorting order. |
+| compactionStrategy | Specify your own rules for automatic compaction. |
+| crashRecovery | If your app is killed while a write operations is running, the last entry might be corrupted. This entry will be deleted automatically when the app starts again. If you don't want this behaviour, you can disable it. |
+| lazy | By default, all keys and values are stored in memory and read operations are synchronous (no disk access). By setting this to true, values are not cached and loaded asynchronously. |
+
 If the box is already open, it will be returned immediately. All supplied parameters will be ignored.
 
 Once you obtained a box instance, you can read, write and delete entries.
