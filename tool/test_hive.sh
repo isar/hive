@@ -3,7 +3,9 @@
 # Fast fail the script on failures.
 set -e
 
-if [ -z "$TEST_PLATFORM" ] then
+cd hive
+
+if [ -z "$TEST_PLATFORM" ]; then
   TEST_PLATFORM="vm"
 fi
 

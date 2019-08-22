@@ -3,13 +3,57 @@ name: Dart CI
 on: [push]
 
 jobs:
-  build:
+  test-hive:
+    runs-on: ubuntu-latest
+    
+    container:
+      image:  google/dart:latest
+    
+    strategy:
+      matrix:
+        test-platform: [vm]
+    
+    steps:
+    - uses: actions/checkout@v1
+      name: Run tests
+      run: |
+        TEST_PLATFORM=${{ matrix.test-platform }}
+        sh tool/test_hive.sh
 
+  coverage-hive:
+    runs-on: ubuntu-latest
+    
+    container:
+      image:  google/dart:latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Collect coverage
+      run: sh tool/coverage_hive.sh
+    - uses: codecov/codecov-action@v1.0.0
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: hive/coverage/lcov.info
+
+  build-todo-app:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v1
-    - name: Install dependencies
-      run: pub get
-    - name: Run tests
-      run: pub run test
+    - uses: subosito/flutter-action@v1
+      with:
+        channel: 'dev'
+    - name: Build Todo app
+      run: |
+        export PUSH_TOKEN=${{ secrets.PUSH_TOKEN }}
+        sh tool/build_todo_app.sh
+
+  update-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Update docs
+      run: |
+        export PUSH_TOKEN=${{ secrets.PUSH_TOKEN }}
+        sh tool/update_docs.sh
