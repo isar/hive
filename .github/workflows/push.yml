@@ -15,7 +15,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-      name: Run tests
+    - name: Run tests
       run: |
         TEST_PLATFORM=${{ matrix.test-platform }}
         sh tool/test_hive.sh
