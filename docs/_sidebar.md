@@ -17,6 +17,7 @@
     * [Register adapter](register_adapter.md)
     * [Create adapter manually](create_adapter_manually.md)
 
+* [Best Practices](best_practices.md)
 * [Browser support](browser.md)
 * [Frequently Asked Questions](faq.md)
 * [Limitations](limitations.md)
