@@ -13,17 +13,19 @@ Hive is a lightweight and blazing fast key-value store written in pure Dart. Ins
 
 ## Features
 
-### Blazing Fast ⚡
-- More than twice the speed of other datastores
-- Binary data format
-
-### Simple to use ❤️
-- Supports all types
-- Strong encryption built in
+### Cross-platform ⚡
 - Runs on desktop, mobile & in browser
+- Very good performance (see [bechmark](#benchmark))
+
+
+### Easy to use ❤️
+- Keys are ints or Strings and values are arbitrary objects
+- The basic operations are `put(key, value)`, `get(key)`, `delete(key)`
+- Strong encryption built in
 
 ### Lightweight 🎈
 - Small runtime
+- Small disk space consumption
 - **NO** native dependencies
 
 
