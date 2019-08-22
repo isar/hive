@@ -16,9 +16,7 @@ class DrawApp extends StatelessWidget {
       Hive.init(dir.path);
     }
     Hive.registerAdapter(DrawingPointAdapter(), 35);
-    var box = await Hive.openBox('points');
-    box.add(null);
-    return box;
+    return await Hive.openBox('paths');
   }
 
   @override

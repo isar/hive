@@ -7,11 +7,11 @@ class DrawingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (var i = 0; i < pointsList.length - 1; i++) {
-      var point = pointsList[i];
-      var nextPoint = pointsList[i + 1];
-      if (point != null && pointsList[i + 1] != null) {
-        canvas.drawLine(point.point, nextPoint.point, point.paint);
-      }
+      canvas.drawLine(
+        pointsList[i].point,
+        pointsList[i + 1].point,
+        pointsList[i].paint,
+      );
     }
   }
 
