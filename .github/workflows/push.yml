@@ -35,8 +35,12 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}	
         file: hive/coverage/lcov.info
 
-  build-todo-app:
+  build-examples:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        app: [drawing_app, todo_app]
     
     steps:
     - uses: actions/checkout@v1
@@ -46,7 +50,8 @@ jobs:
     - name: Build Todo app
       run: |
         export PUSH_TOKEN=${{ secrets.PUSH_TOKEN }}
-        sh tool/build_todo_app.sh
+        export APP=${{ matrix.app }}
+        sh tool/build_example_for_web.sh
 
   update-docs:
     runs-on: ubuntu-latest

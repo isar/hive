@@ -3,7 +3,7 @@
 # Fast fail the script on failures.
 set -e
 
-cd examples/todo_app
+cd examples/$APP
 
 export FLUTTER_WEB=true
 
@@ -11,8 +11,8 @@ flutter build web --release
 
 git clone -b gh-pages https://github.com/leisim/hive
 
-rm -rf hive/demo
-cp -R build/web hive/demo
+rm -rf hive/demos/$APP
+cp -R build/web hive/demos/$APP
 
 cd hive
 
