@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
 
-![GitHub Actions](https://action-badges.now.sh/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator)
+[![Dart CI](https://github.com/leisim/hive/workflows/Dart%20CI/badge.svg)](https://github.com/leisim/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator)
 
 Hive is a lightweight and blazing fast key-value store written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
