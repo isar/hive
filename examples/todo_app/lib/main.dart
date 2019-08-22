@@ -13,12 +13,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  Future _openBox() async {
+  Future _openBoxes() async {
     if (!isBrowser) {
       var dir = await getApplicationDocumentsDirectory();
       Hive.init(dir.path);
     }
-    return await Hive.openBox('todos');
+    return Future.wait([
+      Hive.openBox('settings'),
+      Hive.openBox('todos'),
+    ]);
   }
 
   @override
@@ -30,28 +33,25 @@ class MyApp extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 600),
           child: FutureBuilder(
-            future: _openBox(),
+            future: _openBoxes(),
             builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                case ConnectionState.waiting:
-                case ConnectionState.active:
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.error != null) {
+                  print(snapshot.error);
                   return Scaffold(
                     body: Center(
-                      child: Text('Opening Hive...'),
+                      child: Text('Something went wrong :/'),
                     ),
                   );
-                case ConnectionState.done:
-                  if (snapshot.error != null) {
-                    print(snapshot.error);
-                    return Scaffold(
-                      body: Center(
-                        child: Text('Something went wrong :/'),
-                      ),
-                    );
-                  } else {
-                    return TodoMainScreen();
-                  }
+                } else {
+                  return TodoMainScreen();
+                }
+              } else {
+                return Scaffold(
+                  body: Center(
+                    child: Text('Opening Hive...'),
+                  ),
+                );
               }
             },
           ),
@@ -68,31 +68,9 @@ class TodoMainScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Hive To-Do App',
-                style: TextStyle(fontSize: 40),
-              ),
-              SizedBox(height: 10),
-              Text(
-                isBrowser
-                    ? 'Refresh this tab to test persistence.'
-                    : 'Restart the app to test persistence.',
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 40),
-              Expanded(
-                child: WatchBoxBuilder(
-                  box: Hive.box('todos'),
-                  builder: (context, box) {
-                    var todos = box.values.toList().cast<Todo>();
-                    return TodoList(todos);
-                  },
-                ),
-              ),
-            ],
+          child: WatchBoxBuilder(
+            box: Hive.box('settings'),
+            builder: _buildWithBox,
           ),
         ),
       ),
@@ -107,6 +85,54 @@ class TodoMainScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildWithBox(BuildContext context, Box settings) {
+    var reversed = settings.get('reversed', defaultValue: true) as bool;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Hive To-Do',
+              style: TextStyle(fontSize: 40),
+            ),
+            SizedBox(width: 20),
+            IconButton(
+              icon: Icon(
+                reversed ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                size: 32,
+              ),
+              onPressed: () {
+                settings.put('reversed', !reversed);
+              },
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+        Text(
+          isBrowser
+              ? 'Refresh this tab to test persistence.'
+              : 'Restart the app to test persistence.',
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 40),
+        Expanded(
+          child: WatchBoxBuilder(
+            box: Hive.box('todos'),
+            builder: (context, box) {
+              var todos = box.values.toList().cast<Todo>();
+              if (reversed) {
+                todos = todos.reversed.toList();
+              }
+              return TodoList(todos);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
