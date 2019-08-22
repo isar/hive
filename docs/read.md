@@ -13,3 +13,5 @@ If the key does not exist, `null` is returned. Optionally you can specify a `def
 ```dart
 double height = box.get('randomKey', defaultValue: 17.5);
 ```
+
+Lists returned by `get()` are always of type `List<dynamic>` (Maps of type `Map<dynamic, dynamic>`). Use `list.cast<SomeType>()` to cast them to a specific type.
