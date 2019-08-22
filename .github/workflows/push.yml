@@ -39,6 +39,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      max-parallel: 1
+      fail-fast: false
       matrix:
         app: [drawing_app, todo_app]
     
@@ -47,7 +49,7 @@ jobs:
     - uses: subosito/flutter-action@v1
       with:
         channel: 'dev'
-    - name: Build Todo app
+    - name: Build app
       run: |
         export PUSH_TOKEN=${{ secrets.PUSH_TOKEN }}
         export APP=${{ matrix.app }}
