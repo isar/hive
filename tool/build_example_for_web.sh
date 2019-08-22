@@ -20,5 +20,5 @@ git config --global user.email "<>"
 git config --global user.name "hivebot"
 
 git add -A
-git diff-index --quiet HEAD || git commit -m "Todo App build"
+git diff-index --quiet HEAD || git commit -m "$APP build"
 git push "https://${PUSH_TOKEN}@github.com/leisim/hive.git"
