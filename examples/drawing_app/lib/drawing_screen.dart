@@ -1,18 +1,20 @@
 import 'dart:ui';
 
+import 'package:drawing_app/clear_button.dart';
+import 'package:drawing_app/colored_point.dart';
 import 'package:drawing_app/drawing_area.dart';
-import 'package:drawing_app/drawing_painter.dart';
-import 'package:drawing_app/drawing_point.dart';
+import 'package:drawing_app/path_painter.dart';
+import 'package:drawing_app/undo_button.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class DrawScreen extends StatefulWidget {
+class DrawingScreen extends StatefulWidget {
   @override
-  _DrawScreenState createState() => _DrawScreenState();
+  _DrawingScreenState createState() => _DrawingScreenState();
 }
 
-class _DrawScreenState extends State<DrawScreen> {
+class _DrawingScreenState extends State<DrawingScreen> {
   var selectedColorIndex = 0;
 
   @override
@@ -25,19 +27,7 @@ class _DrawScreenState extends State<DrawScreen> {
               children: <Widget>[
                 WatchBoxBuilder(
                   box: Hive.box('paths'),
-                  builder: (context, box) {
-                    return Stack(
-                      children: <Widget>[
-                        for (var points in box.values)
-                          CustomPaint(
-                            size: Size.infinite,
-                            painter: DrawingPainter(
-                              pointsList: (points as List).cast<DrawingPoint>(),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
+                  builder: buildPathsFromBox,
                 ),
                 DrawingArea(selectedColorIndex),
               ],
@@ -49,14 +39,10 @@ class _DrawScreenState extends State<DrawScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  for (var i = 0; i < drawingColors.length; i++)
+                  for (var i = 0; i < ColoredPoint.colors.length; i++)
                     buildColorCircle(i),
-                  IconButton(
-                    icon: Icon(Icons.clear),
-                    onPressed: () {
-                      Hive.box('paths').clear();
-                    },
-                  ),
+                  ClearButton(),
+                  UndoButton(),
                 ],
               ),
             ],
@@ -64,6 +50,18 @@ class _DrawScreenState extends State<DrawScreen> {
           SizedBox(height: 20),
         ],
       ),
+    );
+  }
+
+  Widget buildPathsFromBox(BuildContext context, Box box) {
+    return Stack(
+      children: <Widget>[
+        for (var path in box.values)
+          CustomPaint(
+            size: Size.infinite,
+            painter: PathPainter((path as List).cast<ColoredPoint>()),
+          ),
+      ],
     );
   }
 
@@ -80,7 +78,7 @@ class _DrawScreenState extends State<DrawScreen> {
           padding: const EdgeInsets.only(bottom: 16.0),
           height: selected ? 50 : 36,
           width: selected ? 50 : 36,
-          color: drawingColors[colorIndex],
+          color: ColoredPoint.colors[colorIndex],
         ),
       ),
     );
