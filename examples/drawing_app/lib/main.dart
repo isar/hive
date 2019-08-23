@@ -1,5 +1,5 @@
-import 'package:drawing_app/draw_screen.dart';
-import 'package:drawing_app/drawing_point_adapter.dart';
+import 'package:drawing_app/colored_point_adapter.dart';
+import 'package:drawing_app/drawing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hive/hive.dart';
@@ -15,7 +15,7 @@ class DrawApp extends StatelessWidget {
       var dir = await getApplicationDocumentsDirectory();
       Hive.init(dir.path);
     }
-    Hive.registerAdapter(DrawingPointAdapter(), 35);
+    Hive.registerAdapter(ColoredPointAdapter(), 35);
     return await Hive.openBox('paths');
   }
 
@@ -35,7 +35,7 @@ class DrawApp extends StatelessWidget {
                 ),
               );
             } else {
-              return DrawScreen();
+              return DrawingScreen();
             }
           } else {
             return Scaffold(

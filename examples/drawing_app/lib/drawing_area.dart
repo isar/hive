@@ -1,5 +1,5 @@
-import 'package:drawing_app/drawing_painter.dart';
-import 'package:drawing_app/drawing_point.dart';
+import 'package:drawing_app/colored_point.dart';
+import 'package:drawing_app/path_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -13,7 +13,7 @@ class DrawingArea extends StatefulWidget {
 }
 
 class _DrawingAreaState extends State<DrawingArea> {
-  var points = <DrawingPoint>[];
+  var points = <ColoredPoint>[];
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +32,7 @@ class _DrawingAreaState extends State<DrawingArea> {
       },
       child: CustomPaint(
         size: Size.infinite,
-        painter: DrawingPainter(
-          pointsList: points,
-        ),
+        painter: PathPainter(points),
       ),
     );
   }
@@ -43,9 +41,9 @@ class _DrawingAreaState extends State<DrawingArea> {
     var renderBox = context.findRenderObject() as RenderBox;
     setState(() {
       points.add(
-        DrawingPoint()
+        ColoredPoint()
           ..colorIndex = widget.selectedColorIndex
-          ..point = renderBox.globalToLocal(point),
+          ..offset = renderBox.globalToLocal(point),
       );
     });
   }
