@@ -34,7 +34,7 @@ void main() {
         var adapter = TestAdapter();
         registry.registerAdapter(adapter, 33);
 
-        var resolvedAdapter = registry.findAdapterForType(int);
+        var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 33);
         expect(resolvedAdapter.adapter, adapter);
       });
@@ -70,19 +70,19 @@ void main() {
         var adapter2 = TestAdapter2();
         registry.registerAdapter(adapter2, 36);
 
-        var resolvedAdapter = registry.findAdapterForType(int);
+        var resolvedAdapter = registry.findAdapterForValue(111);
         expect(resolvedAdapter.typeId, 36);
         expect(resolvedAdapter.adapter, adapter2);
       });
     });
 
-    group('.findAdapterForType() / .findAdapterForTypeId()', () {
+    group('.findAdapterForValue() / .findAdapterForTypeId()', () {
       test('find', () {
         var registry = TypeRegistryImpl();
         var adapter = TestAdapter();
         registry.registerAdapter(adapter, 33);
 
-        var resolvedAdapter = registry.findAdapterForType(int);
+        var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 33);
         expect(resolvedAdapter.adapter, adapter);
 
@@ -97,7 +97,7 @@ void main() {
         var adapter = TestAdapter();
         parent.registerAdapter(adapter, 33);
 
-        var resolvedAdapter = registry.findAdapterForType(int);
+        var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 33);
         expect(resolvedAdapter.adapter, adapter);
 
@@ -116,7 +116,7 @@ void main() {
         var adapter2 = TestAdapter();
         registry.registerAdapter(adapter2, 34);
 
-        var resolvedAdapter = registry.findAdapterForType(int);
+        var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 34);
         expect(resolvedAdapter.adapter, adapter2);
       });
@@ -128,7 +128,7 @@ void main() {
       registry.registerAdapter(adapter, 33);
 
       registry.resetAdapters();
-      expect(registry.findAdapterForType(int), null);
+      expect(registry.findAdapterForValue(123), null);
     });
   });
 }

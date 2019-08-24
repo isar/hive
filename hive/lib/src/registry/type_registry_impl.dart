@@ -2,20 +2,21 @@ import 'package:hive/hive.dart';
 
 class TypeRegistryImpl implements TypeRegistry {
   final TypeRegistry parent;
-  final _typeAdaptersById = <int, ResolvedAdapter>{};
-  final _typeAdaptersByType = <Type, ResolvedAdapter>{};
+  final _typeAdapters = <int, ResolvedAdapter>{};
 
   TypeRegistryImpl([this.parent]);
 
   @override
-  ResolvedAdapter findAdapterForType(Type type) {
-    var resolved = _typeAdaptersByType[type];
-    return resolved ?? parent?.findAdapterForType(type);
+  ResolvedAdapter findAdapterForValue(dynamic value) {
+    for (var adapter in _typeAdapters.values) {
+      if (adapter.matches(value)) return adapter;
+    }
+    return parent?.findAdapterForValue(value);
   }
 
   @override
   ResolvedAdapter findAdapterForTypeId(int typeId) {
-    var adapter = _typeAdaptersById[typeId];
+    var adapter = _typeAdapters[typeId];
     return adapter ?? parent?.findAdapterForTypeId(typeId);
   }
 
@@ -33,13 +34,11 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   void registerInternal<T>(TypeAdapter<T> adapter, int typeId) {
-    var resolved = ResolvedAdapter(adapter, typeId);
-    _typeAdaptersById[typeId] = resolved;
-    _typeAdaptersByType[T] = resolved;
+    var resolved = ResolvedAdapter<T>(adapter, typeId);
+    _typeAdapters[typeId] = resolved;
   }
 
   void resetAdapters() {
-    _typeAdaptersById.clear();
-    _typeAdaptersByType.clear();
+    _typeAdapters.clear();
   }
 }

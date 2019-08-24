@@ -34,11 +34,13 @@ BoxImpl getBox({
 void main() {
   group('BoxImpl', () {
     test('.values', () {
-      var keystore = Keystore({
-        0: BoxEntry(123),
-        'key1': BoxEntry('value1'),
-        1: BoxEntry(null),
-      });
+      var keystore = Keystore(
+        entries: {
+          0: BoxEntry(123),
+          'key1': BoxEntry('value1'),
+          1: BoxEntry(null),
+        },
+      );
       var box = getBox(keystore: keystore);
 
       expect(box.values, [123, null, 'value1']);
@@ -58,10 +60,12 @@ void main() {
         var backend = BackendMock();
         var box = getBox(
           backend: backend,
-          keystore: Keystore({
-            'testKey': BoxEntry('testVal'),
-            123: BoxEntry(456),
-          }),
+          keystore: Keystore(
+            entries: {
+              'testKey': BoxEntry('testVal'),
+              123: BoxEntry(456),
+            },
+          ),
         );
 
         expect(box.get('testKey'), 'testVal');
@@ -71,7 +75,9 @@ void main() {
     });
 
     test('.getAt()', () {
-      var keystore = Keystore({0: BoxEntry('zero'), 'a': BoxEntry('A')});
+      var keystore = Keystore(
+        entries: {0: BoxEntry('zero'), 'a': BoxEntry('A')},
+      );
       var box = getBox(keystore: keystore);
 
       expect(box.getAt(-1, defaultValue: 123), 123);
@@ -289,11 +295,13 @@ void main() {
 
     test('.toMap()', () {
       var box = getBox(
-        keystore: Keystore({
-          'key1': BoxEntry(1, 0, 0),
-          'key2': BoxEntry(2, 0, 0),
-          'key4': BoxEntry(444, 0, 0),
-        }),
+        keystore: Keystore(
+          entries: {
+            'key1': BoxEntry(1, 0, 0),
+            'key2': BoxEntry(2, 0, 0),
+            'key4': BoxEntry(444, 0, 0),
+          },
+        ),
       );
       expect(box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
     });

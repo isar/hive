@@ -1,10 +1,14 @@
 ## 0.5.0
 - Added `keyComparator` parameter for custom key order
-- Fix compaction
+- Support reading and writing subclasses
+- Removed length limitation for Lists, Maps and Strings
+- Fixed compaction
+- Fixed writing longer Strings
+- **Breaking:** Binary format changed
 
 ## 0.4.1+1
 - Document all public APIs
-- Fix flutter_web error
+- Fixed flutter_web error
 
 ## 0.4.1
 - Allow different versions of the `path` package

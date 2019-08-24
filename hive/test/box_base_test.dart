@@ -48,7 +48,7 @@ void main() {
 
     test('.length', () {
       var keystore = Keystore(
-        {
+        entries: {
           'key1': BoxEntry(null),
           'key2': BoxEntry(null),
         },
@@ -58,11 +58,13 @@ void main() {
     });
 
     test('.keys', () {
-      var keystore = Keystore({
-        'key1': BoxEntry(null),
-        'key2': BoxEntry(null),
-        'key4': BoxEntry(null)
-      });
+      var keystore = Keystore(
+        entries: {
+          'key1': BoxEntry(null),
+          'key2': BoxEntry(null),
+          'key4': BoxEntry(null)
+        },
+      );
       var box = BoxBaseMock(keystore: keystore);
       expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
     });
@@ -75,7 +77,9 @@ void main() {
     });
 
     test('.keyAt()', () {
-      var keystore = Keystore({0: BoxEntry(null), 'test': BoxEntry(null)});
+      var keystore = Keystore(
+        entries: {0: BoxEntry(null), 'test': BoxEntry(null)},
+      );
       var box = BoxBaseMock(keystore: keystore);
       expect(box.keyAt(1), 'test');
     });
@@ -90,7 +94,7 @@ void main() {
       });
 
       await box.initialize();
-      expect(box.deletedEntries, 2);
+      expect(box.keystore.deletedEntries, 2);
       expect(box.keystore.toValueMap(), {'key1': 1});
     });
 
@@ -98,9 +102,9 @@ void main() {
       var backend = BackendMock();
       var box = BoxBaseMock(
         backend: backend,
-        keystore: Keystore({
-          'existingKey': BoxEntry(null),
-        }),
+        keystore: Keystore(
+          entries: {'existingKey': BoxEntry(null)},
+        ),
       );
 
       expect(box.containsKey('existingKey'), true);
@@ -137,11 +141,13 @@ void main() {
     });
 
     test('putAt', () async {
-      var keystore = Keystore({
-        'a': BoxEntry(null),
-        'b': BoxEntry(null),
-        'c': BoxEntry(null),
-      });
+      var keystore = Keystore(
+        entries: {
+          'a': BoxEntry(null),
+          'b': BoxEntry(null),
+          'c': BoxEntry(null),
+        },
+      );
       var box = BoxBaseMock(keystore: keystore);
 
       await box.putAt(1, 'test');
@@ -149,11 +155,13 @@ void main() {
     });
 
     test('deleteAt', () async {
-      var keystore = Keystore({
-        'a': BoxEntry(null),
-        'b': BoxEntry(null),
-        'c': BoxEntry(null),
-      });
+      var keystore = Keystore(
+        entries: {
+          'a': BoxEntry(null),
+          'b': BoxEntry(null),
+          'c': BoxEntry(null),
+        },
+      );
       var box = BoxBaseMock(keystore: keystore);
 
       await box.deleteAt(1);
@@ -166,7 +174,9 @@ void main() {
       var box = BoxBaseMock(
         backend: backend,
         notifier: notifier,
-        keystore: Keystore({'key1': BoxEntry(null), 'key2': BoxEntry(null)}),
+        keystore: Keystore(
+          entries: {'key1': BoxEntry(null), 'key2': BoxEntry(null)},
+        ),
       );
 
       expect(await box.clear(), 2);
@@ -180,7 +190,7 @@ void main() {
         var backend = BackendMock();
         var box = BoxBaseMock(
           backend: backend,
-          keystore: Keystore({
+          keystore: Keystore(entries: {
             'key1': BoxEntry(null),
           }),
         );

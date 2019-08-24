@@ -1,11 +1,13 @@
 part of hive;
 
 /// An adapter - typeId pair.
-class ResolvedAdapter {
+class ResolvedAdapter<T> {
   final TypeAdapter adapter;
   final int typeId;
 
   const ResolvedAdapter(this.adapter, this.typeId);
+
+  bool matches(dynamic value) => value is T;
 }
 
 /// TypeRegistries contain the [TypeAdapter]s associated with a typeId.
@@ -19,10 +21,10 @@ abstract class TypeRegistry {
   /// Hive uses this method to read objects. You will probably not need it.
   ResolvedAdapter findAdapterForTypeId(int typeId);
 
-  /// Get the [TypeAdapter] associated with the [type].
+  /// Get the [TypeAdapter] which supports this [value].
   ///
   /// Hive uses this method to write objects. You will probably not need it.
-  ResolvedAdapter findAdapterForType(Type type);
+  ResolvedAdapter findAdapterForValue(dynamic value);
 
   /// Register a [TypeAdapter] to announce it to Hive.
   ///

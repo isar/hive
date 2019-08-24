@@ -55,7 +55,9 @@ void main() {
             .thenAnswer((i) async => 'testVal');
         var box = getBox(
           backend: backend,
-          keystore: Keystore({'testKey': BoxEntry('testVal', 123, 456)}),
+          keystore: Keystore(
+            entries: {'testKey': BoxEntry('testVal', 123, 456)},
+          ),
         );
 
         expect(await box.get('testKey'), 'testVal');
@@ -64,7 +66,9 @@ void main() {
     });
 
     test('.getAt()', () async {
-      var keystore = Keystore({0: BoxEntry(null), 'a': BoxEntry(null)});
+      var keystore = Keystore(
+        entries: {0: BoxEntry(null), 'a': BoxEntry(null)},
+      );
       var backend = BackendMock();
       when(backend.readValue('a', any, any)).thenAnswer((i) async => 'A');
       var box = getBox(keystore: keystore, backend: backend);
@@ -93,7 +97,6 @@ void main() {
           keystore.addAll({'key1': BoxEntry(null)}),
           notifier.notify('key1', 'value1', false),
         ]);
-        expect(box.deletedEntries, 0);
       });
 
       test('handles exceptions', () async {
@@ -117,7 +120,6 @@ void main() {
         ]);
         verifyNoMoreInteractions(keystore);
         verifyNoMoreInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
     });
 
@@ -137,7 +139,6 @@ void main() {
         await box.delete('testKey');
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
 
       test('delete key', () async {
@@ -185,7 +186,6 @@ void main() {
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
         ]);
-        expect(box.deletedEntries, 0);
       });
 
       test('handles exceptions', () async {
@@ -214,7 +214,6 @@ void main() {
         ]);
         verifyNoMoreInteractions(keystore);
         verifyNoMoreInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
     });
 
@@ -233,7 +232,6 @@ void main() {
         await box.deleteAll(['key1', 'key2', 'key3']);
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
 
       test('delete keys', () async {

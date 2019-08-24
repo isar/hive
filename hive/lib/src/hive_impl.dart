@@ -40,6 +40,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<Box> openBox(
     String name, {
     List<int> encryptionKey,
+    KeyComparator keyComparator,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
     bool lazy = false,
@@ -57,7 +58,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
       var options = BoxOptions(
         encryptionKey: encryptionKey,
+        keyComparator: keyComparator,
         compactionStrategy: defaultCompactionStrategy,
+        crashRecovery: crashRecovery,
       );
 
       var lowercaseName = name.toLowerCase();

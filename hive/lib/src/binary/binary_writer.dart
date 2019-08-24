@@ -65,5 +65,5 @@ abstract class BinaryWriter {
   void writeMap(Map map, {bool writeLength = true});
 
   /// Write any [value].
-  void write(dynamic value, {bool writeTypeId = true});
+  void write<T>(T value, {bool writeTypeId = true});
 }

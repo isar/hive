@@ -27,10 +27,6 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   @visibleForTesting
   final Keystore keystore;
 
-  @protected
-  @visibleForTesting
-  int deletedEntries = 0;
-
   bool _open = true;
 
   BoxBase(
@@ -40,7 +36,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     this.backend, [
     Keystore keystore,
     ChangeNotifier notifier,
-  ])  : keystore = keystore ?? Keystore(),
+  ])  : keystore = keystore ?? Keystore(keyComparator: options.keyComparator),
         notifier = notifier ?? ChangeNotifier(),
         super(hive);
 
@@ -82,9 +78,9 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   Future<void> initialize() async {
     var entries = <dynamic, BoxEntry>{};
-    deletedEntries =
+    var deleted =
         await backend.initialize(entries, lazy, options.crashRecovery);
-    keystore.addAll(entries);
+    keystore.addAll(entries, deleted);
   }
 
   @override
@@ -126,7 +122,6 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
     await backend.clear();
     var oldEntries = keystore.clear();
-    deletedEntries = 0;
 
     for (var key in oldEntries.keys) {
       notifier.notify(key, null, true);
@@ -137,19 +132,17 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   Future<void> compact() async {
-    /*checkOpen();
-    if (deletedEntries == 0) return;
-    var entries = keystore.getAll();
-    var newEntries = await backend.compact(entries);
-    keystore.clear(newEntries);
-    deletedEntries = 0;*/
+    checkOpen();
+    var newEntries = await backend.compact(keystore.entries);
+    keystore.clear();
+    keystore.addAll(newEntries);
   }
 
   @protected
   Future<void> performCompactionIfNeeded() {
-    /*if (options.compactionStrategy(_entries.length, deletedEntries)) {
+    if (options.compactionStrategy(keystore.length, keystore.deletedEntries)) {
       return compact();
-    }*/
+    }
 
     return Future.value();
   }

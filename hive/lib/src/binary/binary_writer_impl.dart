@@ -169,7 +169,9 @@ class BinaryWriterImpl extends BinaryWriter {
     for (var str in list) {
       var strBytes = encoder.convert(str);
       bytes.add(strBytes.length);
-      bytes.add(strBytes.length << 8);
+      bytes.add(strBytes.length >> 8);
+      bytes.add(strBytes.length >> 16);
+      bytes.add(strBytes.length >> 24);
       bytes.addAll(strBytes);
     }
     _buffer.addBytes(bytes);
@@ -197,7 +199,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void write(dynamic value, {bool writeTypeId = true}) {
+  void write<T>(T value, {bool writeTypeId = true}) {
     if (value == null) {
       if (writeTypeId) {
         writeByte(FrameValueType.nullT.index);
@@ -265,7 +267,7 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeMap(value);
     } else {
-      var resolved = typeRegistry.findAdapterForType(value.runtimeType as Type);
+      var resolved = typeRegistry.findAdapterForValue(value);
       if (resolved == null) {
         throw HiveError(
             'Cannot write, unknown type: ${value.runtimeType}. Did you forget to register an adapter?');

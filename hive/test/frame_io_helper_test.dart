@@ -8,9 +8,7 @@ import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:test/test.dart';
 
 import 'buffered_file_reader_test.dart';
-import 'frame_test.dart';
-import 'generated/frames.g.dart';
-import 'generated/frames_encrypted.g.dart';
+import 'frames.dart';
 
 Uint8List getBytes(List<Uint8List> list) {
   var builder = BytesBuilder();
