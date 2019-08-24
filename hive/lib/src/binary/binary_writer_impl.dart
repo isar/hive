@@ -89,7 +89,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }) {
     var bytes = encoder.convert(value);
     if (writeByteCount) {
-      writeWord(bytes.length);
+      writeUint32(bytes.length);
     }
     _buffer.addBytes(bytes);
   }
@@ -100,7 +100,7 @@ class BinaryWriterImpl extends BinaryWriter {
     var bytes = Uint8List(length);
 
     if (writeLength) {
-      writeWord(length);
+      writeUint32(length);
     }
 
     for (var i = 0; i < length; i++) {
@@ -117,7 +117,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeByteList(List<int> bytes, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(bytes.length);
+      writeUint32(bytes.length);
     }
     _buffer.addBytes(bytes);
   }
@@ -125,7 +125,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeIntList(List<int> list, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
     var offset = _buffer.useBytes(list.length * 8);
     for (var i = 0; i < list.length; i++) {
@@ -137,7 +137,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeDoubleList(List<double> list, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
     var offset = _buffer.useBytes(list.length * 8);
     for (var i = 0; i < list.length; i++) {
@@ -148,7 +148,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeBoolList(List<bool> list, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
     var offset = _buffer.useBytes(list.length);
     for (var i = 0; i < list.length; i++) {
@@ -163,7 +163,7 @@ class BinaryWriterImpl extends BinaryWriter {
     Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
   }) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
     var bytes = <int>[];
     for (var str in list) {
@@ -178,7 +178,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeList(List list, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
     for (var i = 0; i < list.length; i++) {
       write(list[i]);
@@ -188,7 +188,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeMap(Map<dynamic, dynamic> map, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(map.length);
+      writeUint32(map.length);
     }
     map.forEach((dynamic k, dynamic v) {
       write(k);

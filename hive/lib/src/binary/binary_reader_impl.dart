@@ -98,14 +98,14 @@ class BinaryReaderImpl extends BinaryReader {
   String readString(
       [int byteCount,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    byteCount ??= readWord();
+    byteCount ??= readUint32();
     var view = viewBytes(byteCount);
     return decoder.convert(view);
   }
 
   @override
   String readAsciiString([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var view = viewBytes(length);
     var str = String.fromCharCodes(view);
     return str;
@@ -113,7 +113,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Uint8List readByteList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length);
     var byteList = _buffer.sublist(_offset, _offset + length);
     _offset += length;
@@ -122,7 +122,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<int> readIntList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length * 8);
     var list = <int>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -134,7 +134,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<double> readDoubleList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length * 8);
     var list = <double>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -146,7 +146,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<bool> readBoolList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length);
     var list = <bool>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -159,7 +159,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<String> readStringList(
       [int length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    length ??= readWord();
+    length ??= readUint32();
     var list = <String>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
@@ -169,7 +169,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List readList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var list = <dynamic>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = read();
@@ -179,7 +179,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Map readMap([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var map = <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
       var key = read();
