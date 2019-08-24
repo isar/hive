@@ -1,0 +1,37 @@
+name: Build Docs & Examples
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build-examples:
+    runs-on: ubuntu-latest
+
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        app: [drawing_app, todo_app]
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: subosito/flutter-action@v1
+      with:
+        channel: 'dev'
+    - name: Build app
+      run: |
+        export PUSH_TOKEN=${{ secrets.PUSH_TOKEN }}
+        export APP=${{ matrix.app }}
+        sh tool/build_example_for_web.sh
+
+  update-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Update docs
+      run: |
+        export PUSH_TOKEN=${{ secrets.PUSH_TOKEN }}
+        sh tool/update_docs.sh
