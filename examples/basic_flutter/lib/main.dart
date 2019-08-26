@@ -19,57 +19,69 @@ class MyApp extends StatelessWidget {
             return box;
           },
           builder: _buildCounter,
-          child: Center(
-            child: Text('Please wait...'),
-          ),
+          placeholderBuilder: (BuildContext context) {
+            return Center(
+              child: Text('Please wait...'),
+            );
+          },
+          errorBuilder: (BuildContext context, Object error) {
+            return Center(
+              child: Text('Error: $error'),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildCounter(context, box) {
-    var number = box.get('number', defaultValue: 0);
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            'You have pushed the button $number times.',
-            style: TextStyle(fontSize: 18),
-          ),
-          SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildCounter(context, Box box) {
+    return WatchBoxBuilder(
+      box: box,
+      builder: (context, box) {
+        var number = box.get('number', defaultValue: 0);
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              RaisedButton(
-                onPressed: () {
-                  box.put('number', number + 1);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    'Increase',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
+              Text(
+                'You have pushed the button $number times.',
+                style: TextStyle(fontSize: 18),
               ),
-              SizedBox(width: 20),
-              RaisedButton(
-                onPressed: () {
-                  box.put('number', 0);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    'Reset',
-                    style: TextStyle(fontSize: 18),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  RaisedButton(
+                    onPressed: () {
+                      box.put('number', number + 1);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        'Increase',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                  SizedBox(width: 20),
+                  RaisedButton(
+                    onPressed: () {
+                      box.put('number', 0);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        'Reset',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ),
+                ],
+              )
             ],
-          )
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 }
