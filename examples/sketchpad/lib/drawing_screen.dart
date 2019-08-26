@@ -1,10 +1,8 @@
-import 'dart:ui';
-
-import 'package:drawing_board/clear_button.dart';
-import 'package:drawing_board/colored_point.dart';
-import 'package:drawing_board/drawing_area.dart';
-import 'package:drawing_board/path_painter.dart';
-import 'package:drawing_board/undo_button.dart';
+import 'package:sketchpad/clear_button.dart';
+import 'package:sketchpad/colored_point.dart';
+import 'package:sketchpad/drawing_area.dart';
+import 'package:sketchpad/path_painter.dart';
+import 'package:sketchpad/undo_button.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -30,6 +28,11 @@ class _DrawingScreenState extends State<DrawingScreen> {
                   builder: buildPathsFromBox,
                 ),
                 DrawingArea(selectedColorIndex),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Text('powered by Hive'),
+                ),
               ],
             ),
           ),

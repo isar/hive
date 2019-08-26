@@ -1,4 +1,4 @@
-name: drawing_board
+name: sketchpad
 environment:
   sdk: ">=2.2.2 <3.0.0"
 
@@ -16,3 +16,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: OpenSans
+      fonts:
+        - asset: fonts/OpenSans-Regular.ttf
