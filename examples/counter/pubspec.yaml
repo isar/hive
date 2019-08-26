@@ -1,0 +1,21 @@
+name: counter
+
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  hive_flutter: any
+
+  path_provider: ^1.2.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: OpenSans
+      fonts:
+        - asset: fonts/OpenSans-Regular.ttf

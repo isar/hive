@@ -11,14 +11,14 @@ Hive is a lightweight and blazing fast key-value store written in pure Dart. Ins
 *Hive is not ready for production yet. I'm working hard on a stable version.*
 
 ## Flutter Web Demos 🕸️
-- [Drawing App](https://leisim.github.io/hive/demos/drawing_app)
-- [Todo App](https://leisim.github.io/hive/demos/todo_app)
+- [Drawing App](https://leisim.github.io/hive/demos/drawing_board)
+- [Todo App](https://leisim.github.io/hive/demos/todo)
 
 ## Features
 
 ### Cross-platform ⚡
 - Runs on desktop, mobile & in browser
-- Very good performance (see [bechmark](#benchmark))
+- Very good performance (see [benchmark](#benchmark))
 
 
 ### Easy to use ❤️
