@@ -43,7 +43,8 @@ class TodoList extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "${todo.created.hour}:${todo.created.minute}:${todo.created.second}",
+                  '${todo.created.hour}:${todo.created.minute}:'
+                  '${todo.created.second}',
                   style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                 ),
               ],
@@ -54,6 +55,8 @@ class TodoList extends StatelessWidget {
               icon: Icon(todo.done ? Icons.clear : Icons.check),
               onPressed: () {
                 var newTodo = todo.copyWith(done: !todo.done);
+                Hive.box('todos')
+                    .deleteAt(Hive.box('todos').values.toList().indexOf(todo));
                 Hive.box('todos').put(newTodo.id, newTodo);
               },
             ),
@@ -61,7 +64,8 @@ class TodoList extends StatelessWidget {
               iconSize: 30,
               icon: Icon(Icons.delete),
               onPressed: () {
-                Hive.box('todos').delete(todo.id);
+                Hive.box('todos')
+                    .deleteAt(Hive.box('todos').values.toList().indexOf(todo));
               },
             ),
           ],
