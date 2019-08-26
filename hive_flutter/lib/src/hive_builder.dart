@@ -1,3 +1,5 @@
+//TODO: Add documentation
+
 part of hive_flutter;
 
 typedef AsyncBoxWidgetBuilder = Widget Function(BuildContext context, Box box);
