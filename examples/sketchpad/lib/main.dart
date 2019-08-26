@@ -1,5 +1,5 @@
-import 'package:drawing_board/colored_point_adapter.dart';
-import 'package:drawing_board/drawing_screen.dart';
+import 'package:sketchpad/colored_point_adapter.dart';
+import 'package:sketchpad/drawing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hive/hive.dart';
@@ -22,7 +22,12 @@ class DrawApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Hive Sketchpad',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'OpenSans',
+      ),
       home: FutureBuilder(
         future: _openBox(),
         builder: (context, snapshot) {

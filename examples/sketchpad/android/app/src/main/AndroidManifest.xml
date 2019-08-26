@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.drawing_board">
+    package="com.example.sketchpad">
 
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="drawing_board"
+        android:label="sketchpad"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

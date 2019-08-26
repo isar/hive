@@ -1,5 +1,5 @@
-import 'package:drawing_board/colored_point.dart';
-import 'package:drawing_board/path_painter.dart';
+import 'package:sketchpad/colored_point.dart';
+import 'package:sketchpad/path_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 

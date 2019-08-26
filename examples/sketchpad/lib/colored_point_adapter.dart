@@ -1,4 +1,4 @@
-import 'package:drawing_board/colored_point.dart';
+import 'package:sketchpad/colored_point.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 

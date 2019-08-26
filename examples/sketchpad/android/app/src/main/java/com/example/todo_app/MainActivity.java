@@ -1,4 +1,4 @@
-package com.example.drawing_board;
+package com.example.sketchpad;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

@@ -13,7 +13,7 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        app: [counter, drawing_board, todo]
+        app: [counter, sketchpad, todo]
     
     steps:
     - uses: actions/checkout@v1

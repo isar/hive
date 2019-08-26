@@ -28,7 +28,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hive To-Do App',
-      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'OpenSans'),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        fontFamily: 'OpenSans',
+      ),
       home: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 600),
