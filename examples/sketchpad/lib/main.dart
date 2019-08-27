@@ -17,12 +17,7 @@ class DrawApp extends StatelessWidget {
     }
     Hive.registerAdapter(ColoredPathAdapter(), 35);
 
-    var paths = await Hive.openBox('paths');
-    if (paths.get('version') != 2) {
-      paths.clear(); // ignore: unawaited_futures
-      paths.put('version', 2); // ignore: unawaited_futures
-    }
-    return paths;
+    return await Hive.openBox('sketch');
   }
 
   @override

@@ -26,7 +26,7 @@ class _DrawingAreaState extends State<DrawingArea> {
         addPoint(details.globalPosition);
       },
       onPanEnd: (details) {
-        Hive.box('paths').add(path);
+        Hive.box('sketch').add(path);
         setState(() {
           path = ColoredPath(0);
         });

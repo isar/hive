@@ -24,7 +24,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
             child: Stack(
               children: <Widget>[
                 WatchBoxBuilder(
-                  box: Hive.box('paths'),
+                  box: Hive.box('sketch'),
                   builder: buildPathsFromBox,
                 ),
                 DrawingArea(selectedColorIndex),
