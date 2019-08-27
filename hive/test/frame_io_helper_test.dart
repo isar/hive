@@ -91,7 +91,7 @@ void main() {
         var frames = <Frame>[];
         var ioHelper = FrameIoHelperTest(getBytes(frameBytes));
         var recoveryOffset =
-            await ioHelper.framesFromFile(null, frames, null, null);
+            await ioHelper.framesFromFile(null, frames, registry, null);
         expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
@@ -103,8 +103,8 @@ void main() {
       test('encrypted', () async {
         var frames = <Frame>[];
         var ioHelper = FrameIoHelperTest(getBytes(frameBytesEncrypted));
-        var recoveryOffset =
-            await ioHelper.framesFromFile(null, frames, null, getDebugCrypto());
+        var recoveryOffset = await ioHelper.framesFromFile(
+            null, frames, registry, getDebugCrypto());
         expect(recoveryOffset, null);
 
         for (var i = 0; i < testFrames.length; i++) {
@@ -122,7 +122,7 @@ void main() {
             var ioHelper = FrameIoHelperTest(Uint8List.fromList(bytes));
             var frames = <Frame>[];
             var recoveryOffset =
-                await ioHelper.framesFromFile(null, frames, null, null);
+                await ioHelper.framesFromFile(null, frames, registry, null);
             expect(recoveryOffset, i == 0 ? null : bytesBefore.length);
 
             var framesBefore = testFrames.sublist(0, n);

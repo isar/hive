@@ -4,8 +4,6 @@ import 'package:test/test.dart';
 import 'frames.dart';
 
 void main() {
-  test('b', buildGoldens);
-
   group('Frame', () {
     group('.toBytes()', () {
       test('validates key length', () async {
