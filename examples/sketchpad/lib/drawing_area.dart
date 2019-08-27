@@ -1,4 +1,4 @@
-import 'package:sketchpad/colored_point.dart';
+import 'package:sketchpad/colored_path.dart';
 import 'package:sketchpad/path_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -13,7 +13,7 @@ class DrawingArea extends StatefulWidget {
 }
 
 class _DrawingAreaState extends State<DrawingArea> {
-  var points = <ColoredPoint>[];
+  var path = ColoredPath(0);
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +22,18 @@ class _DrawingAreaState extends State<DrawingArea> {
         addPoint(details.globalPosition);
       },
       onPanStart: (details) {
+        path = ColoredPath(widget.selectedColorIndex);
         addPoint(details.globalPosition);
       },
       onPanEnd: (details) {
-        Hive.box('paths').add(points);
+        Hive.box('paths').add(path);
         setState(() {
-          points = [];
+          path = ColoredPath(0);
         });
       },
       child: CustomPaint(
         size: Size.infinite,
-        painter: PathPainter(points),
+        painter: PathPainter(path),
       ),
     );
   }
@@ -40,11 +41,7 @@ class _DrawingAreaState extends State<DrawingArea> {
   void addPoint(Offset point) {
     var renderBox = context.findRenderObject() as RenderBox;
     setState(() {
-      points.add(
-        ColoredPoint()
-          ..colorIndex = widget.selectedColorIndex
-          ..offset = renderBox.globalToLocal(point),
-      );
+      path.addPoint(renderBox.globalToLocal(point));
     });
   }
 }

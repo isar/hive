@@ -1,4 +1,4 @@
-import 'package:sketchpad/colored_point_adapter.dart';
+import 'package:sketchpad/colored_path_adapter.dart';
 import 'package:sketchpad/drawing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,8 +15,14 @@ class DrawApp extends StatelessWidget {
       var dir = await getApplicationDocumentsDirectory();
       Hive.init(dir.path);
     }
-    Hive.registerAdapter(ColoredPointAdapter(), 35);
-    return await Hive.openBox('paths');
+    Hive.registerAdapter(ColoredPathAdapter(), 35);
+
+    var paths = await Hive.openBox('paths');
+    if (paths.get('version') != 2) {
+      paths.clear(); // ignore: unawaited_futures
+      paths.put('version', 2); // ignore: unawaited_futures
+    }
+    return paths;
   }
 
   @override
