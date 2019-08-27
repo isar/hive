@@ -1,20 +1,14 @@
-import 'package:sketchpad/colored_point.dart';
+import 'package:sketchpad/colored_path.dart';
 import 'package:flutter/rendering.dart';
 
 class PathPainter extends CustomPainter {
-  final List<ColoredPoint> pointsList;
+  final ColoredPath path;
 
-  PathPainter(this.pointsList);
+  PathPainter(this.path);
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (var i = 0; i < pointsList.length - 1; i++) {
-      canvas.drawLine(
-        pointsList[i].offset,
-        pointsList[i + 1].offset,
-        pointsList[i].paint,
-      );
-    }
+    canvas.drawPath(path.path, path.paint);
   }
 
   @override

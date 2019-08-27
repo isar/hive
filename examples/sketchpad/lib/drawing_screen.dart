@@ -1,5 +1,5 @@
 import 'package:sketchpad/clear_button.dart';
-import 'package:sketchpad/colored_point.dart';
+import 'package:sketchpad/colored_path.dart';
 import 'package:sketchpad/drawing_area.dart';
 import 'package:sketchpad/path_painter.dart';
 import 'package:sketchpad/undo_button.dart';
@@ -42,7 +42,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  for (var i = 0; i < ColoredPoint.colors.length; i++)
+                  for (var i = 0; i < ColoredPath.colors.length; i++)
                     buildColorCircle(i),
                   ClearButton(),
                   UndoButton(),
@@ -57,12 +57,13 @@ class _DrawingScreenState extends State<DrawingScreen> {
   }
 
   Widget buildPathsFromBox(BuildContext context, Box box) {
+    var paths = box.values.whereType<ColoredPath>();
     return Stack(
       children: <Widget>[
-        for (var path in box.values)
+        for (var path in paths)
           CustomPaint(
             size: Size.infinite,
-            painter: PathPainter((path as List).cast<ColoredPoint>()),
+            painter: PathPainter(path),
           ),
       ],
     );
@@ -81,7 +82,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
           padding: const EdgeInsets.only(bottom: 16.0),
           height: selected ? 50 : 36,
           width: selected ? 50 : 36,
-          color: ColoredPoint.colors[colorIndex],
+          color: ColoredPath.colors[colorIndex],
         ),
       ),
     );
