@@ -6,7 +6,7 @@ class ClearButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WatchBoxBuilder(
-      box: Hive.box('paths'),
+      box: Hive.box('sketch'),
       builder: (context, box) {
         return IconButton(
           icon: Icon(Icons.delete),
