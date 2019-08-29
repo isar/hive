@@ -178,9 +178,10 @@ void main() {
     test('.compact()', () async {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
-
-      var entries = {'key1': BoxEntry(null), 'key2': BoxEntry(null)};
-      expect(await backend.compact(entries), entries);
+      expect(
+        () async => await backend.compact({}),
+        throwsUnsupportedError,
+      );
     });
 
     test('.clear()', () async {

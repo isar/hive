@@ -58,7 +58,8 @@ class ClassBuilder extends Builder {
     var paramType = type as ParameterizedType;
     var arg1 = paramType.typeArguments[0];
     var arg2 = paramType.typeArguments[1];
-    return '?.map((dynamic k, dynamic v)=> MapEntry(k${_cast(arg1)},v${_cast(arg2)}))?.toMap()';
+    return '?.map((dynamic k, dynamic v)=>'
+        'MapEntry(k${_cast(arg1)},v${_cast(arg2)}))?.toMap()';
   }
 
   @override

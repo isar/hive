@@ -133,9 +133,13 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   @override
   Future<void> compact() async {
     checkOpen();
+
+    if (!backend.supportsCompaction) return;
     if (keystore.deletedEntries == 0) return;
-    var newEntries = await backend.compact(keystore.entries);
-    keystore.clear();
+
+    var oldEntries = keystore.clear();
+    var newEntries = await backend.compact(oldEntries);
+
     keystore.addAll(newEntries);
   }
 

@@ -14,6 +14,7 @@ import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
+import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:meta/meta.dart';
@@ -92,6 +93,9 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   String get path => _file.path;
+
+  @override
+  bool supportsCompaction = true;
 
   @override
   Future<int> initialize(
@@ -189,49 +193,55 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) async {
-    var compactPath = '${p.withoutExtension(path)}.hivec';
-    var compactFile = await File(compactPath).open(mode: FileMode.write);
+    var boxRaf = await File(path).open();
+    var reader = BufferedFileReader(boxRaf);
 
-    var newEntries = HashMap<dynamic, BoxEntry>();
+    var compactFile = File('${p.withoutExtension(path)}.hivec');
+    var compactRaf = await compactFile.open(mode: FileMode.write);
+    var writer = BufferedFileWriter(compactRaf);
 
-    await _file.readLock.synchronized(() {
-      return _file.writeLock.synchronized(() async {
-        var raf = await File(path).open();
-        var reader = BufferedFileReader(raf);
-        var writer = BinaryWriterImpl(_registry);
-
-        var compactOffset = 0;
-
-        try {
-          for (var key in entries.keys) {
-            var entry = entries[key];
-            if (entry.offset != reader.offset) {
-              await reader.skip(entry.offset - reader.offset);
-            }
-            var frameBytes = await reader.read(entry.length);
-            if (frameBytes.length != entry.length) {
-              throw HiveError('Could not compact box: Unexpected EOF.');
-            }
-            writer.writeByteList(frameBytes, writeLength: false);
-
-            if (writer.writtenBytes > 10000) {
-              await compactFile.writeFrom(writer.outputAndClear());
-            }
-            newEntries[key] =
-                BoxEntry(entry.value, compactOffset, entry.length);
-            compactOffset += entry.length;
-          }
-          await compactFile.writeFrom(writer.outputAndClear());
-        } finally {
-          await raf.close();
-          await compactFile.close();
-        }
+    Map<dynamic, BoxEntry> newEntries;
+    try {
+      await _file.readLock.synchronized(() {
+        return _file.writeLock.synchronized(() async {
+          newEntries = await performCompaction(entries, reader, writer);
+        });
       });
-    });
+    } finally {
+      await boxRaf.close();
+      await compactRaf.close();
+    }
 
     await _file.close();
-    await File(compactFile.path).rename(path);
+    await compactFile.rename(path);
     await _file.open();
+    return newEntries;
+  }
+
+  @visibleForTesting
+  Future<Map<dynamic, BoxEntry>> performCompaction(
+    Map<dynamic, BoxEntry> entries,
+    BufferedFileReader reader,
+    BufferedFileWriter writer,
+  ) async {
+    var newEntries = HashMap<dynamic, BoxEntry>();
+    var compactOffset = 0;
+    for (var key in entries.keys) {
+      var entry = entries[key];
+      if (entry.offset != reader.offset) {
+        await reader.skip(entry.offset - reader.offset);
+      }
+      var frameBytes = await reader.read(entry.length);
+      if (frameBytes.length != entry.length) {
+        throw HiveError('Could not compact box: Unexpected EOF.');
+      }
+      await writer.write(frameBytes);
+
+      newEntries[key] = BoxEntry(entry.value, compactOffset, entry.length);
+      compactOffset += entry.length;
+    }
+    await writer.flush();
+
     return newEntries;
   }
 

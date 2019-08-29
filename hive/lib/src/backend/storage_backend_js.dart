@@ -54,6 +54,9 @@ class StorageBackendJs extends StorageBackend {
   @override
   String get path => null;
 
+  @override
+  bool supportsCompaction = false;
+
   @visibleForTesting
   dynamic encodeValue(dynamic value) {
     var noEncodingNeeded = value == null ||
@@ -168,7 +171,7 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) {
-    return Future.value(entries);
+    throw UnsupportedError('Not supported');
   }
 
   @override

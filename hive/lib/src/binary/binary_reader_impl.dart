@@ -223,8 +223,8 @@ class BinaryReaderImpl extends BinaryReader {
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);
       if (resolved == null) {
-        throw HiveError(
-            'Cannot read, unknown typeId: $typeId. Did you forget to register an adapter?');
+        throw HiveError('Cannot read, unknown typeId: $typeId. '
+            'Did you forget to register an adapter?');
       }
       return resolved.adapter.read(this);
     }

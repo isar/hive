@@ -64,8 +64,6 @@ import 'package:hive/src/util/crc32.dart';
 /// | List<uint8> valueN bytes
 /// --------------------------
 class Frame {
-  static const maxFrameLength = 1000 * 64;
-
   final dynamic key;
   final dynamic value;
 

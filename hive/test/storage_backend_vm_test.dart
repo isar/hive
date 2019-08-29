@@ -222,7 +222,8 @@ void main() {
         await backend.close();
       });
 
-      /*test('throws error if corrupted', () async {
+      test('throws error if corrupted', () async {
+        var bytes = BytesBuilder();
         var boxFile = await getTempFile();
         var syncedFile = SyncedFile(boxFile.path);
         await syncedFile.open();
@@ -236,7 +237,7 @@ void main() {
         await syncedFile.truncate(await boxFile.length() - 1);
 
         expect(() => box.compact(), throwsHiveError('unexpected eof'));
-      });*/
+      });
     });
 
     test('.clear()', () {

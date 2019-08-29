@@ -7,6 +7,8 @@ export 'package:hive/src/backend/storage_backend_vm.dart'
 abstract class StorageBackend {
   String get path;
 
+  bool get supportsCompaction;
+
   Future<int> initialize(
       Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery);
 

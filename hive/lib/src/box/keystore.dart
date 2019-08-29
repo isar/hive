@@ -17,6 +17,7 @@ int _compareKeys(dynamic k1, dynamic k2) {
 }
 
 class Keystore {
+  @visibleForTesting
   final Map<dynamic, BoxEntry> entries;
 
   @visibleForTesting
