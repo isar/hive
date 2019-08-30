@@ -11,7 +11,7 @@ jobs:
     
     strategy:
       matrix:
-        test-platform: [vm, chrome]
+        test-platform: [vm, firefox]
     
     steps:
     - uses: actions/checkout@v1
