@@ -29,7 +29,10 @@ void main() {
       hive.init('OTHERPATH');
       expect(hive.path, 'OTHERPATH');
 
-      expect(hive.findAdapterForType(DateTime).adapter, isA<DateTimeAdapter>());
+      expect(
+        hive.findAdapterForValue(DateTime.now()).adapter,
+        isA<DateTimeAdapter>(),
+      );
       expect(hive.findAdapterForTypeId(16).adapter, isA<DateTimeAdapter>());
     });
 

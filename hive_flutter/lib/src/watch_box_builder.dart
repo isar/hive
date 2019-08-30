@@ -53,7 +53,7 @@ class WatchBoxBuilderState extends State<WatchBoxBuilder> {
     }
   }
 
-  _subscribe() {
+  void _subscribe() {
     subscription = widget.box.watch().listen((event) {
       if (widget.watchKeys != null && !widget.watchKeys.contains(event.key)) {
         return;
@@ -63,7 +63,7 @@ class WatchBoxBuilderState extends State<WatchBoxBuilder> {
     });
   }
 
-  _unsubscribe() {
+  void _unsubscribe() {
     subscription?.cancel();
   }
 

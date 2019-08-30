@@ -46,25 +46,35 @@ void main() {
       expect(box.path, 'some/path');
     });
 
-    test('.length', () {
+    test('.keys', () {
       var keystore = Keystore(
-        {
+        entries: {
+          'key1': BoxEntry(null),
+          'key2': BoxEntry(null),
+          'key4': BoxEntry(null)
+        },
+      );
+      var box = BoxBaseMock(keystore: keystore);
+      expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
+    });
+
+    test('.length / .isEmpty / .isNotEmpty', () {
+      var keystore = Keystore(
+        entries: {
           'key1': BoxEntry(null),
           'key2': BoxEntry(null),
         },
       );
       var box = BoxBaseMock(keystore: keystore);
       expect(box.length, 2);
-    });
+      expect(box.isEmpty, false);
+      expect(box.isNotEmpty, true);
 
-    test('.keys', () {
-      var keystore = Keystore({
-        'key1': BoxEntry(null),
-        'key2': BoxEntry(null),
-        'key4': BoxEntry(null)
-      });
-      var box = BoxBaseMock(keystore: keystore);
-      expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
+      keystore = Keystore();
+      box = BoxBaseMock(keystore: keystore);
+      expect(box.length, 0);
+      expect(box.isEmpty, true);
+      expect(box.isNotEmpty, false);
     });
 
     test('.watch()', () {
@@ -75,7 +85,9 @@ void main() {
     });
 
     test('.keyAt()', () {
-      var keystore = Keystore({0: BoxEntry(null), 'test': BoxEntry(null)});
+      var keystore = Keystore(
+        entries: {0: BoxEntry(null), 'test': BoxEntry(null)},
+      );
       var box = BoxBaseMock(keystore: keystore);
       expect(box.keyAt(1), 'test');
     });
@@ -84,13 +96,13 @@ void main() {
       var backend = BackendMock();
       var box = BoxBaseMock(backend: backend);
 
-      when(backend.initialize(any, any, any)).thenAnswer((i) async {
-        i.positionalArguments[0]['key1'] = BoxEntry(1);
+      when(backend.initialize(any, any, any, any)).thenAnswer((i) async {
+        i.positionalArguments[1]['key1'] = BoxEntry(1);
         return 2;
       });
 
       await box.initialize();
-      expect(box.deletedEntries, 2);
+      expect(box.keystore.deletedEntries, 2);
       expect(box.keystore.toValueMap(), {'key1': 1});
     });
 
@@ -98,9 +110,9 @@ void main() {
       var backend = BackendMock();
       var box = BoxBaseMock(
         backend: backend,
-        keystore: Keystore({
-          'existingKey': BoxEntry(null),
-        }),
+        keystore: Keystore(
+          entries: {'existingKey': BoxEntry(null)},
+        ),
       );
 
       expect(box.containsKey('existingKey'), true);
@@ -137,11 +149,13 @@ void main() {
     });
 
     test('putAt', () async {
-      var keystore = Keystore({
-        'a': BoxEntry(null),
-        'b': BoxEntry(null),
-        'c': BoxEntry(null),
-      });
+      var keystore = Keystore(
+        entries: {
+          'a': BoxEntry(null),
+          'b': BoxEntry(null),
+          'c': BoxEntry(null),
+        },
+      );
       var box = BoxBaseMock(keystore: keystore);
 
       await box.putAt(1, 'test');
@@ -149,11 +163,13 @@ void main() {
     });
 
     test('deleteAt', () async {
-      var keystore = Keystore({
-        'a': BoxEntry(null),
-        'b': BoxEntry(null),
-        'c': BoxEntry(null),
-      });
+      var keystore = Keystore(
+        entries: {
+          'a': BoxEntry(null),
+          'b': BoxEntry(null),
+          'c': BoxEntry(null),
+        },
+      );
       var box = BoxBaseMock(keystore: keystore);
 
       await box.deleteAt(1);
@@ -166,7 +182,9 @@ void main() {
       var box = BoxBaseMock(
         backend: backend,
         notifier: notifier,
-        keystore: Keystore({'key1': BoxEntry(null), 'key2': BoxEntry(null)}),
+        keystore: Keystore(
+          entries: {'key1': BoxEntry(null), 'key2': BoxEntry(null)},
+        ),
       );
 
       expect(await box.clear(), 2);
@@ -178,14 +196,35 @@ void main() {
     group('.compact()', () {
       test('does nothing if there are no deleted entries', () async {
         var backend = BackendMock();
+        when(backend.supportsCompaction).thenReturn(true);
         var box = BoxBaseMock(
           backend: backend,
-          keystore: Keystore({
+          keystore: Keystore(entries: {
             'key1': BoxEntry(null),
           }),
         );
         await box.compact();
-        verifyZeroInteractions(backend);
+        verify(backend.supportsCompaction);
+        verifyNoMoreInteractions(backend);
+      });
+
+      test('compact', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+
+        when(keystore.clear()).thenReturn({'key': BoxEntry(1)});
+        when(backend.supportsCompaction).thenReturn(true);
+        when(backend.compact(any)).thenAnswer((i) async {
+          return {'newKey': BoxEntry(2)};
+        });
+
+        var box = BoxBaseMock(backend: backend, keystore: keystore);
+        await box.compact();
+        verifyInOrder([
+          keystore.clear(),
+          backend.compact({'key': BoxEntry(1)}),
+          keystore.addAll({'newKey': BoxEntry(2)}),
+        ]);
       });
     });
 

@@ -2,7 +2,7 @@
 
 [![Dart CI](https://github.com/leisim/hive/workflows/Dart%20CI/badge.svg)](https://github.com/leisim/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator)
 
-Hive is a lightweight and blazing fast key-value store written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
+Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
 - [Documentation](https://leisim.github.io/hive/) 📖
 - [Frequently Asked Questions](https://leisim.github.io/hive/#/faq) 🙋
@@ -10,7 +10,7 @@ Hive is a lightweight and blazing fast key-value store written in pure Dart. Ins
 
 *Hive is not ready for production yet. I'm working hard on a stable version.*
 
-## Flutter Web Demos 🕸️
+### Flutter Web Demos 🕸️
 - [Counter](https://leisim.github.io/hive/demos/counter)
 - [Sketchpad](https://leisim.github.io/hive/demos/sketchpad)
 - [Todo App](https://leisim.github.io/hive/demos/todo)
@@ -20,7 +20,6 @@ Hive is a lightweight and blazing fast key-value store written in pure Dart. Ins
 ### Cross-platform ⚡
 - Runs on desktop, mobile & in browser
 - Very good performance (see [benchmark](#benchmark))
-
 
 ### Easy to use ❤️
 - Keys are ints or Strings and values are arbitrary objects
@@ -111,12 +110,12 @@ Boxes are cached and therefore fast enough to be used directly in the `build()` 
 The work on Hive has just started. If you want to contribute, it would be amazing if you helped me with one of these:
 
 - [x] Good test coverage
-- [ ] Many examples, especially for Flutter
+- [x] Many examples, especially for Flutter
+- [x] Benchmarks and comparison
 - [ ] Finalize API
 - [ ] Improve documentation
 - [ ] Write binary format spec
 - [ ] Even more tests
-- [x] Benchmarks and comparison
 
 ### Licence
 

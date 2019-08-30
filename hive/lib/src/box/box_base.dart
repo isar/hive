@@ -27,10 +27,6 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   @visibleForTesting
   final Keystore keystore;
 
-  @protected
-  @visibleForTesting
-  int deletedEntries = 0;
-
   bool _open = true;
 
   BoxBase(
@@ -40,7 +36,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     this.backend, [
     Keystore keystore,
     ChangeNotifier notifier,
-  ])  : keystore = keystore ?? Keystore(),
+  ])  : keystore = keystore ?? Keystore(keyComparator: options.keyComparator),
         notifier = notifier ?? ChangeNotifier(),
         super(hive);
 
@@ -51,16 +47,22 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   String get path => backend.path;
 
   @override
+  Iterable<dynamic> get keys {
+    checkOpen();
+    return keystore.getKeys();
+  }
+
+  @override
   int get length {
     checkOpen();
     return keystore.length;
   }
 
   @override
-  Iterable<dynamic> get keys {
-    checkOpen();
-    return keystore.getKeys();
-  }
+  bool get isEmpty => length == 0;
+
+  @override
+  bool get isNotEmpty => length > 0;
 
   @protected
   void checkOpen() {
@@ -82,9 +84,9 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   Future<void> initialize() async {
     var entries = <dynamic, BoxEntry>{};
-    deletedEntries =
-        await backend.initialize(entries, lazy, options.crashRecovery);
-    keystore.addAll(entries);
+    var deleted =
+        await backend.initialize(this, entries, lazy, options.crashRecovery);
+    keystore.addAll(entries, deleted);
   }
 
   @override
@@ -126,7 +128,6 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
     await backend.clear();
     var oldEntries = keystore.clear();
-    deletedEntries = 0;
 
     for (var key in oldEntries.keys) {
       notifier.notify(key, null, true);
@@ -137,19 +138,22 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   Future<void> compact() async {
-    /*checkOpen();
-    if (deletedEntries == 0) return;
-    var entries = keystore.getAll();
-    var newEntries = await backend.compact(entries);
-    keystore.clear(newEntries);
-    deletedEntries = 0;*/
+    checkOpen();
+
+    if (!backend.supportsCompaction) return;
+    if (keystore.deletedEntries == 0) return;
+
+    var oldEntries = keystore.clear();
+    var newEntries = await backend.compact(oldEntries);
+
+    keystore.addAll(newEntries);
   }
 
   @protected
   Future<void> performCompactionIfNeeded() {
-    /*if (options.compactionStrategy(_entries.length, deletedEntries)) {
+    if (options.compactionStrategy(keystore.length, keystore.deletedEntries)) {
       return compact();
-    }*/
+    }
 
     return Future.value();
   }

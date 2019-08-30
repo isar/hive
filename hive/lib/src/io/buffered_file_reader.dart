@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'dart:typed_data';
 
-import 'package:hive/src/binary/frame.dart';
-
 class BufferedFileReader {
-  static const defaultChunkSize = Frame.maxFrameLength;
+  static const defaultChunkSize = 1000 * 64;
 
   final RandomAccessFile file;
   final int chunkSize;

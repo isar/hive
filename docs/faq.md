@@ -7,10 +7,10 @@ Nope. Working hard to get there...
 Hive supports all platforms where the dart vm runs plus browsers. On browsers the IndexedDB is used as backend.
 
 ### When should I use Hive
-[When to use Hive](best_practices?id=when-to-use-hive)
+[When to use Hive](when_to_use_hive?id=when-to-use-hive)
 
 ### When should I not use Hive
-[When not to use Hive](best_practices?id=when-not-to-use-hive)
+[When not to use Hive](when_to_use_hive?id=when-not-to-use-hive)
 
 ### Where does Hive store my data?
 Each box has its own file in the home directory (the one you set using `Hive.init()`).
