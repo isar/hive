@@ -93,7 +93,5 @@ void main() {
       expect(bytes, []);
       expect(reader.offset, 14);
     });
-
-    test('.setPosition()', () {});
   });
 }

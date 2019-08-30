@@ -1,7 +1,5 @@
 #!/bin/bash
-
-# Fast fail the script on failures.
-set -e
+set -eu
 
 git clone -b gh-pages https://github.com/leisim/hive pages
 

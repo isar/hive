@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:hive/hive.dart';
 import 'package:meta/meta.dart';
 
 class _KeyTransaction {
@@ -25,8 +26,8 @@ class Keystore {
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
-  Keystore([Map<dynamic, BoxEntry> entries])
-      : entries = SplayTreeMap.of(entries ?? {}, _compareKeys);
+  Keystore({KeyComparator keyComparator, Map<dynamic, BoxEntry> entries})
+      : entries = SplayTreeMap.of(entries ?? {}, keyComparator ?? _compareKeys);
 
   int get deletedEntries => _deletedEntries;
 
@@ -76,7 +77,8 @@ class Keystore {
     return map;
   }
 
-  void addAll(Map<dynamic, BoxEntry> newEntries) {
+  void addAll(Map<dynamic, BoxEntry> newEntries, [int deletedEntries = 0]) {
+    _deletedEntries += deletedEntries;
     for (var key in newEntries.keys) {
       var entry = newEntries[key];
       entries[key] = entry;

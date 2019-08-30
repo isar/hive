@@ -3,16 +3,18 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
   final int _bufferLength;
   final ByteData _data;
-  final TypeRegistry typeRegistry;
+  final TypeRegistryImpl typeRegistry;
   int _offset = 0;
 
-  BinaryReaderImpl(this._buffer, this.typeRegistry, [int bufferLength])
-      : _bufferLength = bufferLength ?? _buffer.length,
+  BinaryReaderImpl(this._buffer, TypeRegistry typeRegistry, [int bufferLength])
+      : typeRegistry = typeRegistry as TypeRegistryImpl,
+        _bufferLength = bufferLength ?? _buffer.length,
         _data = ByteData.view(_buffer.buffer, _buffer.offsetInBytes,
             bufferLength ?? _buffer.length);
 
@@ -98,14 +100,14 @@ class BinaryReaderImpl extends BinaryReader {
   String readString(
       [int byteCount,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    byteCount ??= readWord();
+    byteCount ??= readUint32();
     var view = viewBytes(byteCount);
     return decoder.convert(view);
   }
 
   @override
   String readAsciiString([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var view = viewBytes(length);
     var str = String.fromCharCodes(view);
     return str;
@@ -113,7 +115,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Uint8List readByteList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length);
     var byteList = _buffer.sublist(_offset, _offset + length);
     _offset += length;
@@ -122,7 +124,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<int> readIntList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length * 8);
     var list = <int>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -134,7 +136,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<double> readDoubleList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length * 8);
     var list = <double>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -146,7 +148,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<bool> readBoolList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length);
     var list = <bool>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -159,7 +161,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<String> readStringList(
       [int length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    length ??= readWord();
+    length ??= readUint32();
     var list = <String>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
@@ -169,7 +171,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List readList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var list = <dynamic>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = read();
@@ -179,7 +181,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Map readMap([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var map = <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
       var key = read();
@@ -223,8 +225,8 @@ class BinaryReaderImpl extends BinaryReader {
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);
       if (resolved == null) {
-        throw HiveError(
-            'Cannot read, unknown typeId: $typeId. Did you forget to register an adapter?');
+        throw HiveError('Cannot read, unknown typeId: $typeId. '
+            'Did you forget to register an adapter?');
       }
       return resolved.adapter.read(this);
     }

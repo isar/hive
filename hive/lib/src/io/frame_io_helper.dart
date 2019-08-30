@@ -40,7 +40,7 @@ class FrameIoHelper {
           return frameOffset;
         }
         var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);
-        var frame = Frame.decode(frameReader, true, false, frameLength, null);
+        var frame = Frame.decode(frameReader, true, frameLength, null);
         frames.add(frame);
       }
     } finally {
@@ -74,7 +74,7 @@ class FrameIoHelper {
       }
 
       var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-      var frame = Frame.decode(frameReader, true, true, frameLength, crypto);
+      var frame = Frame.decode(frameReader, false, frameLength, crypto);
       frames.add(frame);
     }
 
