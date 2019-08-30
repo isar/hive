@@ -188,6 +188,7 @@ void main() {
     group('.compact()', () {
       test('does nothing if there are no deleted entries', () async {
         var backend = BackendMock();
+        when(backend.supportsCompaction).thenReturn(true);
         var box = BoxBaseMock(
           backend: backend,
           keystore: Keystore(entries: {
@@ -195,7 +196,27 @@ void main() {
           }),
         );
         await box.compact();
-        verifyZeroInteractions(backend);
+        verify(backend.supportsCompaction);
+        verifyNoMoreInteractions(backend);
+      });
+
+      test('compact', () async {
+        var backend = BackendMock();
+        var keystore = KeystoreMock();
+
+        when(keystore.clear()).thenReturn({'key': BoxEntry(1)});
+        when(backend.supportsCompaction).thenReturn(true);
+        when(backend.compact(any)).thenAnswer((i) async {
+          return {'newKey': BoxEntry(2)};
+        });
+
+        var box = BoxBaseMock(backend: backend, keystore: keystore);
+        await box.compact();
+        verifyInOrder([
+          keystore.clear(),
+          backend.compact({'key': BoxEntry(1)}),
+          keystore.addAll({'newKey': BoxEntry(2)}),
+        ]);
       });
     });
 
