@@ -6,13 +6,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  hive_flutter:
-    path: ../../hive_flutter
+  hive_flutter: any
 
   path_provider: ^1.2.0
 
 dev_dependencies:
-  #hive_generator: any
+  hive_generator: any
   build_runner: any
 
 flutter:
