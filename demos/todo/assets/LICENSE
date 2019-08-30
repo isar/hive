@@ -864,7 +864,6 @@ crypto
 mime
 package_config
 package_resolver
-source_gen
 stream_channel
 typed_data
 
@@ -8003,7 +8002,6 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 --------------------------------------------------------------------------------
 hive
 hive_flutter
-hive_generator
 
 
                                  Apache License
