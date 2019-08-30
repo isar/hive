@@ -4,14 +4,17 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_buffer.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 class BinaryWriterImpl extends BinaryWriter {
   static const int _asciiMask = 0x7F;
-  final TypeRegistry typeRegistry;
+  final TypeRegistryImpl typeRegistry;
   BinaryWriterBuffer _buffer;
 
-  BinaryWriterImpl(this.typeRegistry) : _buffer = BinaryWriterBuffer();
+  BinaryWriterImpl(TypeRegistry typeRegistry)
+      : typeRegistry = typeRegistry as TypeRegistryImpl,
+        _buffer = BinaryWriterBuffer();
 
   @visibleForTesting
   BinaryWriterImpl.withBuffer(this._buffer, this.typeRegistry);

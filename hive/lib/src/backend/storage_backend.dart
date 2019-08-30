@@ -1,3 +1,4 @@
+import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 
@@ -9,8 +10,8 @@ abstract class StorageBackend {
 
   bool get supportsCompaction;
 
-  Future<int> initialize(
-      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery);
+  Future<int> initialize(TypeRegistry registry, Map<dynamic, BoxEntry> entries,
+      bool lazy, bool crashRecovery);
 
   Future<dynamic> readValue(dynamic key, int offset, int length);
 

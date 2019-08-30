@@ -51,13 +51,19 @@ abstract class Box implements TypeRegistry {
   /// The keys are sorted alphabetically in ascending order.
   Iterable<dynamic> get keys;
 
-  /// The number of entries in the box.
-  int get length;
-
   /// All the values in the box.
   ///
   /// The values are in the same order as their keys.
   Iterable<dynamic> get values;
+
+  /// The number of entries in the box.
+  int get length;
+
+  /// Returns `true` if there are no entries in this box.
+  bool get isEmpty;
+
+  /// Returns true if there is at least one entries in this box.
+  bool get isNotEmpty;
 
   /// Get the n-th key in the box.
   dynamic keyAt(int index);
@@ -116,12 +122,12 @@ abstract class Box implements TypeRegistry {
   /// Saves the [values] with auto-increment keys.
   Future<List<int>> addAll(List<dynamic> values);
 
-  /// Deletes all the given [key] from the box.
+  /// Deletes the given [key] from the box.
   ///
   /// If it does not exist, nothing happens.
   Future<void> delete(dynamic key);
 
-  /// Deletes all the given n-th key from the box.
+  /// Deletes the n-th key from the box.
   ///
   /// If it does not exist, nothing happens.
   Future<void> deleteAt(int index);
@@ -131,7 +137,7 @@ abstract class Box implements TypeRegistry {
   /// If a key does not exist, it is being skipped.
   Future<void> deleteAll(List<dynamic> keys);
 
-  /// Returns a map which contains all key - value entries of the box.
+  /// Returns a map which contains all key - value pairs of the box.
   Map<dynamic, dynamic> toMap();
 
   /// Induces compaction manually. This is rarely needed. You should consider

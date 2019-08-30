@@ -88,8 +88,8 @@ void main() {
       var backend = BackendMock();
       var box = BoxBaseMock(backend: backend);
 
-      when(backend.initialize(any, any, any)).thenAnswer((i) async {
-        i.positionalArguments[0]['key1'] = BoxEntry(1);
+      when(backend.initialize(any, any, any, any)).thenAnswer((i) async {
+        i.positionalArguments[1]['key1'] = BoxEntry(1);
         return 2;
       });
 

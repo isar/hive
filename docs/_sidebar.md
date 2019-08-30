@@ -17,7 +17,11 @@
     * [Register adapter](register_adapter.md)
     * [Create adapter manually](create_adapter_manually.md)
 
-* [Best Practices](best_practices.md)
+* Best Practices
+    * [Modelling data](generate_adapter.md)
+    * [Hive & Flutter](register_adapter.md)
+    * [When to use Hive](type_adapters.md)
+
 * [Browser support](browser.md)
 * [Frequently Asked Questions](faq.md)
 * [Limitations](limitations.md)

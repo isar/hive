@@ -5,18 +5,15 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/binary_reader_impl.dart';
+import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
-import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-Future<Box> openBoxInternal(
-    HiveImpl hive, String name, bool lazy, BoxOptions options) async {
+Future<StorageBackend> openBackend(
+    String path, String name, CryptoHelper crypto) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
@@ -24,23 +21,7 @@ Future<Box> openBoxInternal(
     }
   });
 
-  CryptoHelper crypto;
-  if (options.encrypted) {
-    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
-  }
-
-  var backend = StorageBackendJs(db, crypto);
-  BoxBase box;
-  if (lazy) {
-    box = LazyBoxImpl(hive, name, options, backend);
-  } else {
-    box = BoxImpl(hive, name, options, backend);
-  }
-  backend._registry = box;
-
-  await box.initialize();
-
-  return box;
+  return StorageBackendJs(db, crypto);
 }
 
 class StorageBackendJs extends StorageBackend {
@@ -49,7 +30,7 @@ class StorageBackendJs extends StorageBackend {
 
   TypeRegistry _registry;
 
-  StorageBackendJs(this._db, this._crypto);
+  StorageBackendJs(this._db, this._crypto, [this._registry]);
 
   @override
   String get path => null;
@@ -57,29 +38,46 @@ class StorageBackendJs extends StorageBackend {
   @override
   bool supportsCompaction = false;
 
+  bool _isEncoded(Uint8List bytes) {
+    return bytes.length >= 2 && bytes[0] == 0x90 && bytes[1] == 0xA9;
+  }
+
   @visibleForTesting
   dynamic encodeValue(dynamic value) {
-    var noEncodingNeeded = value == null ||
-        value is num ||
-        value is bool ||
-        value is String ||
-        (value is List<num> && value is! Uint8List) ||
-        value is List<bool> ||
-        value is List<String>;
-
-    if (noEncodingNeeded && _crypto == null) {
-      return value;
-    } else {
-      var bytes = Frame('', value).toBytes(false, _registry, _crypto);
-      return bytes.buffer;
+    if (_crypto == null) {
+      if (value == null) {
+        return value;
+      } else if (value is Uint8List) {
+        if (!_isEncoded(value)) {
+          return value.buffer;
+        }
+      } else if (value is num ||
+          value is bool ||
+          value is String ||
+          value is List<num> ||
+          value is List<bool> ||
+          value is List<String>) {
+        return value;
+      }
     }
+
+    var frameWriter = BinaryWriterImpl(_registry);
+    frameWriter.writeByteList([0x90, 0xA9], writeLength: false);
+    Frame.encodeValue(value, frameWriter, _crypto);
+    return frameWriter.output().buffer;
   }
 
   @visibleForTesting
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
-      return Frame.bodyFromBytes(bytes, _registry, _crypto).value;
+      if (_isEncoded(bytes)) {
+        var frameReader = BinaryReaderImpl(bytes, _registry, bytes.length);
+        frameReader.skip(2);
+        return Frame.decodeValue(frameReader, _crypto);
+      } else {
+        return bytes;
+      }
     } else {
       return value;
     }
@@ -117,8 +115,9 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(
-      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery) async {
+  Future<int> initialize(TypeRegistry registry, Map<dynamic, BoxEntry> entries,
+      bool lazy, bool crashRecovery) async {
+    _registry = registry;
     var keys = await getKeys();
     if (!lazy) {
       var values = await getValues();

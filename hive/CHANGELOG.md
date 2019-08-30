@@ -1,7 +1,12 @@
 ## 0.5.0
 - Added `keyComparator` parameter for custom key order
-- Support reading and writing subclasses
+- Added `isEmpty` and `isNotEmpty` getters to box
+- Added support for reading and writing subclasses
 - Removed length limitation for Lists, Maps and Strings
+- Greatly improved performance of storing Uint8Lists in browser
+- Removed CRC check in browser (not needed)
+- Improved documentation
+- TypeIds are now allowed in the range of 0-223
 - Fixed compaction
 - Fixed writing longer Strings
 - **Breaking:** Binary format changed

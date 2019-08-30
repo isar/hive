@@ -12,7 +12,7 @@ class BufferedFileWriter {
   BufferedFileWriter(this.file, [this.maxBufferSize = defaultMaxBufferSize]);
 
   Future<void> write(List<int> bytes) async {
-    if (_buffer.length > maxBufferSize) {
+    if (_buffer.length >= maxBufferSize) {
       await flush();
     }
     _buffer.add(bytes);

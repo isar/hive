@@ -1,18 +1,11 @@
 import 'dart:collection';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
-import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
@@ -20,29 +13,14 @@ import 'package:hive/src/io/synced_file.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<Box> openBoxInternal(
-    HiveImpl hive, String name, bool lazy, BoxOptions options) async {
-  var file = await findHiveFileAndCleanUp(name, hive.path);
+Future<StorageBackend> openBackend(
+    String path, String name, CryptoHelper crypto) async {
+  var file = await findHiveFileAndCleanUp(name, path);
 
-  CryptoHelper crypto;
-  if (options.encrypted) {
-    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
-  }
   var syncedFile = SyncedFile(file.path);
   await syncedFile.open();
 
-  var backend = StorageBackendVm(syncedFile, crypto);
-  BoxBase box;
-  if (lazy) {
-    box = LazyBoxImpl(hive, name, options, backend);
-  } else {
-    box = BoxImpl(hive, name, options, backend);
-  }
-  backend._registry = box;
-
-  await box.initialize();
-
-  return box;
+  return StorageBackendVm(syncedFile, crypto);
 }
 
 @visibleForTesting
@@ -98,8 +76,9 @@ class StorageBackendVm extends StorageBackend {
   bool supportsCompaction = true;
 
   @override
-  Future<int> initialize(
-      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery) async {
+  Future<int> initialize(TypeRegistry registry, Map<dynamic, BoxEntry> entries,
+      bool lazy, bool crashRecovery) async {
+    _registry = registry;
     var frames = <Frame>[];
     int recoveryOffset;
     if (!lazy) {
@@ -161,7 +140,7 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> writeFrame(Frame frame, BoxEntry entry) async {
-    var bytes = frame.toBytes(true, _registry, _crypto);
+    var bytes = frame.toBytes(_registry, _crypto);
     if (entry != null) {
       entry.offset = await _file.write(bytes);
       entry.length = bytes.length;
@@ -174,7 +153,7 @@ class StorageBackendVm extends StorageBackend {
     var bytes = BytesBuilder(copy: false);
     var lengths = <int>[];
     for (var frame in frames) {
-      var frameBytes = frame.toBytes(true, _registry, _crypto);
+      var frameBytes = frame.toBytes(_registry, _crypto);
       bytes.add(frameBytes);
       lengths.add(frameBytes.length);
     }

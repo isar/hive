@@ -1,3 +1,5 @@
+import 'package:hive/src/binary/binary_reader_impl.dart';
+import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:test/test.dart';
 
@@ -6,33 +8,11 @@ import 'frames.dart';
 void main() {
   group('Frame', () {
     group('.toBytes()', () {
-      test('validates key length', () async {
-        var tooLongKey = List.filled(256, 'a').join();
-        var tooLongFrame = Frame(tooLongKey, 5);
-        expect(
-          () => tooLongFrame.toBytes(true, registry, null),
-          throwsA(anything),
-        );
-
-        var validKey = List.filled(255, 'a').join();
-        var frame = Frame(validKey, 5);
-        frame.toBytes(true, registry, null);
-      });
-
       test('frames', () {
         var i = 0;
         for (var frame in testFrames) {
-          var bytes = frame.toBytes(true, registry, null);
+          var bytes = frame.toBytes(testRegistry, null);
           expect(bytes, frameBytes[i]);
-          i++;
-        }
-      });
-
-      test('frames body only', () {
-        var i = 0;
-        for (var frame in testFrames) {
-          var bytes = frame.toBytes(false, registry, null);
-          expect(bytes, frameBytesBodyOnly[i]);
           i++;
         }
       });
@@ -40,17 +20,30 @@ void main() {
       test('encrypted frames', () {
         var i = 0;
         for (var frame in testFrames) {
-          var bytes = frame.toBytes(true, registry, getDebugCrypto());
+          var bytes = frame.toBytes(testRegistry, testCrypto);
           expect(bytes, frameBytesEncrypted[i]);
           i++;
         }
       });
+    });
 
-      test('encrypted frames body only', () {
+    group('.encodeValue()', () {
+      test('values', () {
         var i = 0;
         for (var frame in testFrames) {
-          var bytes = frame.toBytes(false, registry, getDebugCrypto());
-          expect(bytes, frameBytesEncryptedBodyOnly[i]);
+          var writer = BinaryWriterImpl(testRegistry);
+          Frame.encodeValue(frame.value, writer, null);
+          expect(writer.output(), frameValuesBytes[i]);
+          i++;
+        }
+      });
+
+      test('encrypted values', () {
+        var i = 0;
+        for (var frame in testFrames) {
+          var writer = BinaryWriterImpl(testRegistry);
+          Frame.encodeValue(frame.value, writer, testCrypto);
+          expect(writer.output(), frameValuesBytesEncrypted[i]);
           i++;
         }
       });
@@ -60,7 +53,7 @@ void main() {
       test('frames', () {
         var i = 0;
         for (var testFrame in testFrames) {
-          var frame = Frame.fromBytes(frameBytes[i], registry, null);
+          var frame = Frame.fromBytes(frameBytes[i], testRegistry, null);
           fEqual(frame, frameWithLength(testFrame, frameBytes[i].length));
           i++;
         }
@@ -70,30 +63,31 @@ void main() {
         var i = 0;
         for (var testFrame in testFrames) {
           var bytes = frameBytesEncrypted[i];
-          var frame = Frame.fromBytes(bytes, registry, getDebugCrypto());
+          var frame = Frame.fromBytes(bytes, testRegistry, testCrypto);
           fEqual(frame, frameWithLength(testFrame, bytes.length));
           i++;
         }
       });
     });
 
-    group('.bodyFromBytes()', () {
-      test('frames', () {
+    group('.decodeValue()', () {
+      test('values', () {
         var i = 0;
         for (var testFrame in testFrames) {
-          var bytes = frameBytesBodyOnly[i];
-          var frame = Frame.bodyFromBytes(bytes, registry, null);
-          fEqual(frame, frameBodyWithLength(testFrame, bytes.length));
+          var reader = BinaryReaderImpl(frameValuesBytes[i], testRegistry);
+          var value = Frame.decodeValue(reader, null);
+          expect(value, testFrame.value);
           i++;
         }
       });
 
-      test('encrypted frames', () {
+      test('encrypted values', () {
         var i = 0;
         for (var testFrame in testFrames) {
-          var bytes = frameBytesEncryptedBodyOnly[i];
-          var frame = Frame.bodyFromBytes(bytes, registry, getDebugCrypto());
-          fEqual(frame, frameBodyWithLength(testFrame, bytes.length));
+          var reader =
+              BinaryReaderImpl(frameValuesBytesEncrypted[i], testRegistry);
+          var value = Frame.decodeValue(reader, testCrypto);
+          expect(value, testFrame.value);
           i++;
         }
       });

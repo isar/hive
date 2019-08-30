@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -10,12 +11,22 @@ import 'package:test/test.dart';
 
 import 'common.dart';
 
+export 'generated/frame_values.g.dart';
+export 'generated/frame_values_encrypted.g.dart';
 export 'generated/frames.g.dart';
-export 'generated/frames_body_only.g.dart';
 export 'generated/frames_encrypted.g.dart';
-export 'generated/frames_encrypted_body_only.g.dart';
 
-TypeRegistry get registry => HiveImpl();
+TypeRegistry get testRegistry => HiveImpl();
+
+CryptoHelper get testCrypto {
+  var secMock = SecureRandomMock();
+  when(secMock.nextUint8()).thenReturn(1);
+  when(secMock.nextUint16()).thenReturn(2);
+  when(secMock.nextUint32()).thenReturn(3);
+  when(secMock.nextBytes(any)).thenAnswer((i) =>
+      Uint8List.fromList(List.filled(i.positionalArguments[0] as int, 4)));
+  return CryptoHelper.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
+}
 
 final testFrames = <Frame>[
   const Frame.deleted(0),
@@ -35,6 +46,7 @@ final testFrames = <Frame>[
       'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
   const Frame('Empty list', []),
   Frame('Byte list', Uint8List.fromList([1, 12, 123, 1234])),
+  Frame('Byte list with mask', Uint8List.fromList([0x90, 0xA9, 1, 2, 3])),
   const Frame('Int list', [123, 456, 129318238]),
   const Frame('Bool list', [true, false, false, true]),
   const Frame('Double list', [
@@ -112,16 +124,6 @@ void fEqual(Frame f1, Frame f2) {
   expect(f1.lazy, f2.lazy);
 }
 
-CryptoHelper getDebugCrypto() {
-  var secMock = SecureRandomMock();
-  when(secMock.nextUint8()).thenReturn(1);
-  when(secMock.nextUint16()).thenReturn(2);
-  when(secMock.nextUint32()).thenReturn(3);
-  when(secMock.nextBytes(any)).thenAnswer((i) =>
-      Uint8List.fromList(List.filled(i.positionalArguments[0] as int, 4)));
-  return CryptoHelper.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
-}
-
 void buildGoldens() async {
   Future<void> generate(String fileName, String varName,
       Uint8List Function(Frame frame) transformer) async {
@@ -140,16 +142,19 @@ void buildGoldens() async {
   }
 
   await generate('frames', 'frameBytes', (f) {
-    return f.toBytes(true, HiveImpl(), null);
+    return f.toBytes(HiveImpl(), null);
   });
-  await generate('frames_body_only', 'frameBytesBodyOnly', (f) {
-    return f.toBytes(false, HiveImpl(), null);
+  await generate('frame_values', 'frameValuesBytes', (f) {
+    var writer = BinaryWriterImpl(HiveImpl());
+    Frame.encodeValue(f.value, writer, null);
+    return writer.output();
   });
   await generate('frames_encrypted', 'frameBytesEncrypted', (f) {
-    return f.toBytes(true, HiveImpl(), getDebugCrypto());
+    return f.toBytes(HiveImpl(), testCrypto);
   });
-  await generate('frames_encrypted_body_only', 'frameBytesEncryptedBodyOnly',
-      (f) {
-    return f.toBytes(false, HiveImpl(), getDebugCrypto());
+  await generate('frame_values_encrypted', 'frameValuesBytesEncrypted', (f) {
+    var writer = BinaryWriterImpl(HiveImpl());
+    Frame.encodeValue(f.value, writer, testCrypto);
+    return writer.output();
   });
 }

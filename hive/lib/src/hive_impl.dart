@@ -1,10 +1,14 @@
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
+import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
+import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
@@ -57,6 +61,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       }
 
       var options = BoxOptions(
+        lazy: lazy,
         encryptionKey: encryptionKey,
         keyComparator: keyComparator,
         compactionStrategy: defaultCompactionStrategy,
@@ -64,11 +69,29 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       );
 
       var lowercaseName = name.toLowerCase();
-      var box = await openBoxInternal(this, lowercaseName, lazy, options);
+      var box = await openBoxInternal(lowercaseName, options);
       _boxes[lowercaseName] = box;
 
       return box;
     }
+  }
+
+  Future<Box> openBoxInternal(String name, BoxOptions options) async {
+    CryptoHelper crypto;
+    if (options.encrypted) {
+      crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
+    }
+
+    var backend = await openBackend(path, name, crypto);
+    BoxBase box;
+    if (options.lazy) {
+      box = LazyBoxImpl(this, name, options, backend);
+    } else {
+      box = BoxImpl(this, name, options, backend);
+    }
+    await box.initialize();
+
+    return box;
   }
 
   @override

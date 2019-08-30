@@ -3,16 +3,18 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
   final int _bufferLength;
   final ByteData _data;
-  final TypeRegistry typeRegistry;
+  final TypeRegistryImpl typeRegistry;
   int _offset = 0;
 
-  BinaryReaderImpl(this._buffer, this.typeRegistry, [int bufferLength])
-      : _bufferLength = bufferLength ?? _buffer.length,
+  BinaryReaderImpl(this._buffer, TypeRegistry typeRegistry, [int bufferLength])
+      : typeRegistry = typeRegistry as TypeRegistryImpl,
+        _bufferLength = bufferLength ?? _buffer.length,
         _data = ByteData.view(_buffer.buffer, _buffer.offsetInBytes,
             bufferLength ?? _buffer.length);
 

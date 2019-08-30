@@ -47,16 +47,22 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   String get path => backend.path;
 
   @override
+  Iterable<dynamic> get keys {
+    checkOpen();
+    return keystore.getKeys();
+  }
+
+  @override
   int get length {
     checkOpen();
     return keystore.length;
   }
 
   @override
-  Iterable<dynamic> get keys {
-    checkOpen();
-    return keystore.getKeys();
-  }
+  bool get isEmpty => length == 0;
+
+  @override
+  bool get isNotEmpty => length > 0;
 
   @protected
   void checkOpen() {
@@ -79,7 +85,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   Future<void> initialize() async {
     var entries = <dynamic, BoxEntry>{};
     var deleted =
-        await backend.initialize(entries, lazy, options.crashRecovery);
+        await backend.initialize(this, entries, lazy, options.crashRecovery);
     keystore.addAll(entries, deleted);
   }
 
