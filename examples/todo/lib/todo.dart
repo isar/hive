@@ -5,7 +5,7 @@ part 'todo.g.dart';
 @HiveType()
 class Todo {
   // We use the negative time as key in Hive to sort in descending order.
-  int get id => -created.millisecondsSinceEpoch;
+  String get id => (-created.millisecondsSinceEpoch).toString();
 
   @HiveField(0)
   String name;

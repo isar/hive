@@ -14,21 +14,31 @@ class Frame {
   final bool deleted;
   final bool lazy;
 
-  const Frame(this.key, this.value, [this.length])
+  Frame(this.key, this.value, [this.length])
       : lazy = false,
-        deleted = false;
-  //assert(key is int || (key is String && key.length <= 255),
-  //'Unsupported key');
+        deleted = false,
+        assert(
+            (key is int && key >= 0 && key < 4294967295) ||
+                (key is String && key.length <= 255),
+            'Unsupported key');
 
-  const Frame.deleted(this.key, [this.length])
+  Frame.deleted(this.key, [this.length])
       : value = null,
         lazy = false,
-        deleted = true;
+        deleted = true,
+        assert(
+            (key is int && key >= 0 && key < 4294967295) ||
+                (key is String && key.length <= 255),
+            'Unsupported key');
 
-  const Frame.lazy(this.key, [this.length])
+  Frame.lazy(this.key, [this.length])
       : value = null,
         lazy = true,
-        deleted = false;
+        deleted = false,
+        assert(
+            (key is int && key >= 0 && key < 4294967295) ||
+                (key is String && key.length <= 255),
+            'Unsupported key');
 
   static Frame fromBytes(
       Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {

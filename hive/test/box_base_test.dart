@@ -46,17 +46,6 @@ void main() {
       expect(box.path, 'some/path');
     });
 
-    test('.length', () {
-      var keystore = Keystore(
-        entries: {
-          'key1': BoxEntry(null),
-          'key2': BoxEntry(null),
-        },
-      );
-      var box = BoxBaseMock(keystore: keystore);
-      expect(box.length, 2);
-    });
-
     test('.keys', () {
       var keystore = Keystore(
         entries: {
@@ -67,6 +56,25 @@ void main() {
       );
       var box = BoxBaseMock(keystore: keystore);
       expect(HashSet.from(box.keys), HashSet.from(['key1', 'key2', 'key4']));
+    });
+
+    test('.length / .isEmpty / .isNotEmpty', () {
+      var keystore = Keystore(
+        entries: {
+          'key1': BoxEntry(null),
+          'key2': BoxEntry(null),
+        },
+      );
+      var box = BoxBaseMock(keystore: keystore);
+      expect(box.length, 2);
+      expect(box.isEmpty, false);
+      expect(box.isNotEmpty, true);
+
+      keystore = Keystore();
+      box = BoxBaseMock(keystore: keystore);
+      expect(box.length, 0);
+      expect(box.isEmpty, true);
+      expect(box.isNotEmpty, false);
     });
 
     test('.watch()', () {

@@ -29,34 +29,34 @@ CryptoHelper get testCrypto {
 }
 
 final testFrames = <Frame>[
-  const Frame.deleted(0),
-  const Frame.deleted(555),
-  const Frame(123, null),
-  const Frame(0, 'Int key1'),
-  const Frame(1, 'Int key2'),
-  const Frame(2 ^ 32 - 1, 'Int key3'),
-  const Frame.deleted('Tombstone frame'),
-  const Frame('Null frame', null),
-  const Frame('Int', 123123123),
-  const Frame('Large int', 2 ^ 32),
-  const Frame('Bool true', true),
-  const Frame('Bool false', false),
-  const Frame('Float', 12312.991283),
-  const Frame('Unicode string',
+  Frame.deleted(0),
+  Frame.deleted(555),
+  Frame(123, null),
+  Frame(0, 'Int key1'),
+  Frame(1, 'Int key2'),
+  Frame(2 ^ 32 - 1, 'Int key3'),
+  Frame.deleted('Tombstone frame'),
+  Frame('Null frame', null),
+  Frame('Int', 123123123),
+  Frame('Large int', 2 ^ 32),
+  Frame('Bool true', true),
+  Frame('Bool false', false),
+  Frame('Float', 12312.991283),
+  Frame('Unicode string',
       'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
-  const Frame('Empty list', []),
+  Frame('Empty list', []),
   Frame('Byte list', Uint8List.fromList([1, 12, 123, 1234])),
   Frame('Byte list with mask', Uint8List.fromList([0x90, 0xA9, 1, 2, 3])),
-  const Frame('Int list', [123, 456, 129318238]),
-  const Frame('Bool list', [true, false, false, true]),
-  const Frame('Double list', [
+  Frame('Int list', [123, 456, 129318238]),
+  Frame('Bool list', [true, false, false, true]),
+  Frame('Double list', [
     10.1723812,
     double.infinity,
     double.maxFinite,
     double.minPositive,
     double.negativeInfinity
   ]),
-  const Frame('String list', [
+  Frame('String list', [
     'hello',
     '🧙‍♂️ 👨‍👨‍👧‍👦 ',
     ' ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ',
@@ -64,8 +64,8 @@ final testFrames = <Frame>[
     ' צּ קּ רּ שּ ',
     'ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ '
   ]),
-  const Frame('List with null', ['This', 'is', 'a', 'test', null]),
-  const Frame('List with different types', [
+  Frame('List with null', ['This', 'is', 'a', 'test', null]),
+  Frame('List with different types', [
     'List',
     [1, 2, 3],
     5.8,
@@ -73,7 +73,7 @@ final testFrames = <Frame>[
     12341234,
     {'t': true, 'f': false},
   ]),
-  const Frame('Map', {
+  Frame('Map', {
     'Bool': true,
     'Int': 1234,
     'Double': 15.7,

@@ -91,20 +91,23 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(false);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.put('key1', 'value1');
         verifyInOrder([
           keystore.beginAddTransaction({'key1': BoxEntry('value1')}),
           notifier.notify('key1', 'value1', false),
-          backend.writeFrame(const Frame('key1', 'value1'), BoxEntry('value1')),
+          backend.writeFrame(Frame('key1', 'value1'), BoxEntry('value1')),
           keystore.commitTransaction(),
+          backend.compact(any),
         ]);
       });
 
@@ -128,8 +131,7 @@ void main() {
         verifyInOrder([
           keystore.beginAddTransaction({'key1': BoxEntry('newValue')}),
           notifier.notify('key1', 'newValue', false),
-          backend.writeFrame(
-              const Frame('key1', 'newValue'), BoxEntry('newValue')),
+          backend.writeFrame(Frame('key1', 'newValue'), BoxEntry('newValue')),
           keystore.cancelTransaction(),
           keystore.get('key1'),
           notifier.notify('key1', 'oldValue', false),
@@ -160,12 +162,14 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.delete('key1');
@@ -173,8 +177,9 @@ void main() {
           keystore.containsKey('key1'),
           keystore.beginDeleteTransaction(['key1']),
           notifier.notify('key1', null, true),
-          backend.writeFrame(const Frame.deleted('key1'), null),
+          backend.writeFrame(Frame.deleted('key1'), null),
           keystore.commitTransaction(),
+          backend.compact(any)
         ]);
       });
     });
@@ -184,12 +189,14 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(false);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
@@ -201,10 +208,11 @@ void main() {
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
           backend.writeFrames(
-            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
+            [Frame('key1', 'value1'), Frame('key2', 'value2')],
             [BoxEntry('value1'), BoxEntry('value2')],
           ),
           keystore.commitTransaction(),
+          backend.compact(any),
         ]);
       });
 
@@ -236,7 +244,7 @@ void main() {
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
           backend.writeFrames(
-            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
+            [Frame('key1', 'value1'), Frame('key2', 'value2')],
             [BoxEntry('value1'), BoxEntry('value2')],
           ),
           keystore.cancelTransaction(),
@@ -254,6 +262,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(keystore.containsKey(any)).thenReturn(false);
+
         var box = getBox(
           backend: backend,
           keystore: keystore,
@@ -269,12 +278,14 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.deleteAll(['key1', 'key2']);
@@ -285,10 +296,11 @@ void main() {
           notifier.notify('key1', null, true),
           notifier.notify('key2', null, true),
           backend.writeFrames(
-            [const Frame.deleted('key1'), const Frame.deleted('key2')],
+            [Frame.deleted('key1'), Frame.deleted('key2')],
             null,
           ),
           keystore.commitTransaction(),
+          backend.compact(any),
         ]);
       });
     });

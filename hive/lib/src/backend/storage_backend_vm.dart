@@ -141,8 +141,9 @@ class StorageBackendVm extends StorageBackend {
   @override
   Future<void> writeFrame(Frame frame, BoxEntry entry) async {
     var bytes = frame.toBytes(_registry, _crypto);
+    var offset = await _file.write(bytes);
     if (entry != null) {
-      entry.offset = await _file.write(bytes);
+      entry.offset = offset;
       entry.length = bytes.length;
     }
   }
@@ -183,7 +184,7 @@ class StorageBackendVm extends StorageBackend {
     try {
       await _file.readLock.synchronized(() {
         return _file.writeLock.synchronized(() async {
-          newEntries = await performCompaction(entries, reader, writer);
+          newEntries = await compactInternal(entries, reader, writer);
         });
       });
     } finally {
@@ -198,7 +199,7 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @visibleForTesting
-  Future<Map<dynamic, BoxEntry>> performCompaction(
+  Future<Map<dynamic, BoxEntry>> compactInternal(
     Map<dynamic, BoxEntry> entries,
     BufferedFileReader reader,
     BufferedFileWriter writer,

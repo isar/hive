@@ -174,6 +174,7 @@ void main() {
     });
 
     group('.compact()', () {
+      //TODO improve this test
       test('check compaction', () async {
         var bytes = BytesBuilder();
         var comparisonBytes = BytesBuilder();
@@ -221,7 +222,7 @@ void main() {
 
       /*test('throws error if corrupted', () async {
         var bytes = BytesBuilder();
-        var boxFile = await getTempFile();
+        var boxFile = await getTempFile(); 
         var syncedFile = SyncedFile(boxFile.path);
         await syncedFile.open();
 
