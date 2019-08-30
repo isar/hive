@@ -11,13 +11,13 @@ jobs:
     
     strategy:
       matrix:
-        test-platform: [vm]
+        test-platform: [vm, chrome]
     
     steps:
     - uses: actions/checkout@v1
     - name: Run tests
       run: |
-        TEST_PLATFORM=${{ matrix.test-platform }}
+        export TEST_PLATFORM=${{ matrix.test-platform }}
         sh tool/test_hive.sh
 
   coverage-hive:
