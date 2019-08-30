@@ -193,14 +193,14 @@ void main() {
       var backend = StorageBackendJs(db, null);
 
       var entry = BoxEntry(null);
-      await backend.writeFrame(const Frame('key1', 123), entry);
+      await backend.writeFrame(Frame('key1', 123), entry);
       expect(entry, BoxEntry(null));
       expect(await backend.getKeys(), ['key1']);
 
-      await backend.writeFrame(const Frame('key2', null), entry);
+      await backend.writeFrame(Frame('key2', null), entry);
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      await backend.writeFrame(const Frame.deleted('key1'), entry);
+      await backend.writeFrame(Frame.deleted('key1'), entry);
       expect(await backend.getKeys(), ['key2']);
     });
 
@@ -210,8 +210,8 @@ void main() {
 
       var entries = [BoxEntry(null), BoxEntry(null)];
       await backend.writeFrames([
-        const Frame('key1', 123),
-        const Frame('key2', null),
+        Frame('key1', 123),
+        Frame('key2', null),
       ], entries);
       expect(entries, [BoxEntry(null), BoxEntry(null)]);
       expect(await backend.getKeys(), ['key1', 'key2']);

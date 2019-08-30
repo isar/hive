@@ -66,11 +66,11 @@ void main() {
         var ioHelper = FrameIoHelperMock();
         when(ioHelper.framesFromFile(any, any, any, any)).thenAnswer((i) async {
           i.positionalArguments[1].addAll([
-            const Frame('key1', 'value1', 1),
-            const Frame('key2', 'value2', 2),
-            const Frame('key1', null, 3),
-            const Frame.deleted('key2', 4),
-            const Frame('key3', 'value3', 5),
+            Frame('key1', 'value1', 1),
+            Frame('key2', 'value2', 2),
+            Frame('key1', null, 3),
+            Frame.deleted('key2', 4),
+            Frame('key3', 'value3', 5),
           ]);
           return null;
         });
@@ -91,11 +91,11 @@ void main() {
         var ioHelper = FrameIoHelperMock();
         when(ioHelper.keysFromFile(any, any, any)).thenAnswer((i) async {
           i.positionalArguments[1].addAll([
-            const Frame.lazy('key1', 1),
-            const Frame.lazy('key2', 2),
-            const Frame.lazy('key1', 3),
-            const Frame.deleted('key2', 4),
-            const Frame.lazy('key3', 5),
+            Frame.lazy('key1', 1),
+            Frame.lazy('key2', 2),
+            Frame.lazy('key1', 3),
+            Frame.deleted('key2', 4),
+            Frame.lazy('key3', 5),
           ]);
           return null;
         });
@@ -115,7 +115,7 @@ void main() {
 
     test('.readValue()', () async {
       var file = SyncedFileMock();
-      var frameBytes = getFrameBytes([const Frame('test', 123)]);
+      var frameBytes = getFrameBytes([Frame('test', 123)]);
       when(file.readAt(5, frameBytes.length))
           .thenAnswer((i) async => frameBytes);
 
@@ -128,11 +128,8 @@ void main() {
       var file = SyncedFile((await getTempFile()).path);
       await file.open();
 
-      var frameBytes = getFrameBytes([
-        const Frame('key1', 1),
-        const Frame('key2', 2),
-        const Frame('key3', 3)
-      ]);
+      var frameBytes =
+          getFrameBytes([Frame('key1', 1), Frame('key2', 2), Frame('key3', 3)]);
       await file.write(frameBytes);
 
       var backend = StorageBackendVm(file, null);
@@ -146,7 +143,7 @@ void main() {
 
       var backend = StorageBackendVm(mockFile, null);
 
-      var frame = const Frame('key', 'value');
+      var frame = Frame('key', 'value');
       var bytes = frame.toBytes(null, null);
 
       var entry = BoxEntry(null);
@@ -161,8 +158,8 @@ void main() {
 
       var backend = StorageBackendVm(mockFile, null);
 
-      var frame1 = const Frame('key', 'value');
-      var frame2 = const Frame('key', null);
+      var frame1 = Frame('key', 'value');
+      var frame2 = Frame('key', null);
       var bytes1 = frame1.toBytes(null, null);
       var bytes2 = frame2.toBytes(null, null);
       var bytes = [...bytes1, ...bytes2];
