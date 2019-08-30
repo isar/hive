@@ -43,7 +43,8 @@ class TodoList extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "${todo.created.hour}:${todo.created.minute}:${todo.created.second}",
+                  '${todo.created.hour}:${todo.created.minute}:'
+                  '${todo.created.second}',
                   style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                 ),
               ],
@@ -61,6 +62,8 @@ class TodoList extends StatelessWidget {
               iconSize: 30,
               icon: Icon(Icons.delete),
               onPressed: () {
+                var box = Hive.box('todos');
+                var keys = box.toMap();
                 Hive.box('todos').delete(todo.id);
               },
             ),

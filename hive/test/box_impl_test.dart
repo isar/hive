@@ -34,11 +34,13 @@ BoxImpl getBox({
 void main() {
   group('BoxImpl', () {
     test('.values', () {
-      var keystore = Keystore({
-        0: BoxEntry(123),
-        'key1': BoxEntry('value1'),
-        1: BoxEntry(null),
-      });
+      var keystore = Keystore(
+        entries: {
+          0: BoxEntry(123),
+          'key1': BoxEntry('value1'),
+          1: BoxEntry(null),
+        },
+      );
       var box = getBox(keystore: keystore);
 
       expect(box.values, [123, null, 'value1']);
@@ -58,10 +60,12 @@ void main() {
         var backend = BackendMock();
         var box = getBox(
           backend: backend,
-          keystore: Keystore({
-            'testKey': BoxEntry('testVal'),
-            123: BoxEntry(456),
-          }),
+          keystore: Keystore(
+            entries: {
+              'testKey': BoxEntry('testVal'),
+              123: BoxEntry(456),
+            },
+          ),
         );
 
         expect(box.get('testKey'), 'testVal');
@@ -71,7 +75,9 @@ void main() {
     });
 
     test('.getAt()', () {
-      var keystore = Keystore({0: BoxEntry('zero'), 'a': BoxEntry('A')});
+      var keystore = Keystore(
+        entries: {0: BoxEntry('zero'), 'a': BoxEntry('A')},
+      );
       var box = getBox(keystore: keystore);
 
       expect(box.getAt(-1, defaultValue: 123), 123);
@@ -85,20 +91,23 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(false);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.put('key1', 'value1');
         verifyInOrder([
           keystore.beginAddTransaction({'key1': BoxEntry('value1')}),
           notifier.notify('key1', 'value1', false),
-          backend.writeFrame(const Frame('key1', 'value1'), BoxEntry('value1')),
+          backend.writeFrame(Frame('key1', 'value1'), BoxEntry('value1')),
           keystore.commitTransaction(),
+          backend.compact(any),
         ]);
       });
 
@@ -122,8 +131,7 @@ void main() {
         verifyInOrder([
           keystore.beginAddTransaction({'key1': BoxEntry('newValue')}),
           notifier.notify('key1', 'newValue', false),
-          backend.writeFrame(
-              const Frame('key1', 'newValue'), BoxEntry('newValue')),
+          backend.writeFrame(Frame('key1', 'newValue'), BoxEntry('newValue')),
           keystore.cancelTransaction(),
           keystore.get('key1'),
           notifier.notify('key1', 'oldValue', false),
@@ -154,12 +162,14 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.delete('key1');
@@ -167,8 +177,9 @@ void main() {
           keystore.containsKey('key1'),
           keystore.beginDeleteTransaction(['key1']),
           notifier.notify('key1', null, true),
-          backend.writeFrame(const Frame.deleted('key1'), null),
+          backend.writeFrame(Frame.deleted('key1'), null),
           keystore.commitTransaction(),
+          backend.compact(any)
         ]);
       });
     });
@@ -178,12 +189,14 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(false);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
@@ -195,10 +208,11 @@ void main() {
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
           backend.writeFrames(
-            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
+            [Frame('key1', 'value1'), Frame('key2', 'value2')],
             [BoxEntry('value1'), BoxEntry('value2')],
           ),
           keystore.commitTransaction(),
+          backend.compact(any),
         ]);
       });
 
@@ -230,7 +244,7 @@ void main() {
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
           backend.writeFrames(
-            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
+            [Frame('key1', 'value1'), Frame('key2', 'value2')],
             [BoxEntry('value1'), BoxEntry('value2')],
           ),
           keystore.cancelTransaction(),
@@ -248,6 +262,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(keystore.containsKey(any)).thenReturn(false);
+
         var box = getBox(
           backend: backend,
           keystore: keystore,
@@ -263,12 +278,14 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
+        when(backend.supportsCompaction).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
           backend: backend,
           keystore: keystore,
           notifier: notifier,
+          cStrategy: (a, b) => true,
         );
 
         await box.deleteAll(['key1', 'key2']);
@@ -279,21 +296,24 @@ void main() {
           notifier.notify('key1', null, true),
           notifier.notify('key2', null, true),
           backend.writeFrames(
-            [const Frame.deleted('key1'), const Frame.deleted('key2')],
+            [Frame.deleted('key1'), Frame.deleted('key2')],
             null,
           ),
           keystore.commitTransaction(),
+          backend.compact(any),
         ]);
       });
     });
 
     test('.toMap()', () {
       var box = getBox(
-        keystore: Keystore({
-          'key1': BoxEntry(1, 0, 0),
-          'key2': BoxEntry(2, 0, 0),
-          'key4': BoxEntry(444, 0, 0),
-        }),
+        keystore: Keystore(
+          entries: {
+            'key1': BoxEntry(1, 0, 0),
+            'key2': BoxEntry(2, 0, 0),
+            'key4': BoxEntry(444, 0, 0),
+          },
+        ),
       );
       expect(box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
     });

@@ -17,6 +17,7 @@ abstract class HiveInterface implements TypeRegistry {
   Future<Box> openBox(
     String name, {
     List<int> encryptionKey,
+    KeyComparator keyComparator,
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
     bool lazy = false,
@@ -39,6 +40,9 @@ abstract class HiveInterface implements TypeRegistry {
   /// Generates a secure encryption key using the fortuna random algorithm.
   List<int> generateSecureKey();
 }
+
+///
+typedef KeyComparator = int Function(dynamic key1, dynamic key2);
 
 /// A function which decides when to compact a box.
 typedef CompactionStrategy = bool Function(int entries, int deletedEntries);

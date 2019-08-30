@@ -1,10 +1,19 @@
 ## 0.5.0
 - Added `keyComparator` parameter for custom key order
-- Fix compaction
+- Added `isEmpty` and `isNotEmpty` getters to box
+- Added support for reading and writing subclasses
+- Removed length limitation for Lists, Maps and Strings
+- Greatly improved performance of storing Uint8Lists in browser
+- Removed CRC check in browser (not needed)
+- Improved documentation
+- TypeIds are now allowed in the range of 0-223
+- Fixed compaction
+- Fixed writing longer Strings
+- **Breaking:** Binary format changed
 
 ## 0.4.1+1
 - Document all public APIs
-- Fix flutter_web error
+- Fixed flutter_web error
 
 ## 0.4.1
 - Allow different versions of the `path` package
