@@ -9,7 +9,6 @@ dependencies:
     sdk: flutter
 
   hive_flutter: any
-
   path_provider: ^1.2.0
 
 flutter:
