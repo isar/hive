@@ -21,7 +21,7 @@
     * [Modelling data](generate_adapter.md)
     * [Hive & Flutter](register_adapter.md)
     * [When to use Hive](type_adapters.md)
-
+* [Examples](examples.md)
 * [Browser support](browser.md)
 * [Frequently Asked Questions](faq.md)
 * [Limitations](limitations.md)
