@@ -11,6 +11,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   @override
   final String name;
 
+  @visibleForTesting
   @protected
   final HiveImpl hive;
 
@@ -82,11 +83,8 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     return keystore.keyAt(index);
   }
 
-  Future<void> initialize() async {
-    var entries = <dynamic, BoxEntry>{};
-    var deleted =
-        await backend.initialize(this, entries, lazy, options.crashRecovery);
-    keystore.addAll(entries, deleted);
+  Future<void> initialize() {
+    return backend.initialize(this, keystore, lazy, options.crashRecovery);
   }
 
   @override

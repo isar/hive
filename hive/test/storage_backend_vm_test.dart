@@ -77,14 +77,14 @@ void main() {
 
         var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
 
-        var entries = <String, BoxEntry>{};
-        var deleted = await backend.initialize(null, entries, false, false);
+        var keystore = Keystore();
+        await backend.initialize(null, keystore, false, false);
 
-        expect(entries, {
+        expect(keystore.entries, {
           'key1': BoxEntry(null, 3, 3),
           'key3': BoxEntry('value3', 10, 5),
         });
-        expect(deleted, 2);
+        expect(keystore.deletedEntries, 2);
       });
 
       test('lazy', () async {
@@ -102,14 +102,14 @@ void main() {
 
         var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
 
-        var entries = <String, BoxEntry>{};
-        var deleted = await backend.initialize(null, entries, true, false);
+        var keystore = Keystore();
+        await backend.initialize(null, keystore, true, false);
 
-        expect(entries, {
+        expect(keystore.entries, {
           'key1': BoxEntry(null, 3, 3),
           'key3': BoxEntry(null, 10, 5),
         });
-        expect(deleted, 2);
+        expect(keystore.deletedEntries, 2);
       });
     });
 
