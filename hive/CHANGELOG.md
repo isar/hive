@@ -1,3 +1,10 @@
+## 0.5.0+1
+- Fixed `Hive.init()` bug in browser
+- Fixed bug with large lists or strings
+- Improved box opening time in browser
+- Improved docs
+- Added tests
+
 ## 0.5.0
 - Added `keyComparator` parameter for custom key order
 - Added `isEmpty` and `isNotEmpty` getters to box
@@ -33,8 +40,6 @@
 - **Breaking:** Temporarily removed support for transactions. New API design needed. Will be coming back in a future version.
 - **Breaking:** Binary format changed
 - **Breaking:** API changes
-
-*Note: This is probably the last version that breaks binary format. From version 1.0.0 onwards, there will be no breaking changes at all.*
 
 ## 0.3.0+1
 - Bugfix: `Hive['yourBox']` didn't work with uppercase box names

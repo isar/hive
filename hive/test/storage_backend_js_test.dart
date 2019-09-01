@@ -153,9 +153,9 @@ void main() {
         var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
-        var entries = <String, BoxEntry>{};
-        expect(await backend.initialize(null, entries, false, false), 0);
-        expect(entries,
+        var keystore = Keystore();
+        expect(await backend.initialize(null, keystore, false, false), 0);
+        expect(keystore.entries,
             {'key1': BoxEntry(1), 'key2': BoxEntry(null), 'key3': BoxEntry(3)});
       });
 
@@ -163,9 +163,9 @@ void main() {
         var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = StorageBackendJs(db, null);
 
-        var entries = <String, BoxEntry>{};
-        expect(await backend.initialize(null, entries, true, false), 0);
-        expect(entries, {
+        var keystore = Keystore();
+        expect(await backend.initialize(null, keystore, true, false), 0);
+        expect(keystore.entries, {
           'key1': BoxEntry(null),
           'key2': BoxEntry(null),
           'key3': BoxEntry(null)

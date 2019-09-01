@@ -82,7 +82,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
     }
 
-    var backend = await openBackend(path, name, crypto);
+    var backend = await openBackend(this, name, crypto);
     BoxBase box;
     if (options.lazy) {
       box = LazyBoxImpl(this, name, options, backend);

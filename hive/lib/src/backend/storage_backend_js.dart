@@ -13,7 +13,7 @@ import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
 
 Future<StorageBackend> openBackend(
-    String path, String name, CryptoHelper crypto) async {
+    HiveInterface hive, String name, CryptoHelper crypto) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
@@ -101,11 +101,11 @@ class StorageBackendJs extends StorageBackend {
     return completer.future;
   }
 
-  Future<List<dynamic>> getValues() {
-    var completer = Completer<List<dynamic>>();
+  Future<Iterable<dynamic>> getValues() {
+    var completer = Completer<Iterable<dynamic>>();
     var request = getStore(false).getAll(null);
     request.onSuccess.listen((_) {
-      var values = (request.result as List).map(decodeValue).toList();
+      var values = (request.result as List).map(decodeValue);
       completer.complete(values);
     });
     request.onError.listen((_) {
@@ -115,18 +115,19 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(TypeRegistry registry, Map<dynamic, BoxEntry> entries,
-      bool lazy, bool crashRecovery) async {
+  Future<int> initialize(TypeRegistry registry, Keystore keystore, bool lazy,
+      bool crashRecovery) async {
     _registry = registry;
     var keys = await getKeys();
     if (!lazy) {
+      var i = 0;
       var values = await getValues();
-      for (var i = 0; i < keys.length; i++) {
-        entries[keys[i]] = BoxEntry(values[i], null, null);
+      for (var value in values) {
+        keystore.add(keys[i++], BoxEntry(value));
       }
     } else {
-      for (var i = 0; i < keys.length; i++) {
-        entries[keys[i]] = BoxEntry(null);
+      for (var key in keys) {
+        keystore.add(key, BoxEntry(null));
       }
     }
 
