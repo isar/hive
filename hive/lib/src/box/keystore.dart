@@ -77,6 +77,22 @@ class Keystore {
     return map;
   }
 
+  void add(dynamic key, BoxEntry entry) {
+    if (entries.containsKey(key)) {
+      _deletedEntries++;
+    }
+    if (key is int && key > _autoIncrement) {
+      _autoIncrement = key;
+    }
+    entries[key] = entry;
+  }
+
+  void delete(dynamic key) {
+    if (entries.remove(key) != null) {
+      _deletedEntries++;
+    }
+  }
+
   void addAll(Map<dynamic, BoxEntry> newEntries, [int deletedEntries = 0]) {
     _deletedEntries += deletedEntries;
     for (var key in newEntries.keys) {

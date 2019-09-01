@@ -97,12 +97,10 @@ void main() {
       var box = BoxBaseMock(backend: backend);
 
       when(backend.initialize(any, any, any, any)).thenAnswer((i) async {
-        i.positionalArguments[1]['key1'] = BoxEntry(1);
-        return 2;
+        i.positionalArguments[1].add('key1', BoxEntry(1));
       });
 
       await box.initialize();
-      expect(box.keystore.deletedEntries, 2);
       expect(box.keystore.toValueMap(), {'key1': 1});
     });
 

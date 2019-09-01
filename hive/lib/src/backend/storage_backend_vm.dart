@@ -14,8 +14,8 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 Future<StorageBackend> openBackend(
-    String path, String name, CryptoHelper crypto) async {
-  var file = await findHiveFileAndCleanUp(name, path);
+    HiveInterface hive, String name, CryptoHelper crypto) async {
+  var file = await findHiveFileAndCleanUp(name, hive.path);
 
   var syncedFile = SyncedFile(file.path);
   await syncedFile.open();
@@ -76,8 +76,8 @@ class StorageBackendVm extends StorageBackend {
   bool supportsCompaction = true;
 
   @override
-  Future<int> initialize(TypeRegistry registry, Map<dynamic, BoxEntry> entries,
-      bool lazy, bool crashRecovery) async {
+  Future<void> initialize(TypeRegistry registry, Keystore keystore, bool lazy,
+      bool crashRecovery) async {
     _registry = registry;
     var frames = <Frame>[];
     int recoveryOffset;
@@ -90,6 +90,7 @@ class StorageBackendVm extends StorageBackend {
 
     if (recoveryOffset != null) {
       if (crashRecovery) {
+        print('Recovering corrupted box.');
         await _file.truncate(recoveryOffset);
       } else {
         throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
@@ -97,24 +98,15 @@ class StorageBackendVm extends StorageBackend {
     }
 
     var offset = 0;
-    var deletedEntries = 0;
     for (var frame in frames) {
-      var key = frame.key;
       if (!frame.deleted) {
-        if (entries.containsKey(key)) {
-          deletedEntries++;
-        }
-        entries[key] = BoxEntry(frame.value, offset, frame.length);
+        var entry = BoxEntry(frame.value, offset, frame.length);
+        keystore.add(frame.key, entry);
       } else {
-        if (entries.remove(key) != null) {
-          deletedEntries++;
-        }
+        keystore.delete(frame.key);
       }
-
       offset += frame.length;
     }
-
-    return deletedEntries;
   }
 
   @override
