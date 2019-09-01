@@ -74,6 +74,11 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            if (isBrowser)
+              Text('Refresh this tab to test persistence')
+            else
+              Text('Restart the app to test persistence'),
+            SizedBox(height: 8),
             Text('You have pushed the button this many times:'),
             WatchBoxBuilder(
               box: _box,
@@ -87,12 +92,27 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _box.put('counter', _box.get('counter', defaultValue: 0) + 1);
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            onPressed: () {
+              _box.put('counter', _box.get('counter', defaultValue: 0) - 1);
+            },
+            tooltip: 'Decrement',
+            child: Icon(Icons.remove),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              _box.put('counter', _box.get('counter', defaultValue: 0) + 1);
+            },
+            tooltip: 'Increment',
+            child: Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
