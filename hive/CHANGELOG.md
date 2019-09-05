@@ -1,6 +1,6 @@
 ## 0.5.1
 - Fixed `Hive.init()` bug in browser
-- Fixed bug with large lists or strings
+- Fixed a bug with large lists or strings
 - Improved box opening time in browser
 - Improved general write performance
 - Improved docs
