@@ -1,3 +1,6 @@
+## 0.4.0+2
+- Support for Lists and Maps in strong mode
+
 ## 0.4.0+1
 - Support for enums
 - Sanity checks
