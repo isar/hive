@@ -4,6 +4,7 @@ set -eu
 cd hive
 
 pub get
-pub run test -p "$TEST_PLATFORM"
 
-dartfmt -n --set-exit-if-changed ./lib ./test ./example || exit 1
+dartfmt -n --set-exit-if-changed ./lib ./test || exit 1
+
+pub run test -p "$TEST_PLATFORM"
