@@ -29,7 +29,7 @@ void main() {
       var numberStr = '123456789123456789';
       var writer = BinaryWriterImpl(null);
       BigIntAdapter().write(writer, BigInt.parse(numberStr));
-      expect(writer.output(), [numberStr.length, ...numberStr.codeUnits]);
+      expect(writer.toBytes(), [numberStr.length, ...numberStr.codeUnits]);
     });
   });
 }

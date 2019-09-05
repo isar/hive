@@ -34,13 +34,11 @@ BoxImpl getBox({
 void main() {
   group('BoxImpl', () {
     test('.values', () {
-      var keystore = Keystore(
-        entries: {
-          0: BoxEntry(123),
-          'key1': BoxEntry('value1'),
-          1: BoxEntry(null),
-        },
-      );
+      var keystore = Keystore.debug([
+        Frame(0, 123),
+        Frame('key1', 'value1'),
+        Frame(1, null),
+      ]);
       var box = getBox(keystore: keystore);
 
       expect(box.values, [123, null, 'value1']);
@@ -60,12 +58,10 @@ void main() {
         var backend = BackendMock();
         var box = getBox(
           backend: backend,
-          keystore: Keystore(
-            entries: {
-              'testKey': BoxEntry('testVal'),
-              123: BoxEntry(456),
-            },
-          ),
+          keystore: Keystore.debug([
+            Frame('testKey', 'testVal'),
+            Frame(123, 456),
+          ]),
         );
 
         expect(box.get('testKey'), 'testVal');
@@ -75,9 +71,7 @@ void main() {
     });
 
     test('.getAt()', () {
-      var keystore = Keystore(
-        entries: {0: BoxEntry('zero'), 'a': BoxEntry('A')},
-      );
+      var keystore = Keystore.debug([Frame(0, 'zero'), Frame('a', 'A')]);
       var box = getBox(keystore: keystore);
 
       expect(box.getAt(-1, defaultValue: 123), 123);
@@ -92,6 +86,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(backend.supportsCompaction).thenReturn(true);
+        when(backend.compact(any)).thenAnswer((i) async => []);
         when(keystore.containsKey(any)).thenReturn(false);
 
         var box = getBox(
@@ -103,9 +98,9 @@ void main() {
 
         await box.put('key1', 'value1');
         verifyInOrder([
-          keystore.beginAddTransaction({'key1': BoxEntry('value1')}),
+          keystore.beginAddTransaction([Frame('key1', 'value1')]),
           notifier.notify('key1', 'value1', false),
-          backend.writeFrame(Frame('key1', 'value1'), BoxEntry('value1')),
+          backend.writeFrame(Frame('key1', 'value1')),
           keystore.commitTransaction(),
           backend.compact(any),
         ]);
@@ -116,9 +111,9 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
 
-        when(backend.writeFrame(any, any)).thenThrow('Some error');
+        when(backend.writeFrame(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
-        when(keystore.get(any)).thenReturn(BoxEntry('oldValue'));
+        when(keystore.get(any)).thenReturn(Frame('key1', 'oldValue'));
 
         var box = getBox(
           backend: backend,
@@ -129,9 +124,9 @@ void main() {
         expect(
             () async => await box.put('key1', 'newValue'), throwsA(anything));
         verifyInOrder([
-          keystore.beginAddTransaction({'key1': BoxEntry('newValue')}),
+          keystore.beginAddTransaction([Frame('key1', 'newValue')]),
           notifier.notify('key1', 'newValue', false),
-          backend.writeFrame(Frame('key1', 'newValue'), BoxEntry('newValue')),
+          backend.writeFrame(Frame('key1', 'newValue')),
           keystore.cancelTransaction(),
           keystore.get('key1'),
           notifier.notify('key1', 'oldValue', false),
@@ -163,6 +158,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(backend.supportsCompaction).thenReturn(true);
+        when(backend.compact(any)).thenAnswer((i) async => []);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
@@ -177,7 +173,7 @@ void main() {
           keystore.containsKey('key1'),
           keystore.beginDeleteTransaction(['key1']),
           notifier.notify('key1', null, true),
-          backend.writeFrame(Frame.deleted('key1'), null),
+          backend.writeFrame(Frame.deleted('key1')),
           keystore.commitTransaction(),
           backend.compact(any)
         ]);
@@ -190,6 +186,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(backend.supportsCompaction).thenReturn(true);
+        when(backend.compact(any)).thenAnswer((i) async => []);
         when(keystore.containsKey(any)).thenReturn(false);
 
         var box = getBox(
@@ -201,16 +198,16 @@ void main() {
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
         verifyInOrder([
-          keystore.beginAddTransaction({
-            'key1': BoxEntry('value1'),
-            'key2': BoxEntry('value2'),
-          }),
+          keystore.beginAddTransaction([
+            Frame('key1', 'value1'),
+            Frame('key2', 'value2'),
+          ]),
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
-          backend.writeFrames(
-            [Frame('key1', 'value1'), Frame('key2', 'value2')],
-            [BoxEntry('value1'), BoxEntry('value2')],
-          ),
+          backend.writeFrames([
+            Frame('key1', 'value1'),
+            Frame('key2', 'value2'),
+          ]),
           keystore.commitTransaction(),
           backend.compact(any),
         ]);
@@ -221,10 +218,11 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
 
-        when(backend.writeFrames(any, any)).thenThrow('Some error');
+        when(backend.writeFrames(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
         var n = 1;
-        when(keystore.get(any)).thenAnswer((i) => BoxEntry('oldValue${n++}'));
+        when(keystore.get(any))
+            .thenAnswer((i) => Frame('key$n', 'oldValue${n++}'));
 
         var box = getBox(
           backend: backend,
@@ -237,16 +235,16 @@ void main() {
           throwsA(anything),
         );
         verifyInOrder([
-          keystore.beginAddTransaction({
-            'key1': BoxEntry('value1'),
-            'key2': BoxEntry('value2'),
-          }),
+          keystore.beginAddTransaction([
+            Frame('key1', 'value1'),
+            Frame('key2', 'value2'),
+          ]),
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
-          backend.writeFrames(
-            [Frame('key1', 'value1'), Frame('key2', 'value2')],
-            [BoxEntry('value1'), BoxEntry('value2')],
-          ),
+          backend.writeFrames([
+            Frame('key1', 'value1'),
+            Frame('key2', 'value2'),
+          ]),
           keystore.cancelTransaction(),
           keystore.get('key1'),
           notifier.notify('key1', 'oldValue1', false),
@@ -279,6 +277,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
         when(backend.supportsCompaction).thenReturn(true);
+        when(backend.compact(any)).thenAnswer((i) async => []);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
@@ -295,10 +294,10 @@ void main() {
           keystore.beginDeleteTransaction(['key1', 'key2']),
           notifier.notify('key1', null, true),
           notifier.notify('key2', null, true),
-          backend.writeFrames(
-            [Frame.deleted('key1'), Frame.deleted('key2')],
-            null,
-          ),
+          backend.writeFrames([
+            Frame.deleted('key1'),
+            Frame.deleted('key2'),
+          ]),
           keystore.commitTransaction(),
           backend.compact(any),
         ]);
@@ -307,13 +306,11 @@ void main() {
 
     test('.toMap()', () {
       var box = getBox(
-        keystore: Keystore(
-          entries: {
-            'key1': BoxEntry(1, 0, 0),
-            'key2': BoxEntry(2, 0, 0),
-            'key4': BoxEntry(444, 0, 0),
-          },
-        ),
+        keystore: Keystore.debug([
+          Frame('key1', 1),
+          Frame('key2', 2),
+          Frame('key4', 444),
+        ]),
       );
       expect(box.toMap(), {'key1': 1, 'key2': 2, 'key4': 444});
     });

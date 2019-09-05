@@ -7,29 +7,36 @@ import 'package:hive/src/registry/type_registry_impl.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
+  final ByteData _byteData;
   final int _bufferLength;
-  final ByteData _data;
   final TypeRegistryImpl typeRegistry;
+
+  int _bufferLimit;
   int _offset = 0;
 
   BinaryReaderImpl(this._buffer, TypeRegistry typeRegistry, [int bufferLength])
-      : typeRegistry = typeRegistry as TypeRegistryImpl,
+      : _byteData = ByteData.view(_buffer.buffer, _buffer.offsetInBytes),
         _bufferLength = bufferLength ?? _buffer.length,
-        _data = ByteData.view(_buffer.buffer, _buffer.offsetInBytes,
-            bufferLength ?? _buffer.length);
-
-  int get _bufferOffset => _buffer.offsetInBytes + _offset;
+        _bufferLimit = bufferLength ?? _buffer.length,
+        typeRegistry = typeRegistry as TypeRegistryImpl;
 
   @override
-  int get availableBytes => _bufferLength - _offset;
+  int get availableBytes => _bufferLimit - _offset;
 
   @override
   int get usedBytes => _offset;
 
-  Uint8List get buffer => _buffer;
+  void limitAvailableBytes(int bytes) {
+    _requireBytes(bytes);
+    _bufferLimit = _offset + bytes;
+  }
+
+  void resetLimit() {
+    _bufferLimit = _bufferLength;
+  }
 
   void _requireBytes(int bytes) {
-    if (_bufferLength - _offset < bytes) {
+    if (_offset + bytes > _bufferLimit) {
       throw RangeError('Not enough bytes available.');
     }
   }
@@ -49,9 +56,17 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   Uint8List viewBytes(int bytes) {
     _requireBytes(bytes);
-    var view = Uint8List.view(_buffer.buffer, _bufferOffset, bytes);
+    var view =
+        Uint8List.view(_buffer.buffer, _buffer.offsetInBytes + _offset, bytes);
     _offset += bytes;
     return view;
+  }
+
+  @override
+  Uint8List peekBytes(int bytes) {
+    _requireBytes(bytes);
+    return Uint8List.view(
+        _buffer.buffer, _buffer.offsetInBytes + _offset, bytes);
   }
 
   @override
@@ -63,7 +78,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   int readInt32() {
     _requireBytes(4);
-    var value = _data.getInt32(_offset, Endian.little);
+    var value = _byteData.getInt32(_offset, Endian.little);
     _offset += 4;
     return value;
   }
@@ -85,7 +100,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   double readDouble() {
     _requireBytes(8);
-    var value = _data.getFloat64(_offset, Endian.little);
+    var value = _byteData.getFloat64(_offset, Endian.little);
     _offset += 8;
     return value;
   }
@@ -128,7 +143,7 @@ class BinaryReaderImpl extends BinaryReader {
     _requireBytes(length * 8);
     var list = <int>[]..length = length;
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getFloat64(_offset, Endian.little).toInt();
+      list[i] = _byteData.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
     }
     return list;
@@ -140,7 +155,7 @@ class BinaryReaderImpl extends BinaryReader {
     _requireBytes(length * 8);
     var list = <double>[]..length = length;
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getFloat64(_offset, Endian.little);
+      list[i] = _byteData.getFloat64(_offset, Endian.little);
       _offset += 8;
     }
     return list;

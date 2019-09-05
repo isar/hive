@@ -1,9 +1,10 @@
-## 0.5.0+1
+## 0.5.1
 - Fixed `Hive.init()` bug in browser
 - Fixed bug with large lists or strings
 - Improved box opening time in browser
+- Improved general write performance
 - Improved docs
-- Added tests
+- Added integration tests
 
 ## 0.5.0
 - Added `keyComparator` parameter for custom key order

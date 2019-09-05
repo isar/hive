@@ -33,7 +33,7 @@ void main() {
         for (var frame in testFrames) {
           var writer = BinaryWriterImpl(testRegistry);
           Frame.encodeValue(frame.value, writer, null);
-          expect(writer.output(), frameValuesBytes[i]);
+          expect(writer.toBytes(), frameValuesBytes[i]);
           i++;
         }
       });
@@ -43,7 +43,7 @@ void main() {
         for (var frame in testFrames) {
           var writer = BinaryWriterImpl(testRegistry);
           Frame.encodeValue(frame.value, writer, testCrypto);
-          expect(writer.output(), frameValuesBytesEncrypted[i]);
+          expect(writer.toBytes(), frameValuesBytesEncrypted[i]);
           i++;
         }
       });
