@@ -21,6 +21,8 @@ abstract class BinaryReader {
   /// Get a [Uint8List] view from
   Uint8List viewBytes(int bytes);
 
+  Uint8List peekBytes(int bytes);
+
   /// Read two bytes as 16-bit unsigned integer.
   int readWord();
 

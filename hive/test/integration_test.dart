@@ -130,5 +130,37 @@ void main() {
 
       test('lazy box', () async => performTest(true));
     });
+
+    group('delete many entries', () {
+      Future performTest(bool lazy) async {
+        var amount = isBrowser ? 1000 : 20000;
+        var box = await getBox(lazy);
+        for (var i = 0; i < amount; i++) {
+          await box.put('string$i', 'test');
+          await box.put('int$i', -i);
+          await box.put('bool$i', i % 2 == 0);
+        }
+        await box.put('123123', 'value');
+
+        box = await reopenBox(box);
+        for (var i = 0; i < amount; i++) {
+          await box.delete('string$i');
+          await box.delete('int$i');
+          await box.delete('bool$i');
+        }
+
+        box = await reopenBox(box);
+        for (var i = 0; i < amount; i++) {
+          expect(box.containsKey('string$i'), false);
+          expect(box.containsKey('int$i'), false);
+          expect(box.containsKey('bool$i'), false);
+        }
+        await box.close();
+      }
+
+      test('normal box', () async => performTest(false));
+
+      test('lazy box', () async => performTest(true));
+    });
   }, timeout: longTimeout);
 }

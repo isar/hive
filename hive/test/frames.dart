@@ -91,25 +91,25 @@ final testFrames = <Frame>[
 
 Frame frameWithLength(Frame frame, int length) {
   if (frame.deleted) {
-    return Frame.deleted(frame.key, length);
+    return Frame.deleted(frame.key, length: length);
   } else {
-    return Frame(frame.key, frame.value, length);
+    return Frame(frame.key, frame.value, length: length);
   }
 }
 
 Frame frameBodyWithLength(Frame frame, int length) {
   if (frame.deleted) {
-    return Frame.deleted(null, length);
+    return Frame.deleted(null, length: length);
   } else {
-    return Frame(null, frame.value, length);
+    return Frame(null, frame.value, length: length);
   }
 }
 
 Frame lazyFrameWithLength(Frame frame, int length) {
   if (frame.deleted) {
-    return Frame.deleted(frame.key, length);
+    return Frame.deleted(frame.key, length: length);
   } else {
-    return Frame.lazy(frame.key, length);
+    return Frame.lazy(frame.key, length: length);
   }
 }
 
@@ -147,7 +147,7 @@ void buildGoldens() async {
   await generate('frame_values', 'frameValuesBytes', (f) {
     var writer = BinaryWriterImpl(HiveImpl());
     Frame.encodeValue(f.value, writer, null);
-    return writer.output();
+    return writer.toBytes();
   });
   await generate('frames_encrypted', 'frameBytesEncrypted', (f) {
     return f.toBytes(HiveImpl(), testCrypto);
@@ -155,6 +155,6 @@ void buildGoldens() async {
   await generate('frame_values_encrypted', 'frameValuesBytesEncrypted', (f) {
     var writer = BinaryWriterImpl(HiveImpl());
     Frame.encodeValue(f.value, writer, testCrypto);
-    return writer.output();
+    return writer.toBytes();
   });
 }

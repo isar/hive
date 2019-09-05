@@ -37,7 +37,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     this.backend, [
     Keystore keystore,
     ChangeNotifier notifier,
-  ])  : keystore = keystore ?? Keystore(keyComparator: options.keyComparator),
+  ])  : keystore = keystore ?? Keystore(options.keyComparator),
         notifier = notifier ?? ChangeNotifier(),
         super(hive);
 
@@ -125,13 +125,13 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     checkOpen();
 
     await backend.clear();
-    var oldEntries = keystore.clear();
+    var oldFrames = keystore.clear();
 
-    for (var key in oldEntries.keys) {
-      notifier.notify(key, null, true);
+    for (var frame in oldFrames) {
+      notifier.notify(frame.key, null, true);
     }
 
-    return oldEntries.length;
+    return oldFrames.length;
   }
 
   @override
@@ -141,10 +141,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     if (!backend.supportsCompaction) return;
     if (keystore.deletedEntries == 0) return;
 
-    var oldEntries = keystore.clear();
-    var newEntries = await backend.compact(oldEntries);
+    var oldFrames = keystore.clear();
+    var newFrames = await backend.compact(oldFrames);
 
-    keystore.addAll(newEntries);
+    for (var frame in newFrames) {
+      keystore.add(frame);
+    }
   }
 
   @protected

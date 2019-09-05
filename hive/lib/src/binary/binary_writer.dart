@@ -5,9 +5,6 @@ abstract class BinaryWriter {
   /// The UTF-8 encoder is used to encode Strings.
   static const utf8Encoder = Utf8Encoder();
 
-  /// The number of written bytes.
-  int get writtenBytes;
-
   /// Write a single byte.
   void writeByte(int byte);
 

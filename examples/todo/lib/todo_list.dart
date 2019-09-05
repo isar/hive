@@ -62,8 +62,6 @@ class TodoList extends StatelessWidget {
               iconSize: 30,
               icon: Icon(Icons.delete),
               onPressed: () {
-                var box = Hive.box('todos');
-                var keys = box.toMap();
                 Hive.box('todos').delete(todo.id);
               },
             ),

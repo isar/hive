@@ -65,7 +65,8 @@ void main() {
         for (var frame in testFrames) {
           var buffer = backend.encodeValue(frame.value) as ByteBuffer;
           var bytes = Uint8List.view(buffer);
-          expect(bytes, [0x90, 0xA9, ...frameValuesBytesEncrypted[i]]);
+          expect(bytes.sublist(28),
+              [0x90, 0xA9, ...frameValuesBytesEncrypted[i]].sublist(28));
           i++;
         }
       });
@@ -81,7 +82,7 @@ void main() {
 
           var writer = BinaryWriterImpl(null);
           Frame.encodeValue(map, writer, null);
-          expect(encoded, [0x90, 0xA9, ...writer.output()]);
+          expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
 
         test('bytes which start with signature', () {
@@ -92,7 +93,7 @@ void main() {
 
           var writer = BinaryWriterImpl(null);
           Frame.encodeValue(bytes, writer, null);
-          expect(encoded, [0x90, 0xA9, ...writer.output()]);
+          expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
       });
     });
@@ -155,8 +156,11 @@ void main() {
 
         var keystore = Keystore();
         expect(await backend.initialize(null, keystore, false, false), 0);
-        expect(keystore.entries,
-            {'key1': BoxEntry(1), 'key2': BoxEntry(null), 'key3': BoxEntry(3)});
+        expect(keystore.frames, {
+          'key1': Frame('key1', 1),
+          'key2': Frame('key2', null),
+          'key3': Frame('key3', 3),
+        });
       });
 
       test('lazy', () async {
@@ -165,10 +169,10 @@ void main() {
 
         var keystore = Keystore();
         expect(await backend.initialize(null, keystore, true, false), 0);
-        expect(keystore.entries, {
-          'key1': BoxEntry(null),
-          'key2': BoxEntry(null),
-          'key3': BoxEntry(null)
+        expect(keystore.frames, {
+          'key1': Frame.lazy('key1'),
+          'key2': Frame.lazy('key2'),
+          'key3': Frame.lazy('key3'),
         });
       });
     });
@@ -177,30 +181,23 @@ void main() {
       var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
       var backend = StorageBackendJs(db, null);
 
-      expect(await backend.readValue('key1', null, null), 1);
-      expect(await backend.readValue('key2', null, null), null);
-    });
-
-    test('.readAll()', () async {
-      var db = await getDbWith({'key1': 1, 'key2': null, 'key3': 3});
-      var backend = StorageBackendJs(db, null);
-
-      expect(await backend.readAll(), {'key1': 1, 'key2': null, 'key3': 3});
+      expect(await backend.readValue(Frame('key1', null)), 1);
+      expect(await backend.readValue(Frame('key2', null)), null);
     });
 
     test('.writeFrame()', () async {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entry = BoxEntry(null);
-      await backend.writeFrame(Frame('key1', 123), entry);
-      expect(entry, BoxEntry(null));
+      var frame = Frame('key1', 123);
+      await backend.writeFrame(frame);
+      expect(frame, Frame('key1', 123));
       expect(await backend.getKeys(), ['key1']);
 
-      await backend.writeFrame(Frame('key2', null), entry);
+      await backend.writeFrame(Frame('key2', null));
       expect(await backend.getKeys(), ['key1', 'key2']);
 
-      await backend.writeFrame(Frame.deleted('key1'), entry);
+      await backend.writeFrame(Frame.deleted('key1'));
       expect(await backend.getKeys(), ['key2']);
     });
 
@@ -208,13 +205,13 @@ void main() {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);
 
-      var entries = [BoxEntry(null), BoxEntry(null)];
-      await backend.writeFrames([
-        Frame('key1', 123),
-        Frame('key2', null),
-      ], entries);
-      expect(entries, [BoxEntry(null), BoxEntry(null)]);
+      var frames = [Frame('key1', 123), Frame('key2', null)];
+      await backend.writeFrames(frames);
+      expect(frames, [Frame('key1', 123), Frame('key2', null)]);
       expect(await backend.getKeys(), ['key1', 'key2']);
+
+      await backend.writeFrames([Frame.deleted('key1')]);
+      expect(await backend.getKeys(), ['key2']);
     });
 
     test('.compact()', () async {

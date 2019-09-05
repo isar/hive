@@ -13,15 +13,13 @@ abstract class StorageBackend {
   Future<void> initialize(
       TypeRegistry registry, Keystore keystore, bool lazy, bool crashRecovery);
 
-  Future<dynamic> readValue(dynamic key, int offset, int length);
+  Future<dynamic> readValue(Frame frame);
 
-  Future<Map<dynamic, dynamic>> readAll();
+  Future<void> writeFrame(Frame frame);
 
-  Future<void> writeFrame(Frame frame, BoxEntry entry);
+  Future<void> writeFrames(List<Frame> frames);
 
-  Future<void> writeFrames(List<Frame> frames, Iterable<BoxEntry> entries);
-
-  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries);
+  Future<List<Frame>> compact(Iterable<Frame> frames);
 
   Future<void> clear();
 

@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:io';
 
 import 'package:hive/hive.dart';
@@ -100,8 +99,8 @@ class StorageBackendVm extends StorageBackend {
     var offset = 0;
     for (var frame in frames) {
       if (!frame.deleted) {
-        var entry = BoxEntry(frame.value, offset, frame.length);
-        keystore.add(frame.key, entry);
+        frame.offset = offset;
+        keystore.add(frame);
       } else {
         keystore.delete(frame.key);
       }
@@ -110,39 +109,21 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(dynamic key, int offset, int length) async {
-    var bytes = await _file.readAt(offset, length);
-    var frame = Frame.fromBytes(bytes, _registry, _crypto);
-    return frame.value;
+  Future<dynamic> readValue(Frame frame) async {
+    var bytes = await _file.readAt(frame.offset, frame.length);
+    var readFrame = Frame.fromBytes(bytes, _registry, _crypto);
+    return readFrame.value;
   }
 
   @override
-  Future<Map<dynamic, dynamic>> readAll() async {
-    var frames = <Frame>[];
-    await _file.writeLock.synchronized(() {
-      return _helper.framesFromFile(path, frames, _registry, _crypto);
-    });
-
-    var map = <dynamic, dynamic>{};
-    for (var frame in frames) {
-      map[frame.key] = frame.value;
-    }
-    return map;
-  }
-
-  @override
-  Future<void> writeFrame(Frame frame, BoxEntry entry) async {
+  Future<void> writeFrame(Frame frame) async {
     var bytes = frame.toBytes(_registry, _crypto);
-    var offset = await _file.write(bytes);
-    if (entry != null) {
-      entry.offset = offset;
-      entry.length = bytes.length;
-    }
+    frame.offset = await _file.write(bytes);
+    frame.length = bytes.length;
   }
 
   @override
-  Future<void> writeFrames(
-      List<Frame> frames, Iterable<BoxEntry> entries) async {
+  Future<void> writeFrames(List<Frame> frames) async {
     var bytes = BytesBuilder(copy: false);
     var lengths = <int>[];
     for (var frame in frames) {
@@ -153,18 +134,16 @@ class StorageBackendVm extends StorageBackend {
 
     var offset = await _file.write(bytes.toBytes());
 
-    if (entries != null) {
-      var i = 0;
-      for (var entry in entries) {
-        entry.offset = offset;
-        entry.length = lengths[i++];
-        offset += entry.length;
-      }
+    var i = 0;
+    for (var frame in frames) {
+      frame.offset = offset;
+      frame.length = lengths[i++];
+      offset += frame.length;
     }
   }
 
   @override
-  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) async {
+  Future<List<Frame>> compact(Iterable<Frame> frames) async {
     var boxRaf = await File(path).open();
     var reader = BufferedFileReader(boxRaf);
 
@@ -172,11 +151,11 @@ class StorageBackendVm extends StorageBackend {
     var compactRaf = await compactFile.open(mode: FileMode.write);
     var writer = BufferedFileWriter(compactRaf);
 
-    Map<dynamic, BoxEntry> newEntries;
+    List<Frame> newFrames;
     try {
       await _file.readLock.synchronized(() {
         return _file.writeLock.synchronized(() async {
-          newEntries = await compactInternal(entries, reader, writer);
+          newFrames = await compactInternal(frames, reader, writer);
         });
       });
     } finally {
@@ -187,34 +166,41 @@ class StorageBackendVm extends StorageBackend {
     await _file.close();
     await compactFile.rename(path);
     await _file.open();
-    return newEntries;
+    return newFrames;
   }
 
   @visibleForTesting
-  Future<Map<dynamic, BoxEntry>> compactInternal(
-    Map<dynamic, BoxEntry> entries,
+  Future<List<Frame>> compactInternal(
+    Iterable<Frame> frames,
     BufferedFileReader reader,
     BufferedFileWriter writer,
   ) async {
-    var newEntries = HashMap<dynamic, BoxEntry>();
+    var sortedFrames = frames.toList();
+    sortedFrames.sort((a, b) => a.offset.compareTo(b.offset));
+
+    var newFrames = <Frame>[];
     var compactOffset = 0;
-    for (var key in entries.keys) {
-      var entry = entries[key];
-      if (entry.offset != reader.offset) {
-        await reader.skip(entry.offset - reader.offset);
+    for (var frame in sortedFrames) {
+      if (frame.offset != reader.offset) {
+        await reader.skip(frame.offset - reader.offset);
       }
-      var frameBytes = await reader.read(entry.length);
-      if (frameBytes.length != entry.length) {
+      var frameBytes = await reader.read(frame.length);
+      if (frameBytes.length != frame.length) {
         throw HiveError('Could not compact box: Unexpected EOF.');
       }
       await writer.write(frameBytes);
 
-      newEntries[key] = BoxEntry(entry.value, compactOffset, entry.length);
-      compactOffset += entry.length;
+      newFrames.add(Frame(
+        frame.key,
+        frame.value,
+        length: frame.length,
+        offset: compactOffset,
+      ));
+      compactOffset += frame.length;
     }
     await writer.flush();
 
-    return newEntries;
+    return newFrames;
   }
 
   @override
