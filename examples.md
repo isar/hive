@@ -1,6 +1,6 @@
 # Apps that show how to use Hive
 
-## Hive To-Do App
+## Hive To-Do
  * Link to website: [Click Here](https://leisim.github.io/hive/demos/todo/)
  * Link to Source Code: [Click Here](https://github.com/leisim/hive/tree/master/examples/todo)
  
