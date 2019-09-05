@@ -13,192 +13,211 @@ void main() {
   group('BinaryWriter', () {
     test('.writeByte()', () {
       var bw = getWriter();
-
       bw.writeByte(0);
-      expect(bw.writtenBytes, 1);
-      expect(bw.outputAndClear(), [0]);
+      expect(bw.toBytes(), [0]);
 
+      bw = getWriter();
       bw.writeByte(17);
-      expect(bw.outputAndClear(), [17]);
+      expect(bw.toBytes(), [17]);
 
+      bw = getWriter();
       bw.writeByte(255);
-      expect(bw.outputAndClear(), [255]);
+      expect(bw.toBytes(), [255]);
 
+      bw = getWriter();
       bw.writeByte(257);
-      expect(bw.outputAndClear(), [1]);
+      expect(bw.toBytes(), [1]);
 
       expect(() => bw.writeByte(null), throwsA(anything));
     });
 
     test('.writeWord()', () {
       var bw = getWriter();
-
       bw.writeWord(0);
-      expect(bw.writtenBytes, 2);
-      expect(bw.outputAndClear(), [0, 0]);
+      expect(bw.toBytes(), [0, 0]);
 
+      bw = getWriter();
       bw.writeWord(256);
-      expect(bw.outputAndClear(), [0, 1]);
+      expect(bw.toBytes(), [0, 1]);
 
+      bw = getWriter();
       bw.writeWord(65535);
-      expect(bw.outputAndClear(), [255, 255]);
+      expect(bw.toBytes(), [255, 255]);
 
+      bw = getWriter();
       bw.writeWord(65536);
-      expect(bw.outputAndClear(), [0, 0]);
+      expect(bw.toBytes(), [0, 0]);
 
       expect(() => bw.writeWord(null), throwsA(anything));
     });
 
     test('.writeInt32()', () {
       var bd = ByteData(4);
-      var bw = getWriter();
 
+      var bw = getWriter();
       bw.writeInt32(0);
       bd.setInt32(0, 0, Endian.little);
-      expect(bw.writtenBytes, 4);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt32(1);
       bd.setInt32(0, 1, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt32(-1);
       bd.setInt32(0, -1, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt32(65535);
       bd.setInt32(0, 65535, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt32(65536);
       bd.setInt32(0, 65536, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt32(-65536);
       bd.setInt32(0, -65536, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt32(-65537);
       bd.setInt32(0, -65537, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
       expect(() => bw.writeInt32(null), throwsA(anything));
     });
 
     test('.writeUint32()', () {
       var bd = ByteData(4);
-      var bw = getWriter();
 
+      var bw = getWriter();
       bw.writeUint32(0);
       bd.setUint32(0, 0, Endian.little);
-      expect(bw.writtenBytes, 4);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeUint32(1);
       bd.setUint32(0, 1, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeUint32(2147483647);
       bd.setUint32(0, 2147483647, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeUint32(-2147483648);
       bd.setUint32(0, -2147483648, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
       expect(() => bw.writeUint32(null), throwsA(anything));
     });
 
     test('.writeInt()', () {
       var bd = ByteData(8);
-      var bw = getWriter();
 
+      var bw = getWriter();
       bw.writeInt(0);
       bd.setFloat64(0, 0, Endian.little);
-      expect(bw.writtenBytes, 8);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt(1);
       bd.setFloat64(0, 1, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt(-1);
       bd.setFloat64(0, -1, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt(2 ^ 53);
       bd.setFloat64(0, (2 ^ 53).toDouble(), Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeInt(-2 ^ 53);
       bd.setFloat64(0, (-2 ^ 53).toDouble(), Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
       expect(() => bw.writeInt(null), throwsA(anything));
     });
 
     test('.writeDouble()', () {
       var bd = ByteData(8);
-      var bw = getWriter();
 
+      var bw = getWriter();
       bw.writeDouble(0);
       bd.setFloat64(0, 0, Endian.little);
-      expect(bw.writtenBytes, 8);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeDouble(16.399483);
       bd.setFloat64(0, 16.399483, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeDouble(double.nan);
       bd.setFloat64(0, double.nan, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeDouble(double.infinity);
       bd.setFloat64(0, double.infinity, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeDouble(double.negativeInfinity);
       bd.setFloat64(0, double.negativeInfinity, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeDouble(double.maxFinite);
       bd.setFloat64(0, double.maxFinite, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
+      bw = getWriter();
       bw.writeDouble(double.minPositive);
       bd.setFloat64(0, double.minPositive, Endian.little);
-      expect(bw.outputAndClear(), bytes(bd));
+      expect(bw.toBytes(), bytes(bd));
 
       expect(() => bw.writeDouble(null), throwsA(anything));
     });
 
     test('.writeBool()', () {
       var bw = getWriter();
-
       bw.writeBool(true);
-      expect(bw.outputAndClear(), [1]);
+      expect(bw.toBytes(), [1]);
 
+      bw = getWriter();
       bw.writeBool(false);
-      expect(bw.outputAndClear(), [0]);
+      expect(bw.toBytes(), [0]);
 
       expect(() => bw.writeBool(null), throwsA(anything));
     });
 
     test('.writeAsciiString()', () {
       var bw = getWriter();
-
       bw.writeAsciiString('');
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeAsciiString('', writeLength: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeAsciiString('T.,r \n');
-      expect(bw.outputAndClear(), [6, 0, 0, 0, 84, 46, 44, 114, 32, 10]);
+      expect(bw.toBytes(), [6, 0, 0, 0, 84, 46, 44, 114, 32, 10]);
 
+      bw = getWriter();
       bw.writeAsciiString('T.,r \n', writeLength: false);
-      expect(bw.outputAndClear(), [84, 46, 44, 114, 32, 10]);
+      expect(bw.toBytes(), [84, 46, 44, 114, 32, 10]);
 
       expect(() => bw.writeAsciiString('😍'), throwsA(anything));
       expect(() => bw.writeAsciiString(null), throwsA(anything));
@@ -206,21 +225,23 @@ void main() {
 
     test('.writeString()', () {
       var bw = getWriter();
-
       bw.writeString('');
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeString('', writeByteCount: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeString('𠁠🇬🇵');
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         12, 0, 0, 0, 0xf0, 0xa0, 0x81, 0xa0, 0xf0, //
         0x9f, 0x87, 0xac, 0xf0, 0x9f, 0x87, 0xb5 //
       ]);
 
+      bw = getWriter();
       bw.writeString('👨‍👨‍👧‍👦', writeByteCount: false);
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         0xf0, 0x9f, 0x91, 0xa8, 0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa8, //
         0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa7, 0xe2, 0x80, 0x8d, 0xf0, //
         0x9f, 0x91, 0xa6 //
@@ -231,111 +252,121 @@ void main() {
 
     test('.writeByteList()', () {
       var bw = getWriter();
-
       bw.writeByteList([]);
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeByteList([], writeLength: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeByteList([1, 2, 3, 4]);
-      expect(bw.outputAndClear(), [4, 0, 0, 0, 1, 2, 3, 4]);
+      expect(bw.toBytes(), [4, 0, 0, 0, 1, 2, 3, 4]);
 
+      bw = getWriter();
       bw.writeByteList([1, 2, 3, 4], writeLength: false);
-      expect(bw.outputAndClear(), [1, 2, 3, 4]);
+      expect(bw.toBytes(), [1, 2, 3, 4]);
 
       expect(() => bw.writeByteList(null), throwsA(anything));
     });
 
     test('.writeIntList()', () {
       var bw = getWriter();
-
       bw.writeIntList([]);
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeIntList([], writeLength: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeIntList([1, 2]);
-      expect(bw.outputAndClear(),
+      expect(bw.toBytes(),
           [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
 
+      bw = getWriter();
       bw.writeIntList([1, 2], writeLength: false);
-      expect(bw.outputAndClear(),
-          [0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
+      expect(
+          bw.toBytes(), [0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
 
       expect(() => bw.writeIntList(null), throwsA(anything));
     });
 
     test('.writeDoubleList()', () {
       var bw = getWriter();
-
       bw.writeDoubleList([]);
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeDoubleList([], writeLength: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeDoubleList([1.0]);
-      expect(bw.outputAndClear(), [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63]);
+      expect(bw.toBytes(), [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63]);
 
+      bw = getWriter();
       bw.writeDoubleList([1.0], writeLength: false);
-      expect(bw.outputAndClear(), [0, 0, 0, 0, 0, 0, 240, 63]);
+      expect(bw.toBytes(), [0, 0, 0, 0, 0, 0, 240, 63]);
 
       expect(() => bw.writeDoubleList(null), throwsA(anything));
     });
 
     test('.writeBoolList()', () {
       var bw = getWriter();
-
       bw.writeBoolList([]);
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeBoolList([], writeLength: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeBoolList([true, false, true]);
-      expect(bw.outputAndClear(), [3, 0, 0, 0, 1, 0, 1]);
+      expect(bw.toBytes(), [3, 0, 0, 0, 1, 0, 1]);
 
+      bw = getWriter();
       bw.writeBoolList([true, false, true], writeLength: false);
-      expect(bw.outputAndClear(), [1, 0, 1]);
+      expect(bw.toBytes(), [1, 0, 1]);
 
       expect(() => bw.writeBoolList(null), throwsA(anything));
     });
 
     test('.writeStringList()', () {
       var bw = getWriter();
-
       bw.writeStringList([]);
-      expect(bw.outputAndClear(), [0, 0, 0, 0]);
+      expect(bw.toBytes(), [0, 0, 0, 0]);
 
+      bw = getWriter();
       bw.writeStringList([], writeLength: false);
-      expect(bw.outputAndClear(), []);
+      expect(bw.toBytes(), []);
 
+      bw = getWriter();
       bw.writeStringList(['a', '🧙‍♂️']);
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         2, 0, 0, 0, 1, 0, 0, 0, 97, 13, 0, 0, 0, 0xf0, 0x9f, 0xa7, //
         0x99, 0xe2, 0x80, 0x8d, 0xe2, 0x99, 0x82, 0xef, 0xb8, 0x8f //
       ]);
 
+      bw = getWriter();
       bw.writeStringList(['a', 'ab'], writeLength: false);
-      expect(bw.outputAndClear(), [1, 0, 0, 0, 97, 2, 0, 0, 0, 97, 98]);
+      expect(bw.toBytes(), [1, 0, 0, 0, 97, 2, 0, 0, 0, 97, 98]);
 
       expect(() => bw.writeBoolList(null), throwsA(anything));
     });
 
     test('.writeList()', () {
       var bw = getWriter();
-
       bw.writeList(<dynamic>['h', true]);
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         2, 0, 0, 0, //
         FrameValueType.stringT.index, 1, 0, 0, 0, 0x68, //
         FrameValueType.boolT.index, 1 //
       ]);
 
+      bw = getWriter();
       bw.writeList(<dynamic>['h', true], writeLength: false);
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         FrameValueType.stringT.index, 1, 0, 0, 0, 0x68, //
         FrameValueType.boolT.index, 1 //
       ]);
@@ -343,9 +374,8 @@ void main() {
 
     test('.writeMap()', () {
       var bw = getWriter();
-
       bw.writeMap({true: 'h', 'hi': true});
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         2, 0, 0, 0, //
         FrameValueType.boolT.index, 1, //
         FrameValueType.stringT.index, 1, 0, 0, 0, 0x68, //
@@ -353,8 +383,9 @@ void main() {
         FrameValueType.boolT.index, 1 //
       ]);
 
+      bw = getWriter();
       bw.writeMap({true: 'h', 'hi': true}, writeLength: false);
-      expect(bw.outputAndClear(), [
+      expect(bw.toBytes(), [
         FrameValueType.boolT.index, 1, //
         FrameValueType.stringT.index, 1, 0, 0, 0, 0x68, //
         FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69, //
@@ -365,66 +396,67 @@ void main() {
     group('.write()', () {
       test('null', () {
         var bw = getWriter();
-
         bw.write(null, writeTypeId: false);
-        expect(bw.outputAndClear(), []);
+        expect(bw.toBytes(), []);
 
+        bw = getWriter();
         bw.write(null, writeTypeId: true);
-        expect(bw.outputAndClear(), [FrameValueType.nullT.index]);
+        expect(bw.toBytes(), [FrameValueType.nullT.index]);
       });
 
       test('int', () {
         var bd = ByteData(8)..setFloat64(0, 12345, Endian.little);
+
         var bw = getWriter();
-
         bw.write(12345, writeTypeId: false);
-        expect(bw.outputAndClear(), bytes(bd));
+        expect(bw.toBytes(), bytes(bd));
 
+        bw = getWriter();
         bw.write(12345, writeTypeId: true);
-        expect(bw.outputAndClear(), [FrameValueType.intT.index, ...bytes(bd)]);
+        expect(bw.toBytes(), [FrameValueType.intT.index, ...bytes(bd)]);
       });
 
       test('double', () {
         var bd = ByteData(8)..setFloat64(0, 123.456, Endian.little);
+
         var bw = getWriter();
-
         bw.write(123.456, writeTypeId: false);
-        expect(bw.outputAndClear(), bytes(bd));
+        expect(bw.toBytes(), bytes(bd));
 
+        bw = getWriter();
         bw.write(123.456, writeTypeId: true);
-        expect(
-            bw.outputAndClear(), [FrameValueType.doubleT.index, ...bytes(bd)]);
+        expect(bw.toBytes(), [FrameValueType.doubleT.index, ...bytes(bd)]);
       });
 
       test('bool', () {
         var bw = getWriter();
-
         bw.write(true, writeTypeId: false);
-        expect(bw.outputAndClear(), [1]);
+        expect(bw.toBytes(), [1]);
 
+        bw = getWriter();
         bw.write(true, writeTypeId: true);
-        expect(bw.outputAndClear(), [FrameValueType.boolT.index, 1]);
+        expect(bw.toBytes(), [FrameValueType.boolT.index, 1]);
       });
 
       test('string', () {
         var bw = getWriter();
-
         bw.write('hi', writeTypeId: false);
-        expect(bw.outputAndClear(), [2, 0, 0, 0, 0x68, 0x69]);
+        expect(bw.toBytes(), [2, 0, 0, 0, 0x68, 0x69]);
 
+        bw = getWriter();
         bw.write('hi', writeTypeId: true);
-        expect(bw.outputAndClear(),
+        expect(bw.toBytes(),
             [FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69]);
       });
 
       test('byte list', () {
         var bw = getWriter();
-
         bw.write(Uint8List.fromList([1, 2, 3, 4]), writeTypeId: false);
-        expect(bw.outputAndClear(), [4, 0, 0, 0, 1, 2, 3, 4]);
+        expect(bw.toBytes(), [4, 0, 0, 0, 1, 2, 3, 4]);
 
+        bw = getWriter();
         bw.write(Uint8List.fromList([1, 2, 3, 4]), writeTypeId: true);
-        expect(bw.outputAndClear(),
+        expect(bw.toBytes(),
             [FrameValueType.byteListT.index, 4, 0, 0, 0, 1, 2, 3, 4]);
       });
 
@@ -433,14 +465,14 @@ void main() {
           ..setUint32(0, 2, Endian.little)
           ..setFloat64(4, 123, Endian.little)
           ..setFloat64(12, 45, Endian.little);
+
         var bw = getWriter();
-
         bw.write([123, 45], writeTypeId: false);
-        expect(bw.outputAndClear(), bytes(bd));
+        expect(bw.toBytes(), bytes(bd));
 
+        bw = getWriter();
         bw.write([123, 45], writeTypeId: true);
-        expect(
-            bw.outputAndClear(), [FrameValueType.intListT.index, ...bytes(bd)]);
+        expect(bw.toBytes(), [FrameValueType.intListT.index, ...bytes(bd)]);
       });
 
       test('double list', () {
@@ -448,14 +480,14 @@ void main() {
           ..setUint32(0, 2, Endian.little)
           ..setFloat64(4, 123.456, Endian.little)
           ..setFloat64(12, 456.321, Endian.little);
+
         var bw = getWriter();
-
         bw.write([123.456, 456.321], writeTypeId: false);
-        expect(bw.outputAndClear(), bytes(bd));
+        expect(bw.toBytes(), bytes(bd));
 
+        bw = getWriter();
         bw.write([123.456, 456.321], writeTypeId: true);
-        expect(bw.outputAndClear(),
-            [FrameValueType.doubleListT.index, ...bytes(bd)]);
+        expect(bw.toBytes(), [FrameValueType.doubleListT.index, ...bytes(bd)]);
       });
 
       test('bool list', () {
@@ -463,28 +495,28 @@ void main() {
           ..setUint32(0, 2, Endian.little)
           ..setUint8(4, 0)
           ..setUint8(5, 1);
+
         var bw = getWriter();
-
         bw.write([false, true], writeTypeId: false);
-        expect(bw.outputAndClear(), bytes(bd));
+        expect(bw.toBytes(), bytes(bd));
 
+        bw = getWriter();
         bw.write([false, true], writeTypeId: true);
-        expect(bw.outputAndClear(),
-            [FrameValueType.boolListT.index, ...bytes(bd)]);
+        expect(bw.toBytes(), [FrameValueType.boolListT.index, ...bytes(bd)]);
       });
 
       test('string list', () {
         var bw = getWriter();
-
         bw.write(['h', 'hi'], writeTypeId: false);
-        expect(bw.outputAndClear(), [
+        expect(bw.toBytes(), [
           2, 0, 0, 0, //
           1, 0, 0, 0, 0x68, //
           2, 0, 0, 0, 0x68, 0x69, //
         ]);
 
+        bw = getWriter();
         bw.write(['h', 'hi'], writeTypeId: true);
-        expect(bw.outputAndClear(), [
+        expect(bw.toBytes(), [
           FrameValueType.stringListT.index, 2, 0, 0, 0, //
           1, 0, 0, 0, 0x68, //
           2, 0, 0, 0, 0x68, 0x69, //
@@ -499,13 +531,14 @@ void main() {
           ..setUint8(13, FrameValueType.intT.index)
           ..setFloat64(14, 45, Endian.little)
           ..setUint8(22, FrameValueType.nullT.index);
+
         var bw = getWriter();
-
         bw.write([123, 45, null], writeTypeId: false);
-        expect(bw.outputAndClear(), bytes(bd));
+        expect(bw.toBytes(), bytes(bd));
 
+        bw = getWriter();
         bw.write([123, 45, null], writeTypeId: true);
-        expect(bw.outputAndClear(), [FrameValueType.listT.index, ...bytes(bd)]);
+        expect(bw.toBytes(), [FrameValueType.listT.index, ...bytes(bd)]);
       });
     });
   });

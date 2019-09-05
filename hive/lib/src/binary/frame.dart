@@ -9,12 +9,13 @@ import 'package:hive/src/util/crc32.dart';
 class Frame {
   final dynamic key;
   final dynamic value;
-
-  final int length;
   final bool deleted;
   final bool lazy;
 
-  Frame(this.key, this.value, [this.length])
+  int length;
+  int offset;
+
+  Frame(this.key, this.value, {this.length, this.offset})
       : lazy = false,
         deleted = false,
         assert(
@@ -22,16 +23,17 @@ class Frame {
                 (key is String && key.length <= 255),
             'Unsupported key');
 
-  Frame.deleted(this.key, [this.length])
+  Frame.deleted(this.key, {this.length})
       : value = null,
         lazy = false,
         deleted = true,
+        offset = null,
         assert(
             (key is int && key >= 0 && key < 4294967295) ||
                 (key is String && key.length <= 255),
             'Unsupported key');
 
-  Frame.lazy(this.key, [this.length])
+  Frame.lazy(this.key, {this.length, this.offset})
       : value = null,
         lazy = true,
         deleted = false,
@@ -42,7 +44,7 @@ class Frame {
 
   static Frame fromBytes(
       Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
-    var lengthBytes = Uint8List.view(bytes.buffer, 0, 4);
+    var lengthBytes = Uint8List.view(bytes.buffer, 0, 4).toList();
     var frameBytes = Uint8List.view(bytes.buffer, 4);
     if (!checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
       throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
@@ -69,12 +71,12 @@ class Frame {
     }
 
     if (reader.availableBytes == 0) {
-      return Frame.deleted(key, frameLength);
+      return Frame.deleted(key, length: frameLength);
     } else if (lazy) {
-      return Frame.lazy(key, frameLength);
+      return Frame.lazy(key, length: frameLength);
     } else {
       var value = decodeValue(reader, crypto);
-      return Frame(key, value, frameLength);
+      return Frame(key, value, length: frameLength);
     }
   }
 
@@ -125,7 +127,7 @@ class Frame {
     writer
         .writeByteList([0, 0, 0, 0], writeLength: false); // Placeholder for CRC
 
-    var bytes = writer.output();
+    var bytes = writer.toBytes();
 
     var byteData = ByteData.view(bytes.buffer);
     byteData.setUint32(0, bytes.length, Endian.little); // Write length
@@ -144,7 +146,7 @@ class Frame {
       writer.write(value); // Write value
     } else {
       var valueWriter = BinaryWriterImpl(writer.typeRegistry)..write(value);
-      var encryptedValue = crypto.encrypt(valueWriter.output());
+      var encryptedValue = crypto.encrypt(valueWriter.toBytes());
       writer.writeByteList(encryptedValue, writeLength: false);
     }
   }
@@ -171,6 +173,18 @@ class Frame {
           deleted == other.deleted;
     } else {
       return false;
+    }
+  }
+
+  @override
+  String toString() {
+    if (deleted) {
+      return 'Frame.deleted(key: $key, length: $length)';
+    } else if (lazy) {
+      return 'Frame.lazy(key: $key, length: $length, offset: $offset)';
+    } else {
+      return 'Frame(key: $key, value: $value, '
+          'length: $length, offset: $offset)';
     }
   }
 }

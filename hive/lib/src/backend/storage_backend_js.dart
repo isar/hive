@@ -64,7 +64,10 @@ class StorageBackendJs extends StorageBackend {
     var frameWriter = BinaryWriterImpl(_registry);
     frameWriter.writeByteList([0x90, 0xA9], writeLength: false);
     Frame.encodeValue(value, frameWriter, _crypto);
-    return frameWriter.output().buffer;
+
+    var bytes = frameWriter.toBytes();
+    var sublist = bytes.sublist(0, bytes.length) as Uint8List;
+    return sublist.buffer;
   }
 
   @visibleForTesting
@@ -72,7 +75,7 @@ class StorageBackendJs extends StorageBackend {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
       if (_isEncoded(bytes)) {
-        var frameReader = BinaryReaderImpl(bytes, _registry, bytes.length);
+        var frameReader = BinaryReaderImpl(bytes, _registry);
         frameReader.skip(2);
         return Frame.decodeValue(frameReader, _crypto);
       } else {
@@ -123,11 +126,12 @@ class StorageBackendJs extends StorageBackend {
       var i = 0;
       var values = await getValues();
       for (var value in values) {
-        keystore.add(keys[i++], BoxEntry(value));
+        var key = keys[i++];
+        keystore.add(Frame(key, value));
       }
     } else {
       for (var key in keys) {
-        keystore.add(key, BoxEntry(null));
+        keystore.add(Frame(key, null));
       }
     }
 
@@ -135,20 +139,13 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(dynamic key, int offset, int length) async {
-    var value = await getStore(false).getObject(key);
+  Future<dynamic> readValue(Frame frame) async {
+    var value = await getStore(false).getObject(frame.key);
     return decodeValue(value);
   }
 
   @override
-  Future<Map<dynamic, dynamic>> readAll() async {
-    var keys = await getKeys();
-    var values = await getValues();
-    return Map<dynamic, dynamic>.fromIterables(keys, values);
-  }
-
-  @override
-  Future<void> writeFrame(Frame frame, BoxEntry entry) async {
+  Future<void> writeFrame(Frame frame) async {
     if (frame.deleted) {
       await getStore(true).delete(frame.key);
     } else {
@@ -157,8 +154,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<void> writeFrames(
-      List<Frame> frames, Iterable<BoxEntry> entries) async {
+  Future<void> writeFrames(List<Frame> frames) async {
     var store = getStore(true);
     for (var frame in frames) {
       if (frame.deleted) {
@@ -170,7 +166,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) {
+  Future<List<Frame>> compact(Iterable<Frame> frames) {
     throw UnsupportedError('Not supported');
   }
 
