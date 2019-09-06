@@ -12,20 +12,20 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
       Element element, ConstantReader annotation, BuildStep buildStep) {
     var cls = getClass(element);
     var fields = getFields(cls);
-    var type = element.name;
-    var adapterName = getAdapterName(type, annotation);
+    var adapterName = getAdapterName(cls.name, annotation);
     var builder =
-        cls.isEnum ? EnumBuilder(type, fields) : ClassBuilder(type, fields);
+        cls.isEnum ? EnumBuilder(cls, fields) : ClassBuilder(cls, fields);
+
     return '''
 
-    class $adapterName extends TypeAdapter<$type> {
+    class $adapterName extends TypeAdapter<${cls.name}> {
       @override
-      $type read(BinaryReader reader) {
+      ${cls.name} read(BinaryReader reader) {
         ${builder.buildRead()}
       }
 
       @override
-      void write(BinaryWriter writer, $type obj) {
+      void write(BinaryWriter writer, ${cls.name} obj) {
         ${builder.buildWrite()}
       }
     }
@@ -40,11 +40,6 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
 
     check(!cls.isAbstract,
         'Classes annotated with @HiveType must not be abstract.');
-
-    var hasDefaultConstructor =
-        cls.constructors.any((it) => it.isDefaultConstructor);
-    check(hasDefaultConstructor || cls.isEnum,
-        'Classes annotated with @HiveType must have a default constructor.');
 
     return cls;
   }
