@@ -22,6 +22,7 @@
     * [Hive & Flutter](hive_and_flutter.md)
     * [When to use Hive](when_to_use_hive.md)
 
+* [Examples](examples.md)
 * [Browser support](browser.md)
 * [Frequently Asked Questions](faq.md)
 * [Limitations](limitations.md)
