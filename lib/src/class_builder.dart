@@ -45,7 +45,7 @@ class ClassBuilder extends Builder {
       if (param.isNamed) {
         code.write('${param.name}: ');
       }
-      code.writeln('fields[$index] as ${param.type.name},');
+      code.writeln('${_cast(param.type, 'fields[$index]')},');
     }
 
     code.writeln(')');
@@ -55,8 +55,8 @@ class ClassBuilder extends Builder {
     for (var entry in remainingFields.entries) {
       var field = entry.key;
       var index = entry.value;
-      var type = fields[index].type.name;
-      code.writeln('..$field = fields[$index] as $type');
+      var type = fields[index].type;
+      code.writeln('..$field = ${_cast(type, 'fields[$index]')}');
     }
 
     code.writeln(';');
@@ -112,13 +112,15 @@ class ClassBuilder extends Builder {
   @override
   String buildWrite() {
     var code = StringBuffer();
-    code.writeln('writer.writeByte(${fields.length});');
+    code.writeln('writer');
+    code.writeln('..writeByte(${fields.length})');
     fields.forEach((index, field) {
       var value = _convertIterable(field.type, 'obj.${field.name}');
       code.writeln('''
-      writer.writeByte($index);
-      writer.write($value);''');
+      ..writeByte($index)
+      ..write($value)''');
     });
+    code.writeln(';');
 
     return code.toString();
   }
