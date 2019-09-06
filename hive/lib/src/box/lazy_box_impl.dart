@@ -106,7 +106,7 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
   }
 
   @override
-  Future<void> deleteAll(List<dynamic> keys) async {
+  Future<void> deleteAll(Iterable<dynamic> keys) async {
     checkOpen();
 
     var frames = <Frame>[];

@@ -131,15 +131,43 @@ void main() {
       test('lazy box', () async => performTest(true));
     });
 
+    group('put many entries in a single batch', () {
+      Future performTest(bool lazy) async {
+        var amount = isBrowser ? 1000 : 20000;
+        var box = await getBox(lazy);
+        var entries = <String, dynamic>{};
+        for (var i = 0; i < amount; i++) {
+          entries['string$i'] = 'test';
+          entries['int$i'] = -i;
+          entries['bool$i'] = i % 2 == 0;
+        }
+        await box.putAll(entries);
+
+        box = await reopenBox(box);
+        for (var i = 0; i < amount; i++) {
+          expect(await box.get('string$i'), 'test');
+          expect(await box.get('int$i'), -i);
+          expect(await box.get('bool$i'), i % 2 == 0);
+        }
+        await box.close();
+      }
+
+      test('normal box', () async => performTest(false));
+
+      test('lazy box', () async => performTest(true));
+    });
+
     group('delete many entries', () {
       Future performTest(bool lazy) async {
         var amount = isBrowser ? 1000 : 20000;
         var box = await getBox(lazy);
+        var entries = <String, dynamic>{};
         for (var i = 0; i < amount; i++) {
-          await box.put('string$i', 'test');
-          await box.put('int$i', -i);
-          await box.put('bool$i', i % 2 == 0);
+          entries['string$i'] = 'test';
+          entries['int$i'] = -i;
+          entries['bool$i'] = i % 2 == 0;
         }
+        await box.putAll(entries);
         await box.put('123123', 'value');
 
         box = await reopenBox(box);
@@ -155,6 +183,38 @@ void main() {
           expect(box.containsKey('int$i'), false);
           expect(box.containsKey('bool$i'), false);
         }
+        expect(await box.get('123123'), 'value');
+        await box.close();
+      }
+
+      test('normal box', () async => performTest(false));
+
+      test('lazy box', () async => performTest(true));
+    });
+
+    group('delete many entries in a single batch', () {
+      Future performTest(bool lazy) async {
+        var amount = isBrowser ? 1000 : 20000;
+        var box = await getBox(lazy);
+        var entries = <String, dynamic>{};
+        for (var i = 0; i < amount; i++) {
+          entries['string$i'] = 'test';
+          entries['int$i'] = -i;
+          entries['bool$i'] = i % 2 == 0;
+        }
+        await box.putAll(entries);
+        await box.put('123123', 'value');
+
+        box = await reopenBox(box);
+        await box.deleteAll(entries.keys);
+
+        box = await reopenBox(box);
+        for (var i = 0; i < amount; i++) {
+          expect(box.containsKey('string$i'), false);
+          expect(box.containsKey('int$i'), false);
+          expect(box.containsKey('bool$i'), false);
+        }
+        expect(await box.get('123123'), 'value');
         await box.close();
       }
 
