@@ -2,7 +2,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:hive_generator/src/builder.dart';
 
 class EnumBuilder extends Builder {
-  EnumBuilder(String cls, Map<int, FieldElement> fields) : super(cls, fields);
+  EnumBuilder(ClassElement cls, Map<int, FieldElement> fields)
+      : super(cls, fields);
 
   @override
   String buildRead() {
@@ -12,7 +13,7 @@ class EnumBuilder extends Builder {
     fields.forEach((index, field) {
       code.writeln('''
         case $index:
-          return $cls.${field.name};''');
+          return ${cls.name}.${field.name};''');
     });
 
     code.writeln('''
@@ -30,7 +31,7 @@ class EnumBuilder extends Builder {
 
     fields.forEach((index, field) {
       code.writeln('''
-        case $cls.${field.name}:
+        case ${cls.name}.${field.name}:
           writer.writeByte($index);
           break;''');
     });
