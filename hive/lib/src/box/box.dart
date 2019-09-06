@@ -135,7 +135,7 @@ abstract class Box implements TypeRegistry {
   /// Deletes all the given [keys] from the box.
   ///
   /// If a key does not exist, it is being skipped.
-  Future<void> deleteAll(List<dynamic> keys);
+  Future<void> deleteAll(Iterable<dynamic> keys);
 
   /// Returns a map which contains all key - value pairs of the box.
   Map<dynamic, dynamic> toMap();

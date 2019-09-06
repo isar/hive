@@ -1,3 +1,6 @@
+## 0.5.2
+- Change `keys` parameter of `deleteAll` from `List` to `Iterable`
+
 ## 0.5.1
 - Fixed `Hive.init()` bug in browser
 - Fixed a bug with large lists or strings
