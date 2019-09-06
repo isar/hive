@@ -98,7 +98,7 @@ class BoxImpl extends BoxBase implements Box {
   }
 
   @override
-  Future<void> deleteAll(List<dynamic> keys) {
+  Future<void> deleteAll(Iterable<dynamic> keys) {
     checkOpen();
 
     var frames = <Frame>[];
