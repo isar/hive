@@ -9,27 +9,57 @@ class ClassBuilder extends Builder {
   var setChecker = const TypeChecker.fromRuntime(Set);
   var iterableChecker = const TypeChecker.fromRuntime(Iterable);
 
-  ClassBuilder(String cls, Map<int, FieldElement> fields) : super(cls, fields);
+  ClassBuilder(ClassElement cls, Map<int, FieldElement> fields)
+      : super(cls, fields);
 
   @override
   String buildRead() {
     var code = StringBuffer();
     code.writeln('''
-    var obj = $cls();
     var numOfFields = reader.readByte();
-    for (var i = 0; i < numOfFields; i++) {
-      switch(reader.readByte()) {''');
+    var fields = <int, dynamic>{
+      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return ${cls.name}(
+    ''');
 
-    fields.forEach((index, field) {
-      code.writeln('''
-        case $index:
-          obj.${field.name} = ${_cast(field.type, 'reader.read()')};
-          break;''');
-    });
+    var constructor = cls.constructors.firstWhere(
+      (constructor) => constructor.name.isEmpty,
+      orElse: () => throw AssertionError('Provide an unnamed constructor.'),
+    );
 
-    code.writeln('''
-    }}
-    return obj;''');
+    // The remaining fields to initialize.
+    var remainingFields = <String, int>{
+      for (var entry in fields.entries) entry.value.name: entry.key,
+    };
+
+    for (var param in constructor.parameters
+        .where((param) => param.isInitializingFormal)) {
+      var index = remainingFields.remove(param.name);
+      if (index == null) {
+        // This is a parameter of the form `this.field`, but it's not present
+        // in the binary encoding.
+        continue;
+      }
+
+      if (param.isNamed) {
+        code.write('${param.name}: ');
+      }
+      code.writeln('${_cast(param.type, 'fields[$index]')},');
+    }
+
+    code.writeln(')');
+
+    // There may still be fields to initialize that were not in the constructor
+    // as initializing formals. We do so using cascades.
+    for (var entry in remainingFields.entries) {
+      var field = entry.key;
+      var index = entry.value;
+      var type = fields[index].type;
+      code.writeln('..$field = ${_cast(type, 'fields[$index]')}');
+    }
+
+    code.writeln(';');
 
     return code.toString();
   }
@@ -82,13 +112,15 @@ class ClassBuilder extends Builder {
   @override
   String buildWrite() {
     var code = StringBuffer();
-    code.writeln('writer.writeByte(${fields.length});');
+    code.writeln('writer');
+    code.writeln('..writeByte(${fields.length})');
     fields.forEach((index, field) {
       var value = _convertIterable(field.type, 'obj.${field.name}');
       code.writeln('''
-      writer.writeByte($index);
-      writer.write($value);''');
+      ..writeByte($index)
+      ..write($value)''');
     });
+    code.writeln(';');
 
     return code.toString();
   }
