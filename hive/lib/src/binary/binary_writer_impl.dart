@@ -33,7 +33,7 @@ class BinaryWriterImpl extends BinaryWriter {
       // We will create a list in the range of 2-4 times larger than required.
       var newSize = _pow2roundup((_offset + count) * 2);
       var newBuffer = Uint8List(newSize);
-      newBuffer.setRange(0, _offset + 1, _buffer);
+      newBuffer.setRange(0, _offset, _buffer);
       _buffer = newBuffer;
       _byteDataInstance = null;
     }
