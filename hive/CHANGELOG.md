@@ -1,5 +1,6 @@
-## 0.5.2
+## 0.5.1+1
 - Change `keys` parameter of `deleteAll` from `List` to `Iterable`
+- Fixed bug in `BinaryWriter`
 
 ## 0.5.1
 - Fixed `Hive.init()` bug in browser
