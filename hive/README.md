@@ -73,10 +73,11 @@ The work on Hive has just started. If you want to contribute, it would be amazin
 - [x] Good test coverage
 - [x] Many examples, especially for Flutter
 - [x] Benchmarks and comparison
-- [ ] Finalize API
+- [x] Finalize API
+- [x] Even more tests
 - [ ] Improve documentation
 - [ ] Write binary format spec
-- [ ] Even more tests
+- [ ] You can never have enough tests
 
 ### Licence
 
