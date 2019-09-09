@@ -2,11 +2,10 @@
 
 The [hive_generator](https://pub.dev/packages/hive_generator) automatically generates `TypeAdapter`s for almost any class.
 
-1. Add `hive_generator` and `build_runner` to your `pubspec.yaml` (as `dev_dependency`)
-2. To generate a `TypeAdapter` for a class, annotate it with `@HiveType`
-3. Annotate all fields which should be stored with `@HiveField`
-4. Run build task `flutter packages pub run build_runner build`
-5. [Register](register_adapter.md) adapter
+1. To generate a `TypeAdapter` for a class, annotate it with `@HiveType`
+2. Annotate all fields which should be stored with `@HiveField`
+3. Run build task `flutter packages pub run build_runner build`
+4. [Register](register_adapter.md) adapter
 
 ### Example
 

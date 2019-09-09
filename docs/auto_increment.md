@@ -1,6 +1,6 @@
 # Auto increment & indices
 
-We already know that Hive supports integer keys. You can use auto increment keys if you like. This is very useful for storing and accessing multiple objects. You can use a Box like a list.
+We already know that Hive supports unsigned integer keys. You can use auto increment keys if you like. This is very useful for storing and accessing multiple objects. You can use a Box like a list.
 
 ```dart
 var friends = Hive.box('friends');
@@ -20,7 +20,9 @@ It is important to understand the difference of integer keys and indices.
 
 ```dart
 friends.putAt(2, 'Ben');
+```
 
+```dart
 frinds.put(123, 'Ben');
 ```
 

@@ -48,4 +48,4 @@ await box.put('hello', 'world');
 await box.close();
 ```
 
-Before your application exits, you should call `Hive.close()` to close all open boxes.
+Before your application exits, you should call `Hive.close()` to close all open boxes. Don't worry if the app is killed before you close Hive, it doesn't matter.

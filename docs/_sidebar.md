@@ -1,3 +1,5 @@
+* [Getting Started](getting_started.md)
+
 * Boxes
     * [What are boxes?](boxes.md)
     * [Lazy box](lazy_box.md)
