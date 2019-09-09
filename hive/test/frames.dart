@@ -89,6 +89,9 @@ final testFrames = <Frame>[
   Frame('BigInt Test', BigInt.parse('1234567890123456789012345678901234567890'))
 ];
 
+List<Frame> get valueTestFrames =>
+    testFrames.where((it) => !it.deleted).toList();
+
 Frame frameWithLength(Frame frame, int length) {
   if (frame.deleted) {
     return Frame.deleted(frame.key, length: length);
