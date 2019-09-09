@@ -1,3 +1,6 @@
+## 1.0.0
+- First stable release
+
 ## 0.5.1+1
 - Change `keys` parameter of `deleteAll` from `List` to `Iterable`
 - Fixed bug in `BinaryWriter`

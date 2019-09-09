@@ -1,15 +1,24 @@
 # Apps that show how to use Hive
 
+## Simple Counter
+
+This app works almost exactly like the hello world flutter app. But it will store the counter value in Hive.
+
+You can learn how to open Hive and use it's basic methods.
+
+ * [Flutter Web demo](https://leisim.github.io/hive/demos/counter/)
+ * [Source Code](https://github.com/leisim/hive/tree/master/examples/counter)
+
 ## Hive To-Do
 
- * Link to website: [Click Here](https://leisim.github.io/hive/demos/todo/)
- * Link to Source Code: [Click Here](https://github.com/leisim/hive/tree/master/examples/todo)
+This To-Do app has a generated TypeAdapter for the `Todo` class. It also stores the state of the app (sorting order of todos).
+
+ * [Flutter Web demo](https://leisim.github.io/hive/demos/todo/)
+ * [Source Code](https://github.com/leisim/hive/tree/master/examples/todo)
 
 ## Hive SketchPad
 
- * Link to website: [Click Here](https://leisim.github.io/hive/demos/sketchpad/)
- * Link to Source Code: [Click Here](https://github.com/leisim/hive/tree/master/examples/sketchpad)
+The sketchpad app uses a custom TypeAdapter to store the drawn path efficiently. It shows how even big data can be stored very fast.
 
-## Simple Counter
- * Link to website: [Click Here](https://leisim.github.io/hive/demos/counter/)
- * Link to Source Code: [Click Here](https://github.com/leisim/hive/tree/master/examples/counter)
+ * [Flutter Web demo](https://leisim.github.io/hive/demos/sketchpad/)
+ * [Source Code](https://github.com/leisim/hive/tree/master/examples/sketchpad)
