@@ -26,14 +26,14 @@ abstract class BinaryWriter {
   /// Write a boolean.
   void writeBool(bool value);
 
-  /// Encode the UTF-8 String [value] and write the bytes.
+  /// Encode the UTF-8 String [value] and write its bytes.
   void writeString(
     String value, {
     bool writeByteCount = true,
     Converter<String, List<int>> encoder = utf8Encoder,
   });
 
-  /// Encode the ASCII String [value] and write the bytes.
+  /// Encode the ASCII String [value] and write its bytes.
   void writeAsciiString(String value, {bool writeLength = true});
 
   /// Write a list of [bytes].

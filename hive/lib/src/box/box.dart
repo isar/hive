@@ -19,16 +19,14 @@ class BoxEvent {
 
 /// Boxes contain all of your data. In the browser, each box has its own
 /// IndexedDB database. On all other platforms, each Box is stored in a
-/// seperate file.
+/// seperate file in the Hive home directory.
 ///
-/// Write operations are asynchronous but change events are sent immeadiately.
-/// The new value are immeadiately available. The returned `Future` finishes
-/// when the change is written to the backend. If this operation fails, the
-/// change are being reverted.
+/// Write operations are asynchronous but the new values are immeadiately
+/// available. The returned `Future` finishes when the change is written to
+/// the backend. If this operation fails, the changes are being reverted.
 ///
-/// Read operations for normal boxes are
-/// synchronous (the entries are in memory). Lazy boxes have asynchronous read
-/// operations.
+/// Read operations for normal boxes are ynchronous (the entries are in
+/// memory). Lazy boxes have asynchronous read operations.
 abstract class Box implements TypeRegistry {
   /// The name of the box. Names are always lowercase.
   String get name;
@@ -92,34 +90,19 @@ abstract class Box implements TypeRegistry {
   dynamic getAt(int index, {dynamic defaultValue});
 
   /// Saves the [key] - [value] pair.
-  ///
-  /// The key is immeadiately associated with the new value and a change event
-  /// is sent instantly. The returned `Future` finishes when the change is
-  /// written to the disk.
-  /// If this operation fails, the change are being reverted.
   Future<void> put(dynamic key, dynamic value);
 
   /// Associates the [value] with the n-th key. An exception is raised if the
   /// key does not exist.
-  ///
-  /// The key is immeadiately associated with the new value and a change event
-  /// is sent instantly. The returned `Future` finishes when the change is
-  /// written to the disk.
-  /// If this operation fails, the change are being reverted.
   Future<void> putAt(int index, dynamic value);
 
   /// Saves all the key - value pairs in the [entries] map.
-  ///
-  /// The keys are immeadiately associated with the new values and change events
-  /// are sent instantly. The returned `Future` finishes when the changes are
-  /// written to the disk.
-  /// If this operation fails, the changes are being reverted.
   Future<void> putAll(Map<dynamic, dynamic> entries);
 
   /// Saves the [value] with an auto-increment key.
   Future<int> add(dynamic value);
 
-  /// Saves the [values] with auto-increment keys.
+  /// Saves all the [values] with auto-increment keys.
   Future<List<int>> addAll(List<dynamic> values);
 
   /// Deletes the given [key] from the box.
@@ -134,7 +117,7 @@ abstract class Box implements TypeRegistry {
 
   /// Deletes all the given [keys] from the box.
   ///
-  /// If a key does not exist, it is being skipped.
+  /// If a key does not exist, it is skipped.
   Future<void> deleteAll(Iterable<dynamic> keys);
 
   /// Returns a map which contains all key - value pairs of the box.
@@ -150,7 +133,7 @@ abstract class Box implements TypeRegistry {
   /// Closes the box.
   ///
   /// Be careful, this closes all instances of this box. You have to make sure
-  /// that you don't access the box anywhere else.
+  /// that you don't access the box anywhere else after that.
   Future<void> close();
 
   /// Removes the file which contains the box and closes the box.
