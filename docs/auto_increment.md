@@ -26,7 +26,7 @@ friends.putAt(2, 'Ben');
 frinds.put(123, 'Ben');
 ```
 
-Both of these operations do the same thing. They replace the `Marco` with `Ben`. `putAt()` uses the index (in this case `2`), `put()` uses the key (in this case `123`).
+Both of these operations do the same thing. They replace `Marco` with `Ben`. `putAt()` uses the index (in this case `2`), `put()` uses the key (in this case `123`).
 
 This also works with String keys.
 
