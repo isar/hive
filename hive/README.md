@@ -41,45 +41,6 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 
 This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/leisim/hive_benchmark).
 
-## Getting Started
-
-### Initialize
-
-Hive needs a directory where it can store its data. Call `Hive.init()` the first time you use Hive.
-
-```dart
-Hive.init('path/to/hive');
-```
-
-In the browser you don't have to call `init()`.
-
-### Open a Box
-
-All of your data is stored in boxes.
-
-```dart
-var box = await Hive.openBox('testBox');
-```
-
-Just provide an `encryptionKey` to encrypt a box:
-
-```dart
-var key = Hive.generateSecureKey();
-var box = await Hive.openBox('secureBox', encryptionKey: key);
-```
-
-### Read & Write
-
-Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](https://leisim.github.io/hive/#/generate_adapter)
-
-```dart
-var dog = Dog(name: 'Nero', age: 4);
-
-box.put('myDog', dog);
-
-Dog myDog = box.get('myDog');
-```
-
 ## Hive ❤️ Flutter
 
 Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. Here is a sample how that may look like:
