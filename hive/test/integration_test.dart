@@ -96,7 +96,7 @@ void main() {
         box = await reopenBox(box);
         for (var i = 0; i < repeat; i++) {
           for (var frame in valueTestFrames) {
-            expect(await box.get('${frame.key}$i'), frame.value);
+            expect(await box.get('${frame.key}n$i'), frame.value);
           }
         }
         await box.close();
