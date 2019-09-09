@@ -1,3 +1,6 @@
+## 0.5.0
+- Support final members
+
 ## 0.4.0+2
 - Support for Lists and Maps in strong mode
 
