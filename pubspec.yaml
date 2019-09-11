@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  hive: ">=0.4.0 <1.0.0"
+  hive: ">=1.0.0 <2.0.0"
 
 dev_dependencies:
   flutter_test:

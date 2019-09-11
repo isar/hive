@@ -1,4 +1,5 @@
 ## 0.2.1
+- Bump Hive version
 - Changed WatchBoxBuilderState to _WatchBoxBuilderState
 
 ## 0.2.0
