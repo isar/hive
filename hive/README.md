@@ -23,7 +23,7 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 - Very good performance (see [benchmark](#benchmark))
 
 ### Easy to use ❤️
-- Keys are of type String or uin32 and values are arbitrary objects
+- Keys are of type String or Uint32 and values are arbitrary objects
 - The basic operations are `put(key, value)`, `get(key)`, `delete(key)`
 - Strong encryption built in
 
