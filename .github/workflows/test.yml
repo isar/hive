@@ -1,0 +1,36 @@
+name: Dart CI
+
+on: [push, pull_request]
+
+jobs:
+  test-hive:
+    runs-on: ubuntu-latest
+    
+    container:
+      image:  google/dart:latest
+    
+    strategy:
+      matrix:
+        test-platform: [vm]
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run tests
+      run: |
+        export TEST_PLATFORM=${{ matrix.test-platform }}
+        sh tool/test_hive.sh
+
+  coverage-hive:
+    runs-on: ubuntu-latest
+    
+    container:
+      image:  google/dart:latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Collect coverage
+      run: sh tool/coverage_hive.sh
+    - uses: codecov/codecov-action@v1.0.0	
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}	
+        file: hive/coverage/lcov.info

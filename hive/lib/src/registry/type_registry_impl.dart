@@ -1,45 +1,48 @@
 import 'package:hive/hive.dart';
+import 'package:meta/meta.dart';
 
 class TypeRegistryImpl implements TypeRegistry {
-  final TypeRegistry parent;
-  final _typeAdaptersById = <int, ResolvedAdapter>{};
-  final _typeAdaptersByType = <Type, ResolvedAdapter>{};
+  @visibleForTesting
+  static const reservedTypeIds = 32;
+
+  final TypeRegistryImpl parent;
+  final _typeAdapters = <int, ResolvedAdapter>{};
 
   TypeRegistryImpl([this.parent]);
 
-  @override
-  ResolvedAdapter findAdapterForType(Type type) {
-    var resolved = _typeAdaptersByType[type];
-    return resolved ?? parent?.findAdapterForType(type);
+  ResolvedAdapter findAdapterForValue(dynamic value) {
+    for (var adapter in _typeAdapters.values) {
+      if (adapter.matches(value)) return adapter;
+    }
+    return parent?.findAdapterForValue(value);
   }
 
-  @override
   ResolvedAdapter findAdapterForTypeId(int typeId) {
-    var adapter = _typeAdaptersById[typeId];
+    var adapter = _typeAdapters[typeId];
     return adapter ?? parent?.findAdapterForTypeId(typeId);
   }
 
   @override
   void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
-    if (typeId < TypeRegistry.minCustomTypeId || typeId > 255) {
+    if (typeId < 0 || typeId > 223) {
       throw HiveError('TypeId $typeId not allowed.');
     }
 
-    if (findAdapterForTypeId(typeId) != null) {
+    var updatedTypeId = typeId + reservedTypeIds;
+
+    if (findAdapterForTypeId(updatedTypeId) != null) {
       throw HiveError('There is already a TypeAdapter for typeId $typeId.');
     }
 
-    registerInternal(adapter, typeId);
+    registerInternal(adapter, updatedTypeId);
   }
 
   void registerInternal<T>(TypeAdapter<T> adapter, int typeId) {
-    var resolved = ResolvedAdapter(adapter, typeId);
-    _typeAdaptersById[typeId] = resolved;
-    _typeAdaptersByType[T] = resolved;
+    var resolved = ResolvedAdapter<T>(adapter, typeId);
+    _typeAdapters[typeId] = resolved;
   }
 
   void resetAdapters() {
-    _typeAdaptersById.clear();
-    _typeAdaptersByType.clear();
+    _typeAdapters.clear();
   }
 }

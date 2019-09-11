@@ -40,7 +40,7 @@ class FrameIoHelper {
           return frameOffset;
         }
         var frameReader = BinaryReaderImpl(frameBytes, null, frameLength - 8);
-        var frame = Frame.decode(frameReader, true, false, frameLength, null);
+        var frame = Frame.decode(frameReader, true, frameLength, null);
         frames.add(frame);
       }
     } finally {
@@ -62,19 +62,21 @@ class FrameIoHelper {
         return frameOffset;
       }
 
-      var lengthBytes = reader.readByteList(4);
-      var frameLength = bytesToUint32(lengthBytes);
+      var lengthBytes = reader.peekBytes(4);
+      var frameLength = reader.readUint32();
       if (reader.availableBytes < frameLength - 4) {
         return frameOffset;
       }
-      var frameBytes = reader.viewBytes(frameLength - 4);
+      var frameBytes = reader.peekBytes(frameLength - 4);
 
       if (!Frame.checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
         return frameOffset;
       }
 
-      var frameReader = BinaryReaderImpl(frameBytes, registry, frameLength - 8);
-      var frame = Frame.decode(frameReader, true, true, frameLength, crypto);
+      reader.limitAvailableBytes(frameLength - 8);
+      var frame = Frame.decode(reader, false, frameLength, crypto);
+      reader.resetLimit();
+      reader.skip(4); // CRC bytes
       frames.add(frame);
     }
 

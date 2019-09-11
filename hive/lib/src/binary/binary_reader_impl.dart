@@ -3,31 +3,40 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
+  final ByteData _byteData;
   final int _bufferLength;
-  final ByteData _data;
-  final TypeRegistry typeRegistry;
+  final TypeRegistryImpl typeRegistry;
+
+  int _bufferLimit;
   int _offset = 0;
 
-  BinaryReaderImpl(this._buffer, this.typeRegistry, [int bufferLength])
-      : _bufferLength = bufferLength ?? _buffer.length,
-        _data = ByteData.view(_buffer.buffer, _buffer.offsetInBytes,
-            bufferLength ?? _buffer.length);
-
-  int get _bufferOffset => _buffer.offsetInBytes + _offset;
+  BinaryReaderImpl(this._buffer, TypeRegistry typeRegistry, [int bufferLength])
+      : _byteData = ByteData.view(_buffer.buffer, _buffer.offsetInBytes),
+        _bufferLength = bufferLength ?? _buffer.length,
+        _bufferLimit = bufferLength ?? _buffer.length,
+        typeRegistry = typeRegistry as TypeRegistryImpl;
 
   @override
-  int get availableBytes => _bufferLength - _offset;
+  int get availableBytes => _bufferLimit - _offset;
 
   @override
   int get usedBytes => _offset;
 
-  Uint8List get buffer => _buffer;
+  void limitAvailableBytes(int bytes) {
+    _requireBytes(bytes);
+    _bufferLimit = _offset + bytes;
+  }
+
+  void resetLimit() {
+    _bufferLimit = _bufferLength;
+  }
 
   void _requireBytes(int bytes) {
-    if (_bufferLength - _offset < bytes) {
+    if (_offset + bytes > _bufferLimit) {
       throw RangeError('Not enough bytes available.');
     }
   }
@@ -47,9 +56,17 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   Uint8List viewBytes(int bytes) {
     _requireBytes(bytes);
-    var view = Uint8List.view(_buffer.buffer, _bufferOffset, bytes);
+    var view =
+        Uint8List.view(_buffer.buffer, _buffer.offsetInBytes + _offset, bytes);
     _offset += bytes;
     return view;
+  }
+
+  @override
+  Uint8List peekBytes(int bytes) {
+    _requireBytes(bytes);
+    return Uint8List.view(
+        _buffer.buffer, _buffer.offsetInBytes + _offset, bytes);
   }
 
   @override
@@ -61,7 +78,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   int readInt32() {
     _requireBytes(4);
-    var value = _data.getInt32(_offset, Endian.little);
+    var value = _byteData.getInt32(_offset, Endian.little);
     _offset += 4;
     return value;
   }
@@ -83,7 +100,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   double readDouble() {
     _requireBytes(8);
-    var value = _data.getFloat64(_offset, Endian.little);
+    var value = _byteData.getFloat64(_offset, Endian.little);
     _offset += 8;
     return value;
   }
@@ -98,14 +115,14 @@ class BinaryReaderImpl extends BinaryReader {
   String readString(
       [int byteCount,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    byteCount ??= readWord();
+    byteCount ??= readUint32();
     var view = viewBytes(byteCount);
     return decoder.convert(view);
   }
 
   @override
   String readAsciiString([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var view = viewBytes(length);
     var str = String.fromCharCodes(view);
     return str;
@@ -113,7 +130,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Uint8List readByteList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length);
     var byteList = _buffer.sublist(_offset, _offset + length);
     _offset += length;
@@ -122,11 +139,11 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<int> readIntList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length * 8);
     var list = <int>[]..length = length;
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getFloat64(_offset, Endian.little).toInt();
+      list[i] = _byteData.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
     }
     return list;
@@ -134,11 +151,11 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<double> readDoubleList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length * 8);
     var list = <double>[]..length = length;
     for (var i = 0; i < length; i++) {
-      list[i] = _data.getFloat64(_offset, Endian.little);
+      list[i] = _byteData.getFloat64(_offset, Endian.little);
       _offset += 8;
     }
     return list;
@@ -146,7 +163,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List<bool> readBoolList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     _requireBytes(length);
     var list = <bool>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -159,7 +176,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<String> readStringList(
       [int length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
-    length ??= readWord();
+    length ??= readUint32();
     var list = <String>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
@@ -169,7 +186,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   List readList([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var list = <dynamic>[]..length = length;
     for (var i = 0; i < length; i++) {
       list[i] = read();
@@ -179,7 +196,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Map readMap([int length]) {
-    length ??= readWord();
+    length ??= readUint32();
     var map = <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
       var key = read();
@@ -223,8 +240,8 @@ class BinaryReaderImpl extends BinaryReader {
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);
       if (resolved == null) {
-        throw HiveError(
-            'Cannot read, unknown typeId: $typeId. Did you forget to register an adapter?');
+        throw HiveError('Cannot read, unknown typeId: $typeId. '
+            'Did you forget to register an adapter?');
       }
       return resolved.adapter.read(this);
     }

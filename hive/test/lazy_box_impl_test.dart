@@ -51,22 +51,28 @@ void main() {
 
       test('reads value from backend', () async {
         var backend = BackendMock();
-        when(backend.readValue(any, any, any))
-            .thenAnswer((i) async => 'testVal');
+        when(backend.readValue(any)).thenAnswer((i) async => 'testVal');
         var box = getBox(
           backend: backend,
-          keystore: Keystore({'testKey': BoxEntry('testVal', 123, 456)}),
+          keystore: Keystore.debug([
+            Frame.lazy('testKey', length: 123, offset: 456),
+          ]),
         );
 
         expect(await box.get('testKey'), 'testVal');
-        verify(backend.readValue('testKey', 123, 456));
+        verify(backend.readValue(
+          Frame.lazy('testKey', length: 123, offset: 456),
+        ));
       });
     });
 
     test('.getAt()', () async {
-      var keystore = Keystore({0: BoxEntry(null), 'a': BoxEntry(null)});
+      var keystore = Keystore.debug([
+        Frame(0, null),
+        Frame('a', null),
+      ]);
       var backend = BackendMock();
-      when(backend.readValue('a', any, any)).thenAnswer((i) async => 'A');
+      when(backend.readValue(Frame('a', null))).thenAnswer((i) async => 'A');
       var box = getBox(keystore: keystore, backend: backend);
 
       expect(await box.getAt(-1, defaultValue: 123), 123);
@@ -89,11 +95,10 @@ void main() {
 
         await box.put('key1', 'value1');
         verifyInOrder([
-          backend.writeFrame(const Frame('key1', 'value1'), BoxEntry(null)),
-          keystore.addAll({'key1': BoxEntry(null)}),
+          backend.writeFrame(Frame('key1', 'value1')),
+          keystore.add(Frame.lazy('key1')),
           notifier.notify('key1', 'value1', false),
         ]);
-        expect(box.deletedEntries, 0);
       });
 
       test('handles exceptions', () async {
@@ -101,7 +106,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
 
-        when(backend.writeFrame(any, any)).thenThrow('Some error');
+        when(backend.writeFrame(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
@@ -111,13 +116,12 @@ void main() {
         );
 
         expect(
-            () async => await box.put('key1', 'newValue'), throwsA(anything));
-        verifyInOrder([
-          backend.writeFrame(const Frame('key1', 'newValue'), BoxEntry(null))
-        ]);
+          () async => await box.put('key1', 'newValue'),
+          throwsA(anything),
+        );
+        verifyInOrder([backend.writeFrame(Frame('key1', 'newValue'))]);
         verifyNoMoreInteractions(keystore);
         verifyNoMoreInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
     });
 
@@ -137,7 +141,6 @@ void main() {
         await box.delete('testKey');
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
 
       test('delete key', () async {
@@ -155,8 +158,8 @@ void main() {
         await box.delete('key1');
         verifyInOrder([
           keystore.containsKey('key1'),
-          backend.writeFrame(const Frame.deleted('key1'), null),
-          keystore.deleteAll(['key1']),
+          backend.writeFrame(Frame.deleted('key1')),
+          keystore.delete('key1'),
           notifier.notify('key1', null, true),
         ]);
       });
@@ -177,15 +180,15 @@ void main() {
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
         verifyInOrder([
-          backend.writeFrames(
-            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
-            [BoxEntry(null), BoxEntry(null)],
-          ),
-          keystore.addAll({'key1': BoxEntry(null), 'key2': BoxEntry(null)}),
+          backend.writeFrames([
+            Frame('key1', 'value1'),
+            Frame('key2', 'value2'),
+          ]),
+          keystore.add(Frame.lazy('key1')),
+          keystore.add(Frame.lazy('key2')),
           notifier.notify('key1', 'value1', false),
           notifier.notify('key2', 'value2', false),
         ]);
-        expect(box.deletedEntries, 0);
       });
 
       test('handles exceptions', () async {
@@ -193,7 +196,7 @@ void main() {
         var keystore = KeystoreMock();
         var notifier = ChangeNotifierMock();
 
-        when(backend.writeFrames(any, any)).thenThrow('Some error');
+        when(backend.writeFrames(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = getBox(
@@ -203,18 +206,19 @@ void main() {
         );
 
         await expectLater(
-          () async => await box.putAll({'key1': 'value1', 'key2': 'value2'}),
+          () async => await box.putAll(
+                {'key1': 'value1', 'key2': 'value2'},
+              ),
           throwsA(anything),
         );
         verifyInOrder([
-          backend.writeFrames(
-            [const Frame('key1', 'value1'), const Frame('key2', 'value2')],
-            [BoxEntry(null), BoxEntry(null)],
-          ),
+          backend.writeFrames([
+            Frame('key1', 'value1'),
+            Frame('key2', 'value2'),
+          ]),
         ]);
         verifyNoMoreInteractions(keystore);
         verifyNoMoreInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
     });
 
@@ -233,7 +237,6 @@ void main() {
         await box.deleteAll(['key1', 'key2', 'key3']);
         verifyZeroInteractions(backend);
         verifyZeroInteractions(notifier);
-        expect(box.deletedEntries, 0);
       });
 
       test('delete keys', () async {
@@ -252,12 +255,12 @@ void main() {
         verifyInOrder([
           keystore.containsKey('key1'),
           keystore.containsKey('key2'),
-          backend.writeFrames(
-            [const Frame.deleted('key1'), const Frame.deleted('key2')],
-            null,
-          ),
-          keystore.deleteAll(['key1', 'key2']),
+          backend.writeFrames([Frame.deleted('key1'), Frame.deleted('key2')]),
+          keystore.delete('key1'),
           notifier.notify('key1', null, true),
+          keystore.delete(
+            'key2',
+          ),
           notifier.notify('key2', null, true),
         ]);
       });

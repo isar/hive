@@ -1,3 +1,35 @@
+## 1.0.0
+- First stable release
+
+## 0.5.1+1
+- Change `keys` parameter of `deleteAll` from `List` to `Iterable`
+- Fixed bug in `BinaryWriter`
+
+## 0.5.1
+- Fixed `Hive.init()` bug in browser
+- Fixed a bug with large lists or strings
+- Improved box opening time in browser
+- Improved general write performance
+- Improved docs
+- Added integration tests
+
+## 0.5.0
+- Added `keyComparator` parameter for custom key order
+- Added `isEmpty` and `isNotEmpty` getters to box
+- Added support for reading and writing subclasses
+- Removed length limitation for Lists, Maps and Strings
+- Greatly improved performance of storing Uint8Lists in browser
+- Removed CRC check in browser (not needed)
+- Improved documentation
+- TypeIds are now allowed in the range of 0-223
+- Fixed compaction
+- Fixed writing longer Strings
+- **Breaking:** Binary format changed
+
+## 0.4.1+1
+- Document all public APIs
+- Fixed flutter_web error
+
 ## 0.4.1
 - Allow different versions of the `path` package
 
@@ -16,8 +48,6 @@
 - **Breaking:** Temporarily removed support for transactions. New API design needed. Will be coming back in a future version.
 - **Breaking:** Binary format changed
 - **Breaking:** API changes
-
-*Note: This is probably the last version that breaks binary format. From version 1.0.0 onwards, there will be no breaking changes at all.*
 
 ## 0.3.0+1
 - Bugfix: `Hive['yourBox']` didn't work with uppercase box names

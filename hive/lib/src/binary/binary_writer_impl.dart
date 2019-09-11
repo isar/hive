@@ -2,39 +2,64 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/binary/binary_writer_buffer.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 class BinaryWriterImpl extends BinaryWriter {
   static const int _asciiMask = 0x7F;
-  final TypeRegistry typeRegistry;
-  BinaryWriterBuffer _buffer;
+  static const _initBufferSize = 256;
 
-  BinaryWriterImpl(this.typeRegistry) : _buffer = BinaryWriterBuffer();
+  final TypeRegistryImpl typeRegistry;
+  Uint8List _buffer = Uint8List(_initBufferSize);
+
+  ByteData _byteDataInstance;
+
+  int _offset = 0;
+
+  ByteData get _byteData {
+    _byteDataInstance ??= ByteData.view(_buffer.buffer);
+    return _byteDataInstance;
+  }
+
+  BinaryWriterImpl(TypeRegistry typeRegistry)
+      : typeRegistry = typeRegistry as TypeRegistryImpl;
 
   @visibleForTesting
   BinaryWriterImpl.withBuffer(this._buffer, this.typeRegistry);
 
-  @override
-  int get writtenBytes => _buffer.writtenBytes;
+  void _reserveBytes(int count) {
+    if (_buffer.length - _offset < count) {
+      // We will create a list in the range of 2-4 times larger than required.
+      var newSize = _pow2roundup((_offset + count) * 2);
+      var newBuffer = Uint8List(newSize);
+      newBuffer.setRange(0, _offset, _buffer);
+      _buffer = newBuffer;
+      _byteDataInstance = null;
+    }
+  }
+
+  void _addBytes(List<int> bytes) {
+    var length = bytes.length;
+    _reserveBytes(length);
+    _buffer.setRange(_offset, _offset + length, bytes);
+    _offset += length;
+  }
 
   @override
   void writeByte(int byte) {
     if (byte == null) {
       throw ArgumentError.notNull();
     }
-    var offset = _buffer.useBytes(1);
-    _buffer.byteData.setUint8(offset, byte);
+    _reserveBytes(1);
+    _buffer[_offset++] = byte;
   }
 
   @override
   void writeWord(int value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
-    var offset = _buffer.useBytes(2);
-    _buffer.byteData.setUint16(offset, value, Endian.little);
+    _reserveBytes(2);
+    _buffer[_offset++] = value;
+    _buffer[_offset++] = value >> 8;
   }
 
   @override
@@ -42,24 +67,22 @@ class BinaryWriterImpl extends BinaryWriter {
     if (value == null) {
       throw ArgumentError.notNull();
     }
-    var offset = _buffer.useBytes(4);
-    _buffer.byteData.setInt32(offset, value, Endian.little);
+    _reserveBytes(4);
+    _byteData.setInt32(_offset, value, Endian.little);
+    _offset += 4;
   }
 
   @override
   void writeUint32(int value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
-    var offset = _buffer.useBytes(4);
-    _buffer.byteData.setUint32(offset, value, Endian.little);
+    _reserveBytes(4);
+    _buffer[_offset++] = value;
+    _buffer[_offset++] = value >> 8;
+    _buffer[_offset++] = value >> 16;
+    _buffer[_offset++] = value >> 24;
   }
 
   @override
   void writeInt(int value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
     writeDouble(value.toDouble());
   }
 
@@ -68,17 +91,14 @@ class BinaryWriterImpl extends BinaryWriter {
     if (value == null) {
       throw ArgumentError.notNull();
     }
-    var offset = _buffer.useBytes(8);
-    _buffer.byteData.setFloat64(offset, value, Endian.little);
+    _reserveBytes(8);
+    _byteData.setFloat64(_offset, value, Endian.little);
+    _offset += 8;
   }
 
   @override
   void writeBool(bool value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
-    var offset = _buffer.useBytes(1);
-    _buffer.byteData.setUint8(offset, value ? 1 : 0);
+    writeByte(value ? 1 : 0);
   }
 
   @override
@@ -89,70 +109,72 @@ class BinaryWriterImpl extends BinaryWriter {
   }) {
     var bytes = encoder.convert(value);
     if (writeByteCount) {
-      writeWord(bytes.length);
+      writeUint32(bytes.length);
     }
-    _buffer.addBytes(bytes);
+    _addBytes(bytes);
   }
 
   @override
   void writeAsciiString(String value, {bool writeLength = true}) {
     var length = value.length;
-    var bytes = Uint8List(length);
 
     if (writeLength) {
-      writeWord(length);
+      writeUint32(length);
     }
 
+    _reserveBytes(length);
     for (var i = 0; i < length; i++) {
       var codeUnit = value.codeUnitAt(i);
       if ((codeUnit & ~_asciiMask) != 0) {
         throw HiveError('String contains non-ASCII characters.');
       }
-      bytes[i] = codeUnit;
+      _buffer[_offset++] = codeUnit;
     }
-
-    _buffer.addBytes(bytes);
   }
 
   @override
   void writeByteList(List<int> bytes, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(bytes.length);
+      writeUint32(bytes.length);
     }
-    _buffer.addBytes(bytes);
+    _addBytes(bytes);
   }
 
   @override
   void writeIntList(List<int> list, {bool writeLength = true}) {
+    var length = list.length;
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(length);
     }
-    var offset = _buffer.useBytes(list.length * 8);
-    for (var i = 0; i < list.length; i++) {
-      _buffer.byteData
-          .setFloat64(offset + i * 8, list[i].toDouble(), Endian.little);
+    _reserveBytes(length * 8);
+    for (var i = 0; i < length; i++) {
+      _byteData.setFloat64(_offset, list[i].toDouble(), Endian.little);
+      _offset += 8;
     }
   }
 
   @override
   void writeDoubleList(List<double> list, {bool writeLength = true}) {
+    var length = list.length;
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(length);
     }
-    var offset = _buffer.useBytes(list.length * 8);
-    for (var i = 0; i < list.length; i++) {
-      _buffer.byteData.setFloat64(offset + i * 8, list[i], Endian.little);
+    _reserveBytes(length * 8);
+    for (var i = 0; i < length; i++) {
+      _byteData.setFloat64(_offset, list[i], Endian.little);
+      _offset += 8;
     }
   }
 
   @override
   void writeBoolList(List<bool> list, {bool writeLength = true}) {
+    var length = list.length;
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(length);
     }
-    var offset = _buffer.useBytes(list.length);
-    for (var i = 0; i < list.length; i++) {
-      _buffer.byteData.setUint8(offset + i, list[i] ? 1 : 0);
+    _reserveBytes(length * 8);
+    for (var i = 0; i < length; i++) {
+      _buffer[_offset++] = list[i] ? 1 : 0;
     }
   }
 
@@ -163,22 +185,19 @@ class BinaryWriterImpl extends BinaryWriter {
     Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
   }) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
-    var bytes = <int>[];
     for (var str in list) {
       var strBytes = encoder.convert(str);
-      bytes.add(strBytes.length);
-      bytes.add(strBytes.length << 8);
-      bytes.addAll(strBytes);
+      writeUint32(strBytes.length);
+      _addBytes(strBytes);
     }
-    _buffer.addBytes(bytes);
   }
 
   @override
   void writeList(List list, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(list.length);
+      writeUint32(list.length);
     }
     for (var i = 0; i < list.length; i++) {
       write(list[i]);
@@ -188,7 +207,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeMap(Map<dynamic, dynamic> map, {bool writeLength = true}) {
     if (writeLength) {
-      writeWord(map.length);
+      writeUint32(map.length);
     }
     map.forEach((dynamic k, dynamic v) {
       write(k);
@@ -197,7 +216,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void write(dynamic value, {bool writeTypeId = true}) {
+  void write<T>(T value, {bool writeTypeId = true}) {
     if (value == null) {
       if (writeTypeId) {
         writeByte(FrameValueType.nullT.index);
@@ -265,10 +284,10 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeMap(value);
     } else {
-      var resolved = typeRegistry.findAdapterForType(value.runtimeType as Type);
+      var resolved = typeRegistry.findAdapterForValue(value);
       if (resolved == null) {
-        throw HiveError(
-            'Cannot write, unknown type: ${value.runtimeType}. Did you forget to register an adapter?');
+        throw HiveError('Cannot write, unknown type: ${value.runtimeType}. '
+            'Did you forget to register an adapter?');
       }
       if (writeTypeId) {
         writeByte(resolved.typeId);
@@ -277,15 +296,18 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
-  Uint8List output() {
-    var bytes = Uint8List(writtenBytes);
-    _buffer.writeTo(bytes);
-    return bytes;
+  Uint8List toBytes() {
+    return Uint8List.view(_buffer.buffer, 0, _offset);
   }
 
-  Uint8List outputAndClear() {
-    var list = output();
-    _buffer = BinaryWriterBuffer();
-    return list;
+  static int _pow2roundup(int x) {
+    assert(x > 0);
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return x + 1;
   }
 }

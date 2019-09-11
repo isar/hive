@@ -1,6 +1,13 @@
-## 0.4.0
+## 0.5.0
+- Support final members
+
+## 0.4.0+2
+- Support for Lists and Maps in strong mode
+
+## 0.4.0+1
 - Support for enums
 - Sanity checks
+- Bugfixes
 
 ## 0.3.0
 - Support for typed lists

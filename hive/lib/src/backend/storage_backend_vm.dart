@@ -1,47 +1,25 @@
-import 'dart:collection';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
-import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
+import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/io/synced_file.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<Box> openBoxInternal(
-    HiveImpl hive, String name, bool lazy, BoxOptions options) async {
+Future<StorageBackend> openBackend(
+    HiveInterface hive, String name, CryptoHelper crypto) async {
   var file = await findHiveFileAndCleanUp(name, hive.path);
 
-  CryptoHelper crypto;
-  if (options.encrypted) {
-    crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
-  }
   var syncedFile = SyncedFile(file.path);
   await syncedFile.open();
 
-  var backend = StorageBackendVm(syncedFile, crypto);
-  BoxBase box;
-  if (lazy) {
-    box = LazyBoxImpl(hive, name, options, backend);
-  } else {
-    box = BoxImpl(hive, name, options, backend);
-  }
-  backend._registry = box;
-
-  await box.initialize();
-
-  return box;
+  return StorageBackendVm(syncedFile, crypto);
 }
 
 @visibleForTesting
@@ -94,8 +72,12 @@ class StorageBackendVm extends StorageBackend {
   String get path => _file.path;
 
   @override
-  Future<int> initialize(
-      Map<dynamic, BoxEntry> entries, bool lazy, bool crashRecovery) async {
+  bool supportsCompaction = true;
+
+  @override
+  Future<void> initialize(TypeRegistry registry, Keystore keystore, bool lazy,
+      bool crashRecovery) async {
+    _registry = registry;
     var frames = <Frame>[];
     int recoveryOffset;
     if (!lazy) {
@@ -107,6 +89,7 @@ class StorageBackendVm extends StorageBackend {
 
     if (recoveryOffset != null) {
       if (crashRecovery) {
+        print('Recovering corrupted box.');
         await _file.truncate(recoveryOffset);
       } else {
         throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
@@ -114,125 +97,110 @@ class StorageBackendVm extends StorageBackend {
     }
 
     var offset = 0;
-    var deletedEntries = 0;
     for (var frame in frames) {
-      var key = frame.key;
       if (!frame.deleted) {
-        if (entries.containsKey(key)) {
-          deletedEntries++;
-        }
-        entries[key] = BoxEntry(frame.value, offset, frame.length);
+        frame.offset = offset;
+        keystore.add(frame);
       } else {
-        if (entries.remove(key) != null) {
-          deletedEntries++;
-        }
+        keystore.delete(frame.key);
       }
-
       offset += frame.length;
     }
-
-    return deletedEntries;
   }
 
   @override
-  Future<dynamic> readValue(dynamic key, int offset, int length) async {
-    var bytes = await _file.readAt(offset, length);
-    var frame = Frame.fromBytes(bytes, _registry, _crypto);
-    return frame.value;
+  Future<dynamic> readValue(Frame frame) async {
+    var bytes = await _file.readAt(frame.offset, frame.length);
+    var readFrame = Frame.fromBytes(bytes, _registry, _crypto);
+    return readFrame.value;
   }
 
   @override
-  Future<Map<dynamic, dynamic>> readAll() async {
-    var frames = <Frame>[];
-    await _file.writeLock.synchronized(() {
-      return _helper.framesFromFile(path, frames, _registry, _crypto);
-    });
-
-    var map = <dynamic, dynamic>{};
-    for (var frame in frames) {
-      map[frame.key] = frame.value;
-    }
-    return map;
+  Future<void> writeFrame(Frame frame) async {
+    var bytes = frame.toBytes(_registry, _crypto);
+    frame.offset = await _file.write(bytes);
+    frame.length = bytes.length;
   }
 
   @override
-  Future<void> writeFrame(Frame frame, BoxEntry entry) async {
-    var bytes = frame.toBytes(true, _registry, _crypto);
-    if (entry != null) {
-      entry.offset = await _file.write(bytes);
-      entry.length = bytes.length;
-    }
-  }
-
-  @override
-  Future<void> writeFrames(
-      List<Frame> frames, Iterable<BoxEntry> entries) async {
+  Future<void> writeFrames(List<Frame> frames) async {
     var bytes = BytesBuilder(copy: false);
     var lengths = <int>[];
     for (var frame in frames) {
-      var frameBytes = frame.toBytes(true, _registry, _crypto);
+      var frameBytes = frame.toBytes(_registry, _crypto);
       bytes.add(frameBytes);
       lengths.add(frameBytes.length);
     }
 
     var offset = await _file.write(bytes.toBytes());
 
-    if (entries != null) {
-      var i = 0;
-      for (var entry in entries) {
-        entry.offset = offset;
-        entry.length = lengths[i++];
-        offset += entry.length;
-      }
+    var i = 0;
+    for (var frame in frames) {
+      frame.offset = offset;
+      frame.length = lengths[i++];
+      offset += frame.length;
     }
   }
 
   @override
-  Future<Map<dynamic, BoxEntry>> compact(Map<dynamic, BoxEntry> entries) async {
-    var compactPath = '${p.withoutExtension(path)}.hivec';
-    var compactFile = await File(compactPath).open(mode: FileMode.write);
+  Future<List<Frame>> compact(Iterable<Frame> frames) async {
+    var boxRaf = await File(path).open();
+    var reader = BufferedFileReader(boxRaf);
 
-    var newEntries = HashMap<dynamic, BoxEntry>();
+    var compactFile = File('${p.withoutExtension(path)}.hivec');
+    var compactRaf = await compactFile.open(mode: FileMode.write);
+    var writer = BufferedFileWriter(compactRaf);
 
-    await _file.readLock.synchronized(() {
-      return _file.writeLock.synchronized(() async {
-        var raf = await File(path).open();
-        var reader = BufferedFileReader(raf);
-        var writer = BinaryWriterImpl(_registry);
-
-        var compactOffset = 0;
-
-        try {
-          for (var key in entries.keys) {
-            var entry = entries[key];
-            if (entry.offset != reader.offset) {
-              await reader.skip(entry.offset - reader.offset);
-            }
-            var frameBytes = await reader.read(entry.length);
-            if (frameBytes.length != entry.length) {
-              throw HiveError('Could not compact box: Unexpected EOF.');
-            }
-            writer.writeByteList(frameBytes, writeLength: false);
-
-            if (writer.writtenBytes > 10000) {
-              await compactFile.writeFrom(writer.outputAndClear());
-            }
-            newEntries[key] =
-                BoxEntry(entry.value, compactOffset, entry.length);
-            compactOffset += entry.length;
-          }
-          await compactFile.writeFrom(writer.outputAndClear());
-        } finally {
-          await raf.close();
-          await compactFile.close();
-        }
+    List<Frame> newFrames;
+    try {
+      await _file.readLock.synchronized(() {
+        return _file.writeLock.synchronized(() async {
+          newFrames = await compactInternal(frames, reader, writer);
+        });
       });
-    });
+    } finally {
+      await boxRaf.close();
+      await compactRaf.close();
+    }
 
     await _file.close();
-    await File(compactFile.path).rename(path);
+    await compactFile.rename(path);
     await _file.open();
-    return newEntries;
+    return newFrames;
+  }
+
+  @visibleForTesting
+  Future<List<Frame>> compactInternal(
+    Iterable<Frame> frames,
+    BufferedFileReader reader,
+    BufferedFileWriter writer,
+  ) async {
+    var sortedFrames = frames.toList();
+    sortedFrames.sort((a, b) => a.offset.compareTo(b.offset));
+
+    var newFrames = <Frame>[];
+    var compactOffset = 0;
+    for (var frame in sortedFrames) {
+      if (frame.offset != reader.offset) {
+        await reader.skip(frame.offset - reader.offset);
+      }
+      var frameBytes = await reader.read(frame.length);
+      if (frameBytes.length != frame.length) {
+        throw HiveError('Could not compact box: Unexpected EOF.');
+      }
+      await writer.write(frameBytes);
+
+      newFrames.add(Frame(
+        frame.key,
+        frame.value,
+        length: frame.length,
+        offset: compactOffset,
+      ));
+      compactOffset += frame.length;
+    }
+    await writer.flush();
+
+    return newFrames;
   }
 
   @override

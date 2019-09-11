@@ -2,10 +2,8 @@ import 'dart:io';
 
 import 'dart:typed_data';
 
-import 'package:hive/src/binary/frame.dart';
-
 class BufferedFileReader {
-  static const defaultChunkSize = Frame.maxFrameLength;
+  static const defaultChunkSize = 1000 * 64;
 
   final RandomAccessFile file;
   final int chunkSize;
@@ -47,10 +45,11 @@ class BufferedFileReader {
       _bufferOffset = _bufferSize;
       return view;
     } else {
+      var oldBuffer = _buffer;
       if (_buffer.length < bytes) {
         _buffer = Uint8List(bytes);
       }
-      await _readChunk(_buffer, _bufferOffset, _remainingInBuffer);
+      await _readChunk(oldBuffer, _bufferOffset, _remainingInBuffer);
       return read(bytes);
     }
   }
@@ -58,7 +57,7 @@ class BufferedFileReader {
   Future<void> _readChunk(Uint8List oldChunk, int offset, int remaining) async {
     if (oldChunk != null) {
       for (var i = 0; i < remaining; i++) {
-        _buffer[i] = _buffer[offset + i];
+        _buffer[i] = oldChunk[offset + i];
       }
     }
 

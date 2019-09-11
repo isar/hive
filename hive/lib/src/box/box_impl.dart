@@ -31,9 +31,9 @@ class BoxImpl extends BoxBase implements Box {
   @override
   dynamic get(dynamic key, {dynamic defaultValue}) {
     checkOpen();
-    var entry = keystore.get(key);
-    if (entry != null) {
-      return entry.value;
+    var frame = keystore.get(key);
+    if (frame != null) {
+      return frame.value;
     } else {
       return defaultValue;
     }
@@ -52,9 +52,9 @@ class BoxImpl extends BoxBase implements Box {
   @override
   Future<void> put(dynamic key, dynamic value) {
     checkOpen();
-    var entry = BoxEntry(value);
-    keystore.beginAddTransaction({key: entry});
-    return _writeFrame(Frame(key, value), entry);
+    var frame = Frame(key, value);
+    keystore.beginAddTransaction([frame]);
+    return _writeFrame(frame);
   }
 
   @override
@@ -62,18 +62,18 @@ class BoxImpl extends BoxBase implements Box {
     checkOpen();
     if (!keystore.containsKey(key)) return Future.value();
     keystore.beginDeleteTransaction([key]);
-    return _writeFrame(Frame.deleted(key), null);
+    return _writeFrame(Frame.deleted(key));
   }
 
-  Future<void> _writeFrame(Frame frame, BoxEntry entry) async {
+  Future<void> _writeFrame(Frame frame) async {
     notifier.notify(frame.key, frame.value, frame.deleted);
     try {
-      await backend.writeFrame(frame, entry);
+      await backend.writeFrame(frame);
       keystore.commitTransaction();
     } catch (e) {
       keystore.cancelTransaction();
-      var oldEntry = keystore.get(frame.key);
-      notifier.notify(frame.key, oldEntry?.value, oldEntry == null);
+      var oldFrame = keystore.get(frame.key);
+      notifier.notify(frame.key, oldFrame?.value, oldFrame == null);
       rethrow;
     }
 
@@ -87,20 +87,18 @@ class BoxImpl extends BoxBase implements Box {
     if (kvPairs.isEmpty) return Future.value();
 
     var frames = <Frame>[];
-    var entries = <dynamic, BoxEntry>{};
     for (var key in kvPairs.keys) {
       var value = kvPairs[key];
       frames.add(Frame(key, value));
-      entries[key] = BoxEntry(value);
     }
 
-    keystore.beginAddTransaction(entries);
+    keystore.beginAddTransaction(frames);
 
-    return _writeFrames(frames, entries.values);
+    return _writeFrames(frames);
   }
 
   @override
-  Future<void> deleteAll(List<dynamic> keys) {
+  Future<void> deleteAll(Iterable<dynamic> keys) {
     checkOpen();
 
     var frames = <Frame>[];
@@ -113,23 +111,22 @@ class BoxImpl extends BoxBase implements Box {
     if (frames.isEmpty) return Future.value();
 
     keystore.beginDeleteTransaction(keys);
-    return _writeFrames(frames, null);
+    return _writeFrames(frames);
   }
 
-  Future<void> _writeFrames(
-      List<Frame> frames, Iterable<BoxEntry> entries) async {
+  Future<void> _writeFrames(List<Frame> frames) async {
     for (var frame in frames) {
       notifier.notify(frame.key, frame.value, frame.deleted);
     }
 
     try {
-      await backend.writeFrames(frames, entries);
+      await backend.writeFrames(frames);
       keystore.commitTransaction();
     } catch (e) {
       keystore.cancelTransaction();
       for (var frame in frames) {
-        var oldEntry = keystore.get(frame.key);
-        notifier.notify(frame.key, oldEntry?.value, oldEntry == null);
+        var oldFrame = keystore.get(frame.key);
+        notifier.notify(frame.key, oldFrame?.value, oldFrame == null);
       }
       rethrow;
     }

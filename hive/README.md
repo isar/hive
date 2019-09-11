@@ -1,25 +1,35 @@
-![logo](https://raw.githubusercontent.com/leisim/hive/master/.github/logo.svg?sanitize=true)
+<img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
 
-[![Travis](https://img.shields.io/travis/com/leisim/hive/master.svg)](https://travis-ci.com/leisim/hive) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Version](https://img.shields.io/pub/v/hive.svg)](https://pub.dartlang.org/packages/hive) ![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)
+[![Dart CI](https://github.com/leisim/hive/workflows/Dart%20CI/badge.svg)](https://github.com/leisim/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator)
 
-Hive is a lightweight and blazing fast key-value store written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
+Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
-[Go here for documentation](https://leisim.github.io/hive/) 📖<br>
-*Not finished yet and may contain typos. Please open pull requests ;)*
+- [Getting Started](https://leisim.github.io/hive/#/getting_started) ⚡
+- [Documentation](https://leisim.github.io/hive/) 📖
+- [Frequently Asked Questions](https://leisim.github.io/hive/#/faq) 🙋
+- [Samples](https://github.com/leisim/hive/tree/master/examples) 🔥
+
+*Hive is stable now.*
+
+### Flutter Web Demos 🕸️
+- [Counter](https://leisim.github.io/hive/demos/counter)
+- [Sketchpad](https://leisim.github.io/hive/demos/sketchpad)
+- [Todo App](https://leisim.github.io/hive/demos/todo)
 
 ## Features
 
-### Blazing Fast ⚡
-- More than twice the speed of other datastores
-- Binary data format
-
-### Simple to use ❤️
-- Supports all types
-- Strong encryption built in
+### Cross-platform ⚡
 - Runs on desktop, mobile & in browser
+- Very good performance (see [benchmark](#benchmark))
+
+### Easy to use ❤️
+- Keys are of type String or Uint32 and values are arbitrary objects
+- The basic operations are `put(key, value)`, `get(key)`, `delete(key)`
+- Strong encryption built in
 
 ### Lightweight 🎈
 - Small runtime
+- Small disk space consumption
 - **NO** native dependencies
 
 
@@ -32,43 +42,18 @@ Hive is a lightweight and blazing fast key-value store written in pure Dart. Ins
 
 This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/leisim/hive_benchmark).
 
-## Getting Started
+## Add Hive to project
+Add the following to your `pubspec.yaml`. Use the latest version instead of `[version]`.
 
-### Initialize
+[![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner)
 
-Hive needs a directory where it can store its data. Call `Hive.init()` the first time you use Hive.
+```yaml
+dependencies:
+  hive: [version]
 
-```dart
-Hive.init('path/to/hive');
-```
-
-In the browser you don't have to call `init()`.
-
-### Open a Box
-
-All of your data is stored in boxes.
-
-```dart
-var box = await Hive.openBox('testBox');
-```
-
-Just provide an `encryptionKey` to encrypt a box:
-
-```dart
-var key = Hive.generateSecureKey();
-var box = await Hive.openBox('secureBox', encryptionKey: key);
-```
-
-### Read & Write
-
-Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](https://leisim.github.io/hive/#/generate_adapter)
-
-```dart
-var dog = Dog(name: 'Nero', age: 4);
-
-box.put('myDog', dog);
-
-Dog myDog = box.get('myDog');
+dev_dependencies:
+  hive_generator: [version]
+  build_runner: [version]
 ```
 
 ## Hive ❤️ Flutter
@@ -79,27 +64,16 @@ Hive was written with Flutter in mind. It is a perfect fit if you need a lightwe
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var box = Hive.box('settings');
-
-    return Column(
-      children: <Widget>[
-        SwitchListTile(
+    return WatchBoxBuilder(
+      box: Hive.box('settings');
+      builder: (context, box) {
+        return Switch(
           value: box.get('darkMode'),
-          title: Text("Dark Mode"),
-          onChanged: (value) {
-            box.put('darkMode', value);
-            setState(() {});
-          },
-        ),
-        SwitchListTile(
-          value: box.get('pushMessages'),
-          title: Text('Send push messages'),
-          onChanged: (value) {
-            box.put('pushMessages', value);
-            setState(() {});
-          },
-        ),
-      ],
+          onChanged: (val) {
+            box.put('darkMode', val);
+          }
+        )
+      },
     );
   }
 }
@@ -112,12 +86,14 @@ Boxes are cached and therefore fast enough to be used directly in the `build()` 
 The work on Hive has just started. If you want to contribute, it would be amazing if you helped me with one of these:
 
 - [x] Good test coverage
-- [ ] Many examples, especially for Flutter
-- [ ] Finalize API
+- [x] Many examples, especially for Flutter
+- [x] Benchmarks and comparison
+- [x] Finalize API
+- [x] Even more tests
+- [ ] Queries
 - [ ] Improve documentation
 - [ ] Write binary format spec
-- [ ] Even more tests
-- [x] Benchmarks and comparison
+- [ ] You can never have enough tests
 
 ### Licence
 

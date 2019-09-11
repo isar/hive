@@ -1,10 +1,12 @@
 import 'dart:collection';
 
+import 'package:hive/hive.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:meta/meta.dart';
 
 class _KeyTransaction {
   final List<dynamic> added = [];
-  final Map<dynamic, BoxEntry> deleted = {};
+  final Map<dynamic, Frame> deleted = {};
 }
 
 int _compareKeys(dynamic k1, dynamic k2) {
@@ -17,7 +19,7 @@ int _compareKeys(dynamic k1, dynamic k2) {
 
 class Keystore {
   @visibleForTesting
-  final Map<dynamic, BoxEntry> entries;
+  final Map<dynamic, Frame> frames;
 
   @visibleForTesting
   final ListQueue<_KeyTransaction> transactions = ListQueue();
@@ -25,12 +27,21 @@ class Keystore {
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
-  Keystore([Map<dynamic, BoxEntry> entries])
-      : entries = SplayTreeMap.of(entries ?? {}, _compareKeys);
+  Keystore([KeyComparator keyComparator])
+      : frames = SplayTreeMap(keyComparator ?? _compareKeys);
+
+  factory Keystore.debug(Iterable<Frame> frames,
+      [KeyComparator keyComparator]) {
+    var keystore = Keystore(keyComparator);
+    for (var frame in frames) {
+      keystore.add(frame);
+    }
+    return keystore;
+  }
 
   int get deletedEntries => _deletedEntries;
 
-  int get length => entries.length;
+  int get length => frames.length;
 
   int autoIncrement() {
     return ++_autoIncrement;
@@ -43,11 +54,11 @@ class Keystore {
   }
 
   bool containsKey(dynamic key) {
-    return entries.containsKey(key);
+    return frames.containsKey(key);
   }
 
   dynamic keyAt(int index) {
-    var keys = entries.keys;
+    var keys = frames.keys;
     var keyIndex = 0;
     for (var key in keys) {
       if (index == keyIndex) return key;
@@ -56,55 +67,55 @@ class Keystore {
     return null;
   }
 
-  BoxEntry get(dynamic key) {
-    return entries[key];
+  Frame get(dynamic key) {
+    return frames[key];
   }
 
   Iterable<dynamic> getKeys() {
-    return entries.keys;
+    return frames.keys;
   }
 
   Iterable<dynamic> getValues() {
-    return entries.values.map((e) => e.value);
+    return frames.values.map((e) => e.value);
   }
 
   Map<dynamic, dynamic> toValueMap() {
     var map = <dynamic, dynamic>{};
-    for (var key in entries.keys) {
-      map[key] = entries[key].value;
+    for (var frame in frames.values) {
+      map[frame.key] = frame.value;
     }
     return map;
   }
 
-  void addAll(Map<dynamic, BoxEntry> newEntries) {
-    for (var key in newEntries.keys) {
-      var entry = newEntries[key];
-      entries[key] = entry;
-      if (key is int && key > _autoIncrement) {
-        _autoIncrement = key;
-      }
+  void add(Frame frame) {
+    var key = frame.key;
+    if (frames.containsKey(key)) {
+      _deletedEntries++;
+    }
+    if (key is int && key > _autoIncrement) {
+      _autoIncrement = key;
+    }
+    frames[key] = frame;
+  }
+
+  void delete(dynamic key) {
+    if (frames.remove(key) != null) {
+      _deletedEntries++;
     }
   }
 
-  void deleteAll(List<dynamic> keys) {
-    for (var key in keys) {
-      if (entries.remove(key) != null) {
-        _deletedEntries++;
-      }
-    }
-  }
-
-  void beginAddTransaction(Map<dynamic, BoxEntry> newEntries) {
+  void beginAddTransaction(List<Frame> newFrames) {
     var transaction = _KeyTransaction();
-    for (var key in newEntries.keys) {
-      var deletedEntry = entries.remove(key);
-      if (deletedEntry != null) {
-        transaction.deleted[key] = deletedEntry;
+    for (var frame in newFrames) {
+      var key = frame.key;
+      var deletedFrame = frames.remove(key);
+      if (deletedFrame != null) {
+        transaction.deleted[key] = deletedFrame;
         _deletedEntries++;
       }
 
       transaction.added.add(key);
-      entries[key] = newEntries[key];
+      frames[key] = frame;
       if (key is int && key > _autoIncrement) {
         _autoIncrement = key;
       }
@@ -115,9 +126,9 @@ class Keystore {
   void beginDeleteTransaction(Iterable<dynamic> keys) {
     var transaction = _KeyTransaction();
     for (var key in keys) {
-      var deletedEntry = entries.remove(key);
-      if (deletedEntry != null) {
-        transaction.deleted[key] = deletedEntry;
+      var deletedFrame = frames.remove(key);
+      if (deletedFrame != null) {
+        transaction.deleted[key] = deletedFrame;
         _deletedEntries++;
       }
     }
@@ -157,36 +168,18 @@ class Keystore {
       }
 
       if (shouldAdd) {
-        entries[key] = canceled.deleted[key];
+        frames[key] = canceled.deleted[key];
       } else if (shouldDelete) {
-        entries.remove(key);
+        frames.remove(key);
       }
     }
   }
 
-  Map<dynamic, BoxEntry> clear() {
-    var oldEntries = Map.of(entries);
-    entries.clear();
+  Iterable<Frame> clear() {
+    var oldEntries = frames.values.toList();
+    frames.clear();
     _deletedEntries = 0;
     transactions.clear();
     return oldEntries;
-  }
-}
-
-class BoxEntry {
-  final dynamic value;
-  int offset;
-  int length;
-
-  BoxEntry(this.value, [this.offset, this.length]);
-
-  @override
-  bool operator ==(dynamic other) {
-    if (other is BoxEntry) {
-      return other.value == value &&
-          other.offset == offset &&
-          other.length == length;
-    }
-    return false;
   }
 }
