@@ -29,10 +29,10 @@ class WatchBoxBuilder extends StatefulWidget {
   final List<String> watchKeys;
 
   @override
-  WatchBoxBuilderState createState() => WatchBoxBuilderState();
+  _WatchBoxBuilderState createState() => _WatchBoxBuilderState();
 }
 
-class WatchBoxBuilderState extends State<WatchBoxBuilder> {
+class _WatchBoxBuilderState extends State<WatchBoxBuilder> {
   @visibleForTesting
   StreamSubscription subscription;
 
