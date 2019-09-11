@@ -1,3 +1,6 @@
+## 0.5.1
+- Bump Hive version
+
 ## 0.5.0
 - Support final members
 
