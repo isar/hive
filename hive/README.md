@@ -4,11 +4,12 @@
 
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
+- [Getting Started](https://leisim.github.io/hive/#/getting_started) ⚡
 - [Documentation](https://leisim.github.io/hive/) 📖
 - [Frequently Asked Questions](https://leisim.github.io/hive/#/faq) 🙋
 - [Samples](https://github.com/leisim/hive/tree/master/examples) 🔥
 
-*Hive is not ready for production yet. I'm working hard on a stable version.*
+*Hive is stable now.*
 
 ### Flutter Web Demos 🕸️
 - [Counter](https://leisim.github.io/hive/demos/counter)
@@ -22,7 +23,7 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 - Very good performance (see [benchmark](#benchmark))
 
 ### Easy to use ❤️
-- Keys are ints or Strings and values are arbitrary objects
+- Keys are of type String or uin32 and values are arbitrary objects
 - The basic operations are `put(key, value)`, `get(key)`, `delete(key)`
 - Strong encryption built in
 
@@ -40,6 +41,20 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 | SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
 
 This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/leisim/hive_benchmark).
+
+## Add Hive to project
+Add the following to your `pubspec.yaml`. Use the latest version instead of `[version]`.
+
+[![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner)
+
+```yaml
+dependencies:
+  hive: [version]
+
+dev_dependencies:
+  hive_generator: [version]
+  build_runner: [version]
+```
 
 ## Hive ❤️ Flutter
 
@@ -75,6 +90,7 @@ The work on Hive has just started. If you want to contribute, it would be amazin
 - [x] Benchmarks and comparison
 - [x] Finalize API
 - [x] Even more tests
+- [ ] Queries
 - [ ] Improve documentation
 - [ ] Write binary format spec
 - [ ] You can never have enough tests
