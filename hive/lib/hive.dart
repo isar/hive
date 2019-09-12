@@ -7,7 +7,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/hive_object.dart';
 import 'package:meta/meta.dart';
+
+export 'package:hive/src/hive_object.dart' hide initHiveObject;
 
 part 'src/annotations/hive_field.dart';
 part 'src/annotations/hive_type.dart';
@@ -20,7 +23,6 @@ part 'src/registry/type_adapter.dart';
 part 'src/query/hive_query.dart';
 part 'src/query/query_result.dart';
 part 'src/hive_error.dart';
-part 'src/hive_object.dart';
 part 'src/hive.dart';
 
 /// Global constant to access Hive.

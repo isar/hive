@@ -1,4 +1,11 @@
-part of hive;
+import 'package:hive/hive.dart';
+
+void initHiveObject(dynamic object, Box box, dynamic key) {
+  if (object is HiveObject) {
+    object._box = box;
+    object._key = key;
+  }
+}
 
 class HiveObject {
   Box _box;
@@ -9,12 +16,6 @@ class HiveObject {
 
   dynamic get key => _key;
 
-  @protected
-  void init(Box box, dynamic key) {
-    _box = box;
-    _key = key;
-  }
-
   Future<void> save() {
     return _box.put(_key, this);
   }
@@ -23,5 +24,5 @@ class HiveObject {
     return _box.delete(_key);
   }
 
-  bool get inHive => _box != null;
+  bool get inHive => _box.containsKey(key);
 }

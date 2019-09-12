@@ -6,6 +6,7 @@ import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/hive_object.dart';
 
 class LazyBoxImpl extends BoxBase implements LazyBox {
   LazyBoxImpl(
@@ -32,10 +33,7 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
 
     if (frame != null) {
       var value = await backend.readValue(frame);
-      if (value is HiveObject) {
-        // ignore: invalid_use_of_protected_member
-        value.init(this, key);
-      }
+      initHiveObject(value, this, key);
       return value;
     } else {
       return defaultValue;

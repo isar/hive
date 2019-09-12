@@ -8,6 +8,7 @@ import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/hive_object.dart';
 
 class BoxImpl extends BoxBase implements Box {
   BoxImpl(
@@ -27,6 +28,8 @@ class BoxImpl extends BoxBase implements Box {
     checkOpen();
     return keystore.getValues();
   }
+
+  Iterable<Frame> get frames => keystore.frames.values;
 
   @override
   dynamic get(dynamic key, {dynamic defaultValue}) {
@@ -54,6 +57,7 @@ class BoxImpl extends BoxBase implements Box {
     checkOpen();
     var frame = Frame(key, value);
     keystore.beginAddTransaction([frame]);
+    initHiveObject(value, this, key);
     return _writeFrame(frame);
   }
 
@@ -89,6 +93,7 @@ class BoxImpl extends BoxBase implements Box {
     var frames = <Frame>[];
     for (var key in kvPairs.keys) {
       var value = kvPairs[key];
+      initHiveObject(value, this, key);
       frames.add(Frame(key, value));
     }
 

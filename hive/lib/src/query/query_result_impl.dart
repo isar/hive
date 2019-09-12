@@ -1,37 +1,34 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
 
-class QueryResultImpl<T> extends QueryResult<T> {
-  HiveQueryImpl _query;
-  List<Frame> cachedFrames;
+class QueryResultImpl<T extends HiveObject> extends QueryResult<T> {
+  final HiveQueryImpl<T> _query;
+  List<T> cachedItems;
+
+  QueryResultImpl(this._query, this.cachedItems);
 
   @override
   List<dynamic> get keys {
-    var keys = List(cachedFrames.length);
-    for (var i = 0; i < cachedFrames.length; i++) {
-      keys[i] = cachedFrames[i].key;
+    var keys = List(cachedItems.length);
+    for (var i = 0; i < cachedItems.length; i++) {
+      keys[i] = cachedItems[i].key;
     }
     return keys;
   }
 
   @override
   List<T> get values {
-    var values = List<T>(cachedFrames.length);
-    for (var i = 0; i < cachedFrames.length; i++) {
-      values[i] = cachedFrames[i].value as T;
-    }
-    return values;
+    return cachedItems.toList();
   }
 
   @override
-  bool get isEmpty => cachedFrames.isEmpty;
+  bool get isEmpty => cachedItems.isEmpty;
 
   @override
-  bool get isNotEmpty => cachedFrames.isNotEmpty;
+  bool get isNotEmpty => cachedItems.isNotEmpty;
 
   @override
-  int get length => cachedFrames.length;
+  int get length => cachedItems.length;
 
   @override
   Future<void> deleteAll() {
@@ -39,19 +36,15 @@ class QueryResultImpl<T> extends QueryResult<T> {
   }
 
   @override
-  Future<void> updateAll() {
-    return _query.box.putAll(toMap());
-  }
-
   void refresh() {
-    //cachedFrames =
+    cachedItems = _query.evaluateSorted();
   }
 
   @override
   Map<dynamic, T> toMap() {
     var map = <dynamic, T>{};
-    for (var frame in cachedFrames) {
-      map[frame.key] = frame.value as T;
+    for (var item in cachedItems) {
+      map[item.key] = item;
     }
     return map;
   }

@@ -1,6 +1,6 @@
 part of hive;
 
-abstract class QueryResult<T> {
+abstract class QueryResult<T extends HiveObject> {
   List<dynamic> get keys;
 
   List<T> get values;
