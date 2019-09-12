@@ -13,11 +13,14 @@ part 'src/annotations/hive_field.dart';
 part 'src/annotations/hive_type.dart';
 part 'src/binary/binary_reader.dart';
 part 'src/binary/binary_writer.dart';
-part 'src/registry/type_registry.dart';
-part 'src/registry/type_adapter.dart';
 part 'src/box/box.dart';
 part 'src/box/lazy_box.dart';
+part 'src/registry/type_registry.dart';
+part 'src/registry/type_adapter.dart';
+part 'src/query/hive_query.dart';
+part 'src/query/query_result.dart';
 part 'src/hive_error.dart';
+part 'src/hive_object.dart';
 part 'src/hive.dart';
 
 /// Global constant to access Hive.

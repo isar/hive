@@ -25,15 +25,20 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
       throw UnsupportedError('Only non-lazy boxes have this property.');
 
   @override
-  Future<dynamic> get(dynamic key, {dynamic defaultValue}) {
+  Future<dynamic> get(dynamic key, {dynamic defaultValue}) async {
     checkOpen();
 
     var frame = keystore.get(key);
 
     if (frame != null) {
-      return backend.readValue(frame);
+      var value = await backend.readValue(frame);
+      if (value is HiveObject) {
+        // ignore: invalid_use_of_protected_member
+        value.init(this, key);
+      }
+      return value;
     } else {
-      return Future.value(defaultValue);
+      return defaultValue;
     }
   }
 
