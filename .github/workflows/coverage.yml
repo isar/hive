@@ -1,0 +1,22 @@
+name: Coverage
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  coverage-hive:
+    runs-on: ubuntu-latest
+    
+    container:
+      image:  google/dart:latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Collect coverage
+      run: sh tool/coverage_hive.sh
+    - uses: codecov/codecov-action@v1.0.0	
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}	
+        file: hive/coverage/lcov.info
