@@ -1,40 +1,36 @@
 part of hive;
 
-abstract class HiveQuery<T extends HiveObject> {
+abstract class HiveQuery<E extends HiveObject> {
   const HiveQuery();
 
-  HiveQuery<T> filter<E extends T>(Predicate<E> predicate);
+  HiveQuery<E> filter<T extends E>(Predicate<T> predicate);
 
-  HiveQuery<T> exclude<E extends T>(Predicate<E> predicate);
+  HiveQuery<E> exclude<T extends E>(Predicate<T> predicate);
 
-  HiveQuery<T> limit(int limit);
+  HiveQuery<E> limit(int limit);
 
-  HiveQuery<T> order();
+  HiveQuery<E> order();
 
-  HiveQuery<T> orderBy(
-    ValueComparable<T> value, [
+  HiveQuery<E> orderBy(
+    ValueComparable<E> value, [
     Sorting sorting = Sorting.asc,
-    ValueComparable<T> value2,
+    ValueComparable<E> value2,
     Sorting sorting2,
-    ValueComparable<T> value3,
+    ValueComparable<E> value3,
     Sorting sorting3,
   ]);
 
-  HiveQuery<T> orderWith(Comparator<T> comparator);
+  HiveQuery<E> orderWith(Comparator<E> comparator);
 
-  QueryResult<T> findFirst();
+  HiveResults<E> findFirst({bool autoUpdate = false});
 
-  QueryResult<T> findAll();
-
-  QueryResult<T> watchFirst();
-
-  QueryResult<T> watchAll();
+  HiveResults<E> findAll({bool autoUpdate = false});
 
   int count();
 }
 
 enum Sorting { asc, desc }
 
-typedef Predicate<T> = bool Function(T item);
+typedef Predicate<E> = bool Function(E item);
 
-typedef ValueComparable<T> = Comparable Function(T item);
+typedef ValueComparable<E> = Comparable Function(E item);

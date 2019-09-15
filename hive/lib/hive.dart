@@ -21,7 +21,7 @@ part 'src/box/lazy_box.dart';
 part 'src/registry/type_registry.dart';
 part 'src/registry/type_adapter.dart';
 part 'src/query/hive_query.dart';
-part 'src/query/query_result.dart';
+part 'src/query/hive_results.dart';
 part 'src/hive_error.dart';
 part 'src/hive.dart';
 

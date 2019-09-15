@@ -1,28 +1,28 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/query/query_result_impl.dart';
+import 'package:hive/src/query/hive_results_impl.dart';
 
 int _dynamicCompare(dynamic a, dynamic b) =>
     Comparable.compare(a as Comparable, b as Comparable);
 
-Comparator<T> _defaultCompare<T>() {
+Comparator<E> _defaultCompare<E>() {
   // If K <: Comparable, then we can just use Comparable.compare
   // with no casts.
   Object compare = Comparable.compare;
-  if (compare is Comparator<T>) {
+  if (compare is Comparator<E>) {
     return compare;
   }
   // Otherwise wrap and cast the arguments on each call.
   return _dynamicCompare;
 }
 
-class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
+class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
   final Box box;
 
-  final List<Predicate<T>> filters;
+  final List<Predicate<E>> filters;
 
   final int itemLimit;
 
-  final Comparator<T> sortingComparator;
+  final Comparator<E> sortingComparator;
 
   factory HiveQueryImpl(Box box) {
     return HiveQueryImpl._(box, [], null, null);
@@ -32,13 +32,13 @@ class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
       this.box, this.filters, this.itemLimit, this.sortingComparator);
 
   @override
-  HiveQuery<T> filter<E extends T>(Predicate<E> predicate) {
-    Predicate<T> filter;
-    if (predicate is Predicate<T>) {
+  HiveQuery<E> filter<T extends E>(Predicate<T> predicate) {
+    Predicate<E> filter;
+    if (predicate is Predicate<E>) {
       filter = predicate;
     } else {
       filter = (item) {
-        if (item is E) {
+        if (item is T) {
           return predicate(item);
         } else {
           return true;
@@ -50,27 +50,27 @@ class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
   }
 
   @override
-  HiveQuery<T> exclude<E extends T>(Predicate<E> predicate) {
-    return filter<T>((item) {
-      return item is E && !predicate(item);
+  HiveQuery<E> exclude<T extends E>(Predicate<T> predicate) {
+    return filter<E>((item) {
+      return item is T && !predicate(item);
     });
   }
 
   @override
-  HiveQueryImpl<T> order() {
+  HiveQueryImpl<E> order() {
     if (sortingComparator != null) {
       throw HiveError('An order is already specified.');
     }
-    return HiveQueryImpl._(box, filters, itemLimit, _defaultCompare<T>());
+    return HiveQueryImpl._(box, filters, itemLimit, _defaultCompare<E>());
   }
 
   @override
-  HiveQuery<T> orderBy(
-    ValueComparable<T> value, [
+  HiveQuery<E> orderBy(
+    ValueComparable<E> value, [
     Sorting sorting = Sorting.asc,
-    ValueComparable<T> value2,
+    ValueComparable<E> value2,
     Sorting sorting2 = Sorting.asc,
-    ValueComparable<T> value3,
+    ValueComparable<E> value3,
     Sorting sorting3 = Sorting.asc,
   ]) {
     if (sortingComparator != null) {
@@ -88,7 +88,7 @@ class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
     if (sorting3 == Sorting.desc) {
       sort3 = -1;
     }
-    Comparator<T> comparator;
+    Comparator<E> comparator;
     if (value3 != null) {
       comparator = (a, b) {
         var result = sort * value(a).compareTo(value(b));
@@ -117,7 +117,7 @@ class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
   }
 
   @override
-  HiveQuery<T> orderWith(Comparator<T> comparator) {
+  HiveQuery<E> orderWith(Comparator<E> comparator) {
     if (sortingComparator != null) {
       throw HiveError('An order is already specified.');
     }
@@ -125,19 +125,19 @@ class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
   }
 
   @override
-  HiveQuery<T> limit(int limit) {
+  HiveQuery<E> limit(int limit) {
     if (itemLimit != null) {
       throw HiveError('A limit is already specified.');
     }
     return HiveQueryImpl._(box, filters, limit, sortingComparator);
   }
 
-  List<T> evaluate() {
-    var newList = <T>[];
+  List<E> evaluate() {
+    var newList = <E>[];
     var values = box.values;
     itemLoop:
     for (var item in values) {
-      if (item is T) {
+      if (item is E) {
         for (var predicate in filters) {
           if (!predicate(item)) {
             continue itemLoop;
@@ -152,31 +152,15 @@ class HiveQueryImpl<T extends HiveObject> extends HiveQuery<T> {
     return newList;
   }
 
-  List<T> evaluateSorted() {
-    var list = evaluate();
-    if (sortingComparator != null) {
-      list.sort(sortingComparator);
-    }
-    return list;
+  @override
+  HiveResults<E> findFirst({bool autoUpdate = false}) {
+    return HiveQueryImpl<E>._(box, filters, 1, sortingComparator).findAll();
   }
 
   @override
-  QueryResult<T> findFirst() {
-    return HiveQueryImpl<T>._(box, filters, 1, sortingComparator).findAll();
+  HiveResults<E> findAll({bool autoUpdate = false}) {
+    return HiveResultsImpl<E>(this);
   }
-
-  @override
-  QueryResult<T> findAll() {
-    return QueryResultImpl(this, evaluateSorted());
-  }
-
-  @override
-  QueryResult<T> watchFirst() {
-    return HiveQueryImpl<T>._(box, filters, 1, sortingComparator).watchFirst();
-  }
-
-  @override
-  QueryResult<T> watchAll() {}
 
   @override
   int count() => evaluate().length;

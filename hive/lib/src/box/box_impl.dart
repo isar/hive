@@ -9,8 +9,9 @@ import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/hive_object.dart';
+import 'package:hive/src/query/hive_query_impl.dart';
 
-class BoxImpl extends BoxBase implements Box {
+class BoxImpl extends BoxBase {
   BoxImpl(
     HiveImpl hive,
     String name,
@@ -50,6 +51,11 @@ class BoxImpl extends BoxBase implements Box {
     } else {
       return defaultValue;
     }
+  }
+
+  @override
+  HiveQuery<T> query<T extends HiveObject>() {
+    return HiveQueryImpl<T>(this);
   }
 
   @override
