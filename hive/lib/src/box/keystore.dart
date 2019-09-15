@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
 class _KeyTransaction {
@@ -19,7 +20,7 @@ int _compareKeys(dynamic k1, dynamic k2) {
 
 class Keystore {
   @visibleForTesting
-  final Map<dynamic, Frame> frames;
+  final IndexableSkipList<dynamic, Frame> frames;
 
   @visibleForTesting
   final ListQueue<_KeyTransaction> transactions = ListQueue();
@@ -28,7 +29,7 @@ class Keystore {
   var _autoIncrement = -1;
 
   Keystore([KeyComparator keyComparator])
-      : frames = SplayTreeMap(keyComparator ?? _compareKeys);
+      : frames = IndexableSkipList(keyComparator ?? _compareKeys);
 
   factory Keystore.debug(Iterable<Frame> frames,
       [KeyComparator keyComparator]) {
