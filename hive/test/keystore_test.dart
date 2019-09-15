@@ -32,7 +32,7 @@ void main() {
       expect(keystore.containsKey('key2'), false);
     });
 
-    test('.keyAt()', () {
+    /*test('.keyAt()', () {
       var keystore = Keystore.debug([
         Frame('key1', null),
         Frame(2, null),
@@ -44,7 +44,7 @@ void main() {
       expect(keystore.keyAt(1), 2);
       expect(keystore.keyAt(2), '0');
       expect(keystore.keyAt(3), 'key1');
-    });
+    });*/
 
     test('.get()', () {
       var keystore = Keystore.debug([

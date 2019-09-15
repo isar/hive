@@ -80,7 +80,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   dynamic keyAt(int index) {
-    return keystore.keyAt(index);
+    return keystore.getAt(index).key;
   }
 
   Future<void> initialize() {
@@ -112,12 +112,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   Future<void> putAt(int index, dynamic value) {
-    return put(keystore.keyAt(index), value);
+    return put(keystore.getAt(index).key, value);
   }
 
   @override
   Future<void> deleteAt(int index) {
-    return delete(keystore.keyAt(index));
+    return delete(keystore.getAt(index).key);
   }
 
   @override

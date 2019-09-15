@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 class IndexableSkipList<K, V> {
@@ -10,19 +11,26 @@ class IndexableSkipList<K, V> {
     List.filled(maxHeight, 0),
   );
 
-  final Random random = Random();
+  final Random random;
 
   final Comparator<K> comparator;
+
+  final bool overrideExisting;
 
   int _height = 1;
 
   int _length = 0;
 
-  IndexableSkipList(this.comparator);
+  IndexableSkipList(this.comparator, this.overrideExisting, [Random random])
+      : random = random ?? Random();
 
   int get length => _length;
 
-  void set(K key, V value, bool overrideExisting) {
+  Iterable<K> get keys => _KeyIterable(_head);
+
+  Iterable<V> get values => _ValueIterable(_head);
+
+  void insert(K key, V value) {
     if (overrideExisting) {
       var node = _getNode(key);
       if (node != null) {
@@ -99,65 +107,88 @@ class IndexableSkipList<K, V> {
     _length++;
   }
 
-  V get(K key) => _getNode(key)?.value;
+  V delete(K key) {
+    var node = _getNode(key);
+    if (node == null) return null;
 
-  Node<K, V> _getNode(K key) {
-    var prev = _head;
-    Node<K, V> next;
-    for (var i = _height - 1; i >= 0; i--) {
-      next = prev.next[i];
+    var current = _head;
+    // Next & Down
+    for (var level = _height - 1; level >= 0; level--) {
+      while (true) {
+        var next = current.next[level];
+        if (next == null || comparator(key, next.key) <= 0) break;
+        current = next;
+      }
 
-      while (next != null && comparator(key, next.key) > 0) {
-        prev = next;
-        next = next.next[i];
+      if (level > node.level) {
+        var next = current.next[level];
+        if (next != null) {
+          next.width[level]--;
+        }
+      } else {
+        current.next[level] = node.next[level];
+        var next = node.next[level];
+        if (next != null) {
+          next.width[level] += node.width[level] - 1;
+        }
       }
     }
 
-    if (next != null && comparator(key, next.key) == 0) {
-      return next;
+    if (node.level == _height &&
+        _height > 1 &&
+        _head.next[node.level] == null) {
+      _height--;
+    }
+
+    _length--;
+    return node.value;
+  }
+
+  V get(K key) => _getNode(key)?.value;
+
+  bool containsKey(K key) => _getNode(key) != null;
+
+  Node<K, V> _getNode(K key) {
+    var prev = _head;
+    Node<K, V> node;
+    for (var i = _height - 1; i >= 0; i--) {
+      node = prev.next[i];
+
+      while (node != null && comparator(key, node.key) > 0) {
+        prev = node;
+        node = node.next[i];
+      }
+    }
+
+    if (node != null && comparator(key, node.key) == 0) {
+      return node;
     }
     return null;
   }
 
   V getAt(int index) {
-    var skipped = -1;
-    var current = _head;
-    for (var i = _height - 1; i >= 0; i--) {
-      var next = current.next[i];
+    var prev = _head;
+    Node<K, V> node;
+    for (var level = _height - 1; level >= 0; level--) {
+      node = prev.next[level];
 
-      if (next == null) {
-        // we've reach the end of this level, go down to
-        // the next one
-        continue;
-      }
-
-      var width = next.width[i];
-      if (skipped + width > index) {
-        // if we were to move forward, we'd end up skipping too much
-        // so it's time to go down to the next level
-        continue;
-      }
-
-      // ok, we know for sure we can move forward and, at least the
-      // first node can be "consumed"
-      current = next;
-      while (true) {
-        skipped += current.width[i];
-
-        // we've found our node
-        if (skipped == index) {
-          return current.value;
-        }
-
-        next = current.next[i];
-        if (next == null || next.width[i] + skipped > index) {
-          // the next element is either nil, or consuming it
-          // would skip too much, break and go to the next levle
-          break;
-        }
+      while (node != null && index >= node.width[level]) {
+        index -= node.width[level];
+        prev = node;
+        node = node.next[level];
       }
     }
-    return null;
+
+    return node.value;
+  }
+
+  void clear() {
+    _height = 1;
+    for (var i = 0; i < maxHeight; i++) {
+      _head.next[i] = null;
+    }
+    _height = 1;
+    _length = 0;
   }
 
   void draw() {
@@ -196,6 +227,8 @@ class Node<K, V> {
 
   final List<int> width;
 
+  int get level => next.length - 1;
+
   Node(this.key, this.value, this.next, this.width);
 }
 
@@ -215,11 +248,27 @@ class _KeyIterator<K, V> extends _Iterator<K, V, K> {
   K get current => node.key;
 }
 
-//class _KeyIterable<K, V> extends EfficientLengthIterable {}
+class _KeyIterable<K, V> extends IterableBase<K> {
+  final Node<K, V> head;
+
+  _KeyIterable(this.head);
+
+  @override
+  Iterator<K> get iterator => _KeyIterator(head);
+}
 
 class _ValueIterator<K, V> extends _Iterator<K, V, V> {
   _ValueIterator(Node<K, V> node) : super(node);
 
   @override
   V get current => node.value;
+}
+
+class _ValueIterable<K, V> extends IterableBase<V> {
+  final Node<K, V> head;
+
+  _ValueIterable(this.head);
+
+  @override
+  Iterator<V> get iterator => _ValueIterator(head);
 }

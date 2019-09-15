@@ -42,7 +42,7 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
 
   @override
   Future<dynamic> getAt(int index, {dynamic defaultValue}) {
-    var key = keystore.keyAt(index);
+    var key = keystore.getAt(index).key;
     if (key != null) {
       return get(key);
     } else {

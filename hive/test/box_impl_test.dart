@@ -74,10 +74,10 @@ void main() {
       var keystore = Keystore.debug([Frame(0, 'zero'), Frame('a', 'A')]);
       var box = getBox(keystore: keystore);
 
-      expect(box.getAt(-1, defaultValue: 123), 123);
       expect(box.getAt(0), 'zero');
       expect(box.getAt(1), 'A');
       expect(box.getAt(2), null);
+      expect(box.getAt(3, defaultValue: 123), 123);
     });
 
     group('.put()', () {

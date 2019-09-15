@@ -75,9 +75,9 @@ void main() {
       when(backend.readValue(Frame('a', null))).thenAnswer((i) async => 'A');
       var box = getBox(keystore: keystore, backend: backend);
 
-      expect(await box.getAt(-1, defaultValue: 123), 123);
       expect(await box.getAt(1), 'A');
       expect(await box.getAt(2), null);
+      expect(await box.getAt(3, defaultValue: 123), 123);
     });
 
     group('.put()', () {
@@ -207,8 +207,8 @@ void main() {
 
         await expectLater(
           () async => await box.putAll(
-                {'key1': 'value1', 'key2': 'value2'},
-              ),
+            {'key1': 'value1', 'key2': 'value2'},
+          ),
           throwsA(anything),
         );
         verifyInOrder([

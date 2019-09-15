@@ -45,9 +45,9 @@ class BoxImpl extends BoxBase {
 
   @override
   dynamic getAt(int index, {dynamic defaultValue}) {
-    var key = keystore.keyAt(index);
-    if (key != null) {
-      return get(key);
+    var frame = keystore.getAt(index);
+    if (frame != null) {
+      return frame.value;
     } else {
       return defaultValue;
     }
