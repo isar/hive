@@ -110,7 +110,8 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
       };
     } else {
       comparator = (a, b) {
-        return sort * value(a).compareTo(value(b));
+        var result = sort * value(a).compareTo(value(b));
+        return result;
       };
     }
     return HiveQueryImpl._(box, filters, itemLimit, comparator);

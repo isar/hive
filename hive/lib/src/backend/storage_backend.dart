@@ -15,8 +15,6 @@ abstract class StorageBackend {
 
   Future<dynamic> readValue(Frame frame);
 
-  Future<void> writeFrame(Frame frame);
-
   Future<void> writeFrames(List<Frame> frames);
 
   Future<List<Frame>> compact(Iterable<Frame> frames);

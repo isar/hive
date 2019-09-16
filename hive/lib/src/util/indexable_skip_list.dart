@@ -41,7 +41,7 @@ class IndexableSkipList<K, V> {
 
     // calculate this new node's level
     var newLevel = 0;
-    while (random.nextBool() && newLevel < maxHeight) {
+    while (random.nextBool() && newLevel < maxHeight - 1) {
       newLevel++;
     }
     if (newLevel > _height) {
@@ -146,8 +146,6 @@ class IndexableSkipList<K, V> {
 
   V get(K key) => _getNode(key)?.value;
 
-  bool containsKey(K key) => _getNode(key) != null;
-
   Node<K, V> _getNode(K key) {
     var prev = _head;
     Node<K, V> node;
@@ -166,7 +164,11 @@ class IndexableSkipList<K, V> {
     return null;
   }
 
-  V getAt(int index) {
+  V getAt(int index) => _getNodeAt(index).value;
+
+  K getKeyAt(int index) => _getNodeAt(index).key;
+
+  Node<K, V> _getNodeAt(int index) {
     var prev = _head;
     Node<K, V> node;
     for (var level = _height - 1; level >= 0; level--) {
@@ -179,7 +181,7 @@ class IndexableSkipList<K, V> {
       }
     }
 
-    return node.value;
+    return node;
   }
 
   void clear() {

@@ -1,13 +1,13 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/query/delegating_result_list.dart';
+import 'package:hive/src/query/delegating_results_list.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
 
-class HiveResultsImpl<T extends HiveObject> extends HiveResults<T>
-    with DelegatingResultList<T> {
-  final HiveQueryImpl<T> _query;
+class HiveResultsImpl<E extends HiveObject> extends DelegatingResultsList<E>
+    implements HiveResults<E> {
+  final HiveQueryImpl<E> _query;
 
   @override
-  List<T> resultItems;
+  List<E> resultItems;
 
   HiveResultsImpl(this._query) {
     refresh();
@@ -54,8 +54,8 @@ class HiveResultsImpl<T extends HiveObject> extends HiveResults<T>
   }
 
   @override
-  Map<dynamic, T> toMap() {
-    var map = <dynamic, T>{};
+  Map<dynamic, E> toMap() {
+    var map = <dynamic, E>{};
     for (var item in resultItems) {
       map[item.key] = item;
     }
@@ -63,21 +63,8 @@ class HiveResultsImpl<T extends HiveObject> extends HiveResults<T>
   }
 
   @override
-  void addChangeListener() {
-    throw UnsupportedError(
-        'Only auto updating HiveResults support change listeners.');
-  }
-
-  @override
-  void removeChangeListener() {
-    throw UnsupportedError(
-        'Only auto updating HiveResults support change listeners.');
-  }
-
-  @override
-  void removeAllChangeListeners() {
-    throw UnsupportedError(
-        'Only auto updating HiveResults support change listeners.');
+  Stream<HiveResults<E>> watch() {
+    throw UnsupportedError('Only auto updating HiveResults watching.');
   }
 
   @override

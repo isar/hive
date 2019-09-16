@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
@@ -94,6 +95,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   }
 
   @override
+  Future<void> put(dynamic key, dynamic value) => putAll({key: value});
+
+  @override
+  Future<void> delete(dynamic key) => deleteAll([key]);
+
+  @override
   Future<int> add(dynamic value) async {
     var key = keystore.autoIncrement();
     await put(key, value);
@@ -127,9 +134,8 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     await backend.clear();
     var oldFrames = keystore.clear();
 
-    for (var frame in oldFrames) {
-      notifier.notify(frame.key, null, true);
-    }
+    var deleted = oldFrames.map((f) => Frame.deleted(f.key));
+    notifier.notify(deleted);
 
     return oldFrames.length;
   }

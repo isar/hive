@@ -17,11 +17,9 @@ abstract class HiveResults<E extends HiveObject> implements List<E> {
 
   Map<dynamic, E> toMap();
 
-  void addChangeListener();
-
-  void removeChangeListener();
-
-  void removeAllChangeListeners();
+  Stream<HiveResults<E>> watch();
 
   void close();
 }
+
+typedef OnChange = void Function();

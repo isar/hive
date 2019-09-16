@@ -55,7 +55,7 @@ class Keystore {
   }
 
   bool containsKey(dynamic key) {
-    return frames.containsKey(key);
+    return frames.get(key) != null;
   }
 
   Frame get(dynamic key) {
@@ -84,7 +84,7 @@ class Keystore {
 
   void add(Frame frame) {
     var key = frame.key;
-    if (frames.containsKey(key)) {
+    if (frames.get(key) != null) {
       _deletedEntries++;
     }
     if (key is int && key > _autoIncrement) {

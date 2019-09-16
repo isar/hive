@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/binary_reader_impl.dart';
+import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
@@ -116,29 +118,18 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> writeFrame(Frame frame) async {
-    var bytes = frame.toBytes(_registry, _crypto);
-    frame.offset = await _file.write(bytes);
-    frame.length = bytes.length;
-  }
-
-  @override
   Future<void> writeFrames(List<Frame> frames) async {
-    var bytes = BytesBuilder(copy: false);
-    var lengths = <int>[];
+    var writer = BinaryWriterImpl(_registry);
+
     for (var frame in frames) {
-      var frameBytes = frame.toBytes(_registry, _crypto);
-      bytes.add(frameBytes);
-      lengths.add(frameBytes.length);
+      frame.length = frame.toBytes(writer, _crypto);
     }
 
-    var offset = await _file.write(bytes.toBytes());
+    var writeOffset = await _file.write(writer.toBytes());
 
-    var i = 0;
     for (var frame in frames) {
-      frame.offset = offset;
-      frame.length = lengths[i++];
-      offset += frame.length;
+      frame.offset = writeOffset;
+      writeOffset += frame.length;
     }
   }
 
