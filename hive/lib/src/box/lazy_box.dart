@@ -15,5 +15,17 @@ abstract class LazyBox extends Box {
 
   /// Not supported for lazy boxes.
   @override
+  HiveQuery<T> query<T extends HiveObject>();
+
+  /// Not supported for lazy boxes.
+  @override
+  List<E> listView<E>();
+
+  /// Not supported for lazy boxes.
+  @override
+  Map<dynamic, E> mapView<E>();
+
+  /// Not supported for lazy boxes.
+  @override
   Map<dynamic, dynamic> toMap();
 }

@@ -7,6 +7,8 @@ import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/box/list_view.dart';
+import 'package:hive/src/box/map_view.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/hive_object.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
@@ -122,4 +124,10 @@ class BoxImpl extends BoxBase {
     checkOpen();
     return keystore.toValueMap();
   }
+
+  @override
+  List<E> listView<E>() => ListView<E>(this);
+
+  @override
+  Map<dynamic, E> mapView<E>() => MapView<E>(this);
 }
