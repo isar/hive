@@ -1,20 +1,20 @@
-<img src="https://raw.githubusercontent.com/leisim/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
+<img src="https://raw.githubusercontent.com/hivedb/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
 
-[![Dart CI](https://github.com/leisim/hive/workflows/Dart%20CI/badge.svg)](https://github.com/leisim/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/leisim/hive.svg)](https://codecov.io/gh/leisim/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator)
+[![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Flutter version](https://img.shields.io/pub/v/hive_flutter.svg?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator)
 
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
-- [Getting Started](https://leisim.github.io/hive/#/getting_started) ⚡
-- [Documentation](https://leisim.github.io/hive/) 📖
-- [Frequently Asked Questions](https://leisim.github.io/hive/#/faq) 🙋
-- [Samples](https://github.com/leisim/hive/tree/master/examples) 🔥
+- [Getting Started](https://hivedb.github.io/hive/#/getting_started) ⚡
+- [Documentation](https://hivedb.github.io/hive/) 📖
+- [Frequently Asked Questions](https://hivedb.github.io/hive/#/faq) 🙋
+- [Samples](https://github.com/hivedb/hive/tree/master/examples) 🔥
 
 *Hive is stable now.*
 
 ### Flutter Web Demos 🕸️
-- [Counter](https://leisim.github.io/hive/demos/counter)
-- [Sketchpad](https://leisim.github.io/hive/demos/sketchpad)
-- [Todo App](https://leisim.github.io/hive/demos/todo)
+- [Counter](https://hivedb.github.io/hive/demos/counter)
+- [Sketchpad](https://hivedb.github.io/hive/demos/sketchpad)
+- [Todo App](https://hivedb.github.io/hive/demos/todo)
 
 ## Features
 
@@ -37,10 +37,10 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 
 |Read	1000 entries |Write 1000 entries|
 |:------------:|:------------:|
-|	![](https://raw.githubusercontent.com/leisim/hive/master/.github/benchmark_read.png) |	![](https://raw.githubusercontent.com/leisim/hive/master/.github/benchmark_write.png) |
+|	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_read.png) |	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_write.png) |
 | SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
 
-This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/leisim/hive_benchmark).
+This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
 
 ## Add Hive to project
 Add the following to your `pubspec.yaml`. Use the latest version instead of `[version]`.

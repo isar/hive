@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-git clone -b gh-pages https://github.com/leisim/hive pages
+git clone -b gh-pages https://github.com/hivedb/hive pages
 
 cd pages
 
@@ -13,4 +13,4 @@ git config --global user.name "hivebot"
 
 git add -A
 git diff-index --quiet HEAD || git commit -m "Update docs"
-git push "https://${PUSH_TOKEN}@github.com/leisim/hive.git"
+git push "https://${PUSH_TOKEN}@github.com/hivedb/hive.git"
