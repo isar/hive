@@ -7,7 +7,7 @@ export FLUTTER_WEB=true
 
 flutter build web --release
 
-git clone -b gh-pages https://github.com/leisim/hive
+git clone -b gh-pages https://github.com/hivedb/hive
 
 rm -rf hive/demos/$APP
 cp -R build/web hive/demos/$APP
@@ -19,4 +19,4 @@ git config --global user.name "hivebot"
 
 git add -A
 git diff-index --quiet HEAD || git commit -m "$APP build"
-git push "https://${PUSH_TOKEN}@github.com/leisim/hive.git"
+git push "https://${PUSH_TOKEN}@github.com/hivedb/hive.git"

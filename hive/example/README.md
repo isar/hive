@@ -1,3 +1,3 @@
 ### Hive samples
 
-Go [here](https://github.com/leisim/hive/tree/master/examples) for samples using Hive.
+Go [here](https://github.com/hivedb/hive/tree/master/examples) for samples using Hive.

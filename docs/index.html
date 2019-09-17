@@ -23,9 +23,9 @@
   <script>
     window.$docsify = {
       alias: {
-        "/changelog": "https://raw.githubusercontent.com/leisim/hive/master/hive/CHANGELOG.md",
+        "/changelog": "https://raw.githubusercontent.com/hivedb/hive/master/hive/CHANGELOG.md",
       },
-      repo: 'https://github.com/leisim/hive/',
+      repo: 'https://github.com/hivedb/hive/',
       loadSidebar: true,
       coverpage: true,
       auto2top: true,
@@ -38,7 +38,7 @@
         function (hook, vm) {
           hook.beforeEach(function (html) {
             if (!vm.route.file.startsWith('http')) {
-              var url = 'https://github.com/leisim/hive/blob/master/docs/' + vm.route.file
+              var url = 'https://github.com/hivedb/hive/blob/master/docs/' + vm.route.file
               var editHtml = '[:memo: Edit on Github](' + url + ')<br>'
               return editHtml + '\n' + html
             } else {
