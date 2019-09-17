@@ -17,6 +17,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   int _offset = 0;
 
+  int get offset => _offset;
+
   ByteData get _byteData {
     _byteDataInstance ??= ByteData.view(_buffer.buffer);
     return _byteDataInstance;
@@ -294,6 +296,10 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       resolved.adapter.write(this, value);
     }
+  }
+
+  Uint8List view(int offset, int length) {
+    return Uint8List.view(_buffer.buffer, offset, length);
   }
 
   Uint8List toBytes() {

@@ -80,10 +80,10 @@ void main() {
         var keystore = Keystore();
         await backend.initialize(null, keystore, false, false);
 
-        expect(keystore.frames, {
-          'key1': Frame('key1', null, length: 3, offset: 3),
-          'key3': Frame('key3', 'value3', length: 2, offset: 5),
-        });
+        expect(keystore.frames.values, [
+          Frame('key1', null, length: 3, offset: 3),
+          Frame('key3', 'value3', length: 2, offset: 5),
+        ]);
         expect(keystore.deletedEntries, 2);
       });
 
@@ -105,10 +105,10 @@ void main() {
         var keystore = Keystore();
         await backend.initialize(null, keystore, true, false);
 
-        expect(keystore.frames, {
-          'key1': Frame.lazy('key1', length: 3, offset: 3),
-          'key3': Frame.lazy('key3', length: 2, offset: 5),
-        });
+        expect(keystore.frames.values, [
+          Frame.lazy('key1', length: 3, offset: 3),
+          Frame.lazy('key3', length: 2, offset: 5),
+        ]);
         expect(keystore.deletedEntries, 2);
       });
     });

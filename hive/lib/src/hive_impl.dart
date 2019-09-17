@@ -78,7 +78,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   Future<Box> openBoxInternal(String name, BoxOptions options) async {
     CryptoHelper crypto;
-    if (options.encrypted) {
+    if (options.encryptionKey != null) {
       crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
     }
 

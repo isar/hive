@@ -101,8 +101,8 @@ class Frame {
     return value;
   }
 
-  Uint8List toBytes(TypeRegistry registry, CryptoHelper crypto) {
-    var writer = BinaryWriterImpl(registry);
+  int toBytes(BinaryWriterImpl writer, CryptoHelper crypto) {
+    var initialOffset = writer.offset;
 
     // Placeholder for length
     writer.writeByteList([0, 0, 0, 0], writeLength: false);
@@ -124,20 +124,19 @@ class Frame {
       encodeValue(value, writer, crypto);
     }
 
-    writer
-        .writeByteList([0, 0, 0, 0], writeLength: false); // Placeholder for CRC
+    var writtenBytesCount = writer.offset - initialOffset;
+    var writtenBytes = writer.view(initialOffset, writtenBytesCount);
+    var lengthIncludingCrc = writtenBytesCount + 4;
 
-    var bytes = writer.toBytes();
+    writtenBytes[0] = lengthIncludingCrc;
+    writtenBytes[1] = lengthIncludingCrc >> 8;
+    writtenBytes[2] = lengthIncludingCrc >> 16;
+    writtenBytes[3] = lengthIncludingCrc >> 24;
 
-    var byteData = ByteData.view(bytes.buffer);
-    byteData.setUint32(0, bytes.length, Endian.little); // Write length
+    var checksum = Crc32.compute(writtenBytes, crc: crypto?.keyCrc ?? 0);
+    writer.writeUint32(checksum);
 
-    var bytesWithoutCRC = Uint8List.view(bytes.buffer, 0, bytes.length - 4);
-    var checksum = Crc32.compute(bytesWithoutCRC, crc: crypto?.keyCrc ?? 0);
-
-    byteData.setUint32(bytes.length - 4, checksum, Endian.little);
-
-    return bytes;
+    return lengthIncludingCrc;
   }
 
   static void encodeValue(

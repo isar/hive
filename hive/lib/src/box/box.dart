@@ -89,6 +89,8 @@ abstract class Box implements TypeRegistry {
   /// exist.
   dynamic getAt(int index, {dynamic defaultValue});
 
+  HiveQuery<T> query<T extends HiveObject>();
+
   /// Saves the [key] - [value] pair.
   Future<void> put(dynamic key, dynamic value);
 

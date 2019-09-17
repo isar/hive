@@ -14,6 +14,4 @@ class BoxOptions {
     this.compactionStrategy,
     this.crashRecovery,
   });
-
-  bool get encrypted => encryptionKey != null;
 }

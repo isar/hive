@@ -145,15 +145,6 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<void> writeFrame(Frame frame) async {
-    if (frame.deleted) {
-      await getStore(true).delete(frame.key);
-    } else {
-      await getStore(true).put(encodeValue(frame.value), frame.key);
-    }
-  }
-
-  @override
   Future<void> writeFrames(List<Frame> frames) async {
     var store = getStore(true);
     for (var frame in frames) {

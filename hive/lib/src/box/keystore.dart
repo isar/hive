@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
 class _KeyTransaction {
@@ -19,7 +20,7 @@ int _compareKeys(dynamic k1, dynamic k2) {
 
 class Keystore {
   @visibleForTesting
-  final Map<dynamic, Frame> frames;
+  final IndexableSkipList<dynamic, Frame> frames;
 
   @visibleForTesting
   final ListQueue<_KeyTransaction> transactions = ListQueue();
@@ -28,7 +29,7 @@ class Keystore {
   var _autoIncrement = -1;
 
   Keystore([KeyComparator keyComparator])
-      : frames = SplayTreeMap(keyComparator ?? _compareKeys);
+      : frames = IndexableSkipList(keyComparator ?? _compareKeys, true);
 
   factory Keystore.debug(Iterable<Frame> frames,
       [KeyComparator keyComparator]) {
@@ -54,21 +55,15 @@ class Keystore {
   }
 
   bool containsKey(dynamic key) {
-    return frames.containsKey(key);
-  }
-
-  dynamic keyAt(int index) {
-    var keys = frames.keys;
-    var keyIndex = 0;
-    for (var key in keys) {
-      if (index == keyIndex) return key;
-      keyIndex++;
-    }
-    return null;
+    return frames.get(key) != null;
   }
 
   Frame get(dynamic key) {
-    return frames[key];
+    return frames.get(key);
+  }
+
+  Frame getAt(int index) {
+    return frames.getAt(index);
   }
 
   Iterable<dynamic> getKeys() {
@@ -89,17 +84,17 @@ class Keystore {
 
   void add(Frame frame) {
     var key = frame.key;
-    if (frames.containsKey(key)) {
+    if (frames.get(key) != null) {
       _deletedEntries++;
     }
     if (key is int && key > _autoIncrement) {
       _autoIncrement = key;
     }
-    frames[key] = frame;
+    frames.insert(key, frame);
   }
 
   void delete(dynamic key) {
-    if (frames.remove(key) != null) {
+    if (frames.delete(key) != null) {
       _deletedEntries++;
     }
   }
@@ -108,14 +103,14 @@ class Keystore {
     var transaction = _KeyTransaction();
     for (var frame in newFrames) {
       var key = frame.key;
-      var deletedFrame = frames.remove(key);
+      var deletedFrame = frames.delete(key);
       if (deletedFrame != null) {
         transaction.deleted[key] = deletedFrame;
         _deletedEntries++;
       }
 
       transaction.added.add(key);
-      frames[key] = frame;
+      frames.insert(key, frame);
       if (key is int && key > _autoIncrement) {
         _autoIncrement = key;
       }
@@ -126,7 +121,7 @@ class Keystore {
   void beginDeleteTransaction(Iterable<dynamic> keys) {
     var transaction = _KeyTransaction();
     for (var key in keys) {
-      var deletedFrame = frames.remove(key);
+      var deletedFrame = frames.delete(key);
       if (deletedFrame != null) {
         transaction.deleted[key] = deletedFrame;
         _deletedEntries++;
@@ -168,9 +163,9 @@ class Keystore {
       }
 
       if (shouldAdd) {
-        frames[key] = canceled.deleted[key];
+        frames.insert(key, canceled.deleted[key]);
       } else if (shouldDelete) {
-        frames.remove(key);
+        frames.delete(key);
       }
     }
   }
