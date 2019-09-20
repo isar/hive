@@ -1,5 +1,3 @@
-# Apps that show how to use Hive
-
 ## Simple Counter
 
 This app works almost exactly like the hello world flutter app. But it will store the counter value in Hive.

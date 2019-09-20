@@ -1,5 +1,3 @@
-# Hive & Flutter
-
 ## WatchBoxBuilder
 
 The `WatchBoxBuilder` widget can be used to refresh parts of your app when the data in Hive changes.

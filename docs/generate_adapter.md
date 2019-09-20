@@ -1,5 +1,3 @@
-# Generate Adapter
-
 The [hive_generator](https://pub.dev/packages/hive_generator) automatically generates `TypeAdapter`s for almost any class.
 
 1. To generate a `TypeAdapter` for a class, annotate it with `@HiveType`

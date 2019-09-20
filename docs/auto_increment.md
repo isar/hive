@@ -1,5 +1,3 @@
-# Auto increment & indices
-
 We already know that Hive supports unsigned integer keys. You can use auto increment keys if you like. This is very useful for storing and accessing multiple objects. You can use a Box like a list.
 
 ```dart

@@ -1,5 +1,3 @@
-# Frequently Asked Questions
-
 ### Which platforms does Hive support?
 Hive supports all platforms where the dart vm runs plus browsers. On browsers the IndexedDB is used as backend.
 

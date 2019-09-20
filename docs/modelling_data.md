@@ -1,5 +1,3 @@
-# Modelling data
-
 Hive does not have a query language and only has limited support for sorting. This is not necessarily a disadvantage as you can see in the benchmark. Sorting and filtering is much faster if you do it yourself in Dart.
 
 Since Key-value stores are really simple, data can be modeled in a less complicated manner than for example in SQLite. There is no schema and you can store different objects in the same box. But there are a few things you should keep in mind.

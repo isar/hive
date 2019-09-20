@@ -1,5 +1,3 @@
-# Delete key
-
 If you want to change an existing value, you can either override it using for example `put()` or delete it:
 
 ```dart

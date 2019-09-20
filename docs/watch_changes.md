@@ -1,5 +1,3 @@
-# Watch changes
-
 If you want to get notified about changes in a box, you can subscribe to the `Stream` returned by `box.watch()`. Every `put()`, `putAll()`, `delete()` and `deleteAll()` operation will be broadcasted to that stream.
 
 This can be very useful for Flutter apps: You can rebuild widgets every time the box changes.

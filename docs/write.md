@@ -1,5 +1,3 @@
-# Write to box
-
 Writing to a box is almost like writing to a map. All keys have to be ASCII Strings with a max lenght of 255 chars or unsinged 32 bit integers.
 
 ```dart
@@ -38,4 +36,4 @@ await lazyBox.put('key2', 'value2');
 print(lazyBox.get('key2')); // value2
 ```
 
-?> Writing `null` is **NOT** the same as [deleting](delete.md) a value.
+*Writing `null` is **NOT** the same as [deleting](delete.md) a value.*

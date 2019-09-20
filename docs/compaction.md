@@ -1,5 +1,3 @@
-# Compaction
-
 Hive is an append-only data store. When you change or delete a value, the change is written to the end of the box file. This leads sooner or later to a growing box file. Hive may automatically "compact" your box at any time.
 
 It may benefit the start time of your app if you induce compaction manually before you close a box.
@@ -20,4 +18,4 @@ var box = await Hive.openBox('myBox', compactionStrategy: (entries, deletedEntri
 
 This will compact your box when 50 keys have been overridden or deleted.
 
-!> **NEVER** access a box from the compaction strategy.
+**Important:** NEVER access a box from the compaction strategy.

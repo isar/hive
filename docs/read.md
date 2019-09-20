@@ -1,5 +1,3 @@
-# Read from box
-
 Reading from a box is very straightforward:
 
 ```dart
