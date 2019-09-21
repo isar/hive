@@ -28,4 +28,6 @@ Both of these operations do the same thing. They replace `Marco` with `Ben`. `pu
 
 This also works with String keys.
 
-?> Even if you only use auto increment keys, you should not rely on keys and indices being the same.
+{% hint style="info" %}
+Even if you only use auto increment keys, you should not rely on keys and indices being the same.
+{% endhint %}

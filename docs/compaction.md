@@ -18,4 +18,6 @@ var box = await Hive.openBox('myBox', compactionStrategy: (entries, deletedEntri
 
 This will compact your box when 50 keys have been overridden or deleted.
 
-**Important:** NEVER access a box from the compaction strategy.
+{% hint style="danger" %}
+**NEVER** access a box from the compaction strategy.
+{% endhint %}

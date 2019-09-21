@@ -36,4 +36,6 @@ await lazyBox.put('key2', 'value2');
 print(lazyBox.get('key2')); // value2
 ```
 
-*Writing `null` is **NOT** the same as [deleting](delete.md) a value.*
+{% hint style="info" %}
+Writing `null` is **NOT** the same as [deleting](delete.md) a value.
+{% endhint %}

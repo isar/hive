@@ -1,3 +1,5 @@
+# Hive Documentation
+
 ## Add Hive to project
 Add the following to your `pubspec.yaml`. Use the latest version instead of `[version]`.
 
@@ -39,7 +41,7 @@ Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. An
 ```dart
 box.put('name', 'David');
 
-var name = box.get('myDog');
+var name = box.get('name');
 
 print('Name: $name');
 ```
