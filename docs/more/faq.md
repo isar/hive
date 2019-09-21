@@ -6,11 +6,11 @@ Hive supports all platforms where the dart vm runs plus browsers. On browsers th
 
 ## When should I use Hive
 
-[When to use Hive](https://github.com/hivedb/hive/tree/c988c6f82ee0287682235344df179be1e2684cb0/docs/when_to_use_hive?id=when-to-use-hive/README.md)
+[When to use Hive](../best-practices/when_to_use_hive.md#when-to-use-hive)
 
 ## When should I not use Hive
 
-[When not to use Hive](https://github.com/hivedb/hive/tree/c988c6f82ee0287682235344df179be1e2684cb0/docs/when_to_use_hive?id=when-not-to-use-hive/README.md)
+[When not to use Hive](../best-practices/when_to_use_hive.md#when-not-to-use-hive)
 
 ## Where does Hive store my data?
 

@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Introduction](README.md)
+* [Hive Documentation](README.md)
 
 ## Boxes
 
@@ -11,7 +11,7 @@
 * [Auto increment & indices](boxes/auto_increment.md)
 * [Watch changes](boxes/watch_changes.md)
 
-## TypeAdapters
+## Type Adapters <a id="typeadapters"></a>
 
 * [What is a TypeAdapter?](typeadapters/type_adapters.md)
 * [Generate adapter](typeadapters/generate_adapter.md)
@@ -35,5 +35,4 @@
 * [Browser support](more/browser.md)
 * [Frequently Asked Questions](more/faq.md)
 * [Limitations](more/limitations.md)
-* [Changelog](more/changelog.md)
 
