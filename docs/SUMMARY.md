@@ -1,29 +1,39 @@
+# Table of contents
+
+* [Introduction](README.md)
+
 ## Boxes
-* [What are boxes?](boxes.md)
-* [Write](write.md)
-* [Read](read.md)
-* [Delete](delete.md)
-* [Auto increment & indices](auto_increment.md)
-* [Watch changes](watch_changes.md)
+
+* [What are boxes?](boxes/boxes.md)
+* [Write](boxes/write.md)
+* [Read](boxes/read.md)
+* [Delete](boxes/delete.md)
+* [Auto increment & indices](boxes/auto_increment.md)
+* [Watch changes](boxes/watch_changes.md)
 
 ## TypeAdapters
-* [What is a TypeAdapter?](type_adapters.md)
-* [Generate adapter](generate_adapter.md)
-* [Create adapter manually](create_adapter_manually.md)
+
+* [What is a TypeAdapter?](typeadapters/type_adapters.md)
+* [Generate adapter](typeadapters/generate_adapter.md)
+* [Create adapter manually](typeadapters/create_adapter_manually.md)
 
 ## Advanced
-* [Lazy box](lazy_box.md)
-* [Encrypted box](encrypted_box.md)
-* [Compaction](compaction.md)
+
+* [Lazy box](advanced/lazy_box.md)
+* [Encrypted box](advanced/encrypted_box.md)
+* [Compaction](advanced/compaction.md)
 
 ## Best Practices
-* [Modelling data](modelling_data.md)
-* [Hive & Flutter](hive_and_flutter.md)
-* [When to use Hive](when_to_use_hive.md)
+
+* [Modelling data](best-practices/modelling_data.md)
+* [Hive & Flutter](best-practices/hive_and_flutter.md)
+* [When to use Hive](best-practices/when_to_use_hive.md)
 
 ## More
-* [Examples](examples.md)
-* [Browser support](browser.md)
-* [Frequently Asked Questions](faq.md)
-* [Limitations](limitations.md)
-* [Changelog](changelog.md)
+
+* [Examples](more/examples.md)
+* [Browser support](more/browser.md)
+* [Frequently Asked Questions](more/faq.md)
+* [Limitations](more/limitations.md)
+* [Changelog](more/changelog.md)
+

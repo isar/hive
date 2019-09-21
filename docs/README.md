@@ -1,6 +1,7 @@
-# Hive Documentation
+# Introduction
 
 ## Add Hive to project
+
 Add the following to your `pubspec.yaml`. Use the latest version instead of `[version]`.
 
 [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner)
@@ -24,7 +25,7 @@ Hive.init('path/to/hive');
 
 If you use a directory outside your app files, make sure to request runtime permission on Android.
 
-*In the browser you don't have to call `Hive.init()`.*
+_In the browser you don't have to call `Hive.init()`._
 
 ## Open a Box
 
@@ -36,7 +37,7 @@ var box = await Hive.openBox('testBox');
 
 ## Read & Write
 
-Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](generate_adapter.md)
+Hive supports all primitive types, `List`, `Map`, `DateTime` and `Uint8List`. Any object can be can stored using [TypeAdapters](typeadapters/generate_adapter.md)
 
 ```dart
 box.put('name', 'David');
@@ -45,3 +46,4 @@ var name = box.get('name');
 
 print('Name: $name');
 ```
+

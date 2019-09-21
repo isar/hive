@@ -1,3 +1,5 @@
+# Read
+
 Reading from a box is very straightforward:
 
 ```dart
@@ -12,4 +14,5 @@ If the key does not exist, `null` is returned. Optionally you can specify a `def
 double height = box.get('randomKey', defaultValue: 17.5);
 ```
 
-Lists returned by `get()` are always of type `List<dynamic>` (Maps of type `Map<dynamic, dynamic>`). Use `list.cast<SomeType>()` to cast them to a specific type.
+Lists returned by `get()` are always of type `List<dynamic>` \(Maps of type `Map<dynamic, dynamic>`\). Use `list.cast<SomeType>()` to cast them to a specific type.
+
