@@ -1,7 +1,7 @@
 import 'package:hive/src/query/unmodifiable_results_list.dart';
 
 abstract class DelegatingResultsList<E> extends UnmodifiableResultsList<E> {
-  List<E> get resultItems;
+  final List<E> resultItems = [];
 
   @override
   E get first => resultItems.first;

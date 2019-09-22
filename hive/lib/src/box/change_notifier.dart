@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/query/hive_results_live_impl.dart';
 import 'package:meta/meta.dart';
 
 class ChangeNotifier {

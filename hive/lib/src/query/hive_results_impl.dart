@@ -6,12 +6,12 @@ class HiveResultsImpl<E extends HiveObject> extends DelegatingResultsList<E>
     implements HiveResults<E> {
   final HiveQueryImpl<E> _query;
 
-  @override
-  List<E> resultItems;
-
   HiveResultsImpl(this._query) {
     refresh();
   }
+
+  @override
+  HiveQuery<E> get query => _query;
 
   @override
   Box get box => _query.box;
@@ -47,7 +47,8 @@ class HiveResultsImpl<E extends HiveObject> extends DelegatingResultsList<E>
 
   @override
   void refresh() {
-    resultItems = _query.evaluate();
+    resultItems.clear();
+    _query.evaluate(resultItems, _query.resultOffset, _query.resultLimit);
     if (_query.sortingComparator != null) {
       resultItems.sort(_query.sortingComparator);
     }
@@ -64,6 +65,16 @@ class HiveResultsImpl<E extends HiveObject> extends DelegatingResultsList<E>
 
   @override
   Stream<HiveResults<E>> watch() {
+    throw UnsupportedError('Only auto updating HiveResults watching.');
+  }
+
+  @override
+  Stream<E> watchFirst() {
+    throw UnsupportedError('Only auto updating HiveResults watching.');
+  }
+
+  @override
+  Stream<E> watchLast() {
     throw UnsupportedError('Only auto updating HiveResults watching.');
   }
 

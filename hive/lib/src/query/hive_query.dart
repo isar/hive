@@ -7,29 +7,29 @@ abstract class HiveQuery<E extends HiveObject> {
 
   HiveQuery<E> exclude<T extends E>(Predicate<T> predicate);
 
+  HiveQuery<E> offset(int offset);
+
   HiveQuery<E> limit(int limit);
 
-  HiveQuery<E> order();
+  HiveQuery<E> order([Sort sort = Sort.asc]);
 
   HiveQuery<E> orderBy(
     ValueComparable<E> value, [
-    Sorting sorting = Sorting.asc,
+    Sort sort = Sort.asc,
     ValueComparable<E> value2,
-    Sorting sorting2,
+    Sort sort2,
     ValueComparable<E> value3,
-    Sorting sorting3,
+    Sort sort3,
   ]);
 
-  HiveQuery<E> orderWith(Comparator<E> comparator);
+  HiveQuery<E> orderWith(Comparator<E> comparator, [Sort sort = Sort.asc]);
 
-  HiveResults<E> findFirst({bool autoUpdate = false});
-
-  HiveResults<E> findAll({bool autoUpdate = false});
+  HiveResults<E> find({bool autoUpdate = false});
 
   int count();
 }
 
-enum Sorting { asc, desc }
+enum Sort { asc, desc }
 
 typedef Predicate<E> = bool Function(E item);
 

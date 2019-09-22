@@ -24,5 +24,5 @@ class HiveObject {
     return _box.delete(_key);
   }
 
-  bool get inHive => _box.containsKey(key);
+  bool get isInHive => _box.containsKey(key);
 }

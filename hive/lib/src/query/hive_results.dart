@@ -1,9 +1,11 @@
 part of hive;
 
 abstract class HiveResults<E extends HiveObject> implements List<E> {
-  List<dynamic> get keys;
+  HiveQuery<E> get query;
 
   Box get box;
+
+  List<dynamic> get keys;
 
   Future<void> deleteAllFromHive();
 
@@ -19,7 +21,9 @@ abstract class HiveResults<E extends HiveObject> implements List<E> {
 
   Stream<HiveResults<E>> watch();
 
+  Stream<E> watchFirst();
+
+  Stream<E> watchLast();
+
   void close();
 }
-
-typedef OnChange = void Function();

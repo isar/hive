@@ -7,13 +7,12 @@ class HiveResultsLiveImpl<E extends HiveObject>
     extends DelegatingResultsListLive<E> implements HiveResults<E> {
   final HiveQueryImpl<E> _query;
 
-  IndexableSkipList<E, void> resultItems;
-
-  Set<OnChange> changeListeners = {};
-
   HiveResultsLiveImpl(this._query) {
     refresh();
   }
+
+  @override
+  HiveQuery<E> get query => _query;
 
   @override
   Box get box => _query.box;
@@ -65,4 +64,26 @@ class HiveResultsLiveImpl<E extends HiveObject>
 
   @override
   void close() {}
+
+  @override
+  // TODO: implement resultItems
+  IndexableSkipList<E, void> get resultItems => null;
+
+  @override
+  Stream<HiveResults<E>> watch() {
+    // TODO: implement watch
+    return null;
+  }
+
+  @override
+  Stream<E> watchFirst() {
+    // TODO: implement watchFirst
+    return null;
+  }
+
+  @override
+  Stream<E> watchLast() {
+    // TODO: implement watchLast
+    return null;
+  }
 }

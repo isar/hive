@@ -15,7 +15,7 @@ Uint8List getBytes(List<Uint8List> list) {
   for (var b in list) {
     builder.add(b);
   }
-  return builder.toBytes() as Uint8List;
+  return builder.toBytes();
 }
 
 class FrameIoHelperTest extends FrameIoHelper {

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
