@@ -26,6 +26,13 @@ abstract class HiveInterface implements TypeRegistry {
     bool lazy = false,
   });
 
+  Future<Box> openBoxFromBytes(
+    String name,
+    Uint8List bytes, {
+    List<int> encryptionKey,
+    KeyComparator keyComparator,
+  });
+
   /// Returns a previously opened box.
   Box box(String name);
 

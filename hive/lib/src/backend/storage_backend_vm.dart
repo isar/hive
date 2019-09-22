@@ -89,7 +89,7 @@ class StorageBackendVm extends StorageBackend {
       recoveryOffset = await _helper.keysFromFile(path, frames, _crypto);
     }
 
-    if (recoveryOffset != null) {
+    if (recoveryOffset != -1) {
       if (crashRecovery) {
         print('Recovering corrupted box.');
         await _file.truncate(recoveryOffset);

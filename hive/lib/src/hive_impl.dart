@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
+import 'package:hive/src/backend/storage_backend_memory.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/box_options.dart';
@@ -11,6 +12,7 @@ import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:meta/meta.dart';
 
 import 'backend/storage_backend.dart';
 
@@ -40,6 +42,17 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     _boxes.clear();
   }
 
+  @visibleForTesting
+  CryptoHelper getCryptoHelper(List<int> encryptionKey) {
+    if (encryptionKey == null) return null;
+    if (encryptionKey.length != 32 ||
+        encryptionKey.any((it) => it < 0 || it > 255)) {
+      throw ArgumentError(
+          'The encryption key has to be a 32 byte (256 bit) array.');
+    }
+    return CryptoHelper(Uint8List.fromList(encryptionKey));
+  }
+
   @override
   Future<Box> openBox(
     String name, {
@@ -52,16 +65,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (isBoxOpen(name)) {
       return box(name);
     } else {
-      if (encryptionKey != null) {
-        if (encryptionKey.length != 32 ||
-            encryptionKey.any((it) => it < 0 || it > 255)) {
-          throw ArgumentError(
-              'The encryption key has to be a 32 byte (256 bit) array.');
-        }
-      }
-
+      var crypto = getCryptoHelper(encryptionKey);
       var options = BoxOptions(
-        lazy: lazy,
         encryptionKey: encryptionKey,
         keyComparator: keyComparator,
         compactionStrategy: defaultCompactionStrategy,
@@ -69,29 +74,46 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       );
 
       var lowercaseName = name.toLowerCase();
-      var box = await openBoxInternal(lowercaseName, options);
+      var backend = await openBackend(this, name, crypto);
+      BoxBase box;
+      if (lazy) {
+        box = LazyBoxImpl(this, name, options, backend);
+      } else {
+        box = BoxImpl(this, name, options, backend);
+      }
+      await box.initialize();
       _boxes[lowercaseName] = box;
 
       return box;
     }
   }
 
-  Future<Box> openBoxInternal(String name, BoxOptions options) async {
-    CryptoHelper crypto;
-    if (options.encryptionKey != null) {
-      crypto = CryptoHelper(Uint8List.fromList(options.encryptionKey));
-    }
-
-    var backend = await openBackend(this, name, crypto);
-    BoxBase box;
-    if (options.lazy) {
-      box = LazyBoxImpl(this, name, options, backend);
+  @override
+  Future<Box> openBoxFromBytes(
+    String name,
+    Uint8List bytes, {
+    List<int> encryptionKey,
+    KeyComparator keyComparator,
+  }) async {
+    if (isBoxOpen(name)) {
+      return box(name);
     } else {
-      box = BoxImpl(this, name, options, backend);
-    }
-    await box.initialize();
+      var crypto = getCryptoHelper(encryptionKey);
+      var options = BoxOptions(
+        encryptionKey: encryptionKey,
+        keyComparator: keyComparator,
+        compactionStrategy: defaultCompactionStrategy,
+        crashRecovery: false,
+      );
 
-    return box;
+      var lowercaseName = name.toLowerCase();
+      var backend = StorageBackendMemory(bytes, crypto);
+      var box = BoxImpl(this, name, options, backend);
+      await box.initialize();
+      _boxes[lowercaseName] = box;
+
+      return box;
+    }
   }
 
   @override
