@@ -47,9 +47,6 @@ class StorageBackendMemory extends StorageBackend {
   }
 
   @override
-  Future<void> writeFrame(Frame frame) => Future.value();
-
-  @override
   Future<void> writeFrames(List<Frame> frames) => Future.value();
 
   @override

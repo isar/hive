@@ -185,22 +185,6 @@ void main() {
       expect(await backend.readValue(Frame('key2', null)), null);
     });
 
-    test('.writeFrame()', () async {
-      var db = await getDbWith({});
-      var backend = StorageBackendJs(db, null);
-
-      var frame = Frame('key1', 123);
-      await backend.writeFrame(frame);
-      expect(frame, Frame('key1', 123));
-      expect(await backend.getKeys(), ['key1']);
-
-      await backend.writeFrame(Frame('key2', null));
-      expect(await backend.getKeys(), ['key1', 'key2']);
-
-      await backend.writeFrame(Frame.deleted('key1'));
-      expect(await backend.getKeys(), ['key2']);
-    });
-
     test('.writeFrames()', () async {
       var db = await getDbWith({});
       var backend = StorageBackendJs(db, null);

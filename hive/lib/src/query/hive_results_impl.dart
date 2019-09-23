@@ -18,9 +18,9 @@ class HiveResultsImpl<E extends HiveObject> extends DelegatingResultsList<E>
 
   @override
   List<dynamic> get keys {
-    var keys = List(resultItems.length);
-    for (var i = 0; i < resultItems.length; i++) {
-      keys[i] = resultItems[i].key;
+    var keys = List(results.length);
+    for (var i = 0; i < results.length; i++) {
+      keys[i] = results[i].key;
     }
     return keys;
   }
@@ -47,17 +47,17 @@ class HiveResultsImpl<E extends HiveObject> extends DelegatingResultsList<E>
 
   @override
   void refresh() {
-    resultItems.clear();
-    _query.evaluate(resultItems, _query.resultOffset, _query.resultLimit);
+    results.clear();
+    _query.evaluate(results, _query.resultOffset, _query.resultLimit);
     if (_query.sortingComparator != null) {
-      resultItems.sort(_query.sortingComparator);
+      results.sort(_query.sortingComparator);
     }
   }
 
   @override
   Map<dynamic, E> toMap() {
     var map = <dynamic, E>{};
-    for (var item in resultItems) {
+    for (var item in results) {
       map[item.key] = item;
     }
     return map;

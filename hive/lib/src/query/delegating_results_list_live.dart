@@ -2,139 +2,186 @@ import 'package:hive/src/query/unmodifiable_results_list.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 
 abstract class DelegatingResultsListLive<E> extends UnmodifiableResultsList<E> {
-  IndexableSkipList<E, void> get resultItems;
+  final IndexableSkipList<E, void> results;
+
+  DelegatingResultsListLive(Comparator<E> comparator)
+      : results = IndexableSkipList(comparator, false);
 
   @override
-  E get first => resultItems.getKeyAt(0);
+  E get first => results.getKeyAt(0);
 
   @override
-  E get last => resultItems.getKeyAt(resultItems.length - 1);
+  E get last => results.getKeyAt(results.length - 1);
 
   @override
-  int get length => resultItems.length;
+  int get length => results.length;
 
   @override
-  List<E> operator +(List<E> other) => resultItems.keys.toList() + other;
+  List<E> operator +(List<E> other) => results.keys.toList() + other;
 
   @override
-  E operator [](int index) => resultItems.getKeyAt(index);
+  E operator [](int index) => results.getKeyAt(index);
 
   @override
-  bool any(bool Function(E element) test) => resultItems.keys.any(test);
+  bool any(bool Function(E element) test) => results.keys.any(test);
 
   @override
-  Map<int, E> asMap() => resultItems.keys.asMap();
+  Map<int, E> asMap() {
+    var map = <int, E>{};
+    var i = 0;
+    for (var element in this) {
+      map[i++] = element;
+    }
+    return map;
+  }
 
   @override
-  List<R> cast<R>() => resultItems.keys.cast<R>().toList();
+  List<R> cast<R>() => results.keys.cast<R>().toList();
 
   @override
-  bool contains(Object element) => resultItems.keys.contains(element);
+  bool contains(Object element) => results.keys.contains(element);
 
   @override
-  E elementAt(int index) => resultItems.getKeyAt(index);
+  E elementAt(int index) => results.getKeyAt(index);
 
   @override
-  bool every(bool Function(E element) test) => resultItems.keys.every(test);
+  bool every(bool Function(E element) test) => results.keys.every(test);
 
   @override
   Iterable<T> expand<T>(Iterable<T> Function(E element) f) =>
-      resultItems.keys.expand<T>(f);
+      results.keys.expand<T>(f);
 
   @override
   E firstWhere(bool Function(E element) test, {E Function() orElse}) =>
-      resultItems.keys.firstWhere(test, orElse: orElse);
+      results.keys.firstWhere(test, orElse: orElse);
 
   @override
   T fold<T>(T initialValue, T Function(T previousValue, E element) combine) =>
-      resultItems.keys.fold<T>(initialValue, combine);
+      results.keys.fold<T>(initialValue, combine);
 
   @override
-  Iterable<E> followedBy(Iterable<E> other) =>
-      resultItems.keys.followedBy(other);
+  Iterable<E> followedBy(Iterable<E> other) => results.keys.followedBy(other);
 
   @override
-  void forEach(void Function(E element) f) => resultItems.keys.forEach(f);
+  void forEach(void Function(E element) f) => results.keys.forEach(f);
 
   @override
-  Iterable<E> getRange(int start, int end) =>
-      resultItems.keys.getRange(start, end);
+  Iterable<E> getRange(int start, int end) => skip(start).take(end - start);
 
   @override
-  int indexOf(E element, [int start = 0]) => resultItems.keys.indexOf(element);
+  int indexOf(E element, [int start = 0]) {
+    var i = 0;
+    for (var e in skip(start)) {
+      if (e == element) return i;
+      i++;
+    }
+    return -1;
+  }
 
   @override
-  int indexWhere(bool Function(E element) test, [int start = 0]) =>
-      resultItems.keys.indexWhere(test, start);
+  int indexWhere(bool Function(E element) test, [int start = 0]) {
+    var i = 0;
+    for (var element in skip(start)) {
+      if (test(element)) return i;
+      i++;
+    }
+    return -1;
+  }
 
   @override
-  bool get isEmpty => resultItems.length == 0;
+  bool get isEmpty => results.length == 0;
 
   @override
-  bool get isNotEmpty => resultItems.length != 0;
+  bool get isNotEmpty => results.length != 0;
 
   @override
-  Iterator<E> get iterator => resultItems.keys.iterator;
+  Iterator<E> get iterator => results.keys.iterator;
 
   @override
-  String join([String separator = '']) => resultItems.keys.join(separator);
+  String join([String separator = '']) => results.keys.join(separator);
 
   @override
-  int lastIndexOf(E element, [int start]) =>
-      resultItems.lastIndexOf(element, start);
+  int lastIndexOf(E element, [int start]) {
+    var foundIndex = -1;
+    var i = 0;
+    for (var e in skip(start)) {
+      if (element == e) foundIndex = i;
+      i++;
+    }
+    return foundIndex;
+  }
 
   @override
-  int lastIndexWhere(bool Function(E element) test, [int start]) =>
-      resultItems.lastIndexWhere(test, start);
+  int lastIndexWhere(bool Function(E element) test, [int start]) {
+    var foundIndex = -1;
+    var i = 0;
+    for (var element in skip(start)) {
+      if (test(element)) foundIndex = i;
+      i++;
+    }
+    return foundIndex;
+  }
 
   @override
   E lastWhere(bool Function(E element) test, {E Function() orElse}) =>
-      resultItems.keys.lastWhere(test, orElse: orElse);
+      results.keys.lastWhere(test, orElse: orElse);
 
   @override
-  Iterable<T> map<T>(T Function(E e) f) => resultItems.keys.map<T>(f);
+  Iterable<T> map<T>(T Function(E e) f) => results.keys.map<T>(f);
 
   @override
   E reduce(E Function(E value, E element) combine) =>
-      resultItems.keys.reduce(combine);
+      results.keys.reduce(combine);
 
   @override
-  Iterable<E> get reversed => resultItems.keys.toList().reversed;
+  Iterable<E> get reversed => results.keys.toList().reversed;
 
   @override
-  E get single => resultItems.keys.single;
+  E get single => results.keys.single;
 
   @override
   E singleWhere(bool Function(E element) test, {E Function() orElse}) =>
-      resultItems.keys.singleWhere(test, orElse: orElse);
+      results.keys.singleWhere(test, orElse: orElse);
 
   @override
-  Iterable<E> skip(int count) => resultItems.keys.skip(count);
+  Iterable<E> skip(int count) => results.keys.skip(count);
 
   @override
   Iterable<E> skipWhile(bool Function(E value) test) =>
-      resultItems.keys.skipWhile(test);
+      results.keys.skipWhile(test);
 
   @override
-  List<E> sublist(int start, [int end]) => resultItems.sublist(start, end);
+  List<E> sublist(int start, [int end]) {
+    var list = <E>[];
+    var i = 0;
+    for (var element in this) {
+      if (i < start) {
+        continue;
+      } else if (i >= end) {
+        break;
+      }
+      list.add(element);
+      i++;
+    }
+    return list;
+  }
 
   @override
-  Iterable<E> take(int count) => resultItems.keys.take(count);
+  Iterable<E> take(int count) => results.keys.take(count);
 
   @override
   Iterable<E> takeWhile(bool Function(E value) test) =>
-      resultItems.keys.takeWhile(test);
+      results.keys.takeWhile(test);
 
   @override
-  List<E> toList({bool growable = true}) => resultItems.keys.toList();
+  List<E> toList({bool growable = true}) => results.keys.toList();
 
   @override
-  Set<E> toSet() => resultItems.keys.toSet();
+  Set<E> toSet() => results.keys.toSet();
 
   @override
-  Iterable<E> where(bool Function(E element) test) =>
-      resultItems.keys.where(test);
+  Iterable<E> where(bool Function(E element) test) => results.keys.where(test);
 
   @override
-  Iterable<T> whereType<T>() => resultItems.keys.whereType<T>();
+  Iterable<T> whereType<T>() => results.keys.whereType<T>();
 }

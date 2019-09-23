@@ -1,13 +1,12 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/query/delegating_results_list_live.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
-import 'package:hive/src/util/indexable_skip_list.dart';
 
 class HiveResultsLiveImpl<E extends HiveObject>
     extends DelegatingResultsListLive<E> implements HiveResults<E> {
   final HiveQueryImpl<E> _query;
 
-  HiveResultsLiveImpl(this._query) {
+  HiveResultsLiveImpl(this._query) : super(_query.sortingComparator) {
     refresh();
   }
 
@@ -19,9 +18,9 @@ class HiveResultsLiveImpl<E extends HiveObject>
 
   @override
   List<dynamic> get keys {
-    var keys = List(resultItems.length);
+    var keys = List(results.length);
     var i = 0;
-    for (var item in resultItems.keys) {
+    for (var item in results.keys) {
       keys[i++] = item.key;
     }
     return keys;
@@ -56,7 +55,7 @@ class HiveResultsLiveImpl<E extends HiveObject>
   @override
   Map<dynamic, E> toMap() {
     var map = <dynamic, E>{};
-    for (var item in resultItems.keys) {
+    for (var item in results.keys) {
       map[item.key] = item;
     }
     return map;
@@ -64,10 +63,6 @@ class HiveResultsLiveImpl<E extends HiveObject>
 
   @override
   void close() {}
-
-  @override
-  // TODO: implement resultItems
-  IndexableSkipList<E, void> get resultItems => null;
 
   @override
   Stream<HiveResults<E>> watch() {

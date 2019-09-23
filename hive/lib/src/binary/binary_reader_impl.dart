@@ -134,7 +134,7 @@ class BinaryReaderImpl extends BinaryReader {
     _requireBytes(length);
     var byteList = _buffer.sublist(_offset, _offset + length);
     _offset += length;
-    return byteList as Uint8List;
+    return byteList;
   }
 
   @override

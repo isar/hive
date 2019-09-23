@@ -119,12 +119,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   Future<void> putAt(int index, dynamic value) {
-    return put(keystore.getAt(index).key, value);
+    return putAll({keystore.getAt(index).key: value});
   }
 
   @override
   Future<void> deleteAt(int index) {
-    return delete(keystore.getAt(index).key);
+    return deleteAll([keystore.getAt(index).key]);
   }
 
   @override
