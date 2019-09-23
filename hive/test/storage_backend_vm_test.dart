@@ -126,19 +126,6 @@ void main() {
       expect(value, 123);
     });
 
-    test('.writeFrame()', () async {
-      var mockFile = SyncedFileMock();
-      when(mockFile.write(any)).thenAnswer((_) => Future.value(123));
-
-      var backend = StorageBackendVm(mockFile, null);
-
-      var frame = Frame('key', 'value');
-      var bytes = frame.toBytes(null, null);
-      await backend.writeFrame(frame);
-      verify(mockFile.write(bytes));
-      expect(frame, Frame('key', 'value', length: bytes.length, offset: 123));
-    });
-
     test('.writeFrames()', () async {
       var mockFile = SyncedFileMock();
       when(mockFile.write(any)).thenAnswer((_) => Future.value(10));
