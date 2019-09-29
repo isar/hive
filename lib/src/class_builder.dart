@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:hive_generator/src/builder.dart';
@@ -8,6 +10,7 @@ class ClassBuilder extends Builder {
   var mapChecker = const TypeChecker.fromRuntime(Map);
   var setChecker = const TypeChecker.fromRuntime(Set);
   var iterableChecker = const TypeChecker.fromRuntime(Iterable);
+  var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
 
   ClassBuilder(ClassElement cls, Map<int, FieldElement> fields)
       : super(cls, fields);
@@ -65,7 +68,7 @@ class ClassBuilder extends Builder {
   }
 
   String _cast(DartType type, String variable) {
-    if (iterableChecker.isAssignableFromType(type)) {
+    if (iterableChecker.isAssignableFromType(type) && !isUint8List(type)) {
       return '($variable as List)${_castIterable(type)}';
     } else if (mapChecker.isExactlyType(type)) {
       return '($variable as Map)${_castMap(type)}';
@@ -81,10 +84,14 @@ class ClassBuilder extends Builder {
         mapChecker.isExactlyType(type);
   }
 
+  bool isUint8List(DartType type) {
+    return uint8ListChecker.isExactlyType(type);
+  }
+
   String _castIterable(DartType type) {
     var paramType = type as ParameterizedType;
     var arg = paramType.typeArguments[0];
-    if (isMapOrIterable(arg)) {
+    if (isMapOrIterable(arg) && !isUint8List(arg)) {
       var cast = '';
       if (listChecker.isExactlyType(type)) {
         cast = '?.toList()';

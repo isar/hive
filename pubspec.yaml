@@ -1,6 +1,6 @@
 name: hive_generator
 description: Extension for Hive. Automatically generates TypeAdapters to store any class.
-version: 0.5.1
+version: 0.5.2
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/leisim/hive
 

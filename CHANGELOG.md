@@ -1,3 +1,6 @@
+## 0.5.2
+- Fix bug with Uint8Lists
+
 ## 0.5.1
 - Bump Hive version
 
