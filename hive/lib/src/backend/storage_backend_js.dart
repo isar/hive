@@ -66,7 +66,7 @@ class StorageBackendJs extends StorageBackend {
     Frame.encodeValue(value, frameWriter, _crypto);
 
     var bytes = frameWriter.toBytes();
-    var sublist = bytes.sublist(0, bytes.length) as Uint8List;
+    var sublist = bytes.sublist(0, bytes.length);
     return sublist.buffer;
   }
 
