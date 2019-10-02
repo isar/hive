@@ -25,42 +25,27 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
       throw UnsupportedError('Only non-lazy boxes have this property.');
 
   @override
-  Future<dynamic> get(dynamic key, {dynamic defaultValue}) {
+  Future<dynamic> get(dynamic key, {dynamic defaultValue}) async {
     checkOpen();
 
     var frame = keystore.get(key);
 
     if (frame != null) {
-      return backend.readValue(frame);
+      var value = await backend.readValue(frame);
+      return value;
     } else {
-      return Future.value(defaultValue);
+      return defaultValue;
     }
   }
 
   @override
   Future<dynamic> getAt(int index, {dynamic defaultValue}) {
-    var key = keystore.keyAt(index);
-    if (key != null) {
-      return get(key);
+    var frame = keystore.getAt(index);
+    if (frame != null) {
+      return get(frame.key);
     } else {
       return Future.value(defaultValue);
     }
-  }
-
-  @override
-  Future<void> put(dynamic key, dynamic value) async {
-    checkOpen();
-
-    if (key is int) {
-      keystore.updateAutoIncrement(key);
-    }
-
-    var frame = Frame(key, value);
-    await backend.writeFrame(frame);
-    keystore.add(Frame.lazy(key, length: frame.length, offset: frame.offset));
-    notifier.notify(key, value, false);
-
-    await performCompactionIfNeeded();
   }
 
   @override
@@ -84,23 +69,7 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
         offset: frame.offset,
       ));
     }
-
-    for (var frame in frames) {
-      notifier.notify(frame.key, frame.value, false);
-    }
-
-    await performCompactionIfNeeded();
-  }
-
-  @override
-  Future<void> delete(dynamic key) async {
-    checkOpen();
-
-    if (!keystore.containsKey(key)) return;
-
-    await backend.writeFrame(Frame.deleted(key));
-    keystore.delete(key);
-    notifier.notify(key, null, true);
+    notifier.notify(frames);
 
     await performCompactionIfNeeded();
   }
@@ -122,8 +91,8 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
 
     for (var frame in frames) {
       keystore.delete(frame.key);
-      notifier.notify(frame.key, frame.value, true);
     }
+    notifier.notify(frames);
 
     await performCompactionIfNeeded();
   }

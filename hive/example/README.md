@@ -1,3 +1,3 @@
 ### Hive samples
 
-Go [here](https://github.com/hivedb/hive/tree/master/examples) for samples using Hive.
+Go [here](https://docs.hivedb.dev/more/examples) for samples using Hive.

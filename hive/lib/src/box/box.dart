@@ -27,7 +27,7 @@ class BoxEvent {
 ///
 /// Read operations for normal boxes are ynchronous (the entries are in
 /// memory). Lazy boxes have asynchronous read operations.
-abstract class Box implements TypeRegistry {
+abstract class Box {
   /// The name of the box. Names are always lowercase.
   String get name;
 
@@ -103,7 +103,7 @@ abstract class Box implements TypeRegistry {
   Future<int> add(dynamic value);
 
   /// Saves all the [values] with auto-increment keys.
-  Future<List<int>> addAll(List<dynamic> values);
+  Future<Iterable<int>> addAll(Iterable<dynamic> values);
 
   /// Deletes the given [key] from the box.
   ///

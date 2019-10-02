@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -22,9 +23,11 @@ void main() {
         filteredEvents.add(e);
       });
 
-      notifier.notify('key1', null, true);
-      notifier.notify('key1', 'newVal', false);
-      notifier.notify('key2', 'newVal2', false);
+      notifier.notify([
+        Frame.deleted('key1'),
+        Frame('key1', 'newVal'),
+        Frame('key2', 'newVal2'),
+      ]);
 
       await Future.delayed(Duration(milliseconds: 1));
 

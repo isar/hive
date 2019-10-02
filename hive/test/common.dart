@@ -7,8 +7,6 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/io/synced_file.dart';
-import 'package:hive/src/util/lock.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
 import 'package:pointycastle/pointycastle.dart';
@@ -18,8 +16,6 @@ class HiveMock extends Mock implements HiveImpl {}
 
 class RAFMock extends Mock implements RandomAccessFile {}
 
-class LockMock extends Mock implements Lock {}
-
 class BinaryReaderMock extends Mock implements BinaryReader {}
 
 class BinaryWriterMock extends Mock implements BinaryWriter {}
@@ -27,8 +23,6 @@ class BinaryWriterMock extends Mock implements BinaryWriter {}
 class BackendMock extends Mock implements StorageBackend {}
 
 class ChangeNotifierMock extends Mock implements ChangeNotifier {}
-
-class SyncedFileMock extends Mock implements SyncedFile {}
 
 class SecureRandomMock extends Mock implements SecureRandom {}
 

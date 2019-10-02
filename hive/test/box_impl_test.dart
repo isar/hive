@@ -74,110 +74,10 @@ void main() {
       var keystore = Keystore.debug([Frame(0, 'zero'), Frame('a', 'A')]);
       var box = getBox(keystore: keystore);
 
-      expect(box.getAt(-1, defaultValue: 123), 123);
       expect(box.getAt(0), 'zero');
       expect(box.getAt(1), 'A');
       expect(box.getAt(2), null);
-    });
-
-    group('.put()', () {
-      test('value', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-        when(backend.supportsCompaction).thenReturn(true);
-        when(backend.compact(any)).thenAnswer((i) async => []);
-        when(keystore.containsKey(any)).thenReturn(false);
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-          cStrategy: (a, b) => true,
-        );
-
-        await box.put('key1', 'value1');
-        verifyInOrder([
-          keystore.beginAddTransaction([Frame('key1', 'value1')]),
-          notifier.notify('key1', 'value1', false),
-          backend.writeFrame(Frame('key1', 'value1')),
-          keystore.commitTransaction(),
-          backend.compact(any),
-        ]);
-      });
-
-      test('handles exceptions', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-
-        when(backend.writeFrame(any)).thenThrow('Some error');
-        when(keystore.containsKey(any)).thenReturn(true);
-        when(keystore.get(any)).thenReturn(Frame('key1', 'oldValue'));
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-        );
-
-        expect(
-            () async => await box.put('key1', 'newValue'), throwsA(anything));
-        verifyInOrder([
-          keystore.beginAddTransaction([Frame('key1', 'newValue')]),
-          notifier.notify('key1', 'newValue', false),
-          backend.writeFrame(Frame('key1', 'newValue')),
-          keystore.cancelTransaction(),
-          keystore.get('key1'),
-          notifier.notify('key1', 'oldValue', false),
-        ]);
-      });
-    });
-
-    group('.delete()', () {
-      test('does nothing when deleting a non existing key', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-        when(keystore.containsKey(any)).thenReturn(false);
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-        );
-
-        await box.delete('testKey');
-        await box.delete(123);
-        verifyZeroInteractions(backend);
-        verifyZeroInteractions(notifier);
-      });
-
-      test('delete key', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
-        when(backend.supportsCompaction).thenReturn(true);
-        when(backend.compact(any)).thenAnswer((i) async => []);
-        when(keystore.containsKey(any)).thenReturn(true);
-
-        var box = getBox(
-          backend: backend,
-          keystore: keystore,
-          notifier: notifier,
-          cStrategy: (a, b) => true,
-        );
-
-        await box.delete('key1');
-        verifyInOrder([
-          keystore.containsKey('key1'),
-          keystore.beginDeleteTransaction(['key1']),
-          notifier.notify('key1', null, true),
-          backend.writeFrame(Frame.deleted('key1')),
-          keystore.commitTransaction(),
-          backend.compact(any)
-        ]);
-      });
+      expect(box.getAt(3, defaultValue: 123), 123);
     });
 
     group('.putAll()', () {
@@ -202,8 +102,7 @@ void main() {
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
           ]),
-          notifier.notify('key1', 'value1', false),
-          notifier.notify('key2', 'value2', false),
+          notifier.notify([Frame('key1', 'value1'), Frame('key2', 'value2')]),
           backend.writeFrames([
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
@@ -239,17 +138,16 @@ void main() {
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
           ]),
-          notifier.notify('key1', 'value1', false),
-          notifier.notify('key2', 'value2', false),
+          notifier.notify([Frame('key1', 'value1'), Frame('key2', 'value2')]),
           backend.writeFrames([
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
           ]),
           keystore.cancelTransaction(),
           keystore.get('key1'),
-          notifier.notify('key1', 'oldValue1', false),
           keystore.get('key2'),
-          notifier.notify('key2', 'oldValue2', false),
+          notifier
+              .notify([Frame('key1', 'oldValue1'), Frame('key2', 'oldValue2')]),
         ]);
       });
     });
@@ -292,8 +190,7 @@ void main() {
           keystore.containsKey('key1'),
           keystore.containsKey('key2'),
           keystore.beginDeleteTransaction(['key1', 'key2']),
-          notifier.notify('key1', null, true),
-          notifier.notify('key2', null, true),
+          notifier.notify([Frame.deleted('key1'), Frame.deleted('key2')]),
           backend.writeFrames([
             Frame.deleted('key1'),
             Frame.deleted('key2'),

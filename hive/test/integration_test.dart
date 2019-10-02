@@ -161,6 +161,35 @@ void main() {
       test('lazy box', () async => performTest(true));
     });
 
+    group('put many entries simultaneously', () {
+      Future performTest(bool lazy) async {
+        var amount = isBrowser ? 10 : 100;
+        var box = await getBox(lazy);
+
+        Future putEntries() async {
+          for (var i = 0; i < amount; i++) {
+            await box.put('key$i', 'value$i');
+          }
+        }
+
+        var futures = <Future>[];
+        for (var i = 0; i < 10; i++) {
+          futures.add(putEntries());
+        }
+        await Future.wait(futures);
+
+        box = await reopenBox(box);
+        for (var i = 0; i < amount; i++) {
+          expect(await box.get('key$i'), 'value$i');
+        }
+        await box.close();
+      }
+
+      test('normal box', () async => performTest(false));
+
+      test('lazy box', () async => performTest(true));
+    });
+
     group('delete many entries', () {
       Future performTest(bool lazy) async {
         var amount = isBrowser ? 1000 : 20000;

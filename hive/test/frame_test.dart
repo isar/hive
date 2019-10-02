@@ -11,8 +11,10 @@ void main() {
       test('frames', () {
         var i = 0;
         for (var frame in testFrames) {
-          var bytes = frame.toBytes(testRegistry, null);
-          expect(bytes, frameBytes[i]);
+          var writer = BinaryWriterImpl(testRegistry);
+          var count = frame.toBytes(writer, null);
+          expect(writer.toBytes(), frameBytes[i]);
+          expect(count, frameBytes[i].length);
           i++;
         }
       });
@@ -20,8 +22,10 @@ void main() {
       test('encrypted frames', () {
         var i = 0;
         for (var frame in testFrames) {
-          var bytes = frame.toBytes(testRegistry, testCrypto);
-          expect(bytes, frameBytesEncrypted[i]);
+          var writer = BinaryWriterImpl(testRegistry);
+          var count = frame.toBytes(writer, testCrypto);
+          expect(writer.toBytes(), frameBytesEncrypted[i]);
+          expect(count, frameBytesEncrypted[i].length);
           i++;
         }
       });

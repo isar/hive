@@ -1,4 +1,4 @@
-import 'package:hive/src/util/crc32.dart';
+import 'package:hive/src/binary/crc32.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -166,16 +166,26 @@ void main() {
     test('.clear()', () async {
       var backend = BackendMock();
       var notifier = ChangeNotifierMock();
+      var keystore = KeystoreMock();
+
+      when(keystore.frames).thenReturn([
+        Frame('key1', 123),
+        Frame('key2', 345),
+      ]);
+
       var box = BoxBaseMock(
         backend: backend,
         notifier: notifier,
-        keystore: Keystore.debug([Frame('key1', 123), Frame('key2', null)]),
+        keystore: keystore,
       );
 
       expect(await box.clear(), 2);
-      verify(backend.clear());
-      verify(notifier.notify('key1', null, true));
-      verify(notifier.notify('key2', null, true));
+      verifyInOrder([
+        backend.clear(),
+        keystore.frames,
+        keystore.clear(),
+        notifier.notify([Frame.deleted('key1'), Frame.deleted('key2')]),
+      ]);
     });
 
     group('.compact()', () {
@@ -195,7 +205,7 @@ void main() {
         var backend = BackendMock();
         var keystore = KeystoreMock();
 
-        when(keystore.clear())
+        when(keystore.frames)
             .thenReturn([Frame('key', 1, length: 22, offset: 33)]);
         when(backend.supportsCompaction).thenReturn(true);
         when(backend.compact(any)).thenAnswer((i) async {
@@ -205,9 +215,11 @@ void main() {
         var box = BoxBaseMock(backend: backend, keystore: keystore);
         await box.compact();
         verifyInOrder([
-          keystore.clear(),
+          backend.supportsCompaction,
+          keystore.deletedEntries,
+          keystore.frames,
           backend.compact([Frame('key', 1, length: 22, offset: 33)]),
-          keystore.add(Frame('newKey', 2, length: 44, offset: 55)),
+          keystore.resetDeletedEntries(),
         ]);
       });
     });

@@ -156,7 +156,7 @@ void main() {
 
         var keystore = Keystore();
         expect(await backend.initialize(null, keystore, false, false), 0);
-        expect(keystore.frames, {
+        expect(keystore.store, {
           'key1': Frame('key1', 1),
           'key2': Frame('key2', null),
           'key3': Frame('key3', 3),
@@ -169,7 +169,7 @@ void main() {
 
         var keystore = Keystore();
         expect(await backend.initialize(null, keystore, true, false), 0);
-        expect(keystore.frames, {
+        expect(keystore.store, {
           'key1': Frame.lazy('key1'),
           'key2': Frame.lazy('key2'),
           'key3': Frame.lazy('key3'),
@@ -183,22 +183,6 @@ void main() {
 
       expect(await backend.readValue(Frame('key1', null)), 1);
       expect(await backend.readValue(Frame('key2', null)), null);
-    });
-
-    test('.writeFrame()', () async {
-      var db = await getDbWith({});
-      var backend = StorageBackendJs(db, null);
-
-      var frame = Frame('key1', 123);
-      await backend.writeFrame(frame);
-      expect(frame, Frame('key1', 123));
-      expect(await backend.getKeys(), ['key1']);
-
-      await backend.writeFrame(Frame('key2', null));
-      expect(await backend.getKeys(), ['key1', 'key2']);
-
-      await backend.writeFrame(Frame.deleted('key1'));
-      expect(await backend.getKeys(), ['key2']);
     });
 
     test('.writeFrames()', () async {

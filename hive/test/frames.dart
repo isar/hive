@@ -145,7 +145,7 @@ void buildGoldens() async {
   }
 
   await generate('frames', 'frameBytes', (f) {
-    return f.toBytes(HiveImpl(), null);
+    //return f.toBytes(HiveImpl(), null);
   });
   await generate('frame_values', 'frameValuesBytes', (f) {
     var writer = BinaryWriterImpl(HiveImpl());
@@ -153,7 +153,7 @@ void buildGoldens() async {
     return writer.toBytes();
   });
   await generate('frames_encrypted', 'frameBytesEncrypted', (f) {
-    return f.toBytes(HiveImpl(), testCrypto);
+    //return f.toBytes(HiveImpl(), testCrypto);
   });
   await generate('frame_values_encrypted', 'frameValuesBytesEncrypted', (f) {
     var writer = BinaryWriterImpl(HiveImpl());

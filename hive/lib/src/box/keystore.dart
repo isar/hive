@@ -19,7 +19,7 @@ int _compareKeys(dynamic k1, dynamic k2) {
 
 class Keystore {
   @visibleForTesting
-  final Map<dynamic, Frame> frames;
+  final Map<dynamic, Frame> store;
 
   @visibleForTesting
   final ListQueue<_KeyTransaction> transactions = ListQueue();
@@ -28,12 +28,11 @@ class Keystore {
   var _autoIncrement = -1;
 
   Keystore([KeyComparator keyComparator])
-      : frames = SplayTreeMap(keyComparator ?? _compareKeys);
+      : store = SplayTreeMap(keyComparator ?? _compareKeys);
 
-  factory Keystore.debug(Iterable<Frame> frames,
-      [KeyComparator keyComparator]) {
+  factory Keystore.debug(Iterable<Frame> store, [KeyComparator keyComparator]) {
     var keystore = Keystore(keyComparator);
-    for (var frame in frames) {
+    for (var frame in store) {
       keystore.add(frame);
     }
     return keystore;
@@ -41,7 +40,13 @@ class Keystore {
 
   int get deletedEntries => _deletedEntries;
 
-  int get length => frames.length;
+  int get length => store.length;
+
+  Iterable<Frame> get frames => store.values;
+
+  void resetDeletedEntries() {
+    _deletedEntries = 0;
+  }
 
   int autoIncrement() {
     return ++_autoIncrement;
@@ -54,11 +59,11 @@ class Keystore {
   }
 
   bool containsKey(dynamic key) {
-    return frames.containsKey(key);
+    return store.containsKey(key);
   }
 
   dynamic keyAt(int index) {
-    var keys = frames.keys;
+    var keys = store.keys;
     var keyIndex = 0;
     for (var key in keys) {
       if (index == keyIndex) return key;
@@ -68,20 +73,24 @@ class Keystore {
   }
 
   Frame get(dynamic key) {
-    return frames[key];
+    return store[key];
+  }
+
+  Frame getAt(int index) {
+    return store[keyAt(index)];
   }
 
   Iterable<dynamic> getKeys() {
-    return frames.keys;
+    return store.keys;
   }
 
   Iterable<dynamic> getValues() {
-    return frames.values.map((e) => e.value);
+    return store.values.map((e) => e.value);
   }
 
   Map<dynamic, dynamic> toValueMap() {
     var map = <dynamic, dynamic>{};
-    for (var frame in frames.values) {
+    for (var frame in store.values) {
       map[frame.key] = frame.value;
     }
     return map;
@@ -89,33 +98,33 @@ class Keystore {
 
   void add(Frame frame) {
     var key = frame.key;
-    if (frames.containsKey(key)) {
+    if (store.containsKey(key)) {
       _deletedEntries++;
     }
     if (key is int && key > _autoIncrement) {
       _autoIncrement = key;
     }
-    frames[key] = frame;
+    store[key] = frame;
   }
 
   void delete(dynamic key) {
-    if (frames.remove(key) != null) {
+    if (store.remove(key) != null) {
       _deletedEntries++;
     }
   }
 
-  void beginAddTransaction(List<Frame> newFrames) {
+  void beginAddTransaction(List<Frame> newstore) {
     var transaction = _KeyTransaction();
-    for (var frame in newFrames) {
+    for (var frame in newstore) {
       var key = frame.key;
-      var deletedFrame = frames.remove(key);
+      var deletedFrame = store.remove(key);
       if (deletedFrame != null) {
         transaction.deleted[key] = deletedFrame;
         _deletedEntries++;
       }
 
       transaction.added.add(key);
-      frames[key] = frame;
+      store[key] = frame;
       if (key is int && key > _autoIncrement) {
         _autoIncrement = key;
       }
@@ -126,7 +135,7 @@ class Keystore {
   void beginDeleteTransaction(Iterable<dynamic> keys) {
     var transaction = _KeyTransaction();
     for (var key in keys) {
-      var deletedFrame = frames.remove(key);
+      var deletedFrame = store.remove(key);
       if (deletedFrame != null) {
         transaction.deleted[key] = deletedFrame;
         _deletedEntries++;
@@ -168,18 +177,16 @@ class Keystore {
       }
 
       if (shouldAdd) {
-        frames[key] = canceled.deleted[key];
+        store[key] = canceled.deleted[key];
       } else if (shouldDelete) {
-        frames.remove(key);
+        store.remove(key);
       }
     }
   }
 
-  Iterable<Frame> clear() {
-    var oldEntries = frames.values.toList();
-    frames.clear();
+  void clear() {
+    store.clear();
     _deletedEntries = 0;
     transactions.clear();
-    return oldEntries;
   }
 }

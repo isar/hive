@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:meta/meta.dart';
 
 class ChangeNotifier {
@@ -11,8 +12,10 @@ class ChangeNotifier {
   @visibleForTesting
   ChangeNotifier.debug(this._streamController);
 
-  void notify(dynamic key, dynamic value, bool deleted) {
-    _streamController.add(BoxEvent(key, value, deleted));
+  void notify(Iterable<Frame> frames) {
+    for (var frame in frames) {
+      _streamController.add(BoxEvent(frame.key, frame.value, frame.deleted));
+    }
   }
 
   Stream<BoxEvent> watch({dynamic key}) {

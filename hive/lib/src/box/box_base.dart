@@ -1,13 +1,13 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
-abstract class BoxBase extends TypeRegistryImpl implements Box {
+abstract class BoxBase implements Box {
   @override
   final String name;
 
@@ -38,8 +38,7 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     Keystore keystore,
     ChangeNotifier notifier,
   ])  : keystore = keystore ?? Keystore(options.keyComparator),
-        notifier = notifier ?? ChangeNotifier(),
-        super(hive);
+        notifier = notifier ?? ChangeNotifier();
 
   @override
   bool get isOpen => _open;
@@ -80,11 +79,11 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
 
   @override
   dynamic keyAt(int index) {
-    return keystore.keyAt(index);
+    return keystore.getAt(index).key;
   }
 
   Future<void> initialize() {
-    return backend.initialize(this, keystore, lazy, options.crashRecovery);
+    return backend.initialize(hive, keystore, lazy, options.crashRecovery);
   }
 
   @override
@@ -94,6 +93,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   }
 
   @override
+  Future<void> put(dynamic key, dynamic value) => putAll({key: value});
+
+  @override
+  Future<void> delete(dynamic key) => deleteAll([key]);
+
+  @override
   Future<int> add(dynamic value) async {
     var key = keystore.autoIncrement();
     await put(key, value);
@@ -101,23 +106,23 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
   }
 
   @override
-  Future<List<int>> addAll(Iterable<dynamic> values) async {
+  Future<Iterable<int>> addAll(Iterable<dynamic> values) async {
     var entries = <int, dynamic>{};
     for (var value in values) {
       entries[keystore.autoIncrement()] = value;
     }
     await putAll(entries);
-    return entries.keys.toList();
+    return entries.keys;
   }
 
   @override
   Future<void> putAt(int index, dynamic value) {
-    return put(keystore.keyAt(index), value);
+    return putAll({keystore.getAt(index).key: value});
   }
 
   @override
   Future<void> deleteAt(int index) {
-    return delete(keystore.keyAt(index));
+    return deleteAll([keystore.getAt(index).key]);
   }
 
   @override
@@ -125,13 +130,12 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     checkOpen();
 
     await backend.clear();
-    var oldFrames = keystore.clear();
 
-    for (var frame in oldFrames) {
-      notifier.notify(frame.key, null, true);
-    }
+    var deletedEvents = keystore.frames.map((f) => Frame.deleted(f.key));
+    keystore.clear();
+    notifier.notify(deletedEvents);
 
-    return oldFrames.length;
+    return deletedEvents.length;
   }
 
   @override
@@ -141,12 +145,8 @@ abstract class BoxBase extends TypeRegistryImpl implements Box {
     if (!backend.supportsCompaction) return;
     if (keystore.deletedEntries == 0) return;
 
-    var oldFrames = keystore.clear();
-    var newFrames = await backend.compact(oldFrames);
-
-    for (var frame in newFrames) {
-      keystore.add(frame);
-    }
+    await backend.compact(keystore.frames);
+    keystore.resetDeletedEntries();
   }
 
   @protected
