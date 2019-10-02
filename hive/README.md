@@ -48,11 +48,11 @@ Add the following to your `pubspec.yaml`. Use the latest version instead of `[ve
 
 ```yaml
 dependencies:
-  hive: [version]
+  hive: ^[version]
 
 dev_dependencies:
-  hive_generator: [version]
-  build_runner: [version]
+  hive_generator: ^[version]
+  build_runner: ^[version]
 ```
 
 ## Hive ❤️ Flutter

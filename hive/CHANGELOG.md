@@ -1,8 +1,8 @@
-## 1.1.0
+## 1.1.0-beta2
 - Fixed bug which was caused by not awaiting write operations
 - Fixed bug where custom compaction strategy was not applied
-- Improveed performance of `putAll()`, `deleteAll()` etc.
-- Changeed `values` parameter of `addAll` from `List` to `Iterable`
+- Improved performance of `putAll()`, `deleteAll()` etc.
+- Changed `values` parameter of `addAll` from `List` to `Iterable`
 - Preparation for queries
 - **Breaking**: Changed return type of `addAll()` from `List<int>` to `Iterable<int>`
 - **Breaking**: Removed the option to register `TypeAdapters` for a specific box. E.g. `box.registerTypeAdapter()`.
