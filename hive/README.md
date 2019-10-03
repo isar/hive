@@ -57,6 +57,22 @@ dev_dependencies:
 
 ## Hive ❤️ Flutter
 
+### Getting started
+To get started using Hive in a Flutter project add the following dependencies to your `pubspec.yaml`. Use the latest version instead of `[version]`.
+
+[![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner) [![Hive Flutter version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive_flutter)
+
+```yaml
+dependencies:
+  hive: ^[version]
+  hive_flutter: ^[version]
+
+dev_dependencies:
+  hive_generator: ^[version]
+  build_runner: ^[version]
+```
+
+### Example in Flutter
 Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. Here is a sample how that may look like:
 
 ```dart
