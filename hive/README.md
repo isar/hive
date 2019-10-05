@@ -87,15 +87,15 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return WatchBoxBuilder(
-      box: Hive.box('settings');
-      builder: (context, box) {
-        return Switch(
+        box: Hive.box('settings'),
+        builder: (context, box) {
+      return Switch(
           value: box.get('darkMode'),
           onChanged: (val) {
             box.put('darkMode', val);
           }
-        )
-      },
+      )
+    },
     );
   }
 }
