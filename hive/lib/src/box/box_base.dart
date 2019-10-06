@@ -10,7 +10,8 @@ abstract class BoxBase implements Box {
   @override
   final String name;
 
-  final HiveImpl _hive;
+  @visibleForTesting
+  final HiveImpl hive;
 
   final CompactionStrategy _compactionStrategy;
 
@@ -27,7 +28,7 @@ abstract class BoxBase implements Box {
   bool _open = true;
 
   BoxBase(
-    this._hive,
+    this.hive,
     this.name,
     this.keystore,
     this._compactionStrategy,
@@ -78,7 +79,7 @@ abstract class BoxBase implements Box {
   }
 
   Future<void> initialize() {
-    return backend.initialize(_hive, keystore);
+    return backend.initialize(hive, keystore);
   }
 
   @override
@@ -160,7 +161,7 @@ abstract class BoxBase implements Box {
     await notifier.close();
 
     _open = false;
-    _hive.unregisterBox(name);
+    hive.unregisterBox(name);
     await backend.close();
   }
 
@@ -169,7 +170,7 @@ abstract class BoxBase implements Box {
     await notifier.close();
 
     _open = false;
-    _hive.unregisterBox(name);
+    hive.unregisterBox(name);
     await backend.deleteFromDisk();
   }
 }

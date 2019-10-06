@@ -39,12 +39,12 @@ Future<Database> getDbWith(Map<String, dynamic> content) async {
 void main() {
   group('StorageBackendJs', () {
     test('.path', () {
-      expect(StorageBackendJs(null, null).path, null);
+      expect(StorageBackendJs(null, null, null, null).path, null);
     });
 
     group('.encodeValue()', () {
       test('primitive', () {
-        var backend = StorageBackendJs(null, null);
+        var backend = StorageBackendJs(null, null, null, null);
         expect(backend.encodeValue(null), null);
         expect(backend.encodeValue(11), 11);
         expect(backend.encodeValue(17.25), 17.25);
@@ -60,7 +60,7 @@ void main() {
       });
 
       test('crypto', () {
-        var backend = StorageBackendJs(null, testCrypto, testRegistry);
+        var backend = StorageBackendJs(null, false, testCrypto, testRegistry);
         var i = 0;
         for (var frame in testFrames) {
           var buffer = backend.encodeValue(frame.value) as ByteBuffer;
@@ -77,7 +77,7 @@ void main() {
             'key': Uint8List.fromList([1, 2, 3]),
             'otherKey': null
           };
-          var backend = StorageBackendJs(null, null);
+          var backend = StorageBackendJs(null, false, null);
           var encoded = Uint8List.view(backend.encodeValue(map) as ByteBuffer);
 
           var writer = BinaryWriterImpl(null);

@@ -4,7 +4,6 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -24,11 +23,9 @@ class BoxBaseMock extends BoxBase with Mock {
   }) : super(
           hive ?? HiveImpl(),
           name ?? 'testBox',
-          BoxOptions(
-            compactionStrategy: cStrategy ?? (total, deleted) => false,
-          ),
-          backend ?? BackendMock(),
           keystore ?? Keystore(),
+          cStrategy ?? (total, deleted) => false,
+          backend ?? BackendMock(),
           notifier ?? ChangeNotifier(),
         );
 }
@@ -91,7 +88,7 @@ void main() {
       var backend = BackendMock();
       var box = BoxBaseMock(backend: backend);
 
-      when(backend.initialize(any, any, any, any)).thenAnswer((i) async {
+      when(backend.initialize(any, any)).thenAnswer((i) async {
         i.positionalArguments[1].add(Frame('key1', 1));
       });
 

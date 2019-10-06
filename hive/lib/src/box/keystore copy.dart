@@ -2,13 +2,61 @@ import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
-class _KeyTransaction {
-  final List<dynamic> added = [];
-  final Map<dynamic, Frame> deleted = {};
+class KeyTransaction {
+  final Keystore _keystore;
+  final int _id;
+  final List<dynamic> _addedKeys = [];
+  final Map<dynamic, Frame> _deletedFrames = HashMap();
+
+  KeyTransaction._(this._id, this._keystore);
+
+  void commit() {
+    if (_keystore.finishedTransactionId++ != _id) {
+      throw HiveError('Could not commit key transaction. '
+          'Please open an issue on GitHub.');
+    }
+  }
+
+  void cancel() {
+    commit();
+    var keys = {..._addedKeys, ..._deletedFrames.keys};
+    var transactions = List<KeyTransaction>();
+    for (var key in keys) {
+      var deletedFrame = _deletedFrames[key];
+      var addedKey = _addedKeys.contains(key) ? key : null;
+
+      for (var t in transactions) {
+        if (t._addedKeys.contains(key) || t._deletedFrames.containsKey(key)) {
+          if (deletedFrame != null) {
+            t._deletedFrames[key] = deletedFrame;
+          } else {
+            t._deletedFrames.remove(key);
+          }
+          break;
+        }
+      }
+
+      for (var t in transactions) {
+        if (t.added.contains(key)) {
+          shouldAdd = false;
+          shouldDelete = false;
+        } else if (t.deleted.containsKey(key)) {
+          shouldAdd = false;
+        }
+      }
+
+      if (shouldAdd) {
+        _store.insert(key, canceled.deleted[key]);
+      } else if (shouldDelete) {
+        _store.delete(key);
+      }
+    }
+  }
 }
 
 int _compareKeys(dynamic k1, dynamic k2) {
@@ -23,7 +71,10 @@ class Keystore {
   final IndexableSkipList<dynamic, Frame> _store;
 
   @visibleForTesting
-  final ListQueue<_KeyTransaction> transactions = ListQueue();
+  int transactionId = 0;
+
+  @visibleForTesting
+  int finishedTransactionId = 0;
 
   var _deletedEntries = 0;
   var _autoIncrement = -1;
@@ -160,38 +211,6 @@ class Keystore {
 
   void cancelTransaction() {
     var canceled = transactions.removeFirst();
-    var keys = Set.of(canceled.added);
-    keys.addAll(canceled.deleted.keys);
-
-    for (var key in keys) {
-      var shouldAdd = canceled.deleted.containsKey(key);
-      var shouldDelete = canceled.added.contains(key);
-      for (var t in transactions) {
-        if (t.added.contains(key) || t.deleted.containsKey(key)) {
-          if (canceled.deleted.containsKey(key)) {
-            t.deleted[key] = canceled.deleted[key];
-          } else {
-            t.deleted.remove(key);
-          }
-          break;
-        }
-      }
-
-      for (var t in transactions) {
-        if (t.added.contains(key)) {
-          shouldAdd = false;
-          shouldDelete = false;
-        } else if (t.deleted.containsKey(key)) {
-          shouldAdd = false;
-        }
-      }
-
-      if (shouldAdd) {
-        _store.insert(key, canceled.deleted[key]);
-      } else if (shouldDelete) {
-        _store.delete(key);
-      }
-    }
   }
 
   void clear() {

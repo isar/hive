@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
@@ -22,11 +21,9 @@ BoxImpl getBox({
   return BoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
-    BoxOptions(
-      compactionStrategy: cStrategy ?? (total, deleted) => false,
-    ),
-    backend ?? BackendMock(),
     keystore ?? Keystore(),
+    cStrategy ?? (total, deleted) => false,
+    backend ?? BackendMock(),
     notifier,
   );
 }

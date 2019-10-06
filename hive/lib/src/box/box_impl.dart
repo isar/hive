@@ -116,7 +116,6 @@ class BoxImpl extends BoxBase {
 
   @override
   Map<dynamic, dynamic> toMap() {
-    checkOpen();
-    return keystore.toValueMap();
+    return Map.from(mapView());
   }
 }

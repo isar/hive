@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
@@ -22,11 +21,9 @@ LazyBoxImpl getBox({
   return LazyBoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
-    BoxOptions(
-      compactionStrategy: cStrategy ?? (total, deleted) => false,
-    ),
-    backend ?? BackendMock(),
     keystore ?? Keystore(),
+    cStrategy ?? (total, deleted) => false,
+    backend ?? BackendMock(),
     notifier,
   );
 }
@@ -121,8 +118,8 @@ void main() {
 
         await expectLater(
           () async => await box.putAll(
-                {'key1': 'value1', 'key2': 'value2'},
-              ),
+            {'key1': 'value1', 'key2': 'value2'},
+          ),
           throwsA(anything),
         );
         verifyInOrder([

@@ -30,7 +30,7 @@ void main() {
 
         var backend = StorageBackendMemory(writer.toBytes(), null);
         var keystore = KeystoreMock();
-        backend.initialize(null, keystore, false, false);
+        backend.initialize(null, keystore);
         verify(keystore.add(frame));
         verify(keystore.delete(deletedFrame.key));
       });
@@ -39,7 +39,7 @@ void main() {
         var backend =
             StorageBackendMemory(Uint8List.fromList([1, 2, 3, 4]), null);
         expect(
-          () => backend.initialize(null, null, null, null),
+          () => backend.initialize(null, null),
           throwsHiveError('Wrong checksum'),
         );
       });

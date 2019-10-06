@@ -1,10 +1,9 @@
 @TestOn('vm')
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/src/backend/storage_backend_vm.dart';
+import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -24,11 +23,11 @@ const testMap = {
 };
 
 Uint8List getFrameBytes(List<Frame> frames) {
-  var bytes = BytesBuilder();
+  var writer = BinaryWriterImpl(null);
   for (var frame in frames) {
-    //bytes.add(frame.toBytes(null, null));
+    frame.toBytes(writer, null);
   }
-  return bytes.toBytes() as Uint8List;
+  return writer.toBytes();
 }
 
 void main() {
