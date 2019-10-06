@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:hive_generator/src/builder.dart';
 import 'package:hive_generator/src/class_builder.dart';
 import 'package:hive_generator/src/enum_builder.dart';
 import 'package:hive_generator/src/helper.dart';
@@ -17,7 +18,6 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
         cls.isEnum ? EnumBuilder(cls, fields) : ClassBuilder(cls, fields);
 
     return '''
-
     class $adapterName extends TypeAdapter<${cls.name}> {
       @override
       ${cls.name} read(BinaryReader reader) {
@@ -44,20 +44,53 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     return cls;
   }
 
-  Map<int, FieldElement> getFields(ClassElement cls) {
-    var typeFields = <int, FieldElement>{};
+  Iterable<AdapterField> getAccessors(ClassElement cls) {
+    var fields = <AdapterField>[];
     for (var field in cls.fields) {
       var fieldAnn = getHiveFieldAnn(field);
       if (fieldAnn == null) continue;
 
-      var fieldNum = fieldAnn.index;
-      check(fieldNum >= 0 || fieldNum <= 255,
-          'Field numbers can only be in the range 0-255.');
-      check(!typeFields.containsKey(fieldNum),
-          'Duplicate field number: $fieldNum.');
-      typeFields[fieldNum] = field;
+      fields.add(AdapterField(fieldAnn.index, field.name, field.type));
     }
-    return typeFields;
+
+    for (var field in cls.accessors) {
+      var fieldAnn = getHiveFieldAnn(field);
+      if (fieldAnn == null || !field.isGetter) continue;
+
+      fields.add(AdapterField(fieldAnn.index, field.name, field.type));
+    }
+
+    return fields;
+  }
+
+  List<AdapterField> getFields(ClassElement cls) {
+    var types =
+        getTypeAndAllSupertypes(cls).where((it) => getHiveTypeAnn(it) != null);
+    for (var type in types) {
+      print('TYPE: $type');
+    }
+    var adapterFields = <AdapterField>[];
+    for (var type in types) {
+      var fields = getAccessors(type);
+      for (var field in fields) {
+        print(field.name);
+        check(field.index >= 0 || field.index <= 255,
+            'Field numbers can only be in the range 0-255.');
+
+        for (var otherField in fields) {
+          if (otherField == field) continue;
+          if (otherField.index == field.index) {
+            throw HiveError(
+              'Duplicate field number: ${field.index}. Fields "${field.name}" '
+              'and "${otherField.name}" have the same number.',
+            );
+          }
+        }
+
+        adapterFields.add(field);
+      }
+    }
+    return adapterFields;
   }
 
   String getAdapterName(String typeName, ConstantReader annotation) {

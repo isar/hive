@@ -12,7 +12,7 @@ class ClassBuilder extends Builder {
   var iterableChecker = const TypeChecker.fromRuntime(Iterable);
   var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
 
-  ClassBuilder(ClassElement cls, Map<int, FieldElement> fields)
+  ClassBuilder(ClassElement cls, List<AdapterField> fields)
       : super(cls, fields);
 
   @override
@@ -32,14 +32,15 @@ class ClassBuilder extends Builder {
     );
 
     // The remaining fields to initialize.
-    var remainingFields = <String, int>{
-      for (var entry in fields.entries) entry.value.name: entry.key,
-    };
+    var remainingFields = fields.toList();
 
     for (var param in constructor.parameters
         .where((param) => param.isInitializingFormal)) {
-      var index = remainingFields.remove(param.name);
-      if (index == null) {
+      var field = remainingFields.firstWhere(
+        (it) => it.name == param.name,
+        orElse: () => null,
+      );
+      if (field == null) {
         // This is a parameter of the form `this.field`, but it's not present
         // in the binary encoding.
         continue;
@@ -48,18 +49,16 @@ class ClassBuilder extends Builder {
       if (param.isNamed) {
         code.write('${param.name}: ');
       }
-      code.writeln('${_cast(param.type, 'fields[$index]')},');
+      code.writeln('${_cast(param.type, 'fields[${field.index}]')},');
     }
 
     code.writeln(')');
 
     // There may still be fields to initialize that were not in the constructor
     // as initializing formals. We do so using cascades.
-    for (var entry in remainingFields.entries) {
-      var field = entry.key;
-      var index = entry.value;
-      var type = fields[index].type;
-      code.writeln('..$field = ${_cast(type, 'fields[$index]')}');
+    for (var field in remainingFields) {
+      code.writeln(
+          '..${field.name} = ${_cast(field.type, 'fields[${field.index}]')}');
     }
 
     code.writeln(';');
@@ -121,12 +120,12 @@ class ClassBuilder extends Builder {
     var code = StringBuffer();
     code.writeln('writer');
     code.writeln('..writeByte(${fields.length})');
-    fields.forEach((index, field) {
+    for (var field in fields) {
       var value = _convertIterable(field.type, 'obj.${field.name}');
       code.writeln('''
-      ..writeByte($index)
+      ..writeByte(${field.index})
       ..write($value)''');
-    });
+    }
     code.writeln(';');
 
     return code.toString();
