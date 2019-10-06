@@ -1,22 +1,24 @@
 import 'dart:async';
 
+import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/box/list_view.dart';
+import 'package:hive/src/box/map_view.dart';
 import 'package:hive/src/hive_impl.dart';
 
 class BoxImpl extends BoxBase {
   BoxImpl(
     HiveImpl hive,
     String name,
-    BoxOptions options,
-    StorageBackend backend, [
     Keystore keystore,
+    CompactionStrategy compactionStrategy,
+    StorageBackend backend, [
     ChangeNotifier notifier,
-  ]) : super(hive, name, options, backend, keystore, notifier);
+  ]) : super(hive, name, keystore, compactionStrategy, backend, notifier);
 
   @override
   final bool lazy = false;
@@ -60,7 +62,7 @@ class BoxImpl extends BoxBase {
       frames.add(Frame(key, value));
     }
 
-    keystore.beginAddTransaction(frames);
+    keystore.beginAddTransaction(frames, this);
 
     return _writeFrames(frames);
   }
@@ -105,6 +107,12 @@ class BoxImpl extends BoxBase {
 
     await performCompactionIfNeeded();
   }
+
+  @override
+  List<E> listView<E>() => ListView<E>(this);
+
+  @override
+  Map<dynamic, E> mapView<E>() => MapView<E>(this);
 
   @override
   Map<dynamic, dynamic> toMap() {

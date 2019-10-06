@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:hive/src/binary/crc32.dart';
+import 'package:hive/src/util/crc32.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
 
@@ -42,7 +42,10 @@ class CryptoHelper {
     cipher.init(true, params);
 
     var encrypted = cipher.process(bytes);
-    return Uint8List.fromList([...iv, ...encrypted]);
+    var result = Uint8List(iv.length + encrypted.length);
+    result.setAll(0, iv);
+    result.setAll(iv.length, encrypted);
+    return result;
   }
 
   Uint8List decrypt(Uint8List bytes) {

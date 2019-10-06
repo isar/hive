@@ -1,15 +1,5 @@
 part of hive;
 
-/// An adapter - typeId pair.
-class ResolvedAdapter<T> {
-  final TypeAdapter adapter;
-  final int typeId;
-
-  const ResolvedAdapter(this.adapter, this.typeId);
-
-  bool matches(dynamic value) => value is T;
-}
-
 /// TypeRegistries contain the [TypeAdapter]s associated with a typeId.
 ///
 /// TypeIds have to be unique and must not change.

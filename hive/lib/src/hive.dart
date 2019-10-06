@@ -26,6 +26,16 @@ abstract class HiveInterface implements TypeRegistry {
     bool lazy = false,
   });
 
+  /// Opens an in-memory box from a list of bytes. It does not persist changes.
+  ///
+  /// This is useful for opening boxes from an asset file.
+  Future<Box> openBoxFromBytes(
+    String name,
+    Uint8List bytes, {
+    List<int> encryptionKey,
+    KeyComparator keyComparator,
+  });
+
   /// Returns a previously opened box.
   Box box(String name);
 

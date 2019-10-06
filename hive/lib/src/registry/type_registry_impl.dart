@@ -1,6 +1,16 @@
 import 'package:hive/hive.dart';
 import 'package:meta/meta.dart';
 
+/// An adapter - typeId pair.
+class ResolvedAdapter<T> {
+  final TypeAdapter adapter;
+  final int typeId;
+
+  const ResolvedAdapter(this.adapter, this.typeId);
+
+  bool matches(dynamic value) => value is T;
+}
+
 class TypeRegistryImpl implements TypeRegistry {
   @visibleForTesting
   static const reservedTypeIds = 32;

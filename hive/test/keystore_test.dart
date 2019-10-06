@@ -119,20 +119,20 @@ void main() {
         Frame('key2', 'val2'),
       ]);
 
-      expect(keystore.store, {
-        0: Frame(0, 'val1'),
-        'key2': Frame('key2', 'val2'),
-      });
+      expect(keystore.frames, [
+        Frame(0, 'val1'),
+        Frame('key2', 'val2'),
+      ]);
       expect(keystore.deletedEntries, 0);
       expect(keystore.transactions.last.added, [0, 'key2']);
       expect(keystore.transactions.last.deleted, {});
 
       keystore.beginAddTransaction([Frame(0, 'val3')]);
 
-      expect(keystore.store, {
-        0: Frame(0, 'val3'),
-        'key2': Frame('key2', 'val2'),
-      });
+      expect(keystore.frames, [
+        Frame(0, 'val3'),
+        Frame('key2', 'val2'),
+      ]);
       expect(keystore.deletedEntries, 1);
       expect(keystore.transactions.last.added, [0]);
       expect(keystore.transactions.last.deleted, {0: Frame(0, 'val1')});
@@ -145,7 +145,7 @@ void main() {
       ]);
       keystore.beginDeleteTransaction([0, 'key3']);
 
-      expect(keystore.store, {'key2': Frame('key2', 'val2')});
+      expect(keystore.frames, [Frame('key2', 'val2')]);
       expect(keystore.deletedEntries, 1);
       expect(keystore.transactions.last.added, []);
       expect(keystore.transactions.last.deleted, {0: Frame(0, 'val1')});
@@ -183,19 +183,19 @@ void main() {
       keystore.beginAddTransaction([Frame('key1', 'val1New2')]);
 
       keystore.cancelTransaction();
-      expect(keystore.store, {'key1': Frame('key1', 'val1New2')});
+      expect(keystore.frames, [Frame('key1', 'val1New2')]);
 
       keystore.cancelTransaction();
-      expect(keystore.store, {
-        'key1': Frame('key1', 'val1New2'),
-        'key2': Frame('key2', 'val2'),
-      });
+      expect(keystore.frames, [
+        Frame('key1', 'val1New2'),
+        Frame('key2', 'val2'),
+      ]);
 
       keystore.cancelTransaction();
-      expect(keystore.store, {
-        'key1': Frame('key1', 'val1'),
-        'key2': Frame('key2', 'val2'),
-      });
+      expect(keystore.frames, [
+        Frame('key1', 'val1'),
+        Frame('key2', 'val2'),
+      ]);
     });
 
     test('.clear()', () {
@@ -206,7 +206,7 @@ void main() {
       keystore.beginDeleteTransaction(['key1']);
 
       keystore.clear();
-      expect(keystore.store, {});
+      expect(keystore.frames, []);
       expect(keystore.transactions, []);
       expect(keystore.deletedEntries, 0);
     });

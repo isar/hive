@@ -120,7 +120,12 @@ abstract class Box {
   /// If a key does not exist, it is skipped.
   Future<void> deleteAll(Iterable<dynamic> keys);
 
+  List<E> listView<E>();
+
+  Map<dynamic, E> mapView<E>();
+
   /// Returns a map which contains all key - value pairs of the box.
+  @Deprecated('Use mapView() instead. Will be removed in the future.')
   Map<dynamic, dynamic> toMap();
 
   /// Induces compaction manually. This is rarely needed. You should consider

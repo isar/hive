@@ -12,8 +12,8 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
 
-Future<StorageBackend> openBackend(
-    HiveInterface hive, String name, CryptoHelper crypto) async {
+Future<StorageBackend> openBackend(HiveInterface hive, String name, bool lazy,
+    bool crashRecovery, CryptoHelper crypto) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
     if (!db.objectStoreNames.contains('box')) {
@@ -21,16 +21,17 @@ Future<StorageBackend> openBackend(
     }
   });
 
-  return StorageBackendJs(db, crypto);
+  return StorageBackendJs(db, lazy, crypto);
 }
 
 class StorageBackendJs extends StorageBackend {
-  final Database _db;
-  final CryptoHelper _crypto;
+  final Database db;
+  final bool lazy;
+  final CryptoHelper crypto;
 
   TypeRegistry _registry;
 
-  StorageBackendJs(this._db, this._crypto, [this._registry]);
+  StorageBackendJs(this.db, this.lazy, this.crypto, [this._registry]);
 
   @override
   String get path => null;
@@ -44,7 +45,7 @@ class StorageBackendJs extends StorageBackend {
 
   @visibleForTesting
   dynamic encodeValue(dynamic value) {
-    if (_crypto == null) {
+    if (crypto == null) {
       if (value == null) {
         return value;
       } else if (value is Uint8List) {
@@ -63,7 +64,7 @@ class StorageBackendJs extends StorageBackend {
 
     var frameWriter = BinaryWriterImpl(_registry);
     frameWriter.writeByteList([0x90, 0xA9], writeLength: false);
-    Frame.encodeValue(value, frameWriter, _crypto);
+    Frame.encodeValue(value, frameWriter, crypto);
 
     var bytes = frameWriter.toBytes();
     var sublist = bytes.sublist(0, bytes.length);
@@ -77,7 +78,7 @@ class StorageBackendJs extends StorageBackend {
       if (_isEncoded(bytes)) {
         var frameReader = BinaryReaderImpl(bytes, _registry);
         frameReader.skip(2);
-        return Frame.decodeValue(frameReader, _crypto);
+        return Frame.decodeValue(frameReader, crypto);
       } else {
         return bytes;
       }
@@ -87,7 +88,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   ObjectStore getStore(bool write, [String box = 'box']) {
-    return _db
+    return db
         .transaction(box, write ? 'readwrite' : 'readonly')
         .objectStore(box);
   }
@@ -118,8 +119,7 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(TypeRegistry registry, Keystore keystore, bool lazy,
-      bool crashRecovery) async {
+  Future<int> initialize(TypeRegistry registry, Keystore keystore) async {
     _registry = registry;
     var keys = await getKeys();
     if (!lazy) {
@@ -168,12 +168,12 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<void> close() {
-    _db.close();
+    db.close();
     return Future.value();
   }
 
   @override
   Future<void> deleteFromDisk() {
-    return window.indexedDB.deleteDatabase(_db.name);
+    return window.indexedDB.deleteDatabase(db.name);
   }
 }

@@ -15,13 +15,13 @@ Future<Box> getBox(bool lazy) async {
     var dir = await getTempDir();
     hive.init(dir.path);
   }
-  return await hive.openBox('box', lazy: lazy);
+  return await hive.openBox('box', lazy: lazy, crashRecovery: false);
 }
 
 Future<Box> reopenBox(Box box) async {
   await box.close();
   var hive = (box as BoxBase).hive;
-  return await hive.openBox('box', lazy: box.lazy);
+  return await hive.openBox('box', lazy: box.lazy, crashRecovery: false);
 }
 
 const longTimeout = Timeout(Duration(minutes: 2));

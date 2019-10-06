@@ -4,10 +4,11 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
+import 'package:hive/src/backend/storage_backend_memory.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_impl.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
@@ -64,24 +65,39 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (isBoxOpen(name)) {
       return box(name);
     } else {
+      var keystore = Keystore(keyComparator);
+      var cs = compactionStrategy ?? defaultCompactionStrategy;
       var crypto = getCryptoHelper(encryptionKey);
-      var options = BoxOptions(
-        encryptionKey: encryptionKey,
-        keyComparator: keyComparator,
-        compactionStrategy: compactionStrategy ?? defaultCompactionStrategy,
-        crashRecovery: crashRecovery,
-      );
-
-      var lowercaseName = name.toLowerCase();
-      var backend = await openBackend(this, name, crypto);
+      var backend = await openBackend(this, name, lazy, crashRecovery, crypto);
       BoxBase box;
       if (lazy) {
-        box = LazyBoxImpl(this, name, options, backend);
+        box = LazyBoxImpl(this, name, keystore, cs, backend);
       } else {
-        box = BoxImpl(this, name, options, backend);
+        box = BoxImpl(this, name, keystore, cs, backend);
       }
       await box.initialize();
-      _boxes[lowercaseName] = box;
+      _boxes[name.toLowerCase()] = box;
+
+      return box;
+    }
+  }
+
+  @override
+  Future<Box> openBoxFromBytes(
+    String name,
+    Uint8List bytes, {
+    List<int> encryptionKey,
+    KeyComparator keyComparator,
+  }) async {
+    if (isBoxOpen(name)) {
+      return box(name);
+    } else {
+      var keystore = Keystore(keyComparator);
+      var crypto = getCryptoHelper(encryptionKey);
+      var backend = StorageBackendMemory(bytes, crypto);
+      var box = BoxImpl(this, name, keystore, null, backend);
+      await box.initialize();
+      _boxes[name.toLowerCase()] = box;
 
       return box;
     }

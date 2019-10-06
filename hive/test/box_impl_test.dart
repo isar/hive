@@ -101,7 +101,7 @@ void main() {
           keystore.beginAddTransaction([
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
-          ]),
+          ], box),
           notifier.notify([Frame('key1', 'value1'), Frame('key2', 'value2')]),
           backend.writeFrames([
             Frame('key1', 'value1'),
@@ -137,7 +137,7 @@ void main() {
           keystore.beginAddTransaction([
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
-          ]),
+          ], box),
           notifier.notify([Frame('key1', 'value1'), Frame('key2', 'value2')]),
           backend.writeFrames([
             Frame('key1', 'value1'),

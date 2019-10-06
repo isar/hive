@@ -7,8 +7,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('BigIntAdapter', () {
-    group('.read()', () {
-      test('positive', () {
+    group('reads', () {
+      test('positive BigInts', () {
         var numberStr = '123456789123456789';
         var bytes =
             Uint8List.fromList([numberStr.length, ...numberStr.codeUnits]);
@@ -16,7 +16,7 @@ void main() {
         expect(BigIntAdapter().read(reader), BigInt.parse(numberStr));
       });
 
-      test('negative', () {
+      test('negative BigInts', () {
         var numberStr = '-123456789123456789';
         var bytes =
             Uint8List.fromList([numberStr.length, ...numberStr.codeUnits]);
@@ -25,7 +25,7 @@ void main() {
       });
     });
 
-    test('write', () {
+    test('writes BigInts', () {
       var numberStr = '123456789123456789';
       var writer = BinaryWriterImpl(null);
       BigIntAdapter().write(writer, BigInt.parse(numberStr));

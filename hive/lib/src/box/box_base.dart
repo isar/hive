@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_options.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -11,12 +10,9 @@ abstract class BoxBase implements Box {
   @override
   final String name;
 
-  @visibleForTesting
-  @protected
-  final HiveImpl hive;
+  final HiveImpl _hive;
 
-  @protected
-  final BoxOptions options;
+  final CompactionStrategy _compactionStrategy;
 
   @protected
   final StorageBackend backend;
@@ -31,14 +27,13 @@ abstract class BoxBase implements Box {
   bool _open = true;
 
   BoxBase(
-    this.hive,
+    this._hive,
     this.name,
-    this.options,
+    this.keystore,
+    this._compactionStrategy,
     this.backend, [
-    Keystore keystore,
     ChangeNotifier notifier,
-  ])  : keystore = keystore ?? Keystore(options.keyComparator),
-        notifier = notifier ?? ChangeNotifier();
+  ]) : notifier = notifier ?? ChangeNotifier();
 
   @override
   bool get isOpen => _open;
@@ -83,7 +78,7 @@ abstract class BoxBase implements Box {
   }
 
   Future<void> initialize() {
-    return backend.initialize(hive, keystore, lazy, options.crashRecovery);
+    return backend.initialize(_hive, keystore);
   }
 
   @override
@@ -151,7 +146,7 @@ abstract class BoxBase implements Box {
 
   @protected
   Future<void> performCompactionIfNeeded() {
-    if (options.compactionStrategy(keystore.length, keystore.deletedEntries)) {
+    if (_compactionStrategy(keystore.length, keystore.deletedEntries)) {
       return compact();
     }
 
@@ -165,7 +160,7 @@ abstract class BoxBase implements Box {
     await notifier.close();
 
     _open = false;
-    hive.unregisterBox(name);
+    _hive.unregisterBox(name);
     await backend.close();
   }
 
@@ -174,7 +169,7 @@ abstract class BoxBase implements Box {
     await notifier.close();
 
     _open = false;
-    hive.unregisterBox(name);
+    _hive.unregisterBox(name);
     await backend.deleteFromDisk();
   }
 }
