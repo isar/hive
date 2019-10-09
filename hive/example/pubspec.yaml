@@ -1,1 +1,8 @@
 name: example
+
+dependencies:
+  hive: any
+
+dev_dependencies:
+  hive_generator: any
+  build_runner: any
