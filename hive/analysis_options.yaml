@@ -8,7 +8,6 @@ analyzer:
     include_file_not_found: ignore
 linter:
   rules:
-    #- public_member_api_docs
     - always_declare_return_types
     - annotate_overrides
     - avoid_empty_else

@@ -6,9 +6,12 @@ import 'package:hive/src/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
-class _KeyTransaction {
+class KeyTransaction {
   final List<dynamic> added = [];
-  final Map<dynamic, Frame> deleted = {};
+  final Map<dynamic, Frame> deleted = HashMap();
+
+  @visibleForTesting
+  KeyTransaction();
 }
 
 int _compareKeys(dynamic k1, dynamic k2) {
@@ -20,20 +23,22 @@ int _compareKeys(dynamic k1, dynamic k2) {
 }
 
 class Keystore {
+  final Box _box;
+
   final IndexableSkipList<dynamic, Frame> _store;
 
   @visibleForTesting
-  final ListQueue<_KeyTransaction> transactions = ListQueue();
+  final ListQueue<KeyTransaction> transactions = ListQueue();
 
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
-  Keystore([KeyComparator keyComparator])
+  Keystore(this._box, [KeyComparator keyComparator])
       : _store = IndexableSkipList(keyComparator ?? _compareKeys);
 
   factory Keystore.debug(Iterable<Frame> frames,
-      [KeyComparator keyComparator]) {
-    var keystore = Keystore(keyComparator);
+      [Box box, KeyComparator keyComparator]) {
+    var keystore = Keystore(box, keyComparator);
     for (var frame in frames) {
       keystore.add(frame);
     }
@@ -65,13 +70,7 @@ class Keystore {
   }
 
   dynamic keyAt(int index) {
-    var keys = _store.keys;
-    var keyIndex = 0;
-    for (var key in keys) {
-      if (index == keyIndex) return key;
-      keyIndex++;
-    }
-    return null;
+    return _store.getKeyAt(index);
   }
 
   Frame get(dynamic key) {
@@ -90,18 +89,27 @@ class Keystore {
     return _store.values.map((e) => e.value);
   }
 
-  void add(Frame frame) {
+  Frame add(Frame frame) {
     var key = frame.key;
     if (key is int && key > _autoIncrement) {
       _autoIncrement = key;
     }
-    var oldFrame = _store.insert(key, frame);
-    if (oldFrame != null) {
-      _deletedEntries++;
+
+    if (frame.value is HiveObject) {
+      initHiveObject(key, frame.value as HiveObject, _box);
     }
+
+    var deletedFrame = _store.insert(key, frame);
+    if (deletedFrame != null) {
+      _deletedEntries++;
+      if (deletedFrame.value is HiveObject) {
+        unloadHiveObject(deletedFrame.value as HiveObject);
+      }
+    }
+    return deletedFrame;
   }
 
-  void delete(dynamic key) {
+  Frame delete(Frame key) {
     var deletedFrame = _store.delete(key);
     if (deletedFrame != null) {
       _deletedEntries++;
@@ -109,49 +117,30 @@ class Keystore {
         unloadHiveObject(deletedFrame.value as HiveObject);
       }
     }
+    return deletedFrame;
   }
 
-  void beginAddTransaction(List<Frame> newFrames, Box box) {
-    var transaction = _KeyTransaction();
+  bool beginTransaction(List<Frame> newFrames) {
+    var transaction = KeyTransaction();
     for (var frame in newFrames) {
-      var key = frame.key;
-      if (key is int && key > _autoIncrement) {
-        _autoIncrement = key;
+      Frame deletedFrame;
+      if (frame.deleted) {
+        deletedFrame = delete(frame.key);
+      } else {
+        deletedFrame = add(frame);
+        transaction.added.add(frame.key);
       }
-
-      if (frame.value is HiveObject) {
-        initHiveObject(key, frame.value as HiveObject, box);
-      }
-
-      var deletedFrame = _store.insert(key, frame);
       if (deletedFrame != null) {
-        transaction.deleted[key] = deletedFrame;
-        _deletedEntries++;
-
-        if (deletedFrame.value is HiveObject) {
-          unloadHiveObject(deletedFrame.value as HiveObject);
-        }
-      }
-
-      transaction.added.add(key);
-    }
-    transactions.add(transaction);
-  }
-
-  void beginDeleteTransaction(Iterable<dynamic> keys) {
-    var transaction = _KeyTransaction();
-    for (var key in keys) {
-      var deletedFrame = _store.delete(key);
-      if (deletedFrame != null) {
-        transaction.deleted[key] = deletedFrame;
-        _deletedEntries++;
-
-        if (deletedFrame.value is HiveObject) {
-          unloadHiveObject(deletedFrame.value as HiveObject);
-        }
+        transaction.deleted[frame.key] = deletedFrame;
       }
     }
-    transactions.add(transaction);
+
+    if (transaction.added.isNotEmpty || transaction.deleted.isNotEmpty) {
+      transactions.add(transaction);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void commitTransaction() {
@@ -160,48 +149,48 @@ class Keystore {
 
   void cancelTransaction() {
     var canceled = transactions.removeFirst();
-    var keys = Set.of(canceled.added);
-    keys.addAll(canceled.deleted.keys);
 
-    for (var key in keys) {
-      var shouldAdd = canceled.deleted.containsKey(key);
-      var shouldDelete = canceled.added.contains(key);
+    deleted_loop:
+    for (var key in canceled.deleted.keys) {
       for (var t in transactions) {
-        if (t.added.contains(key) || t.deleted.containsKey(key)) {
-          if (canceled.deleted.containsKey(key)) {
-            t.deleted[key] = canceled.deleted[key];
-          } else {
+        if (t.deleted.containsKey(key)) {
+          t.deleted[key] = canceled.deleted[key];
+          continue deleted_loop;
+        }
+        if (t.added.contains(key)) {
+          t.deleted[key] = canceled.deleted[key];
+          continue deleted_loop;
+        }
+      }
+      _store.insert(key, canceled.deleted[key]);
+    }
+
+    added_loop:
+    for (var key in canceled.added) {
+      for (var t in transactions) {
+        if (t.deleted.containsKey(key)) {
+          if (!canceled.deleted.containsKey(key)) {
             t.deleted.remove(key);
           }
-          break;
+          continue added_loop;
         }
-      }
-
-      for (var t in transactions) {
         if (t.added.contains(key)) {
-          shouldAdd = false;
-          shouldDelete = false;
-        } else if (t.deleted.containsKey(key)) {
-          shouldAdd = false;
+          continue added_loop;
         }
       }
-
-      if (shouldAdd) {
-        _store.insert(key, canceled.deleted[key]);
-      } else if (shouldDelete) {
+      if (!canceled.deleted.containsKey(key)) {
         _store.delete(key);
       }
     }
   }
 
   void clear() {
-    _store.clear();
     for (var frame in frames) {
       if (frame.value is HiveObject) {
         unloadHiveObject(frame.value as HiveObject);
       }
     }
+    _store.clear();
     _deletedEntries = 0;
-    transactions.clear();
   }
 }

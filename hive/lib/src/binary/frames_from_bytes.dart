@@ -18,7 +18,10 @@ int framesFromBytes(Uint8List bytes, List<Frame> frames, TypeRegistry registry,
 
     var lengthBytes = reader.peekBytes(4);
     var frameLength = reader.readUint32();
-    if (reader.availableBytes < frameLength - 4) {
+    if (frameLength == 0) {
+      throw HiveError('This is an internal error. Please open an issue on '
+          'GitHub and if possible provide a way to reproduce this bug.');
+    } else if (reader.availableBytes < frameLength - 4) {
       return frameOffset;
     }
     var frameBytes = reader.peekBytes(frameLength - 4);

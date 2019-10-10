@@ -1,14 +1,23 @@
 ## 1.1.0-beta2
+
+### Breaking changes
+- Changed return type of `addAll()` from `List<int>` to `Iterable<int>`.
+- Removed the option to register `TypeAdapters` for a specific box. E.g. `box.registerTypeAdapter()`.
+
+### Enhancements
 - Added `HiveObject`
 - Support opening boxes from assets
 - Boxes can now be used as lists (`box.listView()`) or as maps (`box.mapView()`)
+- Improved performance of `putAll()`, `deleteAll()` etc.
+
+### Fixes
 - Fixed bug which was caused by not awaiting write operations
 - Fixed bug where custom compaction strategy was not applied
-- Improved performance of `putAll()`, `deleteAll()` etc.
+- Hive now locks box files while they are open to prevent concurrent access from multiple processes
+
+### More
 - Changed `values` parameter of `addAll()` from `List` to `Iterable`
 - Preparation for queries
-- **Breaking**: Changed return type of `addAll()` from `List<int>` to `Iterable<int>`
-- **Breaking**: Removed the option to register `TypeAdapters` for a specific box. E.g. `box.registerTypeAdapter()`.
 
 ## 1.0.0
 - First stable release

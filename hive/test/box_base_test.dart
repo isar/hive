@@ -93,7 +93,7 @@ void main() {
       });
 
       await box.initialize();
-      expect(box.keystore.toValueMap(), {'key1': 1});
+      expect(box.keystore.frames, [Frame('key1', 1)]);
     });
 
     test('.containsKey()', () {

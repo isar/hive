@@ -3,18 +3,17 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/change_notifier.dart';
-import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 
 class LazyBoxImpl extends BoxBase implements LazyBox {
   LazyBoxImpl(
     HiveImpl hive,
     String name,
-    Keystore keystore,
+    KeyComparator keyComparator,
     CompactionStrategy compactionStrategy,
     StorageBackend backend, [
     ChangeNotifier notifier,
-  ]) : super(hive, name, keystore, compactionStrategy, backend, notifier);
+  ]) : super(hive, name, keyComparator, compactionStrategy, backend, notifier);
 
   @override
   final bool lazy = true;

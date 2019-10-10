@@ -65,15 +65,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (isBoxOpen(name)) {
       return box(name);
     } else {
-      var keystore = Keystore(keyComparator);
       var cs = compactionStrategy ?? defaultCompactionStrategy;
       var crypto = getCryptoHelper(encryptionKey);
       var backend = await openBackend(this, name, lazy, crashRecovery, crypto);
       BoxBase box;
       if (lazy) {
-        box = LazyBoxImpl(this, name, keystore, cs, backend);
+        box = LazyBoxImpl(this, name, keyComparator, cs, backend);
       } else {
-        box = BoxImpl(this, name, keystore, cs, backend);
+        box = BoxImpl(this, name, keyComparator, cs, backend);
       }
       await box.initialize();
       _boxes[name.toLowerCase()] = box;
@@ -92,10 +91,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (isBoxOpen(name)) {
       return box(name);
     } else {
-      var keystore = Keystore(keyComparator);
       var crypto = getCryptoHelper(encryptionKey);
       var backend = StorageBackendMemory(bytes, crypto);
-      var box = BoxImpl(this, name, keystore, null, backend);
+      var box = BoxImpl(this, name, keyComparator, null, backend);
       await box.initialize();
       _boxes[name.toLowerCase()] = box;
 

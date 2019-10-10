@@ -9,6 +9,8 @@ import 'dart:typed_data';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
+export 'src/hive_object.dart';
+
 part 'src/annotations/hive_field.dart';
 part 'src/annotations/hive_type.dart';
 part 'src/binary/binary_reader.dart';

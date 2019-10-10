@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/read_write_lock.dart';
+import 'package:hive/src/backend/read_write_sync.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
@@ -16,21 +16,27 @@ import 'package:path/path.dart' as p;
 
 Future<StorageBackend> openBackend(HiveInterface hive, String name, bool lazy,
     bool crashRecovery, CryptoHelper crypto) async {
-  var file = await findHiveFileAndCleanUp(name, hive.path);
+  var dir = Directory(hive.path);
+  if (!await dir.exists()) {
+    await dir.create(recursive: true);
+  }
 
-  var backend = StorageBackendVm(file, lazy, crashRecovery, crypto);
+  var lockFile = File(p.join(dir.path, '$name.lock'));
+  var lock = await lockFile.open(mode: FileMode.write);
+  await lock.lock();
+
+  var file = await findHiveFileAndCleanUp(name, dir);
+
+  var backend = StorageBackendVm(file, lazy, crashRecovery, crypto, lock);
   await backend.open();
   return backend;
 }
 
 @visibleForTesting
-Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
+Future<File> findHiveFileAndCleanUp(String boxName, Directory dir) async {
   File hiveFile;
   File compactedFile;
-  var dir = Directory(hivePath);
-  if (!await dir.exists()) {
-    await dir.create(recursive: true);
-  }
+
   var files = await dir.list(followLinks: false).toList();
   for (var file in files) {
     if (file is File) {
@@ -52,7 +58,7 @@ Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
     var newPath = p.setExtension(compactedFile.path, '.hive');
     return await compactedFile.rename(newPath);
   } else {
-    hiveFile = File(p.join(hivePath, '$boxName.hive'));
+    hiveFile = File(p.join(dir.path, '$boxName.hive'));
     await hiveFile.create();
     return hiveFile;
   }
@@ -60,23 +66,26 @@ Future<File> findHiveFileAndCleanUp(String boxName, String hivePath) async {
 
 class StorageBackendVm extends StorageBackend {
   final File file;
-  final CryptoHelper crypto;
-  final bool crashRecovery;
   final bool lazy;
+  final bool crashRecovery;
+  final CryptoHelper crypto;
   final FrameIoHelper helper;
-  final ReadWriteLock lock;
+
+  final RandomAccessFile _lock;
+  final ReadWriteSync _sync;
 
   RandomAccessFile _readFile;
   RandomAccessFile _writeFile;
   int _writeOffset;
   TypeRegistry _registry;
 
-  StorageBackendVm(this.file, this.lazy, this.crashRecovery, this.crypto)
+  StorageBackendVm(
+      this.file, this.lazy, this.crashRecovery, this.crypto, this._lock)
       : helper = FrameIoHelper(),
-        lock = ReadWriteLock();
+        _sync = ReadWriteSync();
 
   StorageBackendVm.debug(this.file, this.lazy, this.crashRecovery, this.crypto,
-      this.helper, this.lock);
+      this.helper, this._lock, this._sync);
 
   @override
   String get path => file.path;
@@ -126,7 +135,7 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<dynamic> readValue(Frame frame) {
-    return lock.syncRead(() async {
+    return _sync.syncRead(() async {
       await _readFile.setPosition(frame.offset);
       var bytes = await _readFile.read(frame.length);
       var readFrame = Frame.fromBytes(bytes, _registry, crypto);
@@ -136,14 +145,21 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> writeFrames(List<Frame> frames) {
-    return lock.syncWrite(() async {
+    return _sync.syncWrite(() async {
       var writer = BinaryWriterImpl(_registry);
 
       for (var frame in frames) {
         frame.length = frame.toBytes(writer, crypto);
       }
 
-      await _writeFile.writeFrom(writer.toBytes());
+      var oldOffset = _writeOffset;
+      try {
+        await _writeFile.writeFrom(writer.toBytes());
+      } catch (e) {
+        _writeOffset = oldOffset;
+        await _writeFile.setPosition(oldOffset);
+        rethrow;
+      }
 
       for (var frame in frames) {
         frame.offset = _writeOffset;
@@ -154,7 +170,7 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> compact(Iterable<Frame> frames) {
-    return lock.syncReadWrite(() async {
+    return _sync.syncReadWrite(() async {
       await _readFile.setPosition(0);
       var reader = BufferedFileReader(_readFile);
 
@@ -197,26 +213,31 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> clear() {
-    return lock.syncReadWrite(() async {
+    return _sync.syncReadWrite(() async {
       await _writeFile.truncate(0);
       await _writeFile.setPosition(0);
       _writeOffset = 0;
     });
   }
 
+  Future _closeInternal() async {
+    await _readFile.close();
+    await _writeFile.close();
+
+    var lockFile = File(_lock.path);
+    await _lock.close();
+    await lockFile.delete();
+  }
+
   @override
   Future<void> close() {
-    return lock.syncReadWrite(() async {
-      await _readFile.close();
-      await _writeFile.close();
-    });
+    return _sync.syncReadWrite(_closeInternal);
   }
 
   @override
   Future<void> deleteFromDisk() {
-    return lock.syncReadWrite(() async {
-      await _readFile.close();
-      await _writeFile.close();
+    return _sync.syncReadWrite(() async {
+      await _closeInternal();
       await File(path).delete();
     });
   }

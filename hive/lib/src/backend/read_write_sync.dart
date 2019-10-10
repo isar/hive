@@ -1,6 +1,6 @@
 import 'dart:async';
 
-class ReadWriteLock {
+class ReadWriteSync {
   Future readTask;
 
   Future writeTask;

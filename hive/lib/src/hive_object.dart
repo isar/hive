@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-class HiveObject {
+abstract class HiveObject {
   Box _box;
 
   Box get box => _box;

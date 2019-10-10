@@ -23,18 +23,29 @@ abstract class BoxBase implements Box {
 
   @protected
   @visibleForTesting
-  final Keystore keystore;
+  Keystore keystore;
 
   bool _open = true;
 
   BoxBase(
     this.hive,
     this.name,
-    this.keystore,
+    KeyComparator keyComparator,
     this._compactionStrategy,
     this.backend, [
     ChangeNotifier notifier,
-  ]) : notifier = notifier ?? ChangeNotifier();
+  ]) : notifier = notifier ?? ChangeNotifier() {
+    keystore = Keystore(this, keyComparator);
+  }
+
+  BoxBase.debug(
+    this.hive,
+    this.name,
+    this.keystore,
+    this._compactionStrategy,
+    this.backend,
+    this.notifier,
+  );
 
   @override
   bool get isOpen => _open;

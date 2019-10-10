@@ -14,11 +14,20 @@ class BoxImpl extends BoxBase {
   BoxImpl(
     HiveImpl hive,
     String name,
-    Keystore keystore,
+    KeyComparator keyComparator,
     CompactionStrategy compactionStrategy,
     StorageBackend backend, [
     ChangeNotifier notifier,
-  ]) : super(hive, name, keystore, compactionStrategy, backend, notifier);
+  ]) : super(hive, name, keyComparator, compactionStrategy, backend, notifier);
+
+  BoxImpl.debug({
+    HiveImpl hive,
+    String name,
+    Keystore keystore,
+    CompactionStrategy compactionStrategy,
+    StorageBackend backend,
+    ChangeNotifier notifier,
+  }) : super.debug(hive, name, keystore, compactionStrategy, backend, notifier);
 
   @override
   final bool lazy = false;
@@ -54,15 +63,10 @@ class BoxImpl extends BoxBase {
   Future<void> putAll(Map<dynamic, dynamic> kvPairs) {
     checkOpen();
 
-    if (kvPairs.isEmpty) return Future.value();
-
     var frames = <Frame>[];
     for (var key in kvPairs.keys) {
-      var value = kvPairs[key];
-      frames.add(Frame(key, value));
+      frames.add(Frame(key, kvPairs[key]));
     }
-
-    keystore.beginAddTransaction(frames, this);
 
     return _writeFrames(frames);
   }
@@ -73,18 +77,14 @@ class BoxImpl extends BoxBase {
 
     var frames = <Frame>[];
     for (var key in keys) {
-      if (keystore.containsKey(key)) {
-        frames.add(Frame.deleted(key));
-      }
+      frames.add(Frame.deleted(key));
     }
 
-    if (frames.isEmpty) return Future.value();
-
-    keystore.beginDeleteTransaction(keys);
     return _writeFrames(frames);
   }
 
   Future<void> _writeFrames(List<Frame> frames) async {
+    if (!keystore.beginTransaction(frames)) return;
     notifier.notify(frames);
 
     try {

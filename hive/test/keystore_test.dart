@@ -1,17 +1,32 @@
+import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:test/test.dart';
 
+import 'common.dart';
+
+class _TestHiveObject extends HiveObject {}
+
 void main() {
+  void expectTrx(Iterable<KeyTransaction> i1, Iterable<KeyTransaction> i2) {
+    expect(i1.length, i2.length);
+    var l1 = i1.toList();
+    var l2 = i2.toList();
+    for (var i = 0; i < i1.length; i++) {
+      expect(l1[i].added, l2[i].added);
+      expect(l1[i].deleted, l2[i].deleted);
+    }
+  }
+
   group('Keystore', () {
     test('.length returns the number of frames in the store', () {
       var keystore = Keystore.debug([Frame('a', 1), Frame(1, 'a')]);
       expect(keystore.length, 2);
-      expect(Keystore().length, 0);
+      expect(Keystore(null).length, 0);
     });
 
     test('.autoIncrement() updates auto increment value', () {
-      var keystore = Keystore();
+      var keystore = Keystore(null);
       expect(keystore.autoIncrement(), 0);
       expect(keystore.autoIncrement(), 1);
       expect(keystore.autoIncrement(), 2);
@@ -27,14 +42,14 @@ void main() {
 
     group('.updateAutoIncrement()', () {
       test('increases auto increment value if given key is bigger', () {
-        var keystore = Keystore();
+        var keystore = Keystore(null);
         expect(keystore.autoIncrement(), 0);
         keystore.updateAutoIncrement(5);
         expect(keystore.autoIncrement(), 6);
       });
 
       test('does nothing if given key is lower', () {
-        var keystore = Keystore();
+        var keystore = Keystore(null);
 
         keystore.updateAutoIncrement(20);
         expect(keystore.autoIncrement(), 21);
@@ -71,7 +86,7 @@ void main() {
 
         expect(keystore.keyAt(1), null);
         expect(keystore.keyAt(999), null);
-        expect(Keystore().keyAt(0), null);
+        expect(Keystore(null).keyAt(0), null);
       });
     });
 
@@ -89,7 +104,7 @@ void main() {
       test('returns null if there is no such key', () {
         var keystore = Keystore.debug([Frame('key', 'value')]);
         expect(keystore.get('key2'), null);
-        expect(Keystore().get('someKey'), null);
+        expect(Keystore(null).get('someKey'), null);
       });
     });
 
@@ -100,14 +115,14 @@ void main() {
           Frame(4, 'value2'),
         ]);
 
-        expect(keystore.getAt(0), Frame('key1', 'value1'));
-        expect(keystore.getAt(1), Frame(4, 'value2'));
+        expect(keystore.getAt(0), Frame(4, 'value2'));
+        expect(keystore.getAt(1), Frame('key1', 'value1'));
       });
 
       test('returns null if the index does not exist', () {
         var keystore = Keystore.debug([Frame('key1', 'value1')]);
         expect(keystore.getAt(1), null);
-        expect(Keystore().getAt(0), null);
+        expect(Keystore(null).getAt(0), null);
       });
     });
 
@@ -133,125 +148,321 @@ void main() {
       expect(keystore.getValues(), [null, 2, 3, 4]);
     });
 
-    test('.add()', () {
-      var keystore = Keystore();
-      keystore.addAll({0: Frame('val1'), 'key2': Frame('val2')});
-      expect(keystore.entries, {0: Frame('val1'), 'key2': Frame('val2')});
+    group('.add()', () {
+      test('updates auto increment', () {
+        var keystore = Keystore(null);
+        expect(keystore.autoIncrement(), 0);
 
-      keystore.addAll({0: Frame('val3'), 'key3': Frame('val4')});
-      expect(keystore.entries,
-          {0: Frame('val3'), 'key2': Frame('val2'), 'key3': Frame('val4')});
-    });
+        keystore.add(Frame(123, 'val'));
+        expect(keystore.autoIncrement(), 124);
 
-    test('.delete()', () {
-      var keystore = Keystore.debug([
-        Frame(0, 'val1'),
-        Frame('key2', 'val2'),
-        Frame('key3', 'val3'),
-      ]);
-      expect(keystore.deletedEntries, 0);
-      keystore.deleteAll([0, 'key3', 'keyX']);
-      expect(keystore.entries, {'key2': Frame('val2')});
-      expect(keystore.deletedEntries, 2);
-    });
-
-    test('.beginAddTransaction()', () {
-      var keystore = Keystore();
-      keystore.beginAddTransaction([
-        Frame(0, 'val1'),
-        Frame('key2', 'val2'),
-      ]);
-
-      expect(keystore.frames, [
-        Frame(0, 'val1'),
-        Frame('key2', 'val2'),
-      ]);
-      expect(keystore.deletedEntries, 0);
-      expect(keystore.transactions.last.added, [0, 'key2']);
-      expect(keystore.transactions.last.deleted, {});
-
-      keystore.beginAddTransaction([Frame(0, 'val3')]);
-
-      expect(keystore.frames, [
-        Frame(0, 'val3'),
-        Frame('key2', 'val2'),
-      ]);
-      expect(keystore.deletedEntries, 1);
-      expect(keystore.transactions.last.added, [0]);
-      expect(keystore.transactions.last.deleted, {0: Frame(0, 'val1')});
-    });
-
-    test('.beginDeleteTransaction()', () {
-      var keystore = Keystore.debug([
-        Frame(0, 'val1'),
-        Frame('key2', 'val2'),
-      ]);
-      keystore.beginDeleteTransaction([0, 'key3']);
-
-      expect(keystore.frames, [Frame('key2', 'val2')]);
-      expect(keystore.deletedEntries, 1);
-      expect(keystore.transactions.last.added, []);
-      expect(keystore.transactions.last.deleted, {0: Frame(0, 'val1')});
-    });
-
-    test('.commitTransaction()', () {
-      var keystore = Keystore.debug([
-        Frame(0, 'val1'),
-        Frame('key2', 'val2'),
-      ]);
-      keystore.beginDeleteTransaction([0]);
-      keystore.beginDeleteTransaction(['key2']);
-      expect(keystore.transactions.first.deleted, {0: Frame(0, 'val1')});
-      expect(keystore.transactions.last.deleted, {
-        'key2': Frame('key2', 'val2'),
+        keystore.add(Frame('500', 'val'));
+        expect(keystore.autoIncrement(), 125);
       });
 
-      keystore.commitTransaction();
-      expect(keystore.transactions.length, 1);
-      expect(keystore.transactions.first.deleted, {
-        'key2': Frame('key2', 'val2'),
+      test('initializes HiveObject', () {
+        var box = BoxMock();
+        var keystore = Keystore(box);
+
+        var hiveObject = _TestHiveObject();
+        keystore.add(Frame('key', hiveObject));
+
+        expect(hiveObject.key, 'key');
+        expect(hiveObject.box, box);
+      });
+
+      test('adds frame to store', () {
+        var keystore = Keystore(null);
+        keystore.add(Frame('key2', 'val2'));
+        keystore.add(Frame('key1', 'val1'));
+
+        expect(keystore.frames, [Frame('key1', 'val1'), Frame('key2', 'val2')]);
+      });
+
+      test('returns overridden Frame', () {
+        var keystore = Keystore(null);
+
+        var frame = Frame('key', 'val');
+        expect(keystore.add(frame), null);
+        expect(keystore.add(Frame('key', 'val2')), frame);
+      });
+
+      test('unloads previous HiveObject', () {
+        var box = BoxMock();
+        var keystore = Keystore(box);
+
+        var hiveObject = HiveObjectMock();
+        keystore.add(Frame('key', hiveObject));
+        keystore.add(Frame('key', HiveObjectMock()));
+
+        expect(hiveObject.key, null);
+        expect(hiveObject.box, null);
+      });
+
+      test('increases deletedEntries', () {
+        var keystore = Keystore(null);
+        expect(keystore.deletedEntries, 0);
+
+        keystore.add(Frame('key1', 'val1'));
+        expect(keystore.deletedEntries, 0);
+
+        keystore.add(Frame('key1', 'val2'));
+        expect(keystore.deletedEntries, 1);
       });
     });
 
-    test('.cancelTransaction()', () {
-      var keystore = Keystore.debug([
-        Frame('key1', 'val1'),
-        Frame('key2', 'val2'),
-      ]);
-      keystore.beginAddTransaction([
-        Frame('key1', 'val1New'),
-        Frame('key3', 'val3'),
-      ]);
-      keystore.beginDeleteTransaction(['key1', 'key2']);
-      keystore.beginAddTransaction([Frame('key1', 'val1New2')]);
+    group('.delete()', () {
+      test('deletes frame from store', () {
+        var keystore = Keystore.debug([
+          Frame('key2', 'val2'),
+          Frame('key1', 'val1'),
+        ]);
 
-      keystore.cancelTransaction();
-      expect(keystore.frames, [Frame('key1', 'val1New2')]);
+        keystore.delete('key2');
+        expect(keystore.frames, [Frame('key1', 'val1')]);
+      });
 
-      keystore.cancelTransaction();
-      expect(keystore.frames, [
-        Frame('key1', 'val1New2'),
-        Frame('key2', 'val2'),
-      ]);
+      test('returns deleted Frame', () {
+        var frame = Frame('key', 'val');
+        var keystore = Keystore.debug([frame]);
 
-      keystore.cancelTransaction();
-      expect(keystore.frames, [
-        Frame('key1', 'val1'),
-        Frame('key2', 'val2'),
-      ]);
+        expect(keystore.delete('key'), frame);
+        expect(keystore.delete('key'), null);
+      });
+
+      test('unloads deleted HiveObject', () {
+        var box = BoxMock();
+        var hiveObject = HiveObjectMock();
+        var keystore = Keystore.debug([Frame('key', hiveObject)], box);
+
+        keystore.delete('key');
+        expect(hiveObject.key, null);
+        expect(hiveObject.box, null);
+      });
+
+      test('increases deletedEntries', () {
+        var keystore = Keystore.debug([Frame('key1', 'val1')]);
+        expect(keystore.deletedEntries, 0);
+
+        keystore.delete('key1');
+        expect(keystore.deletedEntries, 1);
+      });
     });
 
-    test('.clear()', () {
-      var keystore = Keystore.debug([
-        Frame('key1', 'val1'),
-        Frame('key2', 'val2'),
-      ]);
-      keystore.beginDeleteTransaction(['key1']);
+    group('.beginTransaction()', () {
+      test('adding new frames', () {
+        var keystore = Keystore(null);
+        var created = keystore.beginTransaction([
+          Frame('key1', 'val1'),
+          Frame('key2', 'val2'),
+        ]);
 
-      keystore.clear();
-      expect(keystore.frames, []);
-      expect(keystore.transactions, []);
-      expect(keystore.deletedEntries, 0);
+        expect(created, true);
+        expect(keystore.transactions.first.added, ['key1', 'key2']);
+        expect(keystore.frames, [Frame('key1', 'val1'), Frame('key2', 'val2')]);
+      });
+
+      test('overriding existing keys', () {
+        var keystore = Keystore.debug([Frame('key1', 'val1')]);
+        var created = keystore.beginTransaction([
+          Frame('key1', 'val2'),
+          Frame('key2', 'val3'),
+        ]);
+
+        expect(created, true);
+        expect(keystore.transactions.first.deleted, {
+          'key1': Frame('key1', 'val1'),
+        });
+        expect(keystore.frames, [Frame('key1', 'val2'), Frame('key2', 'val3')]);
+      });
+
+      test('empty transaction', () {
+        var keystore = Keystore.debug([Frame('key1', 'val1')]);
+        var created = keystore.beginTransaction([]);
+
+        expect(created, false);
+        expect(keystore.frames, [Frame('key1', 'val1')]);
+      });
+
+      test('deleting frames', () {
+        var keystore = Keystore.debug([
+          Frame('key1', 'val1'),
+          Frame('key2', 'val2'),
+        ]);
+        var created = keystore.beginTransaction([
+          Frame.deleted('key1'),
+          Frame.deleted('key3'),
+        ]);
+
+        expect(created, true);
+        expect(keystore.transactions.first.deleted, {
+          'key1': Frame('key1', 'val1'),
+        });
+        expect(keystore.frames, [Frame('key2', 'val2')]);
+      });
+    });
+
+    group('.commitTransaction()', () {
+      test('removes the oldest transaction', () {
+        var keystore = Keystore(null);
+        keystore.beginTransaction([Frame('key1', 'val1')]);
+        keystore.beginTransaction([Frame('key2', 'val2')]);
+
+        expectTrx(keystore.transactions, [
+          KeyTransaction()..added.add('key1'),
+          KeyTransaction()..added.add('key2'),
+        ]);
+
+        keystore.commitTransaction();
+        expectTrx(keystore.transactions, [KeyTransaction()..added.add('key2')]);
+      });
+
+      test('fails if there are no pending transactions', () {
+        var keystore = Keystore(null);
+        expect(() => keystore.commitTransaction(), throwsStateError);
+      });
+    });
+
+    group('.cancelTransaction()', () {
+      test('add', () {
+        var keystore = Keystore(null);
+        keystore.beginTransaction([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame('otherKey', 'otherVal')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [Frame('otherKey', 'otherVal')]);
+        expectTrx(
+            keystore.transactions, [KeyTransaction()..added.add('otherKey')]);
+      });
+
+      test('add then override', () {
+        var keystore = Keystore(null);
+        keystore.beginTransaction([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame('key', 'val2')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [Frame('key', 'val2')]);
+        expectTrx(keystore.transactions, [KeyTransaction()..added.add('key')]);
+      });
+
+      test('add then delete', () {
+        var keystore = Keystore(null);
+        keystore.beginTransaction([Frame('key', 'val1')]);
+        keystore.beginTransaction([
+          Frame('otherKey', 'otherVal'),
+          Frame.deleted('key'),
+        ]);
+        keystore.beginTransaction([
+          Frame('key', 'val2'),
+        ]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [
+          Frame('key', 'val2'),
+          Frame('otherKey', 'otherVal'),
+        ]);
+        expectTrx(keystore.transactions, [
+          KeyTransaction()..added.add('otherKey'),
+          KeyTransaction()..added.add('key'),
+        ]);
+      });
+
+      test('override', () {
+        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame('key', 'val2')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [Frame('key', 'val1')]);
+        expectTrx(keystore.transactions, []);
+      });
+
+      test('override then add', () {
+        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame('key', 'val2')]);
+        keystore.beginTransaction([Frame('key', 'val3')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [Frame('key', 'val3')]);
+        expectTrx(keystore.transactions, [
+          KeyTransaction()
+            ..added.add('key')
+            ..deleted['key'] = Frame('key', 'val1'),
+        ]);
+      });
+
+      test('override then delete', () {
+        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame('key', 'val2')]);
+        keystore.beginTransaction([Frame.deleted('key')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, []);
+        expectTrx(keystore.transactions, [
+          KeyTransaction()..deleted['key'] = Frame('key', 'val1'),
+        ]);
+      });
+
+      test('delete', () {
+        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame.deleted('key')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [Frame('key', 'val1')]);
+        expectTrx(keystore.transactions, []);
+      });
+
+      test('delete then add', () {
+        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        keystore.beginTransaction([Frame.deleted('key')]);
+        keystore.beginTransaction([Frame('key', 'val2')]);
+
+        keystore.cancelTransaction();
+        expect(keystore.frames, [Frame('key', 'val2')]);
+        expectTrx(keystore.transactions, [
+          KeyTransaction()
+            ..added.add('key')
+            ..deleted['key'] = Frame('key', 'val1'),
+        ]);
+      });
+    });
+
+    group('.clear()', () {
+      test('clears store', () {
+        var keystore = Keystore.debug([
+          Frame('key1', 'val1'),
+          Frame('key2', 'val2'),
+        ]);
+        keystore.clear();
+        expect(keystore.frames, []);
+      });
+
+      test('unloads HiveObjects', () {
+        var hiveObject = _TestHiveObject();
+        var box = BoxMock();
+        var keystore = Keystore.debug([
+          Frame('key1', 'val1'),
+          Frame('key2', hiveObject),
+        ], box);
+        expect(hiveObject.key, 'key2');
+        expect(hiveObject.box, box);
+
+        keystore.clear();
+        expect(hiveObject.key, null);
+        expect(hiveObject.box, null);
+      });
+
+      test('resets deleted entries', () {
+        var keystore = Keystore.debug([
+          Frame('key1', 'val1'),
+          Frame('key2', 'val2'),
+        ]);
+
+        keystore.delete('key1');
+        expect(keystore.deletedEntries, 1);
+
+        keystore.clear();
+        expect(keystore.deletedEntries, 0);
+      });
     });
   });
 }
