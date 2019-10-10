@@ -8,7 +8,6 @@ import 'package:hive/src/backend/storage_backend_memory.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
-import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';

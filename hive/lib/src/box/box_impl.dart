@@ -4,8 +4,6 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/change_notifier.dart';
-import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/box/list_view.dart';
 import 'package:hive/src/box/map_view.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -16,18 +14,8 @@ class BoxImpl extends BoxBase {
     String name,
     KeyComparator keyComparator,
     CompactionStrategy compactionStrategy,
-    StorageBackend backend, [
-    ChangeNotifier notifier,
-  ]) : super(hive, name, keyComparator, compactionStrategy, backend, notifier);
-
-  BoxImpl.debug({
-    HiveImpl hive,
-    String name,
-    Keystore keystore,
-    CompactionStrategy compactionStrategy,
     StorageBackend backend,
-    ChangeNotifier notifier,
-  }) : super.debug(hive, name, keystore, compactionStrategy, backend, notifier);
+  ) : super(hive, name, keyComparator, compactionStrategy, backend);
 
   @override
   final bool lazy = false;
@@ -35,12 +23,14 @@ class BoxImpl extends BoxBase {
   @override
   Iterable<dynamic> get values {
     checkOpen();
+
     return keystore.getValues();
   }
 
   @override
   dynamic get(dynamic key, {dynamic defaultValue}) {
     checkOpen();
+
     var frame = keystore.get(key);
     if (frame != null) {
       return frame.value;
@@ -51,6 +41,8 @@ class BoxImpl extends BoxBase {
 
   @override
   dynamic getAt(int index, {dynamic defaultValue}) {
+    checkOpen();
+
     var frame = keystore.getAt(index);
     if (frame != null) {
       return frame.value;
@@ -61,8 +53,6 @@ class BoxImpl extends BoxBase {
 
   @override
   Future<void> putAll(Map<dynamic, dynamic> kvPairs) {
-    checkOpen();
-
     var frames = <Frame>[];
     for (var key in kvPairs.keys) {
       frames.add(Frame(key, kvPairs[key]));
@@ -73,8 +63,6 @@ class BoxImpl extends BoxBase {
 
   @override
   Future<void> deleteAll(Iterable<dynamic> keys) {
-    checkOpen();
-
     var frames = <Frame>[];
     for (var key in keys) {
       frames.add(Frame.deleted(key));
@@ -84,24 +72,15 @@ class BoxImpl extends BoxBase {
   }
 
   Future<void> _writeFrames(List<Frame> frames) async {
+    checkOpen();
+
     if (!keystore.beginTransaction(frames)) return;
-    notifier.notify(frames);
 
     try {
       await backend.writeFrames(frames);
       keystore.commitTransaction();
     } catch (e) {
       keystore.cancelTransaction();
-      var notifyFrames = <Frame>[];
-      for (var frame in frames) {
-        var oldFrame = keystore.get(frame.key);
-        if (oldFrame == null) {
-          notifyFrames.add(Frame.deleted(frame.key));
-        } else {
-          notifyFrames.add(Frame(frame.key, oldFrame.value));
-        }
-        notifier.notify(notifyFrames);
-      }
       rethrow;
     }
 

@@ -12,10 +12,8 @@ class ChangeNotifier {
   @visibleForTesting
   ChangeNotifier.debug(this._streamController);
 
-  void notify(Iterable<Frame> frames) {
-    for (var frame in frames) {
-      _streamController.add(BoxEvent(frame.key, frame.value, frame.deleted));
-    }
+  void notify(Frame frame) {
+    _streamController.add(BoxEvent(frame.key, frame.value, frame.deleted));
   }
 
   Stream<BoxEvent> watch({dynamic key}) {

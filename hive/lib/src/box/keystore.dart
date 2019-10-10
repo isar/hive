@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
@@ -25,6 +26,8 @@ int _compareKeys(dynamic k1, dynamic k2) {
 class Keystore {
   final Box _box;
 
+  final ChangeNotifier _notifier;
+
   final IndexableSkipList<dynamic, Frame> _store;
 
   @visibleForTesting
@@ -33,14 +36,14 @@ class Keystore {
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
-  Keystore(this._box, [KeyComparator keyComparator])
+  Keystore(this._box, this._notifier, [KeyComparator keyComparator])
       : _store = IndexableSkipList(keyComparator ?? _compareKeys);
 
   factory Keystore.debug(Iterable<Frame> frames,
-      [Box box, KeyComparator keyComparator]) {
-    var keystore = Keystore(box, keyComparator);
+      {Box box, ChangeNotifier notifier, KeyComparator keyComparator}) {
+    var keystore = Keystore(box, notifier ?? ChangeNotifier(), keyComparator);
     for (var frame in frames) {
-      keystore.add(frame);
+      keystore.insert(frame);
     }
     return keystore;
   }
@@ -89,47 +92,48 @@ class Keystore {
     return _store.values.map((e) => e.value);
   }
 
-  Frame add(Frame frame) {
-    var key = frame.key;
-    if (key is int && key > _autoIncrement) {
-      _autoIncrement = key;
-    }
-
-    if (frame.value is HiveObject) {
-      initHiveObject(key, frame.value as HiveObject, _box);
-    }
-
-    var deletedFrame = _store.insert(key, frame);
-    if (deletedFrame != null) {
-      _deletedEntries++;
-      if (deletedFrame.value is HiveObject) {
-        unloadHiveObject(deletedFrame.value as HiveObject);
-      }
-    }
-    return deletedFrame;
+  Stream<BoxEvent> watch({dynamic key}) {
+    return _notifier.watch(key: key);
   }
 
-  Frame delete(Frame key) {
-    var deletedFrame = _store.delete(key);
+  Frame insert(Frame frame) {
+    Frame deletedFrame;
+
+    if (!frame.deleted) {
+      var key = frame.key;
+      if (key is int && key > _autoIncrement) {
+        _autoIncrement = key;
+      }
+
+      if (frame.value is HiveObject) {
+        initHiveObject(key, frame.value as HiveObject, _box);
+      }
+
+      deletedFrame = _store.insert(key, frame);
+    } else {
+      deletedFrame = _store.delete(frame.key);
+    }
+
     if (deletedFrame != null) {
       _deletedEntries++;
       if (deletedFrame.value is HiveObject) {
         unloadHiveObject(deletedFrame.value as HiveObject);
       }
     }
+
+    _notifier.notify(frame);
+
     return deletedFrame;
   }
 
   bool beginTransaction(List<Frame> newFrames) {
     var transaction = KeyTransaction();
     for (var frame in newFrames) {
-      Frame deletedFrame;
-      if (frame.deleted) {
-        deletedFrame = delete(frame.key);
-      } else {
-        deletedFrame = add(frame);
+      if (!frame.deleted) {
         transaction.added.add(frame.key);
       }
+
+      var deletedFrame = insert(frame);
       if (deletedFrame != null) {
         transaction.deleted[frame.key] = deletedFrame;
       }
@@ -184,13 +188,22 @@ class Keystore {
     }
   }
 
-  void clear() {
+  int clear() {
+    _store.clear();
+
+    var frameList = frames.toList();
     for (var frame in frames) {
       if (frame.value is HiveObject) {
         unloadHiveObject(frame.value as HiveObject);
       }
+      _notifier.notify(Frame.deleted(frame.key));
     }
-    _store.clear();
+
     _deletedEntries = 0;
+    return frameList.length;
+  }
+
+  Future close() {
+    return _notifier.close();
   }
 }

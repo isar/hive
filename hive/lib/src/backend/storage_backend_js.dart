@@ -127,11 +127,11 @@ class StorageBackendJs extends StorageBackend {
       var values = await getValues();
       for (var value in values) {
         var key = keys[i++];
-        keystore.add(Frame(key, value));
+        keystore.insert(Frame(key, value));
       }
     } else {
       for (var key in keys) {
-        keystore.add(Frame(key, null));
+        keystore.insert(Frame.lazy(key));
       }
     }
 

@@ -30,11 +30,7 @@ class StorageBackendMemory extends StorageBackend {
     }
 
     for (var frame in frames) {
-      if (!frame.deleted) {
-        keystore.add(frame);
-      } else {
-        keystore.delete(frame.key);
-      }
+      keystore.insert(frame);
     }
 
     _bytes = null;

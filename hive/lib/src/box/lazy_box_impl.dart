@@ -2,7 +2,6 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/hive_impl.dart';
 
 class LazyBoxImpl extends BoxBase implements LazyBox {
@@ -11,9 +10,8 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     String name,
     KeyComparator keyComparator,
     CompactionStrategy compactionStrategy,
-    StorageBackend backend, [
-    ChangeNotifier notifier,
-  ]) : super(hive, name, keyComparator, compactionStrategy, backend, notifier);
+    StorageBackend backend,
+  ) : super(hive, name, keyComparator, compactionStrategy, backend);
 
   @override
   final bool lazy = true;
@@ -58,16 +56,16 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
       }
     }
 
+    if (frames.isEmpty) return;
     await backend.writeFrames(frames);
 
     for (var frame in frames) {
-      keystore.add(Frame.lazy(
+      keystore.insert(Frame.lazy(
         frame.key,
         length: frame.length,
         offset: frame.offset,
       ));
     }
-    notifier.notify(frames);
 
     await performCompactionIfNeeded();
   }
@@ -84,13 +82,11 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     }
 
     if (frames.isEmpty) return;
-
     await backend.writeFrames(frames);
 
     for (var frame in frames) {
-      keystore.delete(frame.key);
+      keystore.insert(frame);
     }
-    notifier.notify(frames);
 
     await performCompactionIfNeeded();
   }

@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -19,9 +18,6 @@ abstract class BoxBase implements Box {
   final StorageBackend backend;
 
   @protected
-  final ChangeNotifier notifier;
-
-  @protected
   @visibleForTesting
   Keystore keystore;
 
@@ -32,20 +28,10 @@ abstract class BoxBase implements Box {
     this.name,
     KeyComparator keyComparator,
     this._compactionStrategy,
-    this.backend, [
-    ChangeNotifier notifier,
-  ]) : notifier = notifier ?? ChangeNotifier() {
-    keystore = Keystore(this, keyComparator);
-  }
-
-  BoxBase.debug(
-    this.hive,
-    this.name,
-    this.keystore,
-    this._compactionStrategy,
     this.backend,
-    this.notifier,
-  );
+  ) {
+    keystore = Keystore(this, ChangeNotifier(), keyComparator);
+  }
 
   @override
   bool get isOpen => _open;
@@ -81,7 +67,7 @@ abstract class BoxBase implements Box {
   @override
   Stream<BoxEvent> watch({dynamic key}) {
     checkOpen();
-    return notifier.watch(key: key);
+    return keystore.watch(key: key);
   }
 
   @override
@@ -137,12 +123,7 @@ abstract class BoxBase implements Box {
     checkOpen();
 
     await backend.clear();
-
-    var deletedEvents = keystore.frames.map((f) => Frame.deleted(f.key));
-    keystore.clear();
-    notifier.notify(deletedEvents);
-
-    return deletedEvents.length;
+    return keystore.clear();
   }
 
   @override
@@ -169,7 +150,7 @@ abstract class BoxBase implements Box {
   Future<void> close() async {
     if (!_open) return;
 
-    await notifier.close();
+    await keystore.close();
 
     _open = false;
     hive.unregisterBox(name);
@@ -178,7 +159,7 @@ abstract class BoxBase implements Box {
 
   @override
   Future<void> deleteFromDisk() async {
-    await notifier.close();
+    await keystore.close();
 
     _open = false;
     hive.unregisterBox(name);

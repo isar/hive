@@ -123,12 +123,8 @@ class StorageBackendVm extends StorageBackend {
 
     var offset = 0;
     for (var frame in frames) {
-      if (!frame.deleted) {
-        frame.offset = offset;
-        keystore.add(frame);
-      } else {
-        keystore.delete(frame.key);
-      }
+      frame.offset = offset;
+      keystore.insert(frame);
       offset += frame.length;
     }
   }
