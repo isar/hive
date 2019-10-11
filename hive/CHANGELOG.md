@@ -6,9 +6,8 @@
 
 ### Enhancements
 - Added `HiveObject`
-- Boxes have now an optional type adapter `Box<E>`
+- Boxes have now an optional type parameter `Box<E>`
 - Support opening boxes from assets
-- Improved performance of `putAll()`, `deleteAll()` etc.
 
 ### Fixes
 - Fixed bug which was caused by not awaiting write operations
@@ -16,6 +15,7 @@
 - Hive now locks box files while they are open to prevent concurrent access from multiple processes
 
 ### More
+- Improved performance of `putAll()`, `deleteAll()`, `add()`, `addAll()`
 - Changed `values` parameter of `addAll()` from `List` to `Iterable`
 - Preparation for queries
 
