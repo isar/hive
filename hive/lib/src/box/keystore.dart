@@ -7,9 +7,9 @@ import 'package:hive/src/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
-class KeyTransaction {
+class KeyTransaction<E> {
   final List<dynamic> added = [];
-  final Map<dynamic, Frame> deleted = HashMap();
+  final Map<dynamic, Frame<E>> deleted = HashMap();
 
   @visibleForTesting
   KeyTransaction();
@@ -23,15 +23,15 @@ int _compareKeys(dynamic k1, dynamic k2) {
   }
 }
 
-class Keystore {
+class Keystore<E> {
   final Box _box;
 
   final ChangeNotifier _notifier;
 
-  final IndexableSkipList<dynamic, Frame> _store;
+  final IndexableSkipList<dynamic, Frame<E>> _store;
 
   @visibleForTesting
-  final ListQueue<KeyTransaction> transactions = ListQueue();
+  final ListQueue<KeyTransaction<E>> transactions = ListQueue();
 
   var _deletedEntries = 0;
   var _autoIncrement = -1;
@@ -40,12 +40,13 @@ class Keystore {
       : _store = IndexableSkipList(keyComparator ?? _compareKeys);
 
   factory Keystore.debug({
-    Iterable<Frame> frames = const [],
-    Box box,
+    Iterable<Frame<E>> frames = const [],
+    Box<E> box,
     ChangeNotifier notifier,
     KeyComparator keyComparator,
   }) {
-    var keystore = Keystore(box, notifier ?? ChangeNotifier(), keyComparator);
+    var keystore =
+        Keystore<E>(box, notifier ?? ChangeNotifier(), keyComparator);
     for (var frame in frames) {
       keystore.insert(frame);
     }
@@ -56,7 +57,7 @@ class Keystore {
 
   int get length => _store.length;
 
-  Iterable<Frame> get frames => _store.values;
+  Iterable<Frame<E>> get frames => _store.values;
 
   void resetDeletedEntries() {
     _deletedEntries = 0;
@@ -80,11 +81,11 @@ class Keystore {
     return _store.getKeyAt(index);
   }
 
-  Frame get(dynamic key) {
+  Frame<E> get(dynamic key) {
     return _store.get(key);
   }
 
-  Frame getAt(int index) {
+  Frame<E> getAt(int index) {
     return _store.getAt(index);
   }
 
@@ -92,7 +93,7 @@ class Keystore {
     return _store.keys;
   }
 
-  Iterable<dynamic> getValues() {
+  Iterable<E> getValues() {
     return _store.values.map((e) => e.value);
   }
 
@@ -100,8 +101,8 @@ class Keystore {
     return _notifier.watch(key: key);
   }
 
-  Frame insert(Frame frame) {
-    Frame deletedFrame;
+  Frame<E> insert(Frame<E> frame) {
+    Frame<E> deletedFrame;
 
     if (!frame.deleted) {
       var key = frame.key;
@@ -130,8 +131,8 @@ class Keystore {
     return deletedFrame;
   }
 
-  bool beginTransaction(List<Frame> newFrames) {
-    var transaction = KeyTransaction();
+  bool beginTransaction(List<Frame<E>> newFrames) {
+    var transaction = KeyTransaction<E>();
     for (var frame in newFrames) {
       if (!frame.deleted) {
         transaction.added.add(frame.key);

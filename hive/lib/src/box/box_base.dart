@@ -5,7 +5,7 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
-abstract class BoxBase implements Box {
+abstract class BoxBase<E> implements Box<E> {
   @override
   final String name;
 
@@ -19,7 +19,7 @@ abstract class BoxBase implements Box {
 
   @protected
   @visibleForTesting
-  Keystore keystore;
+  Keystore<E> keystore;
 
   bool _open = true;
 
@@ -87,21 +87,21 @@ abstract class BoxBase implements Box {
   }
 
   @override
-  Future<void> put(dynamic key, dynamic value) => putAll({key: value});
+  Future<void> put(dynamic key, E value) => putAll({key: value});
 
   @override
   Future<void> delete(dynamic key) => deleteAll([key]);
 
   @override
-  Future<int> add(dynamic value) async {
+  Future<int> add(E value) async {
     var key = keystore.autoIncrement();
     await put(key, value);
     return key;
   }
 
   @override
-  Future<Iterable<int>> addAll(Iterable<dynamic> values) async {
-    var entries = <int, dynamic>{};
+  Future<Iterable<int>> addAll(Iterable<E> values) async {
+    var entries = <int, E>{};
     for (var value in values) {
       entries[keystore.autoIncrement()] = value;
     }
@@ -110,7 +110,7 @@ abstract class BoxBase implements Box {
   }
 
   @override
-  Future<void> putAt(int index, dynamic value) {
+  Future<void> putAt(int index, E value) {
     return putAll({keystore.getAt(index).key: value});
   }
 

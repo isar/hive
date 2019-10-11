@@ -6,9 +6,9 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/util/crc32.dart';
 
-class Frame {
+class Frame<E> {
   final dynamic key;
-  final dynamic value;
+  final E value;
   final bool deleted;
   final bool lazy;
 

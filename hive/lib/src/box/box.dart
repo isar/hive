@@ -27,7 +27,7 @@ class BoxEvent {
 ///
 /// Read operations for normal boxes are ynchronous (the entries are in
 /// memory). Lazy boxes have asynchronous read operations.
-abstract class Box {
+abstract class Box<E> {
   /// The name of the box. Names are always lowercase.
   String get name;
 
@@ -52,7 +52,7 @@ abstract class Box {
   /// All the values in the box.
   ///
   /// The values are in the same order as their keys.
-  Iterable<dynamic> get values;
+  Iterable<E> get values;
 
   /// The number of entries in the box.
   int get length;
@@ -80,30 +80,30 @@ abstract class Box {
   ///
   /// If [defaultValue] is specified, it is returned in case the key does not
   /// exist.
-  dynamic get(dynamic key, {dynamic defaultValue});
+  E get(dynamic key, {E defaultValue});
 
   /// Returns the value associated with the n-th key. If there is no such key,
   /// `null` is returned.
   ///
   /// If [defaultValue] is specified, it is returned in case the key does not
   /// exist.
-  dynamic getAt(int index, {dynamic defaultValue});
+  E getAt(int index, {E defaultValue});
 
   /// Saves the [key] - [value] pair.
-  Future<void> put(dynamic key, dynamic value);
+  Future<void> put(dynamic key, E value);
 
   /// Associates the [value] with the n-th key. An exception is raised if the
   /// key does not exist.
-  Future<void> putAt(int index, dynamic value);
+  Future<void> putAt(int index, E value);
 
   /// Saves all the key - value pairs in the [entries] map.
-  Future<void> putAll(Map<dynamic, dynamic> entries);
+  Future<void> putAll(Map<dynamic, E> entries);
 
   /// Saves the [value] with an auto-increment key.
-  Future<int> add(dynamic value);
+  Future<int> add(E value);
 
   /// Saves all the [values] with auto-increment keys.
-  Future<Iterable<int>> addAll(Iterable<dynamic> values);
+  Future<Iterable<int>> addAll(Iterable<E> values);
 
   /// Deletes the given [key] from the box.
   ///
@@ -120,13 +120,8 @@ abstract class Box {
   /// If a key does not exist, it is skipped.
   Future<void> deleteAll(Iterable<dynamic> keys);
 
-  List<E> listView<E>();
-
-  Map<dynamic, E> mapView<E>();
-
   /// Returns a map which contains all key - value pairs of the box.
-  @Deprecated('Use mapView() instead. Will be removed in the future.')
-  Map<dynamic, dynamic> toMap();
+  Map<dynamic, E> toMap();
 
   /// Induces compaction manually. This is rarely needed. You should consider
   /// providing a custom compaction strategy instead.

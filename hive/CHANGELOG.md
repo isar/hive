@@ -7,7 +7,6 @@
 ### Enhancements
 - Added `HiveObject`
 - Support opening boxes from assets
-- Boxes can now be used as lists (`box.listView()`) or as maps (`box.mapView()`)
 - Improved performance of `putAll()`, `deleteAll()` etc.
 
 ### Fixes

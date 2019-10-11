@@ -4,11 +4,9 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
-import 'package:hive/src/box/list_view.dart';
-import 'package:hive/src/box/map_view.dart';
 import 'package:hive/src/hive_impl.dart';
 
-class BoxImpl extends BoxBase {
+class BoxImpl<E> extends BoxBase<E> {
   BoxImpl(
     HiveImpl hive,
     String name,
@@ -21,14 +19,14 @@ class BoxImpl extends BoxBase {
   final bool lazy = false;
 
   @override
-  Iterable<dynamic> get values {
+  Iterable<E> get values {
     checkOpen();
 
     return keystore.getValues();
   }
 
   @override
-  dynamic get(dynamic key, {dynamic defaultValue}) {
+  E get(dynamic key, {E defaultValue}) {
     checkOpen();
 
     var frame = keystore.get(key);
@@ -40,7 +38,7 @@ class BoxImpl extends BoxBase {
   }
 
   @override
-  dynamic getAt(int index, {dynamic defaultValue}) {
+  E getAt(int index, {E defaultValue}) {
     checkOpen();
 
     var frame = keystore.getAt(index);
@@ -52,8 +50,8 @@ class BoxImpl extends BoxBase {
   }
 
   @override
-  Future<void> putAll(Map<dynamic, dynamic> kvPairs) {
-    var frames = <Frame>[];
+  Future<void> putAll(Map<dynamic, E> kvPairs) {
+    var frames = <Frame<E>>[];
     for (var key in kvPairs.keys) {
       frames.add(Frame(key, kvPairs[key]));
     }
@@ -63,7 +61,7 @@ class BoxImpl extends BoxBase {
 
   @override
   Future<void> deleteAll(Iterable<dynamic> keys) {
-    var frames = <Frame>[];
+    var frames = <Frame<E>>[];
     for (var key in keys) {
       if (keystore.containsKey(key)) {
         frames.add(Frame.deleted(key));
@@ -73,7 +71,7 @@ class BoxImpl extends BoxBase {
     return _writeFrames(frames);
   }
 
-  Future<void> _writeFrames(List<Frame> frames) async {
+  Future<void> _writeFrames(List<Frame<E>> frames) async {
     checkOpen();
 
     if (!keystore.beginTransaction(frames)) return;
@@ -90,13 +88,11 @@ class BoxImpl extends BoxBase {
   }
 
   @override
-  List<E> listView<E>() => ListView<E>(this);
-
-  @override
-  Map<dynamic, E> mapView<E>() => MapView<E>(this);
-
-  @override
-  Map<dynamic, dynamic> toMap() {
-    return Map.from(mapView());
+  Map<dynamic, E> toMap() {
+    var map = <dynamic, E>{};
+    for (var frame in keystore.frames) {
+      map[frame.key] = frame.value;
+    }
+    return map;
   }
 }
