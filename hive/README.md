@@ -42,7 +42,7 @@ This benchmark was performed on a Oneplus 6T with Android Q. All entries are rea
 ## Getting started
 To get started using Hive in a Flutter project, add the following dependencies to your `pubspec.yaml`. Use the latest version instead of `[version]`.
 
-[![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner) [![Hive Flutter version](https://img.shields.io/pub/v/hive_flutter?label=hive_flutter)](https://pub.dev/packages/hive_flutter)
+[![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Hive Flutter version](https://img.shields.io/pub/v/hive_flutter?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner)
 
 ```yaml
 dependencies:
@@ -57,25 +57,33 @@ dev_dependencies:
 ## Usage
 
 ```dart
-var box = await Hive.openBox('myBox');
+import 'package:hive/hive.dart';
 
-box.put('name', 'Dave');
-box.put('age', 22);
+void main() async {
+  Hive.init(Directory.current.path);
+  var box = await Hive.openBox('myBox');
 
-print('${box.get('name')} is ${box.get('age')} years old.');
+  var person = Person()
+    ..name = 'Dave'
+    ..age = 22;
+  box.add(person);
+
+  print(box.getAt(0)); // Dave - 22
+
+  person.age = 30;
+  person.save();
+
+  print(box.getAt(0)) // Dave - 30
+}
 ```
 
 ## Hive ❤️ Flutter
-Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies to your `pubspec.yaml`, you need import the following dependencies:
+Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies to your `pubspec.yaml`, you are able to use Hive in your project:
 
 ```dart
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-```
 
-Afterwards, you are able to use Hive in your project:
-
-```dart
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
