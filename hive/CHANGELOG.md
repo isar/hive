@@ -6,6 +6,7 @@
 
 ### Enhancements
 - Added `HiveObject`
+- Boxes have now an optional type adapter `Box<E>`
 - Support opening boxes from assets
 - Improved performance of `putAll()`, `deleteAll()` etc.
 
