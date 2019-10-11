@@ -20,13 +20,13 @@ void main() {
 
   group('Keystore', () {
     test('.length returns the number of frames in the store', () {
-      var keystore = Keystore.debug([Frame('a', 1), Frame(1, 'a')]);
+      var keystore = Keystore.debug(frames: [Frame('a', 1), Frame(1, 'a')]);
       expect(keystore.length, 2);
-      expect(Keystore(null).length, 0);
+      expect(Keystore.debug().length, 0);
     });
 
     test('.autoIncrement() updates auto increment value', () {
-      var keystore = Keystore(null);
+      var keystore = Keystore.debug();
       expect(keystore.autoIncrement(), 0);
       expect(keystore.autoIncrement(), 1);
       expect(keystore.autoIncrement(), 2);
@@ -42,14 +42,14 @@ void main() {
 
     group('.updateAutoIncrement()', () {
       test('increases auto increment value if given key is bigger', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         expect(keystore.autoIncrement(), 0);
         keystore.updateAutoIncrement(5);
         expect(keystore.autoIncrement(), 6);
       });
 
       test('does nothing if given key is lower', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
 
         keystore.updateAutoIncrement(20);
         expect(keystore.autoIncrement(), 21);
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('.containsKey() returns whether store has key', () {
-      var keystore = Keystore.debug([Frame('key1', null)]);
+      var keystore = Keystore.debug(frames: [Frame('key1', null)]);
 
       expect(keystore.containsKey('key1'), true);
       expect(keystore.containsKey('key2'), false);
@@ -68,7 +68,7 @@ void main() {
 
     group('.keyAt()', () {
       test('returns the key at the given index', () {
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', null),
           Frame(2, null),
           Frame(0, null),
@@ -82,17 +82,17 @@ void main() {
       });
 
       test('returns null if the index does not exist', () {
-        var keystore = Keystore.debug([Frame('key1', null)]);
+        var keystore = Keystore.debug(frames: [Frame('key1', null)]);
 
         expect(keystore.keyAt(1), null);
         expect(keystore.keyAt(999), null);
-        expect(Keystore(null).keyAt(0), null);
+        expect(Keystore.debug().keyAt(0), null);
       });
     });
 
     group('.get()', () {
       test('returns the frame of the given key', () {
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', 'value1'),
           Frame(1, 'value2'),
         ]);
@@ -102,15 +102,15 @@ void main() {
       });
 
       test('returns null if there is no such key', () {
-        var keystore = Keystore.debug([Frame('key', 'value')]);
+        var keystore = Keystore.debug(frames: [Frame('key', 'value')]);
         expect(keystore.get('key2'), null);
-        expect(Keystore(null).get('someKey'), null);
+        expect(Keystore.debug().get('someKey'), null);
       });
     });
 
     group('.getAt()', () {
       test('returns the frame at the given index', () {
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', 'value1'),
           Frame(4, 'value2'),
         ]);
@@ -120,14 +120,14 @@ void main() {
       });
 
       test('returns null if the index does not exist', () {
-        var keystore = Keystore.debug([Frame('key1', 'value1')]);
+        var keystore = Keystore.debug(frames: [Frame('key1', 'value1')]);
         expect(keystore.getAt(1), null);
-        expect(Keystore(null).getAt(0), null);
+        expect(Keystore.debug().getAt(0), null);
       });
     });
 
     test('.getKeys() returns the keys in the correct order', () {
-      var keystore = Keystore.debug([
+      var keystore = Keystore.debug(frames: [
         Frame('key1', null),
         Frame(2, null),
         Frame(0, null),
@@ -138,7 +138,7 @@ void main() {
     });
 
     test('.getValues() returns the values in the order of their keys', () {
-      var keystore = Keystore.debug([
+      var keystore = Keystore.debug(frames: [
         Frame('key1', 4),
         Frame(2, 2),
         Frame(0, null),
@@ -148,110 +148,114 @@ void main() {
       expect(keystore.getValues(), [null, 2, 3, 4]);
     });
 
-    group('.add()', () {
-      test('updates auto increment', () {
-        var keystore = Keystore(null);
-        expect(keystore.autoIncrement(), 0);
+    group('.insert()', () {
+      group('add', () {
+        test('updates auto increment', () {
+          var keystore = Keystore.debug();
+          expect(keystore.autoIncrement(), 0);
 
-        keystore.add(Frame(123, 'val'));
-        expect(keystore.autoIncrement(), 124);
+          keystore.insert(Frame(123, 'val'));
+          expect(keystore.autoIncrement(), 124);
 
-        keystore.add(Frame('500', 'val'));
-        expect(keystore.autoIncrement(), 125);
+          keystore.insert(Frame('500', 'val'));
+          expect(keystore.autoIncrement(), 125);
+        });
+
+        test('initializes HiveObject', () {
+          var box = BoxMock();
+          var keystore = Keystore.debug(box: box);
+
+          var hiveObject = _TestHiveObject();
+          keystore.insert(Frame('key', hiveObject));
+
+          expect(hiveObject.key, 'key');
+          expect(hiveObject.box, box);
+        });
+
+        test('adds frame to store', () {
+          var keystore = Keystore.debug();
+          keystore.insert(Frame('key2', 'val2'));
+          keystore.insert(Frame('key1', 'val1'));
+
+          expect(
+              keystore.frames, [Frame('key1', 'val1'), Frame('key2', 'val2')]);
+        });
+
+        test('returns overridden Frame', () {
+          var keystore = Keystore.debug();
+
+          var frame = Frame('key', 'val');
+          expect(keystore.insert(frame), null);
+          expect(keystore.insert(Frame('key', 'val2')), frame);
+        });
+
+        test('unloads previous HiveObject', () {
+          var box = BoxMock();
+          var keystore = Keystore.debug(box: box);
+
+          var hiveObject = HiveObjectMock();
+          keystore.insert(Frame('key', hiveObject));
+          keystore.insert(Frame('key', HiveObjectMock()));
+
+          expect(hiveObject.key, null);
+          expect(hiveObject.box, null);
+        });
+
+        test('increases deletedEntries', () {
+          var keystore = Keystore.debug();
+          expect(keystore.deletedEntries, 0);
+
+          keystore.insert(Frame('key1', 'val1'));
+          expect(keystore.deletedEntries, 0);
+
+          keystore.insert(Frame('key1', 'val2'));
+          expect(keystore.deletedEntries, 1);
+        });
       });
 
-      test('initializes HiveObject', () {
-        var box = BoxMock();
-        var keystore = Keystore(box);
+      group('delete', () {
+        test('deletes frame from store', () {
+          var keystore = Keystore.debug(frames: [
+            Frame('key2', 'val2'),
+            Frame('key1', 'val1'),
+          ]);
 
-        var hiveObject = _TestHiveObject();
-        keystore.add(Frame('key', hiveObject));
+          keystore.insert(Frame.deleted('key2'));
+          expect(keystore.frames, [Frame('key1', 'val1')]);
+        });
 
-        expect(hiveObject.key, 'key');
-        expect(hiveObject.box, box);
-      });
+        test('returns deleted Frame', () {
+          var frame = Frame('key', 'val');
+          var keystore = Keystore.debug(frames: [frame]);
 
-      test('adds frame to store', () {
-        var keystore = Keystore(null);
-        keystore.add(Frame('key2', 'val2'));
-        keystore.add(Frame('key1', 'val1'));
+          expect(keystore.insert(Frame.deleted('key')), frame);
+          expect(keystore.insert(Frame.deleted('key')), null);
+        });
 
-        expect(keystore.frames, [Frame('key1', 'val1'), Frame('key2', 'val2')]);
-      });
+        test('unloads deleted HiveObject', () {
+          var box = BoxMock();
+          var hiveObject = HiveObjectMock();
+          var keystore =
+              Keystore.debug(frames: [Frame('key', hiveObject)], box: box);
 
-      test('returns overridden Frame', () {
-        var keystore = Keystore(null);
+          keystore.insert(Frame.deleted('key'));
+          expect(hiveObject.key, null);
+          expect(hiveObject.box, null);
+        });
 
-        var frame = Frame('key', 'val');
-        expect(keystore.add(frame), null);
-        expect(keystore.add(Frame('key', 'val2')), frame);
-      });
+        test('increases deletedEntries', () {
+          var keystore = Keystore.debug(frames: [Frame('key1', 'val1')]);
+          expect(keystore.deletedEntries, 0);
 
-      test('unloads previous HiveObject', () {
-        var box = BoxMock();
-        var keystore = Keystore(box);
-
-        var hiveObject = HiveObjectMock();
-        keystore.add(Frame('key', hiveObject));
-        keystore.add(Frame('key', HiveObjectMock()));
-
-        expect(hiveObject.key, null);
-        expect(hiveObject.box, null);
-      });
-
-      test('increases deletedEntries', () {
-        var keystore = Keystore(null);
-        expect(keystore.deletedEntries, 0);
-
-        keystore.add(Frame('key1', 'val1'));
-        expect(keystore.deletedEntries, 0);
-
-        keystore.add(Frame('key1', 'val2'));
-        expect(keystore.deletedEntries, 1);
-      });
-    });
-
-    group('.delete()', () {
-      test('deletes frame from store', () {
-        var keystore = Keystore.debug([
-          Frame('key2', 'val2'),
-          Frame('key1', 'val1'),
-        ]);
-
-        keystore.delete('key2');
-        expect(keystore.frames, [Frame('key1', 'val1')]);
-      });
-
-      test('returns deleted Frame', () {
-        var frame = Frame('key', 'val');
-        var keystore = Keystore.debug([frame]);
-
-        expect(keystore.delete('key'), frame);
-        expect(keystore.delete('key'), null);
-      });
-
-      test('unloads deleted HiveObject', () {
-        var box = BoxMock();
-        var hiveObject = HiveObjectMock();
-        var keystore = Keystore.debug([Frame('key', hiveObject)], box);
-
-        keystore.delete('key');
-        expect(hiveObject.key, null);
-        expect(hiveObject.box, null);
-      });
-
-      test('increases deletedEntries', () {
-        var keystore = Keystore.debug([Frame('key1', 'val1')]);
-        expect(keystore.deletedEntries, 0);
-
-        keystore.delete('key1');
-        expect(keystore.deletedEntries, 1);
+          keystore.insert(Frame.deleted('key1'));
+          expect(keystore.deletedEntries, 1);
+        });
       });
     });
 
     group('.beginTransaction()', () {
       test('adding new frames', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         var created = keystore.beginTransaction([
           Frame('key1', 'val1'),
           Frame('key2', 'val2'),
@@ -263,7 +267,7 @@ void main() {
       });
 
       test('overriding existing keys', () {
-        var keystore = Keystore.debug([Frame('key1', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key1', 'val1')]);
         var created = keystore.beginTransaction([
           Frame('key1', 'val2'),
           Frame('key2', 'val3'),
@@ -277,7 +281,7 @@ void main() {
       });
 
       test('empty transaction', () {
-        var keystore = Keystore.debug([Frame('key1', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key1', 'val1')]);
         var created = keystore.beginTransaction([]);
 
         expect(created, false);
@@ -285,7 +289,7 @@ void main() {
       });
 
       test('deleting frames', () {
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
           Frame('key2', 'val2'),
         ]);
@@ -304,7 +308,7 @@ void main() {
 
     group('.commitTransaction()', () {
       test('removes the oldest transaction', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         keystore.beginTransaction([Frame('key1', 'val1')]);
         keystore.beginTransaction([Frame('key2', 'val2')]);
 
@@ -318,14 +322,14 @@ void main() {
       });
 
       test('fails if there are no pending transactions', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         expect(() => keystore.commitTransaction(), throwsStateError);
       });
     });
 
     group('.cancelTransaction()', () {
       test('add', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('otherKey', 'otherVal')]);
 
@@ -336,7 +340,7 @@ void main() {
       });
 
       test('add then override', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
 
@@ -346,7 +350,7 @@ void main() {
       });
 
       test('add then delete', () {
-        var keystore = Keystore(null);
+        var keystore = Keystore.debug();
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([
           Frame('otherKey', 'otherVal'),
@@ -368,7 +372,7 @@ void main() {
       });
 
       test('override', () {
-        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
 
         keystore.cancelTransaction();
@@ -377,7 +381,7 @@ void main() {
       });
 
       test('override then add', () {
-        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
         keystore.beginTransaction([Frame('key', 'val3')]);
 
@@ -391,7 +395,7 @@ void main() {
       });
 
       test('override then delete', () {
-        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
         keystore.beginTransaction([Frame.deleted('key')]);
 
@@ -403,7 +407,7 @@ void main() {
       });
 
       test('delete', () {
-        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame.deleted('key')]);
 
         keystore.cancelTransaction();
@@ -412,7 +416,7 @@ void main() {
       });
 
       test('delete then add', () {
-        var keystore = Keystore.debug([Frame('key', 'val1')]);
+        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame.deleted('key')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
 
@@ -428,7 +432,7 @@ void main() {
 
     group('.clear()', () {
       test('clears store', () {
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
           Frame('key2', 'val2'),
         ]);
@@ -439,10 +443,10 @@ void main() {
       test('unloads HiveObjects', () {
         var hiveObject = _TestHiveObject();
         var box = BoxMock();
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
           Frame('key2', hiveObject),
-        ], box);
+        ], box: box);
         expect(hiveObject.key, 'key2');
         expect(hiveObject.box, box);
 
@@ -452,12 +456,12 @@ void main() {
       });
 
       test('resets deleted entries', () {
-        var keystore = Keystore.debug([
+        var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
           Frame('key2', 'val2'),
         ]);
 
-        keystore.delete('key1');
+        keystore.insert(Frame.deleted('key1'));
         expect(keystore.deletedEntries, 1);
 
         keystore.clear();

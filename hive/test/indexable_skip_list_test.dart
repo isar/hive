@@ -20,7 +20,7 @@ void main() {
       }
     }
 
-    test('insert puts value at the correct position', () {
+    test('.insert() puts value at the correct position', () {
       var list = IndexableSkipList(Comparable.compare);
       var data = getRandomList();
 
@@ -31,7 +31,7 @@ void main() {
       }
     });
 
-    test('delete removes key', () {
+    test('.delete() removes key', () {
       var list = IndexableSkipList(Comparable.compare);
       var data = getRandomList();
       for (var key in data) {

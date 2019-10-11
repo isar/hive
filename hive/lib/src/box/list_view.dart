@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:hive/hive.dart';
 
 class ListView<E> extends ListBase<E> {
-  Box box;
+  final Box box;
 
   ListView(this.box);
 

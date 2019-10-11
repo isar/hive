@@ -72,6 +72,7 @@ abstract class BoxBase implements Box {
 
   @override
   dynamic keyAt(int index) {
+    checkOpen();
     return keystore.getAt(index).key;
   }
 
@@ -150,19 +151,21 @@ abstract class BoxBase implements Box {
   Future<void> close() async {
     if (!_open) return;
 
-    await keystore.close();
-
     _open = false;
+    await keystore.close();
     hive.unregisterBox(name);
+
     await backend.close();
   }
 
   @override
   Future<void> deleteFromDisk() async {
-    await keystore.close();
+    if (_open) {
+      _open = false;
+      await keystore.close();
+      hive.unregisterBox(name);
+    }
 
-    _open = false;
-    hive.unregisterBox(name);
     await backend.deleteFromDisk();
   }
 }

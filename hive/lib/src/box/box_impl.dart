@@ -65,7 +65,9 @@ class BoxImpl extends BoxBase {
   Future<void> deleteAll(Iterable<dynamic> keys) {
     var frames = <Frame>[];
     for (var key in keys) {
-      frames.add(Frame.deleted(key));
+      if (keystore.containsKey(key)) {
+        frames.add(Frame.deleted(key));
+      }
     }
 
     return _writeFrames(frames);

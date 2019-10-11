@@ -10,28 +10,28 @@ import 'package:test/test.dart';
 
 import 'common.dart';
 
-LazyBoxImpl getBox({
+LazyBoxImpl _getBox({
   String name,
   HiveImpl hive,
-  StorageBackend backend,
-  ChangeNotifier notifier,
   Keystore keystore,
   CompactionStrategy cStrategy,
+  StorageBackend backend,
 }) {
-  return LazyBoxImpl(
+  var box = LazyBoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
-    keystore ?? Keystore(),
+    null,
     cStrategy ?? (total, deleted) => false,
     backend ?? BackendMock(),
-    notifier,
   );
+  box.keystore = keystore ?? Keystore(box, ChangeNotifier());
+  return box;
 }
 
 void main() {
   group('LazyBoxImpl', () {
     test('.values', () {
-      var box = getBox();
+      var box = _getBox();
 
       expect(() => box.values, throwsUnsupportedError);
     });
@@ -39,7 +39,7 @@ void main() {
     group('.get()', () {
       test('returns defaultValue if key does not exist', () async {
         var backend = BackendMock();
-        var box = getBox(backend: backend);
+        var box = _getBox(backend: backend);
 
         expect(await box.get('someKey'), null);
         expect(await box.get('otherKey', defaultValue: -12), -12);
@@ -49,28 +49,24 @@ void main() {
       test('reads value from backend', () async {
         var backend = BackendMock();
         when(backend.readValue(any)).thenAnswer((i) async => 'testVal');
-        var box = getBox(
-          backend: backend,
-          keystore: Keystore.debug([
-            Frame.lazy('testKey', length: 123, offset: 456),
-          ]),
-        );
+
+        var box = _getBox(backend: backend);
+        var frame = Frame.lazy('testKey', length: 123, offset: 456);
+        box.keystore.insert(frame);
 
         expect(await box.get('testKey'), 'testVal');
-        verify(backend.readValue(
-          Frame.lazy('testKey', length: 123, offset: 456),
-        ));
+        verify(backend.readValue(frame));
       });
     });
 
     test('.getAt()', () async {
-      var keystore = Keystore.debug([
+      var keystore = Keystore.debug(frames: [
         Frame(0, null),
         Frame('a', null),
       ]);
       var backend = BackendMock();
       when(backend.readValue(Frame('a', null))).thenAnswer((i) async => 'A');
-      var box = getBox(keystore: keystore, backend: backend);
+      var box = _getBox(keystore: keystore, backend: backend);
 
       expect(await box.getAt(1), 'A');
       expect(await box.getAt(2), null);
@@ -81,13 +77,11 @@ void main() {
       test('values', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
         when(keystore.containsKey(any)).thenReturn(false);
 
-        var box = getBox(
+        var box = _getBox(
           backend: backend,
           keystore: keystore,
-          notifier: notifier,
         );
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
@@ -96,24 +90,21 @@ void main() {
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
           ]),
-          keystore.add(Frame.lazy('key1')),
-          keystore.add(Frame.lazy('key2')),
-          notifier.notify([Frame('key1', 'value1'), Frame('key2', 'value2')]),
+          keystore.insert(Frame.lazy('key1')),
+          keystore.insert(Frame.lazy('key2')),
         ]);
       });
 
       test('handles exceptions', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
 
         when(backend.writeFrames(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
 
-        var box = getBox(
+        var box = _getBox(
           backend: backend,
           keystore: keystore,
-          notifier: notifier,
         );
 
         await expectLater(
@@ -129,7 +120,6 @@ void main() {
           ]),
         ]);
         verifyNoMoreInteractions(keystore);
-        verifyNoMoreInteractions(notifier);
       });
     });
 
@@ -137,29 +127,24 @@ void main() {
       test('does nothing when deleting non existing keys', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
         when(keystore.containsKey(any)).thenReturn(false);
-        var box = getBox(
+        var box = _getBox(
           backend: backend,
           keystore: keystore,
-          notifier: notifier,
         );
 
         await box.deleteAll(['key1', 'key2', 'key3']);
         verifyZeroInteractions(backend);
-        verifyZeroInteractions(notifier);
       });
 
       test('delete keys', () async {
         var backend = BackendMock();
         var keystore = KeystoreMock();
-        var notifier = ChangeNotifierMock();
         when(keystore.containsKey(any)).thenReturn(true);
 
-        var box = getBox(
+        var box = _getBox(
           backend: backend,
           keystore: keystore,
-          notifier: notifier,
         );
 
         await box.deleteAll(['key1', 'key2']);
@@ -167,15 +152,14 @@ void main() {
           keystore.containsKey('key1'),
           keystore.containsKey('key2'),
           backend.writeFrames([Frame.deleted('key1'), Frame.deleted('key2')]),
-          keystore.delete('key1'),
-          keystore.delete('key2'),
-          notifier.notify([Frame.deleted('key1'), Frame.deleted('key2')]),
+          keystore.insert(Frame.deleted('key1')),
+          keystore.insert(Frame.deleted('key2')),
         ]);
       });
     });
 
     test('.toMap()', () async {
-      var box = getBox();
+      var box = _getBox();
       expect(box.toMap, throwsUnsupportedError);
     });
   });

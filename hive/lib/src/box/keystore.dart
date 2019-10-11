@@ -39,8 +39,12 @@ class Keystore {
   Keystore(this._box, this._notifier, [KeyComparator keyComparator])
       : _store = IndexableSkipList(keyComparator ?? _compareKeys);
 
-  factory Keystore.debug(Iterable<Frame> frames,
-      {Box box, ChangeNotifier notifier, KeyComparator keyComparator}) {
+  factory Keystore.debug({
+    Iterable<Frame> frames = const [],
+    Box box,
+    ChangeNotifier notifier,
+    KeyComparator keyComparator,
+  }) {
     var keystore = Keystore(box, notifier ?? ChangeNotifier(), keyComparator);
     for (var frame in frames) {
       keystore.insert(frame);
@@ -189,10 +193,11 @@ class Keystore {
   }
 
   int clear() {
+    var frameList = frames.toList();
+
     _store.clear();
 
-    var frameList = frames.toList();
-    for (var frame in frames) {
+    for (var frame in frameList) {
       if (frame.value is HiveObject) {
         unloadHiveObject(frame.value as HiveObject);
       }

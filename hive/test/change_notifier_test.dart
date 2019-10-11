@@ -23,11 +23,9 @@ void main() {
         filteredEvents.add(e);
       });
 
-      notifier.notify([
-        Frame.deleted('key1'),
-        Frame('key1', 'newVal'),
-        Frame('key2', 'newVal2'),
-      ]);
+      notifier.notify(Frame.deleted('key1'));
+      notifier.notify(Frame('key1', 'newVal'));
+      notifier.notify(Frame('key2', 'newVal2'));
 
       await Future.delayed(Duration(milliseconds: 1));
 
