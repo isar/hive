@@ -73,7 +73,7 @@ abstract class BoxBase<E> implements Box<E> {
   @override
   dynamic keyAt(int index) {
     checkOpen();
-    return keystore.getAt(index).key;
+    return keystore.getAt(index)?.key;
   }
 
   Future<void> initialize() {
@@ -111,11 +111,13 @@ abstract class BoxBase<E> implements Box<E> {
 
   @override
   Future<void> putAt(int index, E value) {
+    RangeError.checkValueInInterval(index, 0, length - 1, 'index');
     return putAll({keystore.getAt(index).key: value});
   }
 
   @override
   Future<void> deleteAt(int index) {
+    RangeError.checkValueInInterval(index, 0, length - 1, 'index');
     return deleteAll([keystore.getAt(index).key]);
   }
 

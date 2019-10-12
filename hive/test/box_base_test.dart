@@ -127,7 +127,7 @@ void main() {
       });
     });
 
-    test('initialize', () async {
+    test('.initialize()', () async {
       var backend = BackendMock();
       var box = _openBoxBaseMock(backend: backend);
 
@@ -169,7 +169,7 @@ void main() {
       });
     });
 
-    group('add', () {
+    group('.add()', () {
       test('calls put()', () async {
         var box = _openBoxBaseMock();
         expect(await box.add(123), 0);
@@ -183,7 +183,7 @@ void main() {
       });
     });
 
-    test('addAll', () async {
+    test('.addAll()', () async {
       var box = _openBoxBaseMock();
       box.keystore.updateAutoIncrement(4);
 
@@ -192,22 +192,56 @@ void main() {
       verify(box.putAll({5: 1, 6: 2, 7: 3}));
     });
 
-    test('putAt', () async {
-      var box = _openBoxBaseMock();
-      box.keystore.insert(Frame.lazy('a'));
-      box.keystore.insert(Frame.lazy('b'));
+    group('.putAt()', () {
+      test('override existing', () async {
+        var box = _openBoxBaseMock();
+        box.keystore.insert(Frame.lazy('a'));
+        box.keystore.insert(Frame.lazy('b'));
 
-      await box.putAt(1, 'test');
-      verify(box.put('b', 'test'));
+        await box.putAt(1, 'test');
+        verify(box.put('b', 'test'));
+      });
+
+      test('throws RangeError for negative index', () async {
+        var box = _openBoxBaseMock();
+        box.keystore.insert(Frame.lazy('a'));
+
+        await expectLater(
+            () async => await box.putAt(-1, 'test'), throwsRangeError);
+      });
+
+      test('throws RangeError for index out of bounds', () async {
+        var box = _openBoxBaseMock();
+        box.keystore.insert(Frame.lazy('a'));
+
+        await expectLater(
+            () async => await box.putAt(1, 'test'), throwsRangeError);
+      });
     });
 
-    test('deleteAt', () async {
-      var box = _openBoxBaseMock();
-      box.keystore.insert(Frame.lazy('a'));
-      box.keystore.insert(Frame.lazy('b'));
+    group('.deleteAt()', () {
+      test('delete frame', () async {
+        var box = _openBoxBaseMock();
+        box.keystore.insert(Frame.lazy('a'));
+        box.keystore.insert(Frame.lazy('b'));
 
-      await box.deleteAt(1);
-      verify(box.delete('b'));
+        await box.deleteAt(1);
+        verify(box.delete('b'));
+      });
+
+      test('throws RangeError for negative index', () async {
+        var box = _openBoxBaseMock();
+        box.keystore.insert(Frame.lazy('a'));
+
+        await expectLater(() async => await box.deleteAt(-1), throwsRangeError);
+      });
+
+      test('throws RangeError for index out of bounds', () async {
+        var box = _openBoxBaseMock();
+        box.keystore.insert(Frame.lazy('a'));
+
+        await expectLater(() async => await box.deleteAt(1), throwsRangeError);
+      });
     });
 
     group('.clear()', () {
