@@ -1,11 +1,14 @@
-void main() {}
-
-/*@TestOn('vm')
+@TestOn('vm')
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:hive/hive.dart';
+import 'package:hive/src/backend/read_write_sync.dart';
 import 'package:hive/src/backend/storage_backend_vm.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -32,12 +35,37 @@ Uint8List getFrameBytes(List<Frame> frames) {
   return writer.toBytes();
 }
 
+StorageBackendVm _getBackend({
+  File file,
+  File lockFile,
+  bool lazy = false,
+  bool crashRecovery = false,
+  CryptoHelper crypto,
+  FrameIoHelper ioHelper,
+  TypeRegistry registry,
+  ReadWriteSync sync,
+  RandomAccessFile readRaf,
+  RandomAccessFile writeRaf,
+}) {
+  return StorageBackendVm.debug(
+    file ?? FileMock(),
+    lockFile ?? FileMock(),
+    lazy,
+    crashRecovery,
+    crypto,
+    ioHelper ?? FrameIoHelperMock(),
+    sync ?? ReadWriteSync(),
+  )
+    ..readRaf = readRaf
+    ..writeRaf = writeRaf;
+}
+
 void main() {
   group('findHiveFileAndCleanUp', () {
     Future<void> checkFindHiveFileAndCleanUp(String folder) async {
       var hiveFileDir =
           await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
-      var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir.path);
+      var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir);
       expect(hiveFile.path, path.join(hiveFileDir.path, 'testBox.hive'));
       await expectDirEqualsAssetDir(
           hiveFileDir, 'findHiveFileAndCleanUp', folder, 'after');
@@ -61,94 +89,204 @@ void main() {
   });
 
   group('StorageBackendVm', () {
-    /*group('.initialize()', () {
-      test('not lazy', () async {
-        var ioHelper = FrameIoHelperMock();
-        when(ioHelper.framesFromFile(any, any, any, any)).thenAnswer((i) async {
-          i.positionalArguments[1].addAll([
-            Frame('key1', 'value1', length: 5, offset: 1),
-            Frame('key2', 'value2', length: 4, offset: 2),
-            Frame('key1', null, length: 3, offset: 3),
-            Frame.deleted('key2', length: 4),
-            Frame('key3', 'value3', length: 2, offset: 5),
-          ]);
-          return null;
-        });
+    test('.path returns path for of open box file', () {
+      var file = File('some/path');
+      var backend = _getBackend(file: file);
+      expect(backend.path, 'some/path');
+    });
 
-        var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
+    test('.supportsCompaction is true', () {
+      var backend = _getBackend();
+      expect(backend.supportsCompaction, true);
+    });
 
-        var keystore = Keystore();
-        await backend.initialize(null, keystore, false, false);
+    group('.open()', () {
+      test('readFile & writeFile', () async {
+        var file = FileMock();
+        var readRaf = RAFMock();
+        var writeRaf = RAFMock();
+        when(file.open()).thenAnswer((i) => Future.value(readRaf));
+        when(file.open(mode: FileMode.writeOnlyAppend))
+            .thenAnswer((i) => Future.value(writeRaf));
 
-        expect(keystore.frames.values, [
-          Frame('key1', null, length: 3, offset: 3),
-          Frame('key3', 'value3', length: 2, offset: 5),
-        ]);
-        expect(keystore.deletedEntries, 2);
+        var backend = _getBackend(file: file);
+        await backend.open();
+        expect(backend.readRaf, readRaf);
+        expect(backend.writeRaf, writeRaf);
       });
 
-      test('lazy', () async {
-        var ioHelper = FrameIoHelperMock();
-        when(ioHelper.keysFromFile(any, any, any)).thenAnswer((i) async {
-          i.positionalArguments[1].addAll([
-            Frame.lazy('key1', length: 5, offset: 1),
-            Frame.lazy('key2', length: 4, offset: 2),
-            Frame.lazy('key1', length: 3, offset: 3),
-            Frame.deleted('key2', length: 4),
-            Frame.lazy('key3', length: 2, offset: 5),
-          ]);
-          return null;
-        });
+      test('writeOffset', () async {
+        var file = FileMock();
+        var writeFile = RAFMock();
+        when(file.open(mode: FileMode.writeOnlyAppend))
+            .thenAnswer((i) => Future.value(writeFile));
+        when(writeFile.length()).thenAnswer((i) => Future.value(123));
 
-        var backend = StorageBackendVm.debug(SyncedFileMock(), null, ioHelper);
-
-        var keystore = Keystore();
-        await backend.initialize(null, keystore, true, false);
-
-        expect(keystore.frames.values, [
-          Frame.lazy('key1', length: 3, offset: 3),
-          Frame.lazy('key3', length: 2, offset: 5),
-        ]);
-        expect(keystore.deletedEntries, 2);
+        var backend = _getBackend(file: file);
+        await backend.open();
+        expect(backend.writeOffset, 123);
       });
     });
 
-    test('.readValue()', () async {
-      var file = SyncedFileMock();
-      var frameBytes = getFrameBytes([Frame('test', 123)]);
-      when(file.readAt(5, frameBytes.length))
-          .thenAnswer((i) async => frameBytes);
+    group('.initialize()', () {
+      File getLockFile() {
+        var lockFileMock = FileMock();
+        when(lockFileMock.open(mode: FileMode.write))
+            .thenAnswer((i) => Future.value(RAFMock()));
+        return lockFileMock;
+      }
 
-      var backend = StorageBackendVm(file, null);
+      FrameIoHelper getFrameIoHelper(int recoveryOffset) {
+        var testFrames = [
+          Frame('key1', 'value1', length: 5, offset: 1),
+          Frame('key2', 'value2', length: 4, offset: 2),
+          Frame('key1', null, length: 3, offset: 3),
+          Frame.deleted('key2', length: 4),
+          Frame('key3', 'value3', length: 2, offset: 5),
+        ];
+
+        var helper = FrameIoHelperMock();
+        when(helper.framesFromFile(any, any, any, any)).thenAnswer((i) {
+          i.positionalArguments[1].addAll(testFrames);
+          return Future.value(recoveryOffset);
+        });
+        when(helper.keysFromFile(any, any, any)).thenAnswer((i) {
+          i.positionalArguments[1].addAll(testFrames);
+          return Future.value(recoveryOffset);
+        });
+        return helper;
+      }
+
+      void runTests(bool lazy) {
+        test('opens lock file and aquires lock', () async {
+          var lockFile = FileMock();
+          var lockRaf = RAFMock();
+          when(lockFile.open(mode: FileMode.write))
+              .thenAnswer((i) => Future.value(lockRaf));
+
+          var backend = _getBackend(
+            lockFile: lockFile,
+            ioHelper: getFrameIoHelper(-1),
+            lazy: lazy,
+          );
+
+          await backend.initialize(null, KeystoreMock());
+          verify(lockRaf.lock());
+        });
+
+        test('correct offsets', () async {
+          var backend = _getBackend(
+            lockFile: getLockFile(),
+            ioHelper: getFrameIoHelper(-1),
+            lazy: lazy,
+          );
+
+          var keystore = Keystore.debug();
+          await backend.initialize(null, keystore);
+
+          expect(keystore.frames, [
+            Frame('key1', null, length: 3, offset: 3),
+            Frame('key3', 'value3', length: 2, offset: 5),
+          ]);
+          expect(keystore.deletedEntries, 2);
+        });
+
+        test('recoveryOffset with crash recovery', () async {
+          var writeRaf = RAFMock();
+          var backend = _getBackend(
+            lockFile: getLockFile(),
+            ioHelper: getFrameIoHelper(20),
+            lazy: lazy,
+            crashRecovery: true,
+            writeRaf: writeRaf,
+          );
+
+          await backend.initialize(null, KeystoreMock());
+          verify(writeRaf.truncate(20));
+        });
+
+        test('recoveryOffset without crash recovery', () async {
+          var backend = _getBackend(
+            lockFile: getLockFile(),
+            ioHelper: getFrameIoHelper(20),
+            lazy: lazy,
+            crashRecovery: false,
+          );
+
+          await expectLater(() => backend.initialize(null, KeystoreMock()),
+              throwsHiveError('corrupted'));
+        });
+      }
+
+      group('(not lazy)', () {
+        runTests(false);
+      });
+
+      group('(lazy)', () {
+        runTests(true);
+      });
+    });
+
+    /*test('.readValue()', () async {
+      var readRaf = RAFMock();
+      var frameBytes = getFrameBytes([Frame('test', 123, offset: 5)]);
+      print(frameBytes);
+      when(readRaf.read(frameBytes.length))
+          .thenAnswer((i) => Future.value(frameBytes));
+
+      var backend = _getBackend(readRaf: readRaf);
       var value = await backend.readValue(
-        Frame('key', null, length: frameBytes.length, offset: 5),
+        Frame('test', 123, length: frameBytes.length, offset: 5),
       );
+      verifyInOrder([
+        readRaf.setPosition(5),
+        readRaf.read(frameBytes.length),
+      ]);
       expect(value, 123);
     });*/
 
-    test('.writeFrames()', () async {
-      /*var mockFile = SyncedFileMock();
-      when(mockFile.write(any)).thenAnswer((_) => Future.value(10));
+    group('.writeFrames()', () {
+      test('writes bytes', () async {
+        var frames = [Frame('key1', 'value'), Frame('key2', null)];
+        var bytes = getFrameBytes(frames);
 
-      var backend = StorageBackendVm(mockFile, null);
+        var writeRaf = RAFMock();
+        var backend = _getBackend(writeRaf: writeRaf);
 
-      var frame1 = Frame('key1', 'value');
-      var frame2 = Frame('key2', null);
-      var bytes1 = frame1.toBytes(null, null);
-      var bytes2 = frame2.toBytes(null, null);
-      var bytes = [...bytes1, ...bytes2];
+        await backend.writeFrames(frames);
+        verify(writeRaf.writeFrom(bytes));
+      });
 
-      await backend.writeFrames([frame1, frame2]);
-      verify(mockFile.write(bytes));
-      expect(frame1, Frame('key1', 'value', length: bytes1.length));
-      expect(
-          frame2,
-          Frame('key2', null,
-              length: bytes2.length, offset: 10 + bytes1.length));*/
+      test('updates offsets', () async {
+        var frames = [Frame('key1', 'value'), Frame('key2', null)];
+
+        var writeRaf = RAFMock();
+        var backend = _getBackend(writeRaf: writeRaf);
+        backend.writeOffset = 5;
+
+        await backend.writeFrames(frames);
+        expect(frames, [
+          Frame('key1', 'value', length: 24, offset: 5),
+          Frame('key2', null, length: 15, offset: 29),
+        ]);
+        expect(backend.writeOffset, 44);
+      });
+
+      test('resets writeOffset on error', () async {
+        var writeRaf = RAFMock();
+        when(writeRaf.writeFrom(any)).thenThrow('error');
+        var backend = _getBackend(writeRaf: writeRaf);
+        backend.writeOffset = 123;
+
+        await expectLater(() => backend.writeFrames([Frame('key1', 'value')]),
+            throwsA(anything));
+        verify(writeRaf.setPosition(123));
+        expect(backend.writeOffset, 123);
+      });
     });
 
-    group('.compact()', () {
-      /*//TODO improve this test
+    /*group('.compact()', () {
+      //TODO improve this test
       test('check compaction', () async {
         var bytes = BytesBuilder();
         var comparisonBytes = BytesBuilder();
@@ -193,9 +331,9 @@ void main() {
         expect(compactedBytes, comparisonBytes.toBytes());
 
         await backend.close();
-      });*/
+      });
 
-      /*test('throws error if corrupted', () async {
+      test('throws error if corrupted', () async {
         var bytes = BytesBuilder();
         var boxFile = await getTempFile(); 
         var syncedFile = SyncedFile(boxFile.path);
@@ -210,29 +348,65 @@ void main() {
         await syncedFile.truncate(await boxFile.length() - 1);
 
         expect(() => box.compact(), throwsHiveError('unexpected eof'));
-      });*/
-    });
-
-    /*test('.clear()', () {
-      var mockFile = SyncedFileMock();
-      var backend = StorageBackendVm(mockFile, null);
-      backend.clear();
-      verify(mockFile.truncate(0));
-    });
-
-    test('.close()', () {
-      var mockFile = SyncedFileMock();
-      var backend = StorageBackendVm(mockFile, null);
-      backend.close();
-      verify(mockFile.close());
-    });
-
-    test('.delete()', () {
-      var mockFile = SyncedFileMock();
-      var backend = StorageBackendVm(mockFile, null);
-      backend.deleteFromDisk();
-      verify(mockFile.delete());
+      });
     });*/
+
+    test('.clear()', () async {
+      var writeRaf = RAFMock();
+      var backend = _getBackend(writeRaf: writeRaf);
+      backend.writeOffset = 111;
+
+      await backend.clear();
+      verify(writeRaf.truncate(0));
+      verify(writeRaf.setPosition(0));
+      expect(backend.writeOffset, 0);
+    });
+
+    test('.close()', () async {
+      var readRaf = RAFMock();
+      var writeRaf = RAFMock();
+      var lockRaf = RAFMock();
+      var lockFile = FileMock();
+
+      var backend = _getBackend(
+        lockFile: lockFile,
+        readRaf: readRaf,
+        writeRaf: writeRaf,
+      );
+      backend.lockRaf = lockRaf;
+
+      await backend.close();
+      verifyInOrder([
+        readRaf.close(),
+        writeRaf.close(),
+        lockRaf.close(),
+        lockFile.delete(),
+      ]);
+    });
+
+    test('.deleteFromDisk()', () async {
+      var readRaf = RAFMock();
+      var writeRaf = RAFMock();
+      var lockRaf = RAFMock();
+      var lockFile = FileMock();
+      var file = FileMock();
+
+      var backend = _getBackend(
+        file: file,
+        lockFile: lockFile,
+        readRaf: readRaf,
+        writeRaf: writeRaf,
+      );
+      backend.lockRaf = lockRaf;
+
+      await backend.deleteFromDisk();
+      verifyInOrder([
+        readRaf.close(),
+        writeRaf.close(),
+        lockRaf.close(),
+        lockFile.delete(),
+        file.delete()
+      ]);
+    });
   });
 }
-*/
