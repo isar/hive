@@ -7,7 +7,6 @@ import 'package:hive/src/backend/read_write_sync.dart';
 import 'package:hive/src/backend/storage_backend_vm.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:mockito/mockito.dart';
@@ -15,6 +14,7 @@ import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
 import 'common.dart';
+import 'frames.dart';
 
 class FrameIoHelperMock extends Mock implements FrameIoHelper {}
 
@@ -137,21 +137,11 @@ void main() {
       }
 
       FrameIoHelper getFrameIoHelper(int recoveryOffset) {
-        var testFrames = [
-          Frame('key1', 'value1', length: 5, offset: 1),
-          Frame('key2', 'value2', length: 4, offset: 2),
-          Frame('key1', null, length: 3, offset: 3),
-          Frame.deleted('key2', length: 4),
-          Frame('key3', 'value3', length: 2, offset: 5),
-        ];
-
         var helper = FrameIoHelperMock();
         when(helper.framesFromFile(any, any, any, any)).thenAnswer((i) {
-          i.positionalArguments[1].addAll(testFrames);
           return Future.value(recoveryOffset);
         });
         when(helper.keysFromFile(any, any, any)).thenAnswer((i) {
-          i.positionalArguments[1].addAll(testFrames);
           return Future.value(recoveryOffset);
         });
         return helper;
@@ -172,23 +162,6 @@ void main() {
 
           await backend.initialize(null, KeystoreMock());
           verify(lockRaf.lock());
-        });
-
-        test('correct offsets', () async {
-          var backend = _getBackend(
-            lockFile: getLockFile(),
-            ioHelper: getFrameIoHelper(-1),
-            lazy: lazy,
-          );
-
-          var keystore = Keystore.debug();
-          await backend.initialize(null, keystore);
-
-          expect(keystore.frames, [
-            Frame('key1', null, length: 3, offset: 3),
-            Frame('key3', 'value3', length: 2, offset: 5),
-          ]);
-          expect(keystore.deletedEntries, 2);
         });
 
         test('recoveryOffset with crash recovery', () async {
@@ -227,23 +200,31 @@ void main() {
       });
     });
 
-    /*test('.readValue()', () async {
-      var readRaf = RAFMock();
-      var frameBytes = getFrameBytes([Frame('test', 123, offset: 5)]);
-      print(frameBytes);
-      when(readRaf.read(frameBytes.length))
-          .thenAnswer((i) => Future.value(frameBytes));
+    group('.readValue()', () {
+      test('reads value with offset', () async {
+        var frameBytes = getFrameBytes([Frame('test', 123)]);
+        var readRaf = await getTempRaf([1, 2, 3, 4, 5, ...frameBytes]);
 
-      var backend = _getBackend(readRaf: readRaf);
-      var value = await backend.readValue(
-        Frame('test', 123, length: frameBytes.length, offset: 5),
-      );
-      verifyInOrder([
-        readRaf.setPosition(5),
-        readRaf.read(frameBytes.length),
-      ]);
-      expect(value, 123);
-    });*/
+        var backend = _getBackend(readRaf: readRaf);
+        var value = await backend.readValue(
+          Frame('test', 123, length: frameBytes.length, offset: 5),
+        );
+        expect(value, 123);
+
+        await readRaf.close();
+      });
+
+      test('throws exception when frame cannot be read', () async {
+        var readRaf = await getTempRaf([1, 2, 3, 4, 5]);
+        var backend = _getBackend(readRaf: readRaf);
+
+        var frame = Frame('test', 123, length: frameBytes.length, offset: 0);
+        await expectLater(
+            () => backend.readValue(frame), throwsHiveError('corrupted'));
+
+        await readRaf.close();
+      });
+    });
 
     group('.writeFrames()', () {
       test('writes bytes', () async {

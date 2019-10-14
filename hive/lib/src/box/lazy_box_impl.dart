@@ -92,16 +92,6 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
   }
 
   @override
-  List<dynamic> listView() {
-    throw UnsupportedError('Only non-lazy boxes support listView().');
-  }
-
-  @override
-  Map<dynamic, dynamic> mapView() {
-    throw UnsupportedError('Only non-lazy boxes support mapView().');
-  }
-
-  @override
   Map<dynamic, dynamic> toMap() {
     throw UnsupportedError('Only non-lazy boxes support toMap().');
   }

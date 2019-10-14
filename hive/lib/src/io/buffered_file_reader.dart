@@ -2,68 +2,63 @@ import 'dart:io';
 
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
 class BufferedFileReader {
   static const defaultChunkSize = 1000 * 64;
 
   final RandomAccessFile file;
-  final int chunkSize;
-  Uint8List _buffer;
+
+  @visibleForTesting
+  Uint8List buffer;
   int _bufferSize = 0;
   int _bufferOffset = 0;
   int _fileOffset = 0;
 
-  int get _remainingInBuffer => _bufferSize - _bufferOffset;
+  int get remainingInBuffer => _bufferSize - _bufferOffset;
 
-  int get offset => _fileOffset - _remainingInBuffer;
+  int get offset => _fileOffset - remainingInBuffer;
 
-  BufferedFileReader(this.file, [this.chunkSize = defaultChunkSize]);
+  BufferedFileReader(this.file, [int bufferSize = defaultChunkSize])
+      : buffer = Uint8List(bufferSize);
 
-  Future<int> skip(int bytes) async {
-    if (_remainingInBuffer >= bytes) {
-      _bufferOffset += bytes;
-      return bytes;
-    } else {
-      var canSkip = _remainingInBuffer;
-      _bufferOffset += canSkip;
-      var additionallySkipped = (await read(bytes - canSkip)).length;
-      return canSkip + additionallySkipped;
-    }
+  void skip(int bytes) {
+    assert(remainingInBuffer >= bytes);
+    _bufferOffset += bytes;
   }
 
-  Future<Uint8List> read(int bytes) async {
-    if (_buffer == null) {
-      _buffer = Uint8List(chunkSize);
-      await _readChunk(null, 0, 0);
-    }
-    if (_remainingInBuffer >= bytes) {
-      var view = Uint8List.view(_buffer.buffer, _bufferOffset, bytes);
-      _bufferOffset += bytes;
-      return view;
-    } else if (_bufferSize < chunkSize) {
-      var view =
-          Uint8List.view(_buffer.buffer, _bufferOffset, _remainingInBuffer);
-      _bufferOffset = _bufferSize;
-      return view;
+  void unskip(int bytes) {
+    assert(_bufferOffset >= bytes);
+    _bufferOffset -= bytes;
+  }
+
+  Uint8List viewBytes(int bytes) {
+    assert(remainingInBuffer >= bytes);
+    var view = Uint8List.view(buffer.buffer, _bufferOffset, bytes);
+    _bufferOffset += bytes;
+    return view;
+  }
+
+  Future<int> loadBytes(int bytes) async {
+    var remaining = remainingInBuffer;
+    if (remaining >= bytes) {
+      return remaining;
     } else {
-      var oldBuffer = _buffer;
-      if (_buffer.length < bytes) {
-        _buffer = Uint8List(bytes);
+      var oldBuffer = buffer;
+      if (buffer.length < bytes) {
+        buffer = Uint8List(bytes);
       }
-      await _readChunk(oldBuffer, _bufferOffset, _remainingInBuffer);
-      return read(bytes);
-    }
-  }
 
-  Future<void> _readChunk(Uint8List oldChunk, int offset, int remaining) async {
-    if (oldChunk != null) {
       for (var i = 0; i < remaining; i++) {
-        _buffer[i] = oldChunk[offset + i];
+        buffer[i] = oldBuffer[_bufferOffset + i];
       }
-    }
 
-    _bufferOffset = 0;
-    var readBytes = await file.readInto(_buffer, remaining);
-    _bufferSize = remaining + readBytes;
-    _fileOffset += readBytes;
+      _bufferOffset = 0;
+      var readBytes = await file.readInto(buffer, remaining);
+      _bufferSize = remaining + readBytes;
+      _fileOffset += readBytes;
+
+      return _bufferSize;
+    }
   }
 }

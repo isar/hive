@@ -55,18 +55,17 @@ void main() {
 
     group('.encodeValue()', () {
       test('primitive', () {
+        var values = [
+          null, 11, 17.25, true, 'hello', //
+          [11, 12, 13], [17.25, 17.26], [true, false], ['str1', 'str2'] //
+        ];
         var backend = _getBackend();
-        expect(backend.encodeValue(null), null);
-        expect(backend.encodeValue(11), 11);
-        expect(backend.encodeValue(17.25), 17.25);
-        expect(backend.encodeValue(true), true);
-        expect(backend.encodeValue('hello'), 'hello');
-        expect(backend.encodeValue([11, 12, 13]), [11, 12, 13]);
-        expect(backend.encodeValue([17.25, 17.26]), [17.25, 17.26]);
-        expect(backend.encodeValue([true, false]), [true, false]);
+        for (var value in values) {
+          expect(backend.encodeValue(Frame('key', value)), value);
+        }
 
         var bytes = Uint8List.fromList([1, 2, 3]);
-        var buffer = backend.encodeValue(bytes) as ByteBuffer;
+        var buffer = backend.encodeValue(Frame('key', bytes)) as ByteBuffer;
         expect(Uint8List.view(buffer), [1, 2, 3]);
       });
 
@@ -74,7 +73,7 @@ void main() {
         var backend = StorageBackendJs(null, false, testCrypto, testRegistry);
         var i = 0;
         for (var frame in testFrames) {
-          var buffer = backend.encodeValue(frame.value) as ByteBuffer;
+          var buffer = backend.encodeValue(frame) as ByteBuffer;
           var bytes = Uint8List.view(buffer);
           expect(bytes.sublist(28),
               [0x90, 0xA9, ...frameValuesBytesEncrypted[i]].sublist(28));
@@ -84,26 +83,27 @@ void main() {
 
       group('non primitive', () {
         test('map', () {
-          var map = {
+          var frame = Frame(0, {
             'key': Uint8List.fromList([1, 2, 3]),
             'otherKey': null
-          };
+          });
           var backend = StorageBackendJs(null, false, null);
-          var encoded = Uint8List.view(backend.encodeValue(map) as ByteBuffer);
+          var encoded =
+              Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
           var writer = BinaryWriterImpl(null);
-          Frame.encodeValue(map, writer, null);
+          frame.encodeValue(writer, null);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
 
         test('bytes which start with signature', () {
-          var bytes = Uint8List.fromList([0x90, 0xA9, 1, 2, 3]);
+          var frame = Frame(0, Uint8List.fromList([0x90, 0xA9, 1, 2, 3]));
           var backend = _getBackend();
           var encoded =
-              Uint8List.view(backend.encodeValue(bytes) as ByteBuffer);
+              Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
           var writer = BinaryWriterImpl(null);
-          Frame.encodeValue(bytes, writer, null);
+          frame.encodeValue(writer, null);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
       });
@@ -139,7 +139,7 @@ void main() {
       test('non primitive', () {
         var backend = _getBackend(registry: testRegistry);
         for (var testFrame in testFrames) {
-          var bytes = backend.encodeValue(testFrame.value);
+          var bytes = backend.encodeValue(testFrame);
           var value = backend.decodeValue(bytes);
           expect(value, testFrame.value);
         }
@@ -230,7 +230,7 @@ void main() {
       var backend = _getBackend(db: db);
       await backend.close();
 
-      expect(() async => await backend.getKeys(), throwsA(anything));
+      await expectLater(() async => await backend.getKeys(), throwsA(anything));
     });
   });
 }

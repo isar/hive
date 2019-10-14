@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
@@ -42,41 +40,54 @@ class Frame<E> {
                 (key is String && key.length <= 255),
             'Unsupported key');
 
-  static Frame fromBytes(
-      Uint8List bytes, TypeRegistry registry, CryptoHelper crypto) {
-    var lengthBytes = Uint8List.view(bytes.buffer, 0, 4).toList();
-    var frameBytes = Uint8List.view(bytes.buffer, 4);
-    if (!checkCrc(lengthBytes, frameBytes, crypto?.keyCrc)) {
-      throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+  static Frame fromBytes(BinaryReaderImpl reader, CryptoHelper crypto) {
+    if (reader.availableBytes < 4) return null;
+
+    var frameLength = reader.peekUint32();
+    if (frameLength < 8 || reader.availableBytes < frameLength) return null;
+
+    var bytes = reader.viewBytes(frameLength - 4);
+    var computedCrc = Crc32.compute(bytes, crc: crypto?.keyCrc ?? 0);
+    var crc = reader.readUint32();
+
+    if (computedCrc != crc) {
+      return null;
     }
 
-    var frameReader =
-        BinaryReaderImpl(frameBytes, registry, frameBytes.length - 4);
-    return decode(frameReader, false, bytes.length, crypto);
+    reader.unskip(frameLength - 4); // Everything but length bytes
+
+    reader.limitAvailableBytes(frameLength - 8);
+    var frame = decode(reader, false, crypto);
+    frame.length = frameLength;
+    reader.resetLimit();
+
+    reader.skip(4); // CRC bytes
+    return frame;
   }
 
   static Frame decode(
     BinaryReaderImpl reader,
     bool lazy,
-    int frameLength,
     CryptoHelper crypto,
   ) {
     dynamic key;
     var keyType = reader.readByte();
     if (keyType == FrameKeyType.uintT.index) {
       key = reader.readUint32();
-    } else {
+    } else if (keyType == FrameKeyType.asciiStringT.index) {
       var keyLength = reader.readByte(); // Read length of key
       key = reader.readAsciiString(keyLength); // Read key
+    } else {
+      throw HiveError('Unsupported key type. Frame might be corrupted.');
     }
 
     if (reader.availableBytes == 0) {
-      return Frame.deleted(key, length: frameLength);
+      return Frame.deleted(key);
     } else if (lazy) {
-      return Frame.lazy(key, length: frameLength);
+      return Frame.lazy(key);
     } else {
       var value = decodeValue(reader, crypto);
-      return Frame(key, value, length: frameLength);
+      return Frame(key, value);
     }
   }
 
@@ -121,7 +132,7 @@ class Frame<E> {
     }
 
     if (!deleted) {
-      encodeValue(value, writer, crypto);
+      encodeValue(writer, crypto);
     }
 
     var writtenBytesCount = writer.offset - initialOffset;
@@ -139,8 +150,7 @@ class Frame<E> {
     return lengthIncludingCrc;
   }
 
-  static void encodeValue(
-      dynamic value, BinaryWriterImpl writer, CryptoHelper crypto) {
+  void encodeValue(BinaryWriterImpl writer, CryptoHelper crypto) {
     if (crypto == null) {
       writer.write(value); // Write value
     } else {
@@ -148,19 +158,6 @@ class Frame<E> {
       var encryptedValue = crypto.encrypt(valueWriter.toBytes());
       writer.writeByteList(encryptedValue, writeLength: false);
     }
-  }
-
-  static bool checkCrc(
-      List<int> lengthBytes, List<int> frameBytes, int keyCrc) {
-    var computedCrc = keyCrc ?? 0;
-    if (lengthBytes != null) {
-      computedCrc = Crc32.compute(lengthBytes, crc: computedCrc);
-    }
-    computedCrc = Crc32.compute(frameBytes,
-        crc: computedCrc, length: frameBytes.length - 4);
-
-    var crc = bytesToUint32(frameBytes, frameBytes.length - 4);
-    return computedCrc == crc;
   }
 
   @override
@@ -206,11 +203,4 @@ enum FrameValueType {
   stringListT,
   listT,
   mapT,
-}
-
-int bytesToUint32(List<int> bytes, [int offset = 0]) {
-  return bytes[offset] |
-      bytes[offset + 1] << 8 |
-      bytes[offset + 2] << 16 |
-      bytes[offset + 3] << 24;
 }

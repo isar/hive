@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/read_write_sync.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
@@ -67,7 +68,7 @@ class StorageBackendVm extends StorageBackend {
   final bool lazy;
   final bool crashRecovery;
   final CryptoHelper crypto;
-  final FrameIoHelper helper;
+  final FrameIoHelper frameHelper;
 
   final ReadWriteSync _sync;
 
@@ -88,11 +89,11 @@ class StorageBackendVm extends StorageBackend {
 
   StorageBackendVm(
       this.file, this.lockFile, this.lazy, this.crashRecovery, this.crypto)
-      : helper = FrameIoHelper(),
+      : frameHelper = FrameIoHelper(),
         _sync = ReadWriteSync();
 
   StorageBackendVm.debug(this.file, this.lockFile, this.lazy,
-      this.crashRecovery, this.crypto, this.helper, this._sync);
+      this.crashRecovery, this.crypto, this.frameHelper, this._sync);
 
   @override
   String get path => file.path;
@@ -113,13 +114,12 @@ class StorageBackendVm extends StorageBackend {
     lockRaf = await lockFile.open(mode: FileMode.write);
     await lockRaf.lock();
 
-    var frames = <Frame>[];
     int recoveryOffset;
     if (!lazy) {
       recoveryOffset =
-          await helper.framesFromFile(path, frames, registry, crypto);
+          await frameHelper.framesFromFile(path, keystore, registry, crypto);
     } else {
-      recoveryOffset = await helper.keysFromFile(path, frames, crypto);
+      recoveryOffset = await frameHelper.keysFromFile(path, keystore, crypto);
     }
 
     if (recoveryOffset != -1) {
@@ -131,21 +131,23 @@ class StorageBackendVm extends StorageBackend {
         throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
       }
     }
-
-    var offset = 0;
-    for (var frame in frames) {
-      frame.offset = offset;
-      keystore.insert(frame);
-      offset += frame.length;
-    }
   }
 
   @override
   Future<dynamic> readValue(Frame frame) {
     return _sync.syncRead(() async {
       await readRaf.setPosition(frame.offset);
+
       var bytes = await readRaf.read(frame.length);
-      var readFrame = Frame.fromBytes(bytes, registry, crypto);
+
+      var reader = BinaryReaderImpl(bytes, registry);
+      var readFrame = Frame.fromBytes(reader, crypto);
+
+      if (readFrame == null) {
+        throw HiveError(
+            'Could not read value from box. Maybe your box is corrupted.');
+      }
+
       return readFrame.value;
     });
   }
@@ -189,13 +191,21 @@ class StorageBackendVm extends StorageBackend {
         for (var frame in sortedFrames) {
           if (frame.offset == -1) continue;
           if (frame.offset != reader.offset) {
-            await reader.skip(frame.offset - reader.offset);
+            var skip = frame.offset - reader.offset;
+            if (reader.remainingInBuffer < skip) {
+              if (await reader.loadBytes(skip) < skip) {
+                throw HiveError('Could not compact box: Unexpected EOF.');
+              }
+            }
+            reader.skip(skip);
           }
-          var frameBytes = await reader.read(frame.length);
-          if (frameBytes.length != frame.length) {
-            throw HiveError('Could not compact box: Unexpected EOF.');
+
+          if (reader.remainingInBuffer < frame.length) {
+            if (await reader.loadBytes(frame.length) < frame.length) {
+              throw HiveError('Could not compact box: Unexpected EOF.');
+            }
           }
-          await writer.write(frameBytes);
+          await writer.write(reader.viewBytes(frame.length));
         }
         await writer.flush();
       } finally {

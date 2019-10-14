@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
@@ -50,7 +49,7 @@ String tempPath =
     path.join(Directory.current.path, '.dart_tool', 'test', 'tmp');
 String assetsPath = path.join(Directory.current.path, 'test', 'assets');
 
-Future<File> getTempFile([Uint8List bytes]) async {
+Future<File> getTempFile([List<int> bytes]) async {
   var name = random.nextInt(pow(2, 32) as int);
   var file = File(path.join(tempPath, '$name.tmp'));
   await file.create(recursive: true);
@@ -60,6 +59,12 @@ Future<File> getTempFile([Uint8List bytes]) async {
   }
 
   return file;
+}
+
+Future<RandomAccessFile> getTempRaf(List<int> bytes,
+    {FileMode mode = FileMode.read}) async {
+  var file = await getTempFile(bytes);
+  return await file.open(mode: mode);
 }
 
 Future<Directory> getTempDir() async {

@@ -56,25 +56,52 @@ dev_dependencies:
 
 ## Usage
 
+You can use Hive just like a map. It is not necessary to await `Future`s.
+
 ```dart
-import 'package:hive/hive.dart';
+Hive.init(Directory.current.path);
+var box = await Hive.openBox('myBox');
 
-void main() async {
-  Hive.init(Directory.current.path);
-  var box = await Hive.openBox('myBox');
+box.put('name', 'David');
 
-  var person = Person()
-    ..name = 'Dave'
-    ..age = 22;
-  box.add(person);
+var name = box.get('name');
 
-  print(box.getAt(0)); // Dave - 22
+print('Name: $name');
+```
 
-  person.age = 30;
-  person.save();
+## Store objects
 
-  print(box.getAt(0)) // Dave - 30
+Hive not only supports primitives, lists and maps but also any Dart object you like. You need to generate a type adapter before you can store objects.
+
+```dart
+@HiveType
+class Person extends HiveObject {
+
+  @HiveField(0)
+  String name;
+
+  @HiveField(1)
+  int age;
 }
+```
+
+Extending `HiveObject` is optional but it provides handy methods like `save()` and `delete()`.
+
+```dart
+Hive.init(Directory.current.path);
+var box = await Hive.openBox('myBox');
+
+var person = Person()
+  ..name = 'Dave'
+  ..age = 22;
+box.add(person);
+
+print(box.getAt(0)); // Dave - 22
+
+person.age = 30;
+person.save();
+
+print(box.getAt(0)) // Dave - 30
 ```
 
 ## Hive ❤️ Flutter

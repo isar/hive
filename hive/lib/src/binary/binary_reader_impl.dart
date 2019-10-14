@@ -47,6 +47,11 @@ class BinaryReaderImpl extends BinaryReader {
     _offset += bytes;
   }
 
+  void unskip(int bytes) {
+    assert(_offset >= bytes);
+    _offset -= bytes;
+  }
+
   @override
   int readByte() {
     _requireBytes(1);
@@ -90,6 +95,14 @@ class BinaryReaderImpl extends BinaryReader {
         _buffer[_offset++] << 8 |
         _buffer[_offset++] << 16 |
         _buffer[_offset++] << 24;
+  }
+
+  int peekUint32() {
+    _requireBytes(4);
+    return _buffer[_offset] |
+        _buffer[_offset + 1] << 8 |
+        _buffer[_offset + 2] << 16 |
+        _buffer[_offset + 3] << 24;
   }
 
   @override

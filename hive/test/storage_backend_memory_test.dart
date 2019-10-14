@@ -21,22 +21,6 @@ void main() {
     });
 
     group('.initialize()', () {
-      test('adds decoded frames to keystore', () {
-        var frame = Frame('key', 'value', offset: -1, length: 23);
-        var deletedFrame = Frame.deleted('deletedKey', length: 20);
-
-        var writer = BinaryWriterImpl(null);
-        frame.toBytes(writer, null);
-        deletedFrame.toBytes(writer, null);
-
-        var backend = StorageBackendMemory(writer.toBytes(), null);
-        var keystore = KeystoreMock();
-
-        backend.initialize(null, keystore);
-        verify(keystore.insert(frame));
-        verify(keystore.insert(deletedFrame));
-      });
-
       test('throws if frames cannot be decoded', () {
         var bytes = Uint8List.fromList([1, 2, 3, 4]);
         var backend = StorageBackendMemory(bytes, null);

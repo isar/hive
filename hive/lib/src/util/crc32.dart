@@ -5,13 +5,14 @@ class Crc32 {
   static int compute(
     List<int> bytes, {
     int crc = 0,
+    int offset = 0,
     int length,
   }) {
     crc = crc ^ 0xffffffff;
 
     length ??= bytes.length;
 
-    for (var i = 0; i < length; i++) {
+    for (var i = offset; i < offset + length; i++) {
       crc = _table[(crc ^ bytes[i]) & 0xff] ^ (crc >> 8);
     }
 

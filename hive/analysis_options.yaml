@@ -2,10 +2,12 @@ include: package:pedantic/analysis_options.yaml
 analyzer:
   exclude:
     - "**/*.g.dart"
+    - "example/*"
   strong-mode:
     implicit-casts: false
   errors:
-    include_file_not_found: ignore
+    invalid_use_of_protected_member: error
+    always_declare_return_types: error 
 linter:
   rules:
     - always_declare_return_types
@@ -50,7 +52,6 @@ linter:
     - prefer_adjacent_string_concatenation
     - prefer_collection_literals
     - prefer_conditional_assignment
-    # - prefer_const_constructors
     - prefer_contains
     - prefer_equal_for_default_values
     - prefer_final_fields

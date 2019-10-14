@@ -101,7 +101,7 @@ class Keystore<E> {
     return _notifier.watch(key: key);
   }
 
-  Frame<E> insert(Frame<E> frame) {
+  Frame<E> insert(Frame<E> frame, [bool notify = true]) {
     Frame<E> deletedFrame;
 
     if (!frame.deleted) {
@@ -126,7 +126,9 @@ class Keystore<E> {
       }
     }
 
-    _notifier.notify(frame);
+    if (notify) {
+      _notifier.notify(frame);
+    }
 
     return deletedFrame;
   }

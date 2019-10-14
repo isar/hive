@@ -36,7 +36,7 @@ void main() {
         var i = 0;
         for (var frame in testFrames) {
           var writer = BinaryWriterImpl(testRegistry);
-          Frame.encodeValue(frame.value, writer, null);
+          frame.encodeValue(writer, null);
           expect(writer.toBytes(), frameValuesBytes[i]);
           i++;
         }
@@ -46,7 +46,7 @@ void main() {
         var i = 0;
         for (var frame in testFrames) {
           var writer = BinaryWriterImpl(testRegistry);
-          Frame.encodeValue(frame.value, writer, testCrypto);
+          frame.encodeValue(writer, testCrypto);
           expect(writer.toBytes(), frameValuesBytesEncrypted[i]);
           i++;
         }
@@ -57,7 +57,8 @@ void main() {
       test('frames', () {
         var i = 0;
         for (var testFrame in testFrames) {
-          var frame = Frame.fromBytes(frameBytes[i], testRegistry, null);
+          var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
+          var frame = Frame.fromBytes(reader, null);
           fEqual(frame, frameWithLength(testFrame, frameBytes[i].length));
           i++;
         }
@@ -66,9 +67,10 @@ void main() {
       test('encrypted frames', () {
         var i = 0;
         for (var testFrame in testFrames) {
-          var bytes = frameBytesEncrypted[i];
-          var frame = Frame.fromBytes(bytes, testRegistry, testCrypto);
-          fEqual(frame, frameWithLength(testFrame, bytes.length));
+          var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
+          var frame = Frame.fromBytes(reader, testCrypto);
+          fEqual(
+              frame, frameWithLength(testFrame, frameBytesEncrypted[i].length));
           i++;
         }
       });

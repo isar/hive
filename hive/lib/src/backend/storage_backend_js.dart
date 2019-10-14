@@ -44,7 +44,8 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @visibleForTesting
-  dynamic encodeValue(dynamic value) {
+  dynamic encodeValue(Frame frame) {
+    var value = frame.value;
     if (crypto == null) {
       if (value == null) {
         return value;
@@ -64,7 +65,7 @@ class StorageBackendJs extends StorageBackend {
 
     var frameWriter = BinaryWriterImpl(_registry);
     frameWriter.writeByteList([0x90, 0xA9], writeLength: false);
-    Frame.encodeValue(value, frameWriter, crypto);
+    frame.encodeValue(frameWriter, crypto);
 
     var bytes = frameWriter.toBytes();
     var sublist = bytes.sublist(0, bytes.length);
@@ -127,11 +128,11 @@ class StorageBackendJs extends StorageBackend {
       var values = await getValues();
       for (var value in values) {
         var key = keys[i++];
-        keystore.insert(Frame(key, value));
+        keystore.insert(Frame(key, value), false);
       }
     } else {
       for (var key in keys) {
-        keystore.insert(Frame.lazy(key));
+        keystore.insert(Frame.lazy(key), false);
       }
     }
 
@@ -151,7 +152,7 @@ class StorageBackendJs extends StorageBackend {
       if (frame.deleted) {
         await store.delete(frame.key);
       } else {
-        await store.put(encodeValue(frame.value), frame.key);
+        await store.put(encodeValue(frame), frame.key);
       }
     }
   }
