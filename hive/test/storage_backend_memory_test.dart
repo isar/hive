@@ -1,9 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:hive/src/backend/storage_backend_memory.dart';
-import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';

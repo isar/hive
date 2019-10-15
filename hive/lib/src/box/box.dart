@@ -82,12 +82,8 @@ abstract class Box<E> {
   /// exist.
   E get(dynamic key, {E defaultValue});
 
-  /// Returns the value associated with the n-th key. If there is no such key,
-  /// `null` is returned.
-  ///
-  /// If [defaultValue] is specified, it is returned in case the key does not
-  /// exist.
-  E getAt(int index, {E defaultValue});
+  /// Returns the value associated with the n-th key.
+  E getAt(int index);
 
   /// Saves the [key] - [value] pair.
   Future<void> put(dynamic key, E value);

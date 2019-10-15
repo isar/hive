@@ -165,12 +165,12 @@ class IndexableSkipList<K, V> {
     return null;
   }
 
-  V getAt(int index) => _getNodeAt(index)?.value;
+  V getAt(int index) => _getNodeAt(index).value;
 
-  K getKeyAt(int index) => _getNodeAt(index)?.key;
+  K getKeyAt(int index) => _getNodeAt(index).key;
 
   Node<K, V> _getNodeAt(int index) {
-    if (index >= length) return null;
+    RangeError.checkValidIndex(index, this);
 
     var prev = head;
     Node<K, V> node;

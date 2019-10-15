@@ -61,16 +61,16 @@ void main() {
 
     test('.getAt()', () async {
       var keystore = Keystore.debug(frames: [
-        Frame(0, null),
-        Frame('a', null),
+        Frame.lazy(0),
+        Frame.lazy('a'),
       ]);
       var backend = BackendMock();
-      when(backend.readValue(Frame('a', null))).thenAnswer((i) async => 'A');
+      when(backend.readValue(any)).thenAnswer((i) {
+        return Future.value('A');
+      });
       var box = _getBox(keystore: keystore, backend: backend);
 
       expect(await box.getAt(1), 'A');
-      expect(await box.getAt(2), null);
-      expect(await box.getAt(3, defaultValue: 123), 123);
     });
 
     group('.putAll()', () {

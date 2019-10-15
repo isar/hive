@@ -67,15 +67,13 @@ void main() {
       });
     });
 
-    test('.getAt()', () {
+    test('.getAt() returns value at given index', () {
       var keystore =
           Keystore.debug(frames: [Frame(0, 'zero'), Frame('a', 'A')]);
       var box = _getBox(keystore: keystore);
 
       expect(box.getAt(0), 'zero');
       expect(box.getAt(1), 'A');
-      expect(box.getAt(2), null);
-      expect(box.getAt(3, defaultValue: 123), 123);
     });
 
     group('.putAll()', () {

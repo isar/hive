@@ -36,9 +36,9 @@ Future _performTest(bool lazy) async {
 }
 
 void main() {
-  /*group('delete many entries', () {
+  group('delete many entries', () {
     test('normal box', () => _performTest(false));
 
     test('lazy box', () => _performTest(true));
-  });*/
+  }, timeout: longTimeout);
 }

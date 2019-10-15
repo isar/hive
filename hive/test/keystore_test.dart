@@ -81,12 +81,12 @@ void main() {
         expect(keystore.keyAt(3), 'key1');
       });
 
-      test('returns null if the index does not exist', () {
+      test('throws RangeError if the index does not exist', () {
         var keystore = Keystore.debug(frames: [Frame('key1', null)]);
 
-        expect(keystore.keyAt(1), null);
-        expect(keystore.keyAt(999), null);
-        expect(Keystore.debug().keyAt(0), null);
+        expect(() => keystore.keyAt(1), throwsRangeError);
+        expect(() => keystore.keyAt(999), throwsRangeError);
+        expect(() => Keystore.debug().keyAt(0), throwsRangeError);
       });
     });
 
@@ -119,10 +119,10 @@ void main() {
         expect(keystore.getAt(1), Frame('key1', 'value1'));
       });
 
-      test('returns null if the index does not exist', () {
+      test('throws RangeError index does not exist', () {
         var keystore = Keystore.debug(frames: [Frame('key1', 'value1')]);
-        expect(keystore.getAt(1), null);
-        expect(Keystore.debug().getAt(0), null);
+        expect(() => keystore.getAt(1), throwsRangeError);
+        expect(() => Keystore.debug().getAt(0), throwsRangeError);
       });
     });
 

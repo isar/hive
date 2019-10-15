@@ -28,66 +28,78 @@ CryptoHelper get testCrypto {
   return CryptoHelper.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
 }
 
-final testFrames = <Frame>[
-  Frame.deleted(0),
-  Frame.deleted(555),
-  Frame(123, null),
-  Frame(0, 'Int key1'),
-  Frame(1, 'Int key2'),
-  Frame(2 ^ 32 - 1, 'Int key3'),
-  Frame.deleted('Tombstone frame'),
-  Frame('Null frame', null),
-  Frame('Int', 123123123),
-  Frame('Large int', 2 ^ 32),
-  Frame('Bool true', true),
-  Frame('Bool false', false),
-  Frame('Float', 12312.991283),
-  Frame('Unicode string',
-      'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
-  Frame('Empty list', []),
-  Frame('Byte list', Uint8List.fromList([1, 12, 123, 1234])),
-  Frame('Byte list with mask', Uint8List.fromList([0x90, 0xA9, 1, 2, 3])),
-  Frame('Int list', [123, 456, 129318238]),
-  Frame('Bool list', [true, false, false, true]),
-  Frame('Double list', [
-    10.1723812,
-    double.infinity,
-    double.maxFinite,
-    double.minPositive,
-    double.negativeInfinity
-  ]),
-  Frame('String list', [
-    'hello',
-    '🧙‍♂️ 👨‍👨‍👧‍👦 ',
-    ' ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ',
-    'അ ആ ഇ ',
-    ' צּ קּ רּ שּ ',
-    'ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ '
-  ]),
-  Frame('List with null', ['This', 'is', 'a', 'test', null]),
-  Frame('List with different types', [
-    'List',
-    [1, 2, 3],
-    5.8,
-    true,
-    12341234,
-    {'t': true, 'f': false},
-  ]),
-  Frame('Map', {
-    'Bool': true,
-    'Int': 1234,
-    'Double': 15.7,
-    'String': 'Hello',
-    'List': [1, 2, null],
-    'Null': null,
-    'Map': {'Key': 'Val', 'Key2': 2}
-  }),
-  Frame('DateTime test', [
-    DateTime.fromMillisecondsSinceEpoch(0),
-    DateTime.fromMillisecondsSinceEpoch(1566656623020),
-  ]),
-  Frame('BigInt Test', BigInt.parse('1234567890123456789012345678901234567890'))
-];
+List<Frame> get testFrames => <Frame>[
+      Frame.deleted(0),
+      Frame.deleted(555),
+      Frame(123, null),
+      Frame(0, 'Int key1'),
+      Frame(1, 'Int key2'),
+      Frame(2 ^ 32 - 1, 'Int key3'),
+      Frame.deleted('Tombstone frame'),
+      Frame('Null frame', null),
+      Frame('Int', 123123123),
+      Frame('Large int', 2 ^ 32),
+      Frame('Bool true', true),
+      Frame('Bool false', false),
+      Frame('Float', 12312.991283),
+      Frame('Unicode string',
+          'A few characters which are not ASCII: 🇵🇬 😀 🐝 걟 ＄ 乽 👨‍🚀'),
+      Frame('Empty list', []),
+      Frame('Byte list', Uint8List.fromList([1, 12, 123, 1234])),
+      Frame('Byte list with mask', Uint8List.fromList([0x90, 0xA9, 1, 2, 3])),
+      Frame('Int list', [123, 456, 129318238]),
+      Frame('Bool list', [true, false, false, true]),
+      Frame('Double list', [
+        10.1723812,
+        double.infinity,
+        double.maxFinite,
+        double.minPositive,
+        double.negativeInfinity
+      ]),
+      Frame('String list', [
+        'hello',
+        '🧙‍♂️ 👨‍👨‍👧‍👦 ',
+        ' ﻬ ﻭ ﻮ ﻯ ﻰ ﻱ',
+        'അ ആ ഇ ',
+        ' צּ קּ רּ שּ ',
+        'ｩ ｪ ｫ ｬ ｭ ｮ ｯ ｰ '
+      ]),
+      Frame('List with null', ['This', 'is', 'a', 'test', null]),
+      Frame('List with different types', [
+        'List',
+        [1, 2, 3],
+        5.8,
+        true,
+        12341234,
+        {'t': true, 'f': false},
+      ]),
+      Frame('Map', {
+        'Bool': true,
+        'Int': 1234,
+        'Double': 15.7,
+        'String': 'Hello',
+        'List': [1, 2, null],
+        'Null': null,
+        'Map': {'Key': 'Val', 'Key2': 2}
+      }),
+      Frame('DateTime test', [
+        DateTime.fromMillisecondsSinceEpoch(0),
+        DateTime.fromMillisecondsSinceEpoch(1566656623020),
+      ]),
+      Frame('BigInt Test',
+          BigInt.parse('1234567890123456789012345678901234567890'))
+    ];
+
+void framesSetLengthOffset(List<Frame> frames, List<Uint8List> bytes) {
+  var offset = 0;
+  for (var i = 0; i < frames.length; i++) {
+    var length = bytes[i].length;
+    frames[i]
+      ..offset = offset
+      ..length = length;
+    offset += length;
+  }
+}
 
 List<Frame> get valueTestFrames =>
     testFrames.where((it) => !it.deleted).toList();

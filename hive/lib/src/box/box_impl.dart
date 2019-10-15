@@ -38,15 +38,10 @@ class BoxImpl<E> extends BoxBase<E> {
   }
 
   @override
-  E getAt(int index, {E defaultValue}) {
+  E getAt(int index) {
     checkOpen();
 
-    var frame = keystore.getAt(index);
-    if (frame != null) {
-      return frame.value;
-    } else {
-      return defaultValue;
-    }
+    return keystore.getAt(index).value;
   }
 
   @override

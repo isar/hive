@@ -27,21 +27,18 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     var frame = keystore.get(key);
 
     if (frame != null) {
-      var value = await backend.readValue(frame);
-      return value;
+      return await backend.readValue(frame);
     } else {
       return defaultValue;
     }
   }
 
   @override
-  Future<dynamic> getAt(int index, {dynamic defaultValue}) {
+  Future<dynamic> getAt(int index) async {
+    checkOpen();
+
     var frame = keystore.getAt(index);
-    if (frame != null) {
-      return get(frame.key);
-    } else {
-      return Future.value(defaultValue);
-    }
+    return await backend.readValue(frame);
   }
 
   @override

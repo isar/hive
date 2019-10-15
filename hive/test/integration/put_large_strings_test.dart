@@ -23,5 +23,5 @@ void main() {
     test('normal box', () => _performTest(false));
 
     test('lazy box', () => _performTest(true));
-  });
+  }, timeout: longTimeout);
 }

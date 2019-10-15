@@ -3,6 +3,7 @@
 ### Breaking changes
 - Changed return type of `addAll()` from `List<int>` to `Iterable<int>`.
 - Removed the option to register `TypeAdapters` for a specific box. E.g. `box.registerTypeAdapter()`.
+- `getAt()`, `putAt()`, `deleteAt()` and `keyAt()` no longer allow indices out of range.
 
 ### Enhancements
 - Added `HiveObject`

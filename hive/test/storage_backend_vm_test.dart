@@ -27,8 +27,8 @@ const testMap = {
   'LastKey': true,
 };
 
-Uint8List getFrameBytes(List<Frame> frames) {
-  var writer = BinaryWriterImpl(null);
+Uint8List getFrameBytes(Iterable<Frame> frames) {
+  var writer = BinaryWriterImpl(testRegistry);
   for (var frame in frames) {
     frame.toBytes(writer, null);
   }

@@ -43,17 +43,17 @@ class FrameIoHelper extends FrameHelper {
 class _KeyReader {
   final BufferedFileReader fileReader;
 
-  BinaryReaderImpl reader;
+  BinaryReaderImpl _reader;
 
   _KeyReader(this.fileReader);
 
   Future<int> readKeys(Keystore keystore, CryptoHelper crypto) async {
-    await _read();
+    await _read(4);
     while (true) {
-      var frameOffset = fileReader.offset - reader.availableBytes;
+      var frameOffset = fileReader.offset - _reader.availableBytes;
 
-      if (reader.availableBytes < 4) {
-        var available = await _read();
+      if (_reader.availableBytes < 4) {
+        var available = await _read(4);
         if (available == 0) {
           break;
         } else if (available < 4) {
@@ -61,42 +61,46 @@ class _KeyReader {
         }
       }
 
-      var frameLength = reader.peekUint32();
-      if (frameLength < 8) return frameOffset;
-      if (reader.availableBytes < frameLength) {
+      var frameLength = _reader.peekUint32();
+      if (frameLength < 8) {
+        throw HiveError('Your box seems to be corrupted. Please '
+            'open an issue on GitHub and provide steps to reproduce '
+            'this problem if possible.');
+      }
+      if (_reader.availableBytes < frameLength) {
         var available = await _read(frameLength);
         if (available < frameLength) {
           return frameOffset;
         }
       }
-      var frameBytes = reader.viewBytes(frameLength - 4);
+      var frameBytes = _reader.viewBytes(frameLength - 4);
       var computedCrc = Crc32.compute(frameBytes, crc: crypto?.keyCrc ?? 0);
-      if (computedCrc != reader.readUint32()) {
+      if (computedCrc != _reader.readUint32()) {
         return frameOffset;
       }
 
-      reader.unskip(frameLength - 4);
-      var offsetBeforeDecode = reader.usedBytes;
+      _reader.unskip(frameLength - 4);
+      var offsetBeforeDecode = _reader.usedBytes;
 
-      reader.limitAvailableBytes(frameLength - 8);
-      var frame = Frame.decode(reader, true, null)
+      _reader.limitAvailableBytes(frameLength - 8);
+      var frame = Frame.decode(_reader, true, null)
         ..length = frameLength
         ..offset = frameOffset;
-      reader.resetLimit();
+      _reader.resetLimit();
 
-      reader.skip(frameLength - 4 - (reader.usedBytes - offsetBeforeDecode));
+      _reader.skip(frameLength - 4 - (_reader.usedBytes - offsetBeforeDecode));
       keystore.insert(frame, false);
     }
 
     return -1;
   }
 
-  Future<int> _read([int bytes = BufferedFileReader.defaultChunkSize]) async {
-    fileReader.unskip(reader?.availableBytes ?? 0);
+  Future<int> _read(int bytes) async {
+    fileReader.unskip(_reader?.availableBytes ?? 0);
 
     var loadedBytes = await fileReader.loadBytes(bytes);
     var buffer = fileReader.viewBytes(loadedBytes);
-    reader = BinaryReaderImpl(buffer, null);
+    _reader = BinaryReaderImpl(buffer, null);
 
     return loadedBytes;
   }
