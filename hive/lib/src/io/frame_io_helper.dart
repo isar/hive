@@ -77,9 +77,13 @@ class _KeyReader {
 
       reader.unskip(frameLength - 4);
       var offsetBeforeDecode = reader.usedBytes;
+
+      reader.limitAvailableBytes(frameLength - 8);
       var frame = Frame.decode(reader, true, null)
         ..length = frameLength
         ..offset = frameOffset;
+      reader.resetLimit();
+
       reader.skip(frameLength - 4 - (reader.usedBytes - offsetBeforeDecode));
       keystore.insert(frame, false);
     }
