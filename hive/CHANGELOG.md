@@ -1,4 +1,4 @@
-## 1.1.0-beta3
+## 1.1.0
 
 ### Breaking changes
 - Changed return type of `addAll()` from `List<int>` to `Iterable<int>`.

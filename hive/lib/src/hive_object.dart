@@ -1,14 +1,21 @@
 import 'package:hive/hive.dart';
 
+/// Extend `HiveObject` to add useful methods to the objects you want to store
+/// in Hive
 abstract class HiveObject {
   Box _box;
 
+  /// Get the box in which this object is stored. Returns `null` if object has
+  /// not been added to a box yet.
   Box get box => _box;
 
   dynamic _key;
 
+  /// Get the key associated with this object. Returns `null` if object has
+  /// not been added to a box yet.
   dynamic get key => _key;
 
+  /// Persists this object.
   Future<void> save() {
     if (_box == null) {
       throw HiveError('You have to add this object to a box first '
@@ -17,6 +24,7 @@ abstract class HiveObject {
     return _box.put(_key, this);
   }
 
+  /// Deletes this object from the box it is stored in.
   Future<void> delete() {
     if (_box != null) {
       return _box.delete(_key);
@@ -25,6 +33,10 @@ abstract class HiveObject {
     }
   }
 
+  /// Returns whether this object is currently stored in a box.
+  ///
+  /// For lazy boxes this only checks if the key exists in the box and NOT
+  /// whether this instance is actually stored in the box.
   bool get isInBox {
     if (_box != null) {
       if (_box.lazy) {

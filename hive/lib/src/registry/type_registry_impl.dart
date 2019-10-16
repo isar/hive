@@ -1,12 +1,11 @@
 import 'package:hive/hive.dart';
 import 'package:meta/meta.dart';
 
-/// An adapter - typeId pair.
-class ResolvedAdapter<T> {
+class _ResolvedAdapter<T> {
   final TypeAdapter adapter;
   final int typeId;
 
-  const ResolvedAdapter(this.adapter, this.typeId);
+  const _ResolvedAdapter(this.adapter, this.typeId);
 
   bool matches(dynamic value) => value is T;
 }
@@ -16,18 +15,18 @@ class TypeRegistryImpl implements TypeRegistry {
   static const reservedTypeIds = 32;
 
   final TypeRegistryImpl parent;
-  final _typeAdapters = <int, ResolvedAdapter>{};
+  final _typeAdapters = <int, _ResolvedAdapter>{};
 
   TypeRegistryImpl([this.parent]);
 
-  ResolvedAdapter findAdapterForValue(dynamic value) {
+  _ResolvedAdapter findAdapterForValue(dynamic value) {
     for (var adapter in _typeAdapters.values) {
       if (adapter.matches(value)) return adapter;
     }
     return parent?.findAdapterForValue(value);
   }
 
-  ResolvedAdapter findAdapterForTypeId(int typeId) {
+  _ResolvedAdapter findAdapterForTypeId(int typeId) {
     var adapter = _typeAdapters[typeId];
     return adapter ?? parent?.findAdapterForTypeId(typeId);
   }
@@ -48,7 +47,7 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   void registerInternal<T>(TypeAdapter<T> adapter, int typeId) {
-    var resolved = ResolvedAdapter<T>(adapter, typeId);
+    var resolved = _ResolvedAdapter<T>(adapter, typeId);
     _typeAdapters[typeId] = resolved;
   }
 
