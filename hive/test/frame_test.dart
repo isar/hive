@@ -59,7 +59,7 @@ void main() {
         for (var testFrame in testFrames) {
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
           var frame = Frame.fromBytes(reader, null);
-          fEqual(frame, frameWithLength(testFrame, frameBytes[i].length));
+          expectFrame(frame, frameWithLength(testFrame, frameBytes[i].length));
           i++;
         }
       });
@@ -69,7 +69,7 @@ void main() {
         for (var testFrame in testFrames) {
           var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
           var frame = Frame.fromBytes(reader, testCrypto);
-          fEqual(
+          expectFrame(
               frame, frameWithLength(testFrame, frameBytesEncrypted[i].length));
           i++;
         }
@@ -97,6 +97,15 @@ void main() {
           i++;
         }
       });
+    });
+
+    test('.toString()', () {
+      expect(Frame('key', 'val', offset: 1, length: 2).toString(),
+          'Frame(key: key, value: val, length: 2, offset: 1)');
+      expect(Frame.lazy('key', offset: 1, length: 2).toString(),
+          'Frame.lazy(key: key, length: 2, offset: 1)');
+      expect(Frame.deleted('key', length: 2).toString(),
+          'Frame.deleted(key: key, length: 2)');
     });
   });
 }

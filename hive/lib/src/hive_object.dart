@@ -25,7 +25,7 @@ abstract class HiveObject {
     }
   }
 
-  bool get isInHive {
+  bool get isInBox {
     if (_box != null) {
       if (_box.lazy) {
         return _box.containsKey(_key);

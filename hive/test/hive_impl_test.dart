@@ -1,6 +1,7 @@
 @TestOn('vm')
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -8,6 +9,7 @@ import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
 import 'common.dart';
+import 'generated/frames.g.dart';
 
 void main() {
   group('HiveImpl', () {
@@ -56,6 +58,15 @@ void main() {
         await hive.openBox('testBox');
 
         expect(await Directory(hivePath).exists(), true);
+      });
+    });
+
+    group('.openBoxFromBytes()', () {
+      test('opened box is returned if it exists', () async {
+        var hive = HiveImpl();
+        var testBox = await hive.openBoxFromBytes('testBox', frameBytes[0]);
+        var testBox2 = await hive.openBoxFromBytes('testBox', Uint8List(0));
+        expect(testBox == testBox2, true);
       });
     });
 

@@ -90,7 +90,7 @@ List<Frame> get testFrames => <Frame>[
           BigInt.parse('1234567890123456789012345678901234567890'))
     ];
 
-void framesSetLengthOffset(List<Frame> frames, List<Uint8List> bytes) {
+List<Frame> framesSetLengthOffset(List<Frame> frames, List<Uint8List> bytes) {
   var offset = 0;
   for (var i = 0; i < frames.length; i++) {
     var length = bytes[i].length;
@@ -99,6 +99,17 @@ void framesSetLengthOffset(List<Frame> frames, List<Uint8List> bytes) {
       ..length = length;
     offset += length;
   }
+  return frames;
+}
+
+List<Frame> lazyFrames(List<Frame> frames) {
+  return frames.map((f) {
+    if (f.deleted) {
+      return f;
+    } else {
+      return Frame.lazy(f.key, offset: f.offset, length: f.length);
+    }
+  }).toList();
 }
 
 List<Frame> get valueTestFrames =>
@@ -128,7 +139,7 @@ Frame lazyFrameWithLength(Frame frame, int length) {
   }
 }
 
-void fEqual(Frame f1, Frame f2) {
+void expectFrame(Frame f1, Frame f2) {
   expect(f1.key, f2.key);
   if (f1.value is double && f2.value is double) {
     if (f1.value.isNaN as bool && f1.value.isNaN as bool) return;
@@ -137,6 +148,16 @@ void fEqual(Frame f1, Frame f2) {
   expect(f1.length, f2.length);
   expect(f1.deleted, f2.deleted);
   expect(f1.lazy, f2.lazy);
+}
+
+void expectFrames(Iterable<Frame> f1, Iterable<Frame> f2) {
+  var frames1 = f1.toList();
+  var frames2 = f2.toList();
+
+  expect(frames1.length, f2.length);
+  for (var i = 0; i < frames2.length; i++) {
+    expectFrame(frames1[i], frames2[i]);
+  }
 }
 
 void buildGoldens() async {
