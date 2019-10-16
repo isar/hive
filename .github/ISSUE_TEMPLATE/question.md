@@ -11,7 +11,9 @@ assignees: ''
 Please explain the problem you are running into.
 
 **Code sample**
+```dart
 Provide a few simple lines of code to show your problem.
+```
 
 **Version**
  - Platform: iOS, Android, Mac, Windows, Linux, Web
