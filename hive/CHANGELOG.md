@@ -18,6 +18,7 @@
 ### More
 - Improved performance of `putAll()`, `deleteAll()`, `add()`, `addAll()`
 - Changed `values` parameter of `addAll()` from `List` to `Iterable`
+- Improved documentation
 - Preparation for queries
 
 ## 1.0.0
