@@ -6,16 +6,24 @@ jobs:
   test-hive:
     runs-on: ubuntu-latest
     
-    container:
-      image:  google/dart:latest
-    
     strategy:
       matrix:
-        test-platform: [vm]
+        test-platform: [vm, chrome]
     
     steps:
     - uses: actions/checkout@v1
-    - name: Run tests
+    - name: Install Dart
       run: |
-        export TEST_PLATFORM=${{ matrix.test-platform }}
-        sh tool/test_hive.sh
+        sudo apt-get update
+        sudo apt-get install apt-transport-https
+        sudo sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+        sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+        sudo apt-get update
+        sudo apt-get install dart
+        echo 'export PATH="$PATH:/usr/lib/dart/bin"' >> ~/.profile
+    - name: Run tests
+      shell: bash -l {0}
+      run: |
+        pub get
+        pub run test -p ${{ matrix.test-platform }}
+      working-directory: hive
