@@ -9,6 +9,7 @@ jobs:
     strategy:
       matrix:
         test-platform: [vm, chrome]
+        dart-channel: [stable, unstable]
     
     steps:
     - uses: actions/checkout@v1
@@ -17,7 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install apt-transport-https
         sudo sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
-        sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
+        sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_${{ matrix.dart-channel }}.list > /etc/apt/sources.list.d/dart_${{ matrix.dart-channel }}.list'
         sudo apt-get update
         sudo apt-get install dart
         echo 'export PATH="$PATH:/usr/lib/dart/bin"' >> ~/.profile
