@@ -44,7 +44,14 @@ class Frame<E> {
     if (reader.availableBytes < 4) return null;
 
     var frameLength = reader.peekUint32();
-    if (frameLength < 8 || reader.availableBytes < frameLength) return null;
+    if (frameLength < 8) {
+      throw HiveError('This is an iternal error. Please open an issue on '
+          'GitHub and provide steps to reproduce this problem if possible.');
+    }
+
+    if (reader.availableBytes < frameLength) {
+      return null;
+    }
 
     var bytes = reader.viewBytes(frameLength - 4);
     var computedCrc = Crc32.compute(bytes, crc: crypto?.keyCrc ?? 0);

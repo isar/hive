@@ -63,16 +63,17 @@ class _KeyReader {
 
       var frameLength = _reader.peekUint32();
       if (frameLength < 8) {
-        throw HiveError('Your box seems to be corrupted. Please '
-            'open an issue on GitHub and provide steps to reproduce '
-            'this problem if possible.');
+        throw HiveError('This is an iternal error. Please open an issue on '
+            'GitHub and provide steps to reproduce this problem if possible.');
       }
+
       if (_reader.availableBytes < frameLength) {
         var available = await _read(frameLength);
         if (available < frameLength) {
           return frameOffset;
         }
       }
+
       var frameBytes = _reader.viewBytes(frameLength - 4);
       var computedCrc = Crc32.compute(frameBytes, crc: crypto?.keyCrc ?? 0);
       if (computedCrc != _reader.readUint32()) {
