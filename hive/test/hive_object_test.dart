@@ -72,11 +72,9 @@ void main() {
         verify(box.put('key', obj));
       });
 
-      test('throws exception if object is not in a box', () {
+      test('throws HiveError if object is not in a box', () async {
         var obj = _TestObject();
-
-        expect(() => obj.save(),
-            throwsHiveError('add this object to a box first'));
+        await expectLater(() => obj.save(), throwsHiveError('not in a box'));
       });
     });
 
@@ -91,9 +89,9 @@ void main() {
         verify(box.delete('key'));
       });
 
-      test('does nothing if object is not in a box', () {
+      test('throws HiveError if object is not in a box', () async {
         var obj = _TestObject();
-        obj.delete();
+        await expectLater(() => obj.delete(), throwsHiveError('not in a box'));
       });
     });
 

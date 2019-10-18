@@ -18,8 +18,7 @@ abstract class HiveObject {
   /// Persists this object.
   Future<void> save() {
     if (_box == null) {
-      throw HiveError('You have to add this object to a box first '
-          'using box.add() or box.put().');
+      throw HiveError('This object is currently not in a box.');
     }
     return _box.put(_key, this);
   }
@@ -29,7 +28,7 @@ abstract class HiveObject {
     if (_box != null) {
       return _box.delete(_key);
     } else {
-      return Future.value();
+      throw HiveError('This object is currently not in a box.');
     }
   }
 

@@ -1,4 +1,7 @@
-## 1.1.0+3
+## 1.1.1
+
+### Breaking changes
+- `object.delete()` now throws exception if object is not stored in a box
 
 ### Fixes
 - Fixed bug where `object.save()` would faild on subsequent calls
