@@ -53,7 +53,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<Box> openBox(
+  Future<Box<E>> openBox<E>(
     String name, {
     List<int> encryptionKey,
     KeyComparator keyComparator,
@@ -62,16 +62,27 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool lazy = false,
   }) async {
     if (isBoxOpen(name)) {
-      return box(name);
+      var openedBox = box<E>(name);
+      if (openedBox.lazy != lazy) {
+        throw HiveError(
+            'The box "$name" is already open. You cannot open a box as lazy '
+            'and non-lazy at the same time.');
+      }
+      return openedBox;
     } else {
       var cs = compactionStrategy ?? defaultCompactionStrategy;
       var crypto = getCryptoHelper(encryptionKey);
       var backend = await openBackend(this, name, lazy, crashRecovery, crypto);
-      BoxBase box;
+      BoxBase<E> box;
       if (lazy) {
-        box = LazyBoxImpl(this, name, keyComparator, cs, backend);
+        if (E == dynamic) {
+          var lazyBox = LazyBoxImpl(this, name, keyComparator, cs, backend);
+          box = lazyBox as BoxBase<E>;
+        } else {
+          throw HiveError('Lazy boxes do not support type arguments.');
+        }
       } else {
-        box = BoxImpl(this, name, keyComparator, cs, backend);
+        box = BoxImpl<E>(this, name, keyComparator, cs, backend);
       }
       await box.initialize();
       _boxes[name.toLowerCase()] = box;
@@ -81,7 +92,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<Box> openBoxFromBytes(
+  Future<Box<E>> openBoxFromBytes<E>(
     String name,
     Uint8List bytes, {
     List<int> encryptionKey,
@@ -92,7 +103,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     } else {
       var crypto = getCryptoHelper(encryptionKey);
       var backend = StorageBackendMemory(bytes, crypto);
-      var box = BoxImpl(this, name, keyComparator, null, backend);
+      var box = BoxImpl<E>(this, name, keyComparator, null, backend);
       await box.initialize();
       _boxes[name.toLowerCase()] = box;
 
@@ -101,9 +112,15 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Box box(String name) {
+  Box<E> box<E>(String name) {
     if (isBoxOpen(name)) {
-      return _boxes[name.toLowerCase()];
+      var box = _boxes[name.toLowerCase()] as BoxBase;
+      if (box.valueType == E) {
+        return box as Box<E>;
+      } else {
+        throw HiveError('The box "$name" is already open and of type '
+            'Box<${box.valueType}>. You cannot open the same box as Box<$E>.');
+      }
     } else {
       throw HiveError('Box not found. Did you forget to call Hive.openBox()?');
     }

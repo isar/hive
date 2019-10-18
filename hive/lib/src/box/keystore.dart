@@ -9,7 +9,7 @@ import 'package:meta/meta.dart';
 
 class KeyTransaction<E> {
   final List<dynamic> added = [];
-  final Map<dynamic, Frame<E>> deleted = HashMap();
+  final Map<dynamic, Frame> deleted = HashMap();
 
   @visibleForTesting
   KeyTransaction();
@@ -28,7 +28,7 @@ class Keystore<E> {
 
   final ChangeNotifier _notifier;
 
-  final IndexableSkipList<dynamic, Frame<E>> _store;
+  final IndexableSkipList<dynamic, Frame> _store;
 
   @visibleForTesting
   final ListQueue<KeyTransaction<E>> transactions = ListQueue();
@@ -40,7 +40,7 @@ class Keystore<E> {
       : _store = IndexableSkipList(keyComparator ?? _compareKeys);
 
   factory Keystore.debug({
-    Iterable<Frame<E>> frames = const [],
+    Iterable<Frame> frames = const [],
     Box<E> box,
     ChangeNotifier notifier,
     KeyComparator keyComparator,
@@ -57,7 +57,7 @@ class Keystore<E> {
 
   int get length => _store.length;
 
-  Iterable<Frame<E>> get frames => _store.values;
+  Iterable<Frame> get frames => _store.values;
 
   void resetDeletedEntries() {
     _deletedEntries = 0;
@@ -81,11 +81,11 @@ class Keystore<E> {
     return _store.getKeyAt(index);
   }
 
-  Frame<E> get(dynamic key) {
+  Frame get(dynamic key) {
     return _store.get(key);
   }
 
-  Frame<E> getAt(int index) {
+  Frame getAt(int index) {
     return _store.getAt(index);
   }
 
@@ -94,15 +94,15 @@ class Keystore<E> {
   }
 
   Iterable<E> getValues() {
-    return _store.values.map((e) => e.value);
+    return _store.values.map((e) => e.value as E);
   }
 
   Stream<BoxEvent> watch({dynamic key}) {
     return _notifier.watch(key: key);
   }
 
-  Frame<E> insert(Frame<E> frame, [bool notify = true]) {
-    Frame<E> deletedFrame;
+  Frame insert(Frame frame, [bool notify = true]) {
+    Frame deletedFrame;
 
     if (!frame.deleted) {
       var key = frame.key;
@@ -133,7 +133,7 @@ class Keystore<E> {
     return deletedFrame;
   }
 
-  bool beginTransaction(List<Frame<E>> newFrames) {
+  bool beginTransaction(List<Frame> newFrames) {
     var transaction = KeyTransaction<E>();
     for (var frame in newFrames) {
       if (!frame.deleted) {

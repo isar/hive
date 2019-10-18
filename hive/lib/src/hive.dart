@@ -17,7 +17,7 @@ abstract class HiveInterface implements TypeRegistry {
   ///
   /// If the box is already open, the instance is returned and all provided
   /// parameters are being ignored.
-  Future<Box> openBox(
+  Future<Box<E>> openBox<E>(
     String name, {
     List<int> encryptionKey,
     KeyComparator keyComparator,
@@ -29,7 +29,7 @@ abstract class HiveInterface implements TypeRegistry {
   /// Opens an in-memory box from a list of bytes. It does not persist changes.
   ///
   /// This is useful for opening boxes from an asset file.
-  Future<Box> openBoxFromBytes(
+  Future<Box<E>> openBoxFromBytes<E>(
     String name,
     Uint8List bytes, {
     List<int> encryptionKey,
@@ -37,7 +37,7 @@ abstract class HiveInterface implements TypeRegistry {
   });
 
   /// Returns a previously opened box.
-  Box box(String name);
+  Box<E> box<E>(String name);
 
   /// Checks if a specific box is currently open.
   bool isBoxOpen(String name);

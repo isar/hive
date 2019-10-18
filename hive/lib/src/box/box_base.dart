@@ -33,6 +33,8 @@ abstract class BoxBase<E> implements Box<E> {
     keystore = Keystore(this, ChangeNotifier(), keyComparator);
   }
 
+  Type get valueType => E;
+
   @override
   bool get isOpen => _open;
 

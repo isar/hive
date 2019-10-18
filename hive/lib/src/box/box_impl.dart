@@ -31,7 +31,7 @@ class BoxImpl<E> extends BoxBase<E> {
 
     var frame = keystore.get(key);
     if (frame != null) {
-      return frame.value;
+      return frame.value as E;
     } else {
       return defaultValue;
     }
@@ -41,12 +41,12 @@ class BoxImpl<E> extends BoxBase<E> {
   E getAt(int index) {
     checkOpen();
 
-    return keystore.getAt(index).value;
+    return keystore.getAt(index).value as E;
   }
 
   @override
   Future<void> putAll(Map<dynamic, E> kvPairs) {
-    var frames = <Frame<E>>[];
+    var frames = <Frame>[];
     for (var key in kvPairs.keys) {
       frames.add(Frame(key, kvPairs[key]));
     }
@@ -56,7 +56,7 @@ class BoxImpl<E> extends BoxBase<E> {
 
   @override
   Future<void> deleteAll(Iterable<dynamic> keys) {
-    var frames = <Frame<E>>[];
+    var frames = <Frame>[];
     for (var key in keys) {
       if (keystore.containsKey(key)) {
         frames.add(Frame.deleted(key));
@@ -66,7 +66,7 @@ class BoxImpl<E> extends BoxBase<E> {
     return _writeFrames(frames);
   }
 
-  Future<void> _writeFrames(List<Frame<E>> frames) async {
+  Future<void> _writeFrames(List<Frame> frames) async {
     checkOpen();
 
     if (!keystore.beginTransaction(frames)) return;
@@ -86,7 +86,7 @@ class BoxImpl<E> extends BoxBase<E> {
   Map<dynamic, E> toMap() {
     var map = <dynamic, E>{};
     for (var frame in keystore.frames) {
-      map[frame.key] = frame.value;
+      map[frame.key] = frame.value as E;
     }
     return map;
   }

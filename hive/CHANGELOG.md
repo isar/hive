@@ -1,5 +1,12 @@
+## 1.1.0+2
+
+### Fixes
+- Fixed bug that it was not possible to open typed boxes (`Box<E>`)
+
 ## 1.1.0+1
-- Bugfix
+
+### Fixes
+- Fixed bug that corrupted boxes were not detected
 
 ## 1.1.0
 
