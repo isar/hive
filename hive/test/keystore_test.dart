@@ -193,12 +193,24 @@ void main() {
           var box = BoxMock();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = HiveObjectMock();
+          var hiveObject = _TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
           keystore.insert(Frame('key', HiveObjectMock()));
 
           expect(hiveObject.key, null);
           expect(hiveObject.box, null);
+        });
+
+        test('does not unload HiveObject if it is the same instance', () {
+          var box = BoxMock();
+          var keystore = Keystore.debug(box: box);
+
+          var hiveObject = _TestHiveObject();
+          keystore.insert(Frame('key', hiveObject));
+          keystore.insert(Frame('key', hiveObject));
+
+          expect(hiveObject.key, 'key');
+          expect(hiveObject.box, box);
         });
 
         test('increases deletedEntries', () {

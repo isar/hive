@@ -1,3 +1,8 @@
+## 1.1.0+3
+
+### Fixes
+- Fixed bug where `object.save()` would faild on subsequent calls
+
 ## 1.1.0+2
 
 ### Fixes

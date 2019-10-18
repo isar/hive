@@ -121,7 +121,8 @@ class Keystore<E> {
 
     if (deletedFrame != null) {
       _deletedEntries++;
-      if (deletedFrame.value is HiveObject) {
+      if (deletedFrame.value is HiveObject &&
+          !identical(deletedFrame.value, frame.value)) {
         unloadHiveObject(deletedFrame.value as HiveObject);
       }
     }
