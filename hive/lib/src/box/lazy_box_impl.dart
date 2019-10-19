@@ -89,6 +89,11 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
   }
 
   @override
+  HiveQuery<T> query<T extends HiveObject>() {
+    throw UnsupportedError('Only non-lazy boxes support queries.');
+  }
+
+  @override
   Map<dynamic, dynamic> toMap() {
     throw UnsupportedError('Only non-lazy boxes support toMap().');
   }

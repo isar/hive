@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/query/hive_results_impl.dart';
 import 'package:hive/src/query/hive_results_live_impl.dart';
 
@@ -51,24 +52,15 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
       throw HiveError('An order is already specified.');
     }
 
-    Comparator<E> comparator;
-
-    Object compare = Comparable.compare;
-    if (compare is Comparator<E>) {
-      if (sort == Sort.asc) {
-        comparator = compare;
+    var sortMultiplier = sort == Sort.asc ? 1 : -1;
+    var comparator = (E a, E b) {
+      var result = sortMultiplier * (a as Comparable).compareTo(b);
+      if (result == 0) {
+        return compareKeys(a.key, b.key);
       } else {
-        comparator = (a, b) => compare(b, a);
+        return result;
       }
-    } else {
-      if (sort == Sort.asc) {
-        comparator =
-            (a, b) => Comparable.compare(a as Comparable, b as Comparable);
-      } else {
-        comparator =
-            (a, b) => Comparable.compare(b as Comparable, a as Comparable);
-      }
-    }
+    };
     return HiveQueryImpl._(box, filters, resultOffset, resultLimit, comparator);
   }
 
@@ -84,18 +76,9 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
     if (sortingComparator != null) {
       throw HiveError('An order is already specified.');
     }
-    var sortMultiplier = 1;
-    if (sort == Sort.desc) {
-      sortMultiplier = -1;
-    }
-    var sortMultiplier2 = 1;
-    if (sort2 == Sort.desc) {
-      sortMultiplier2 = -1;
-    }
-    var sortMultiplier3 = 1;
-    if (sort3 == Sort.desc) {
-      sortMultiplier3 = -1;
-    }
+    var sortMultiplier = sort == Sort.asc ? 1 : -1;
+    var sortMultiplier2 = sort2 == Sort.asc ? 1 : -1;
+    var sortMultiplier3 = sort3 == Sort.asc ? 1 : -1;
     Comparator<E> comparator;
     if (value3 != null) {
       comparator = (a, b) {
@@ -104,6 +87,9 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
           result = sortMultiplier2 * value2(a).compareTo(value2(b));
           if (result == 0) {
             result = sortMultiplier3 * value3(a).compareTo(value3(b));
+            if (result == 0) {
+              result = compareKeys(a.key, b.key);
+            }
           }
         }
         return result;
@@ -113,13 +99,20 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
         var result = sortMultiplier * value(a).compareTo(value(b));
         if (result == 0) {
           result = sortMultiplier2 * value2(a).compareTo(value2(b));
+          if (result == 0) {
+            result = compareKeys(a.key, b.key);
+          }
         }
         return result;
       };
     } else {
       comparator = (a, b) {
         var result = sortMultiplier * value(a).compareTo(value(b));
-        return result;
+        if (result == 0) {
+          return compareKeys(a.key, b.key);
+        } else {
+          return result;
+        }
       };
     }
     return HiveQueryImpl._(box, filters, resultOffset, resultLimit, comparator);
@@ -130,13 +123,18 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
     if (sortingComparator != null) {
       throw HiveError('An order is already specified.');
     }
-    if (sort == Sort.asc) {
-      return HiveQueryImpl._(
-          box, filters, resultOffset, resultLimit, comparator);
-    } else {
-      return HiveQueryImpl._(
-          box, filters, resultOffset, resultLimit, (a, b) => comparator(b, a));
-    }
+
+    var sortMultiplier = sort == Sort.asc ? 1 : -1;
+    var sortedComparator = (E a, E b) {
+      var result = sortMultiplier * comparator(a, b);
+      if (result == 0) {
+        return compareKeys(a.key, b.key);
+      } else {
+        return result;
+      }
+    };
+    return HiveQueryImpl._(
+        box, filters, resultOffset, resultLimit, sortedComparator);
   }
 
   @override
@@ -158,17 +156,17 @@ class HiveQueryImpl<E extends HiveObject> extends HiveQuery<E> {
   }
 
   void evaluate(List<E> results, num offset, [num limit = 999999999]) {
-    itemLoop:
-    for (var item in box.values) {
-      if (item is E) {
+    valueLoop:
+    for (var value in box.values) {
+      if (value is E) {
         for (var predicate in filters) {
-          if (!predicate(item)) {
-            continue itemLoop;
+          if (!predicate(value)) {
+            continue valueLoop;
           }
         }
 
         if (offset-- <= 0) {
-          results.add(item);
+          results.add(value);
         }
 
         if (results.length >= limit) {

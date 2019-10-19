@@ -5,7 +5,7 @@ abstract class HiveResults<E extends HiveObject> implements List<E> {
 
   Box get box;
 
-  List<dynamic> get keys;
+  Iterable<dynamic> get keys;
 
   Future<void> deleteAllFromHive();
 

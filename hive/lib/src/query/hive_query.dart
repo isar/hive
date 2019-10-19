@@ -17,9 +17,9 @@ abstract class HiveQuery<E extends HiveObject> {
     ValueComparable<E> value, [
     Sort sort = Sort.asc,
     ValueComparable<E> value2,
-    Sort sort2,
+    Sort sort2 = Sort.asc,
     ValueComparable<E> value3,
-    Sort sort3,
+    Sort sort3 = Sort.asc,
   ]);
 
   HiveQuery<E> orderWith(Comparator<E> comparator, [Sort sort = Sort.asc]);

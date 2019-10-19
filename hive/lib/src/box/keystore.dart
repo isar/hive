@@ -15,7 +15,7 @@ class KeyTransaction<E> {
   KeyTransaction();
 }
 
-int _compareKeys(dynamic k1, dynamic k2) {
+int compareKeys(dynamic k1, dynamic k2) {
   if (k1.runtimeType == k2.runtimeType) {
     return (k1 as Comparable).compareTo(k2);
   } else {
@@ -37,7 +37,7 @@ class Keystore<E> {
   var _autoIncrement = -1;
 
   Keystore(this._box, this._notifier, [KeyComparator keyComparator])
-      : _store = IndexableSkipList(keyComparator ?? _compareKeys);
+      : _store = IndexableSkipList(keyComparator ?? compareKeys);
 
   factory Keystore.debug({
     Iterable<Frame> frames = const [],

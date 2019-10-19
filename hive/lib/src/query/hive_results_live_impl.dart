@@ -1,9 +1,11 @@
 import 'package:hive/hive.dart';
+import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/query/delegating_results_list_live.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
+import 'package:hive/src/query/hive_results_base.dart';
 
 class HiveResultsLiveImpl<E extends HiveObject>
-    extends DelegatingResultsListLive<E> implements HiveResults<E> {
+    extends DelegatingResultsListLive<E> with HiveResultsMixin<E> {
   final HiveQueryImpl<E> _query;
 
   HiveResultsLiveImpl(this._query) : super(_query.sortingComparator) {
@@ -14,42 +16,24 @@ class HiveResultsLiveImpl<E extends HiveObject>
   HiveQuery<E> get query => _query;
 
   @override
-  Box get box => _query.box;
-
-  @override
-  List<dynamic> get keys {
-    var keys = List(results.length);
-    var i = 0;
-    for (var item in results.keys) {
-      keys[i++] = item.key;
-    }
-    return keys;
-  }
-
-  @override
-  Future<void> deleteAllFromHive() {
-    return box.deleteAll(keys);
-  }
-
-  @override
-  Future<void> deleteFirstFromHive() {
-    return first.delete();
-  }
-
-  @override
-  Future<void> deleteLastFromHive() {
-    return last.delete();
-  }
-
-  @override
-  Future<void> deleteFromHive(int index) {
-    return this[index].delete();
-  }
-
-  @override
   void refresh() {
     throw UnsupportedError(
         'Auto updating HiveResilts must not be refreshed manually.');
+  }
+
+  void updateAdd(List<Frame> frames) {
+    for (var frame in frames) {
+      if (frame.deleted) {
+        results.delete(frame.value);
+      }
+    }
+  }
+
+  void updateDelete(Frame frame) {
+    var value = frame.value;
+    if (value is E) {
+      results.delete(value);
+    }
   }
 
   @override

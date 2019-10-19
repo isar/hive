@@ -116,6 +116,8 @@ abstract class Box<E> {
   /// If a key does not exist, it is skipped.
   Future<void> deleteAll(Iterable<dynamic> keys);
 
+  HiveQuery<T> query<T extends HiveObject>();
+
   /// Returns a map which contains all key - value pairs of the box.
   Map<dynamic, E> toMap();
 
