@@ -32,7 +32,7 @@ class BinaryWriterImpl extends BinaryWriter {
 
   void _reserveBytes(int count) {
     if (_buffer.length - _offset < count) {
-      // We will create a list in the range of 2-4 times larger than required.
+      // We will create a buffer in the range of 2-4 times larger than required.
       var newSize = _pow2roundup((_offset + count) * 2);
       var newBuffer = Uint8List(newSize);
       newBuffer.setRange(0, _offset, _buffer);
@@ -217,6 +217,27 @@ class BinaryWriterImpl extends BinaryWriter {
     });
   }
 
+  void writeHiveList(HiveList list, {bool writeLength = true}) {
+    if (writeLength) {
+      writeUint32(list.length);
+    }
+    writeString(list.box.name);
+    for (var obj in list) {
+      writeKey(obj.key);
+    }
+  }
+
+  void writeKey(dynamic key) {
+    if (key is String) {
+      writeByte(FrameKeyType.asciiStringT.index);
+      writeByte(key.length);
+      writeAsciiString(key, writeLength: false);
+    } else {
+      writeByte(FrameKeyType.uintT.index);
+      writeUint32(key as int);
+    }
+  }
+
   @override
   void write<T>(T value, {bool writeTypeId = true}) {
     if (value == null) {
@@ -245,6 +266,10 @@ class BinaryWriterImpl extends BinaryWriter {
       writeString(value);
     } else if (value is List) {
       if (value is HiveList) {
+        if (writeTypeId) {
+          writeByte(FrameValueType.hiveListT.index);
+        }
+        writeHiveList(value);
       } else if (value.contains(null)) {
         if (writeTypeId) {
           writeByte(FrameValueType.listT.index);

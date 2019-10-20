@@ -173,4 +173,8 @@ class HiveList<E extends HiveObject>
   void sort([int Function(E a, E b) compare]) {
     _keys.sort((a, b) => compare(box.get(a) as E, box.get(b) as E));
   }
+
+  HiveList<T> castHiveList<T extends HiveObject>() {
+    return HiveList<T>.fromKeys(_boxName, _keys);
+  }
 }

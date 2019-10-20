@@ -219,6 +219,29 @@ class BinaryReaderImpl extends BinaryReader {
     return map;
   }
 
+  HiveList readHiveList([int length]) {
+    length ??= readUint32();
+    var boxName = readString();
+    var keys = List<dynamic>(length);
+    for (var i = 0; i < length; i++) {
+      keys[i] = readKey();
+    }
+
+    return HiveList.fromKeys(boxName, keys);
+  }
+
+  dynamic readKey() {
+    var keyType = readByte();
+    if (keyType == FrameKeyType.uintT.index) {
+      return readUint32();
+    } else if (keyType == FrameKeyType.asciiStringT.index) {
+      var keyLength = readByte();
+      return readAsciiString(keyLength);
+    } else {
+      throw HiveError('Unsupported key type. Frame might be corrupted.');
+    }
+  }
+
   @override
   dynamic read([int typeId]) {
     typeId ??= readByte();
@@ -249,6 +272,8 @@ class BinaryReaderImpl extends BinaryReader {
           return readList();
         case FrameValueType.mapT:
           return readMap();
+        case FrameValueType.hiveListT:
+          return readHiveList();
       }
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);

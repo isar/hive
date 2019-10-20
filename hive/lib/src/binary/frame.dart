@@ -77,16 +77,7 @@ class Frame {
     bool lazy,
     CryptoHelper crypto,
   ) {
-    dynamic key;
-    var keyType = reader.readByte();
-    if (keyType == FrameKeyType.uintT.index) {
-      key = reader.readUint32();
-    } else if (keyType == FrameKeyType.asciiStringT.index) {
-      var keyLength = reader.readByte(); // Read length of key
-      key = reader.readAsciiString(keyLength); // Read key
-    } else {
-      throw HiveError('Unsupported key type. Frame might be corrupted.');
-    }
+    var key = reader.readKey();
 
     if (reader.availableBytes == 0) {
       return Frame.deleted(key);
@@ -125,18 +116,7 @@ class Frame {
     // Placeholder for length
     writer.writeByteList([0, 0, 0, 0], writeLength: false);
 
-    var localKey = key;
-    if (localKey is String) {
-      writer
-        ..writeByte(FrameKeyType.asciiStringT.index)
-        ..writeByte(localKey.length) // Write key length
-        ..writeAsciiString(localKey, writeLength: false); // Write key
-
-    } else {
-      writer
-        ..writeByte(FrameKeyType.uintT.index)
-        ..writeUint32(localKey as int); // Write key
-    }
+    writer.writeKey(key);
 
     if (!deleted) {
       encodeValue(writer, crypto);
@@ -210,4 +190,5 @@ enum FrameValueType {
   stringListT,
   listT,
   mapT,
+  hiveListT,
 }
