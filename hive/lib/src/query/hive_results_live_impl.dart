@@ -1,16 +1,22 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/hive_collection_mixin.dart';
 import 'package:hive/src/query/delegating_results_list_live.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
-import 'package:hive/src/query/hive_results_base.dart';
+import 'package:hive/src/query/unmodifiable_results_mixin.dart';
 
 class HiveResultsLiveImpl<E extends HiveObject>
-    extends DelegatingResultsListLive<E> with HiveResultsMixin<E> {
+    extends DelegatingResultsListLive<E>
+    with HiveCollectionMixin<E>, UnmodifiableResultsMixin<E>
+    implements HiveResults<E> {
   final HiveQueryImpl<E> _query;
 
   HiveResultsLiveImpl(this._query) : super(_query.sortingComparator) {
     refresh();
   }
+
+  @override
+  Box get box => _query.box;
 
   @override
   HiveQuery<E> get query => _query;
@@ -24,7 +30,7 @@ class HiveResultsLiveImpl<E extends HiveObject>
   void updateAdd(List<Frame> frames) {
     for (var frame in frames) {
       if (frame.deleted) {
-        results.delete(frame.value);
+        //results.delete(frame.value);
       }
     }
   }

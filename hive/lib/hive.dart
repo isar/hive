@@ -22,6 +22,8 @@ part 'src/query/hive_query.dart';
 part 'src/query/hive_results.dart';
 part 'src/registry/type_registry.dart';
 part 'src/registry/type_adapter.dart';
+part 'src/hive_collection.dart';
+part 'src/hive_list.dart';
 part 'src/hive_error.dart';
 part 'src/hive.dart';
 

@@ -126,6 +126,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     }
   }
 
+  Box getBoxInternal(String name) => _boxes[name.toLowerCase()];
+
   @override
   bool isBoxOpen(String name) {
     return _boxes.containsKey(name.toLowerCase());

@@ -244,7 +244,8 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeString(value);
     } else if (value is List) {
-      if (value.contains(null)) {
+      if (value is HiveList) {
+      } else if (value.contains(null)) {
         if (writeTypeId) {
           writeByte(FrameValueType.listT.index);
         }

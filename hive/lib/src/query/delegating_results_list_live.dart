@@ -1,7 +1,8 @@
-import 'package:hive/src/query/unmodifiable_results_list.dart';
+import 'package:hive/src/query/unmodifiable_results_mixin.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 
-abstract class DelegatingResultsListLive<E> extends UnmodifiableResultsList<E> {
+abstract class DelegatingResultsListLive<E>
+    extends UnmodifiableResultsMixin<E> {
   final IndexableSkipList<E, void> results;
 
   DelegatingResultsListLive(Comparator<E> comparator)

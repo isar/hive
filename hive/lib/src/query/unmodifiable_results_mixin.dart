@@ -1,6 +1,6 @@
 import 'dart:math';
 
-abstract class UnmodifiableResultsList<E> implements List<E> {
+abstract class UnmodifiableResultsMixin<E> implements List<E> {
   @override
   void operator []=(int index, E value) {
     throw UnsupportedError('Cannot modify HiveResults');

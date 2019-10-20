@@ -1,11 +1,7 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/query/hive_query_impl.dart';
 
-abstract class HiveResultsMixin<E extends HiveObject>
-    implements HiveResults<E> {
-  @override
-  Box get box => (query as HiveQueryImpl).box;
-
+abstract class HiveCollectionMixin<E extends HiveObject>
+    implements HiveCollection<E> {
   @override
   Iterable<dynamic> get keys sync* {
     for (var value in this) {
