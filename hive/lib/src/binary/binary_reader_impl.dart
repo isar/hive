@@ -219,9 +219,10 @@ class BinaryReaderImpl extends BinaryReader {
     return map;
   }
 
-  HiveList readHiveList([int length]) {
-    length ??= readUint32();
-    var boxName = readString();
+  HiveList readHiveList() {
+    var boxNameLength = readByte();
+    var boxName = readAsciiString(boxNameLength);
+    var length = readUint32();
     var keys = List<dynamic>(length);
     for (var i = 0; i < length; i++) {
       keys[i] = readKey();

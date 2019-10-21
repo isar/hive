@@ -4,10 +4,13 @@ library hive;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:hive/src/hive_collection_mixin.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/hive_object.dart';
+import 'package:hive/src/util/delegating_list_view_mixin.dart';
 import 'package:meta/meta.dart';
 
 export 'src/hive_object.dart';

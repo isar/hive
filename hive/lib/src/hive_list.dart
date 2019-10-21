@@ -2,6 +2,8 @@ part of hive;
 
 class HiveList<E extends HiveObject>
     with HiveCollectionMixin<E>, DelegatingListViewMixin<E> {
+  final HiveImpl _hive;
+
   final String _boxName;
 
   final List<dynamic> _keys;
@@ -9,18 +11,24 @@ class HiveList<E extends HiveObject>
   Box _box;
 
   HiveList(Box box)
-      : _box = box,
+      : _hive = Hive as HiveImpl,
+        _box = box,
         _boxName = box.name,
         _keys = [];
 
   HiveList.fromKeys(String boxName, List<dynamic> keys)
+      : _hive = Hive as HiveImpl,
+        _boxName = boxName,
+        _keys = keys;
+
+  HiveList.debug(String boxName, List<dynamic> keys, this._hive)
       : _boxName = boxName,
         _keys = keys;
 
   @override
   Box get box {
     if (_box == null) {
-      var _box = (Hive as HiveImpl).getBoxInternal(_boxName);
+      var _box = _hive.getBoxInternal(_boxName);
       if (_box == null) {
         throw HiveError(
             'To use this list, you have to open the box "$_boxName" first.');
@@ -177,4 +185,10 @@ class HiveList<E extends HiveObject>
   HiveList<T> castHiveList<T extends HiveObject>() {
     return HiveList<T>.fromKeys(_boxName, _keys);
   }
+
+  @visibleForTesting
+  String get debugBoxName => _boxName;
+
+  @visibleForTesting
+  List<dynamic> get debugKeys => _keys;
 }

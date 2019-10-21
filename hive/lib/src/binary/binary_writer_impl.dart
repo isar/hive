@@ -217,11 +217,11 @@ class BinaryWriterImpl extends BinaryWriter {
     });
   }
 
-  void writeHiveList(HiveList list, {bool writeLength = true}) {
-    if (writeLength) {
-      writeUint32(list.length);
-    }
-    writeString(list.box.name);
+  void writeHiveList(HiveList list) {
+    var box = list.box.name;
+    writeByte(box.length);
+    writeAsciiString(box);
+    writeUint32(list.length);
     for (var obj in list) {
       writeKey(obj.key);
     }
