@@ -134,3 +134,10 @@ Future<void> expectDirEqualsAssetDir(Directory dir1, String part1,
   var assetDir = Directory(path.join(assetsPath, part1, part2, part3, part4));
   return expectDirsEqual(dir1, assetDir);
 }
+
+Future<HiveImpl> initHive() async {
+  var hive = HiveImpl();
+  var dir = await getTempDir();
+  hive.init(dir.path);
+  return hive;
+}

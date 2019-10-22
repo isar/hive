@@ -3,6 +3,9 @@
 ### Breaking changes
 - Box names have to be ASCII strings with a max length of 255 chars
 
+### Enhancements
+- Added `HiveList`s to support backlinks
+
 ## 1.1.1
 
 ### Breaking changes

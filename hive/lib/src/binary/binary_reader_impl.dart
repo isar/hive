@@ -228,7 +228,7 @@ class BinaryReaderImpl extends BinaryReader {
       keys[i] = readKey();
     }
 
-    return HiveList.fromKeys(boxName, keys);
+    return HiveList.internal(boxName, keys);
   }
 
   dynamic readKey() {

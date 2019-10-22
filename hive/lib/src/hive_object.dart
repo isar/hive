@@ -5,6 +5,8 @@ import 'package:hive/hive.dart';
 abstract class HiveObject {
   Box _box;
 
+  final _hiveLists = Expando<HiveList>();
+
   /// Get the box in which this object is stored. Returns `null` if object has
   /// not been added to a box yet.
   Box get box => _box;

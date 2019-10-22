@@ -1,4 +1,8 @@
+import 'package:meta/meta.dart';
+
 abstract class DelegatingListViewMixin<E> implements List<E> {
+  @protected
+  @visibleForTesting
   List<E> get delegate;
 
   @override
@@ -120,7 +124,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
       delegate.takeWhile(test);
 
   @override
-  List<E> toList({bool growable = true}) => delegate.toList();
+  List<E> toList({bool growable = true}) => delegate.toList(growable: growable);
 
   @override
   Set<E> toSet() => delegate.toSet();
