@@ -315,7 +315,7 @@ void main() {
         0x6b, 0x65, 0x79, 0x31, 0, 5, 0, 0, 0
       ]);
 
-      var hiveList = br.readHiveList();
+      var hiveList = br.readHiveList() as HiveListImpl;
       expect(hiveList.debugBoxName, 'box');
       expect(hiveList.debugKeys, ['key1', 5]);
     });

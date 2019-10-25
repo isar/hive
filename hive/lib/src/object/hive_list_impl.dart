@@ -1,31 +1,61 @@
-part of hive;
+part of hive_object_internal;
 
-class HiveList<E extends HiveObject>
-    with HiveCollectionMixin<E>, DelegatingListViewMixin<E> {
+class HiveListImpl<E extends HiveObject>
+    with HiveCollectionMixin<E>, DelegatingListViewMixin<E>
+    implements HiveList<E> {
   final Box Function(String) _getBox;
 
   final String _boxName;
 
   List<dynamic> _keys;
 
+  List<E> _delegate;
+
   Box _box;
 
-  HiveList(Box box, {List<dynamic> keys})
+  HiveListImpl(Box box, {List<E> objects})
       : _getBox = null,
         _boxName = box.name,
         _box = box,
-        _keys = keys ?? [];
+        _delegate = objects ?? [];
 
-  HiveList.internal(String boxName, List<dynamic> keys)
+  HiveListImpl.lazy(String boxName, List<dynamic> keys)
       : _getBox = (Hive as HiveImpl).getBoxInternal,
         _boxName = boxName,
         _keys = keys;
 
   @visibleForTesting
-  HiveList.debug(String boxName, List<dynamic> keys, HiveImpl hive)
+  HiveListImpl.debug(String boxName, List<dynamic> keys, HiveImpl hive)
       : _getBox = hive.getBoxInternal,
         _boxName = boxName,
         _keys = keys;
+
+  void notifyRemoveObject(HiveObject object) {
+    if (_delegate != null) {
+      var retained = <E>[];
+      for (var obj in _delegate) {
+        if (obj != object) {
+          retained.add(obj);
+        }
+      }
+      _delegate = retained;
+    } else {
+      var retained = <dynamic>[];
+      for (var key in _keys) {
+        if (key != object.key) {
+          retained.add(key);
+        }
+      }
+      _keys = retained;
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var element in this) {
+      element._remoteHiveLists.remove(this);
+    }
+  }
 
   @override
   Box get box {
@@ -41,24 +71,15 @@ class HiveList<E extends HiveObject>
 
   @override
   List<E> get delegate {
-    var list = <E>[];
-    for (var key in _keys) {
-      var obj = box.get(key);
-      if (obj != null && obj is E) {
-        list.add(obj);
+    if (_delegate == null) {
+      var list = <E>[];
+      for (var key in _keys) {
+        list.add(box.get(key) as E);
       }
+      _delegate = list;
     }
-    return list;
-  }
 
-  void _refreshKeys() {
-    var newKeys = <dynamic>[];
-    for (var key in _keys) {
-      if (box.containsKey(key)) {
-        newKeys.add(key);
-      }
-    }
-    _keys = newKeys;
+    return _delegate;
   }
 
   void _checkHiveObjectIsValid(E obj) {
@@ -70,50 +91,62 @@ class HiveList<E extends HiveObject>
   @override
   void operator []=(int index, E value) {
     _checkHiveObjectIsValid(value);
-    _refreshKeys();
-    _keys[index] = value.key;
+    value.linkRemoteHiveList(this);
+
+    var oldValue = delegate[index];
+    delegate[index] = value;
+
+    oldValue.unlinkRemoteHiveList(this);
   }
 
   @override
   void add(E value) {
     _checkHiveObjectIsValid(value);
-    _keys.add(value.key);
+    value.linkRemoteHiveList(this);
+    delegate.add(value);
   }
 
   @override
   void addAll(Iterable<E> iterable) {
-    for (var value in iterable) {
-      _checkHiveObjectIsValid(value);
+    for (var element in iterable) {
+      _checkHiveObjectIsValid(element);
     }
-    for (var value in iterable) {
-      _keys.add(value.key);
+    for (var element in iterable) {
+      element.linkRemoteHiveList(this);
     }
+    delegate.addAll(iterable);
   }
 
   @override
   void clear() {
-    _keys.clear();
+    for (var element in delegate) {
+      element.unlinkRemoteHiveList(this);
+    }
   }
 
   @override
   void fillRange(int start, int end, [E fillValue]) {
     _checkHiveObjectIsValid(fillValue);
-    _refreshKeys();
+    for (var i = start; i < end; i++) {
+      delegate[i].unlinkRemoteHiveList(this);
+      fillValue.linkRemoteHiveList(this);
+    }
     _keys.fillRange(start, end, fillValue.key);
   }
 
   @override
   set first(E value) {
     _checkHiveObjectIsValid(value);
-    _refreshKeys();
-    _keys.first = value.key;
+    delegate.first.unlinkRemoteHiveList(this);
+    value.linkRemoteHiveList(this);
+    delegate.first = value;
   }
 
   @override
   void insert(int index, E element) {
     _checkHiveObjectIsValid(element);
-    _refreshKeys();
-    _keys.insert(index, element.key);
+    element.linkRemoteHiveList(this);
+    delegate.insert(index, element);
   }
 
   @override
@@ -121,58 +154,68 @@ class HiveList<E extends HiveObject>
     for (var element in iterable) {
       _checkHiveObjectIsValid(element);
     }
-    _refreshKeys();
     for (var element in iterable) {
-      _keys.insert(index++, element);
+      element.linkRemoteHiveList(this);
     }
+    delegate.insertAll(index, iterable);
   }
 
   @override
   set last(E value) {
     _checkHiveObjectIsValid(value);
-    _refreshKeys();
-    _keys.last = value.key;
+    delegate.last.unlinkRemoteHiveList(this);
+    value.linkRemoteHiveList(this);
+    delegate.last = value;
   }
 
   @override
   set length(int newLength) {
-    _keys.length = newLength;
+    throw UnsupportedError('You cannot change the length of a HiveList.');
   }
 
   @override
   bool remove(Object value) {
     if (value is E) {
       _checkHiveObjectIsValid(value);
-      return _keys.remove(value.key);
-    } else {
-      return false;
+      if (delegate.remove(value)) {
+        value.unlinkRemoteHiveList(this);
+        return true;
+      }
     }
+    return false;
   }
 
   @override
   E removeAt(int index) {
-    _refreshKeys();
-    var key = _keys.removeAt(index);
-    return box.get(key) as E;
+    var element = delegate.removeAt(index);
+    element.unlinkRemoteHiveList(this);
+    return element;
   }
 
   @override
   E removeLast() {
-    _refreshKeys();
-    var key = _keys.removeLast();
-    return box.get(key) as E;
+    var element = delegate.removeLast();
+    element.unlinkRemoteHiveList(this);
+    return element;
   }
 
   @override
   void removeRange(int start, int end) {
-    _refreshKeys();
-    _keys.removeRange(start, end);
+    for (var i = start; i < end; i++) {
+      delegate[i].unlinkRemoteHiveList(this);
+    }
+    delegate.removeRange(start, end);
   }
 
   @override
   void removeWhere(bool Function(E element) test) {
-    _refreshKeys();
-    _keys.removeWhere((key) => test(box.get(key) as E));
+    delegate.removeWhere((element) {
+      if (test(element)) {
+        element.unlinkRemoteHiveList(this);
+        return true;
+      }
+      return false;
+    });
   }
 
   @override
@@ -180,13 +223,11 @@ class HiveList<E extends HiveObject>
     for (var element in replacement) {
       _checkHiveObjectIsValid(element);
     }
-    _refreshKeys();
     _keys.replaceRange(start, end, replacement.map<dynamic>((e) => e.key));
   }
 
   @override
   void retainWhere(bool Function(E element) test) {
-    _refreshKeys();
     _keys.retainWhere((key) => test(box.get(key) as E));
   }
 
@@ -195,7 +236,6 @@ class HiveList<E extends HiveObject>
     for (var element in iterable) {
       _checkHiveObjectIsValid(element);
     }
-    _refreshKeys();
     _keys.setAll(index, iterable.map((e) => e.key));
   }
 
@@ -204,23 +244,17 @@ class HiveList<E extends HiveObject>
     for (var element in iterable) {
       _checkHiveObjectIsValid(element);
     }
-    _refreshKeys();
     _keys.setRange(start, end, iterable.map((e) => e.key), skipCount);
   }
 
   @override
   void shuffle([Random random]) {
-    _keys.shuffle(random);
+    delegate.shuffle(random);
   }
 
   @override
   void sort([int Function(E a, E b) compare]) {
-    _refreshKeys();
-    _keys.sort((a, b) => compare(box.get(a) as E, box.get(b) as E));
-  }
-
-  HiveList<T> castHiveList<T extends HiveObject>() {
-    return HiveList<T>.internal(_boxName, _keys);
+    delegate.sort(compare);
   }
 
   @visibleForTesting

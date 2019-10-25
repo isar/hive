@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
 class BinaryReaderImpl extends BinaryReader {
@@ -228,7 +229,7 @@ class BinaryReaderImpl extends BinaryReader {
       keys[i] = readKey();
     }
 
-    return HiveList.internal(boxName, keys);
+    return HiveListImpl.lazy(boxName, keys);
   }
 
   dynamic readKey() {

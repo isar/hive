@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
-import 'package:hive/src/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
@@ -102,6 +101,7 @@ class Keystore<E> {
   }
 
   Frame insert(Frame frame, [bool notify = true]) {
+    var value = frame.value;
     Frame deletedFrame;
 
     if (!frame.deleted) {
@@ -110,8 +110,9 @@ class Keystore<E> {
         _autoIncrement = key;
       }
 
-      if (frame.value is HiveObject) {
-        initHiveObject(key, frame.value as HiveObject, _box);
+      if (value is HiveObject) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        value.init(key, _box);
       }
 
       deletedFrame = _store.insert(key, frame);
@@ -120,10 +121,11 @@ class Keystore<E> {
     }
 
     if (deletedFrame != null) {
+      var deletedValue = deletedFrame.value;
       _deletedEntries++;
-      if (deletedFrame.value is HiveObject &&
-          !identical(deletedFrame.value, frame.value)) {
-        unloadHiveObject(deletedFrame.value as HiveObject);
+      if (deletedValue is HiveObject && !identical(deletedValue, value)) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        deletedValue.unload();
       }
     }
 
@@ -202,8 +204,10 @@ class Keystore<E> {
     _store.clear();
 
     for (var frame in frameList) {
-      if (frame.value is HiveObject) {
-        unloadHiveObject(frame.value as HiveObject);
+      var value = frame.value;
+      if (value is HiveObject) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        value.unload();
       }
       _notifier.notify(Frame.deleted(frame.key));
     }

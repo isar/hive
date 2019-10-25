@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import 'package:hive/src/object/hive_object.dart';
 
 import 'common.dart';
 
@@ -15,19 +16,29 @@ HiveObject _getHiveObject(String key, BoxMock box) {
   return hiveObject;
 }
 
+void _expectLoaded(HiveObject obj, Box box, String key) {
+  expect(obj.box, box);
+  expect(obj.key, key);
+}
+
+void _expectUnloaded(HiveObject obj, Box box, String key) {
+  expect(obj.box, box);
+  expect(obj.key, key);
+}
+
 void main() {
-  group('HiveList', () {
+  group('HiveListImpl', () {
     group('.box', () {
       test('throws HiveError if box is not open', () {
         var hive = HiveImpl();
-        var hiveList = HiveList.debug('someBox', [], hive);
+        var hiveList = HiveListImpl.debug('someBox', [], hive);
         expect(() => hiveList.box, throwsHiveError('you have to open the box'));
       });
 
       test('returns the box', () async {
         var hive = HiveImpl();
         var box = await hive.openBoxFromBytes('someBox', Uint8List(0));
-        var hiveList = HiveList.debug('someBox', [], hive);
+        var hiveList = HiveListImpl.debug('someBox', [], hive);
         expect(hiveList.box, box);
       });
     });
@@ -44,7 +55,7 @@ void main() {
       when(hive.getBoxInternal(any)).thenReturn(box);
 
       var hiveList =
-          HiveList.debug('someBox', ['key1', 'nonExistingKey'], hive);
+          HiveListImpl.debug('someBox', ['key1', 'nonExistingKey'], hive);
 
       expect(hiveList.delegate, [hiveObject]);
       verify(hive.getBoxInternal('someBox'));
@@ -53,22 +64,26 @@ void main() {
     group('operator []=', () {
       test('sets key at index', () {
         var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key1']);
 
-        var obj2 = _getHiveObject('key2', box);
+        var obj1 = _getHiveObject('old', box);
+        var hiveList = HiveListImpl(box, objects: [obj1]);
+
+        var obj2 = _getHiveObject('new', box);
         hiveList[0] = obj2;
-        expect(hiveList.debugKeys, ['key2']);
+
+        verify(obj1.unlinkRemoteHiveList(hiveList));
+        verify(obj2.linkRemoteHiveList(hiveList));
       });
 
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
+      /*test('throws HiveError if HiveObject is not valid', () {
+        var hiveList = HiveListImpl(BoxMock(), objects: [HiveObjectMock()]);
 
         var obj2 = _getHiveObject('key2', BoxMock());
         expect(() => hiveList[0] = obj2, throwsHiveError());
-      });
+      });*/
     });
 
-    group('.add()', () {
+    /*group('.add()', () {
       test('adds key', () {
         var box = BoxMock();
         var hiveList = HiveList(box);
@@ -302,6 +317,6 @@ void main() {
         expect(() => hiveList.retainWhere(0, 1, [HiveObjectMock()]),
             throwsHiveError());
       });
-    });
+    });*/
   });
 }

@@ -5,7 +5,7 @@ author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/hivedb/hive
 
 environment:
-  sdk: ">=2.5.0 <3.0.0"
+  sdk: ">=2.6.0-dev.5 <3.0.0"
 
 dependencies:
   path: ">=1.6.0 <1.7.0"
@@ -13,6 +13,6 @@ dependencies:
   meta: ^1.1.7
 
 dev_dependencies:
-  test: ^1.9.1
+  test: ^1.9.3
   mockito: ^4.1.1
   pedantic: '1.7.0'

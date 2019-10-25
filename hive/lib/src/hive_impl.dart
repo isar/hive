@@ -26,15 +26,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  String get path {
-    if (_homePath == null) {
-      throw HiveError('Hive not initialized. Call Hive.init() first.');
-    }
-
-    return _homePath;
-  }
-
-  @override
   void init(String path) {
     _homePath = path;
 
@@ -60,6 +51,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
     bool lazy = false,
+    String path,
   }) async {
     if (isBoxOpen(name)) {
       var openedBox = box<E>(name);
@@ -72,7 +64,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     } else {
       var cs = compactionStrategy ?? defaultCompactionStrategy;
       var crypto = getCryptoHelper(encryptionKey);
-      var backend = await openBackend(this, name, lazy, crashRecovery, crypto);
+      var boxPath = path ?? _homePath;
+      var backend =
+          await openBackend(name, boxPath, lazy, crashRecovery, crypto);
       BoxBase<E> box;
       if (lazy) {
         if (E == dynamic) {

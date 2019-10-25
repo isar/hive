@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/hive_collection_mixin.dart';
+import 'package:hive/src/object/hive_collection_mixin.dart';
 import 'package:hive/src/query/hive_query_impl.dart';
 import 'package:hive/src/query/unmodifiable_results_mixin.dart';
 import 'package:hive/src/util/delegating_list_view_mixin.dart';

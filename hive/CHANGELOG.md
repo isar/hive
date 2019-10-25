@@ -1,10 +1,11 @@
 ## 1.2.0
 
 ### Breaking changes
-- Box names have to be ASCII strings with a max length of 255 chars
+- Box names now have to be ASCII strings with a max length of 255 chars
+- Removed the Hive.path getter
 
 ### Enhancements
-- Added `HiveList`s to support backlinks
+- Added `HiveList`s to support one-to-many relationships
 
 ## 1.1.1
 
