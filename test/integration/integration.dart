@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 import '../common.dart';
 import '../util/is_browser.dart';
 
-Future<Box> openBox(bool lazy) async {
-  var hive = HiveImpl();
+Future<Box> openBox(bool lazy, [HiveInterface hive]) async {
+  hive ??= HiveImpl();
   if (!isBrowser) {
     var dir = await getTempDir();
     hive.init(dir.path);
