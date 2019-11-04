@@ -3,6 +3,7 @@
 ### Breaking changes
 - Box names now have to be ASCII strings with a max length of 255 chars
 - Removed the `Hive.path` getter
+- Renamed `Hive.openBoxFromBytes()` to `Hive.openMemoryBox()`
 
 ### Enhancements
 - Added `HiveList`s to support one-to-many relationships

@@ -27,7 +27,7 @@ void main() {
 
       test('returns the box', () async {
         var hive = HiveImpl();
-        var box = await hive.openBoxFromBytes('someBox', Uint8List(0));
+        var box = await hive.openMemoryBox('someBox');
         var hiveList = HiveListImpl.debug('someBox', [], hive);
         expect(hiveList.box, box);
       });

@@ -95,8 +95,8 @@ void main() {
     group('.openBoxFromBytes()', () {
       test('opened box is returned if it exists', () async {
         var hive = HiveImpl();
-        var testBox = await hive.openBoxFromBytes('testBox', frameBytes[0]);
-        var testBox2 = await hive.openBoxFromBytes('testBox', Uint8List(0));
+        var testBox = await hive.openMemoryBox('testBox', bytes: frameBytes[0]);
+        var testBox2 = await hive.openMemoryBox('testBox');
         expect(testBox == testBox2, true);
 
         await hive.close();
