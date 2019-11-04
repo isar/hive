@@ -6,6 +6,7 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
 import 'package:pointycastle/pointycastle.dart';
@@ -32,6 +33,8 @@ class KeystoreMock extends Mock implements Keystore {}
 class FileMock extends Mock implements File {}
 
 class HiveObjectMock extends Mock implements HiveObject {}
+
+class HiveListMock extends Mock implements HiveListImpl {}
 
 Matcher throwsHiveError([String contains]) {
   return throwsA(

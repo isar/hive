@@ -20,23 +20,14 @@ void main() {
       return hive;
     }
 
-    test('.home', () {
-      var hive = HiveImpl();
-
-      expect(() => hive.path, throwsHiveError('not initialized'));
-
-      hive.init('MYPATH');
-      expect(hive.path, 'MYPATH');
-    });
-
     test('.init()', () {
       var hive = HiveImpl();
 
       hive.init('MYPATH');
-      expect(hive.path, 'MYPATH');
+      expect(hive.homePath, 'MYPATH');
 
       hive.init('OTHERPATH');
-      expect(hive.path, 'OTHERPATH');
+      expect(hive.homePath, 'OTHERPATH');
 
       expect(
         hive.findAdapterForValue(DateTime.now()).adapter,

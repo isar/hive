@@ -8,22 +8,12 @@ import 'package:hive/src/object/hive_object.dart';
 
 import 'common.dart';
 
-HiveObject _getHiveObject(String key, BoxMock box) {
+HiveObjectMock _getHiveObject(String key, BoxMock box) {
   var hiveObject = HiveObjectMock();
   when(hiveObject.box).thenReturn(box);
   when(hiveObject.key).thenReturn(key);
   when(box.get(key)).thenReturn(hiveObject);
   return hiveObject;
-}
-
-void _expectLoaded(HiveObject obj, Box box, String key) {
-  expect(obj.box, box);
-  expect(obj.key, key);
-}
-
-void _expectUnloaded(HiveObject obj, Box box, String key) {
-  expect(obj.box, box);
-  expect(obj.key, key);
 }
 
 void main() {
@@ -44,27 +34,50 @@ void main() {
     });
 
     test('.delegate', () {
-      var hiveObject = HiveObjectMock();
       var box = BoxMock();
-      when(box.get('key1')).thenReturn(hiveObject);
-
-      when(hiveObject.key).thenReturn('key1');
-      when(hiveObject.box).thenReturn(box);
+      var obj1 = _getHiveObject('key1', box);
+      var obj2 = _getHiveObject('key2', box);
 
       var hive = HiveMock();
       when(hive.getBoxInternal(any)).thenReturn(box);
 
-      var hiveList =
-          HiveListImpl.debug('someBox', ['key1', 'nonExistingKey'], hive);
+      var hiveList = HiveListImpl.debug(
+          'someBox', ['key1', 'nonExistingKey', 'key2'], hive);
 
-      expect(hiveList.delegate, [hiveObject]);
-      verify(hive.getBoxInternal('someBox'));
+      expect(hiveList.delegate, [obj1, obj2]);
+    });
+
+    test('.notifyRemoveObject()', () {
+      var box = BoxMock();
+      var obj1 = _getHiveObject('key1', box);
+      var obj2 = _getHiveObject('key2', box);
+      var hiveList = HiveListImpl(box, objects: [obj1, obj2, obj1]);
+
+      hiveList.notifyRemoveObject(obj1);
+
+      expect(hiveList, [obj2]);
+    });
+
+    test('.dispose()', () {
+      var box = BoxMock();
+      var obj1 = _getHiveObject('key1', box);
+      var obj2 = _getHiveObject('key2', box);
+      var hiveList = HiveListImpl(box, objects: [obj1, obj2, obj1]);
+
+      hiveList.dispose();
+
+      verifyInOrder([
+        obj1.unlinkRemoteHiveList(hiveList),
+        obj2.unlinkRemoteHiveList(hiveList),
+        obj1.unlinkRemoteHiveList(hiveList),
+      ]);
+
+      expect(() => hiveList.delegate, throwsA(anything));
     });
 
     group('operator []=', () {
       test('sets key at index', () {
         var box = BoxMock();
-
         var obj1 = _getHiveObject('old', box);
         var hiveList = HiveListImpl(box, objects: [obj1]);
 
@@ -73,250 +86,76 @@ void main() {
 
         verify(obj1.unlinkRemoteHiveList(hiveList));
         verify(obj2.linkRemoteHiveList(hiveList));
-      });
-
-      /*test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveListImpl(BoxMock(), objects: [HiveObjectMock()]);
-
-        var obj2 = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList[0] = obj2, throwsHiveError());
-      });*/
-    });
-
-    /*group('.add()', () {
-      test('adds key', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box);
-
-        var obj1 = _getHiveObject('key1', box);
-        hiveList.add(obj1);
-        expect(hiveList.debugKeys, ['key1']);
+        expect(hiveList, [obj2]);
       });
 
       test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock());
+        var obj1 = HiveObjectMock();
+        var hiveList = HiveListImpl(BoxMock(), objects: <HiveObject>[obj1]);
 
         var obj2 = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList.add(obj2), throwsHiveError());
+        expect(() => hiveList[0] = obj2, throwsHiveError());
+      });
+    });
+
+    group('.add()', () {
+      test('adds key', () {
+        var box = BoxMock();
+        var obj1 = HiveObjectMock();
+        var hiveList = HiveListImpl(box, objects: [obj1]);
+
+        var obj2 = _getHiveObject('key1', box);
+        hiveList.add(obj2);
+
+        verify(obj2.linkRemoteHiveList(hiveList));
+        expect(hiveList, [obj1, obj2]);
+      });
+
+      test('throws HiveError if HiveObject is not valid', () {
+        var hiveList = HiveListImpl(BoxMock());
+
+        var obj = _getHiveObject('key', BoxMock());
+        expect(() => hiveList.add(obj), throwsHiveError());
       });
     });
 
     group('.addAll()', () {
       test('adds keys', () {
         var box = BoxMock();
-        var hiveList = HiveList(box);
+        var obj1 = HiveObjectMock();
+        var hiveList = HiveListImpl(box, objects: [obj1]);
 
-        var obj1 = _getHiveObject('key1', box);
-        var obj2 = _getHiveObject('key2', box);
-        hiveList.addAll([obj1, obj2, obj1]);
-        expect(hiveList.debugKeys, ['key1', 'key2', 'key1']);
+        var obj2 = _getHiveObject('key1', box);
+        var obj3 = _getHiveObject('key2', box);
+        hiveList.addAll([obj2, obj3, obj2]);
+        verifyInOrder([
+          obj2.linkRemoteHiveList(hiveList),
+          obj3.linkRemoteHiveList(hiveList),
+          obj2.linkRemoteHiveList(hiveList),
+        ]);
+        expect(hiveList, [obj1, obj2, obj3, obj2]);
       });
 
       test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock());
+        var hiveList = HiveListImpl(BoxMock());
 
         var obj = _getHiveObject('key', BoxMock());
         expect(() => hiveList.addAll([obj, obj]), throwsHiveError());
       });
     });
 
-    test('.clear()', () {
-      var box = BoxMock();
-      var hiveList = HiveList(box, keys: ['key1', 'key2']);
-
-      hiveList.clear();
-      expect(hiveList.debugKeys, []);
-    });
-
-    group('.fillRange()', () {
-      test('replaces range with obj', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key1', 'key1', 'key1', 'key1']);
-
-        var obj2 = _getHiveObject('key2', box);
-        hiveList.fillRange(1, 3, obj2);
-        expect(hiveList.debugKeys, ['key1', 'key2', 'key2', 'key1']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-
-        var obj2 = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList.fillRange(0, 1, obj2), throwsHiveError());
-      });
-    });
-
-    group('set first', () {
-      test('replaces first key', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key2', 'key2']);
-
-        var obj = _getHiveObject('key1', box);
-        hiveList.first = obj;
-        expect(hiveList.debugKeys, ['key1', 'key2']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-
-        var obj = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList.first = obj, throwsHiveError());
-      });
-    });
-
-    group('.insert()', () {
-      test('inserts key at index', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key2', 'key2']);
-
-        var obj = _getHiveObject('key1', box);
-        hiveList.insert(1, obj);
-        expect(hiveList.debugKeys, ['key2', 'key1', 'key2']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-
-        var obj = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList.insert(0, obj), throwsHiveError());
-      });
-    });
-
-    group('.insertAll()', () {
-      test('inserts key at index', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key2', 'key2']);
-
-        var obj = _getHiveObject('key1', box);
-        hiveList.insertAll(1, [obj, obj]);
-        expect(hiveList.debugKeys, ['key2', 'key1', 'key1', 'key2']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-
-        var obj = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList.insertAll(0, [obj]), throwsHiveError());
-      });
-    });
-
-    group('set last', () {
-      test('replaces first key', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key2', 'key2']);
-
-        var obj = _getHiveObject('key1', box);
-        hiveList.last = obj;
-        expect(hiveList.debugKeys, ['key2', 'key1']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-
-        var obj = _getHiveObject('key2', BoxMock());
-        expect(() => hiveList.last = obj, throwsHiveError());
-      });
-    });
-
     test('set length', () {
       var box = BoxMock();
-      var hiveList = HiveList(box);
+      var obj1 = HiveObjectMock();
+      var obj2 = HiveObjectMock();
+      var obj3 = HiveObjectMock();
+      var hiveList = HiveListImpl(box, objects: [obj1, obj2, obj3]);
 
-      hiveList.length = 5;
-      expect(hiveList.debugKeys.length, 5);
+      hiveList.length = 1;
+
+      verify(obj2.unlinkRemoteHiveList(hiveList));
+      verify(obj3.unlinkRemoteHiveList(hiveList));
+      expect(hiveList, [obj1]);
     });
-
-    group('.remove()', () {
-      test('removes first occurrence of obj', () {
-        var box = BoxMock();
-        var hiveList = HiveList(box, keys: ['key1', 'key2', 'key2']);
-
-        var obj = _getHiveObject('key2', box);
-        expect(hiveList.remove(obj), true);
-        expect(hiveList.debugKeys, ['key1', 'key2']);
-        expect(hiveList.remove('key1'), false);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-
-        var obj = _getHiveObject('key1', BoxMock());
-        expect(() => hiveList.remove(obj), throwsHiveError());
-      });
-    });
-
-    test('.removeAt()', () {
-      var obj = HiveObjectMock();
-      var box = BoxMock();
-      when(box.get('key')).thenReturn(obj);
-
-      var hiveList = HiveList(box, keys: ['key2', 'key']);
-      expect(hiveList.removeAt(1), obj);
-      expect(hiveList.debugKeys, ['key2']);
-    });
-
-    test('.removeLast()', () {
-      var obj = HiveObjectMock();
-      var box = BoxMock();
-      when(box.get('key')).thenReturn(obj);
-
-      var hiveList = HiveList(box, keys: ['key2', 'key3', 'key']);
-      expect(hiveList.removeLast(), obj);
-      expect(hiveList.debugKeys, ['key2', 'key3']);
-    });
-
-    test('.removeRange()', () {
-      var hiveList = HiveList.internal('someBox', ['key1', 'key2', 'key3']);
-      hiveList.removeRange(0, 2);
-      expect(hiveList.debugKeys, ['key3']);
-    });
-
-    test('.removeWhere()', () {
-      var box = BoxMock();
-      _getHiveObject('key1', box);
-      var obj2 = _getHiveObject('key2', box);
-
-      var hiveList = HiveList(box, keys: ['key1', 'key2', 'key1', 'key2']);
-      hiveList.removeWhere((it) => it == obj2);
-      expect(hiveList.debugKeys, ['key1', 'key1']);
-    });
-
-    group('.replaceRange()', () {
-      test('replaces objects in range', () {
-        var box = BoxMock();
-        var obj1 = _getHiveObject('key1', box);
-        var obj2 = _getHiveObject('key2', box);
-
-        var hiveList = HiveList(box, keys: ['key3', 'key3', 'key3']);
-
-        hiveList.replaceRange(0, 2, [obj1, obj2]);
-        expect(hiveList.debugKeys, ['key1', 'key2', 'key3']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-        expect(() => hiveList.replaceRange(0, 1, [HiveObjectMock()]),
-            throwsHiveError());
-      });
-    });
-
-    group('.retainWhere()', () {
-      test('replaces objects in range', () {
-        var box = BoxMock();
-        _getHiveObject('key1', box);
-        var obj2 = _getHiveObject('key2', box);
-
-        var hiveList = HiveList(box, keys: ['key1', 'key2', 'key1', 'key2']);
-
-        hiveList.retainWhere((e) => e == obj2);
-        expect(hiveList.debugKeys, ['key2', 'key2', 'key2', 'key2']);
-      });
-
-      test('throws HiveError if HiveObject is not valid', () {
-        var hiveList = HiveList(BoxMock(), keys: ['key1']);
-        expect(() => hiveList.retainWhere(0, 1, [HiveObjectMock()]),
-            throwsHiveError());
-      });
-    });*/
   });
 }

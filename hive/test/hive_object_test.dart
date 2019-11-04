@@ -8,12 +8,12 @@ class _TestObject extends HiveObject {}
 
 void main() {
   group('HiveObject', () {
-    group('initHiveObject()', () {
+    group('.init()', () {
       test('adds key and box to HiveObject', () {
         var obj = _TestObject();
         var box = BoxMock();
 
-        initHiveObject('someKey', obj, box);
+        obj.init('someKey', box);
 
         expect(obj.key, 'someKey');
         expect(obj.box, box);
@@ -23,8 +23,8 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        initHiveObject('someKey', obj, box);
-        initHiveObject('someKey', obj, box);
+        obj.init('someKey', box);
+        obj.init('someKey', box);
 
         expect(obj.key, 'someKey');
         expect(obj.box, box);
@@ -35,8 +35,8 @@ void main() {
         var box1 = BoxMock();
         var box2 = BoxMock();
 
-        initHiveObject('someKey', obj, box1);
-        expect(() => initHiveObject('someKey', obj, box2),
+        obj.init('someKey', box1);
+        expect(() => obj.init('someKey', box2),
             throwsHiveError('two different boxes'));
       });
 
@@ -44,28 +44,62 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        initHiveObject('key1', obj, box);
-        expect(() => initHiveObject('key2', obj, box),
-            throwsHiveError('two different keys'));
+        obj.init('key1', box);
+        expect(
+            () => obj.init('key2', box), throwsHiveError('two different keys'));
       });
     });
 
-    test('unloadHiveObject removes key and box', () {
-      var obj = _TestObject();
-      var box = BoxMock();
+    group('.unload()', () {
+      test('removes key and box', () {
+        var obj = _TestObject();
+        var box = BoxMock();
 
-      initHiveObject('key', obj, box);
-      unloadHiveObject(obj);
+        obj.init('key', box);
+        obj.unload();
 
-      expect(obj.key, null);
-      expect(obj.box, null);
+        expect(obj.key, null);
+        expect(obj.box, null);
+      });
+
+      test('notifies remote HiveLists', () {
+        var obj = _TestObject();
+        var list1 = HiveListMock();
+        var list2 = HiveListMock();
+        var box = BoxMock();
+
+        obj.init('key', box);
+        obj.linkRemoteHiveList(list1);
+        obj.linkRemoteHiveList(list2);
+        obj.unload();
+
+        verify(list1.notifyRemoveObject(obj));
+        verify(list2.notifyRemoveObject(obj));
+      });
+
+      test('disposes HiveLists', () {
+        var obj1 = _TestObject();
+        var obj2 = _TestObject();
+        var obj3 = _TestObject();
+        var box = BoxMock();
+
+        obj1.init('key1', box);
+        obj2.init('key2', box);
+        obj3.init('key3', box);
+
+        var list1 = obj1.backlink();
+        list1.addAll([obj2, obj3, obj2]);
+        obj2.unload();
+
+        expect(list1, [obj3]);
+      });
     });
 
     group('.save()', () {
       test('updates object in box', () {
         var obj = _TestObject();
         var box = BoxMock();
-        initHiveObject('key', obj, box);
+        obj.init('key', box);
         verifyZeroInteractions(box);
 
         obj.save();
@@ -82,7 +116,7 @@ void main() {
       test('removes object from box', () {
         var obj = _TestObject();
         var box = BoxMock();
-        initHiveObject('key', obj, box);
+        obj.init('key', box);
         verifyZeroInteractions(box);
 
         obj.delete();
@@ -105,7 +139,7 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
         when(box.lazy).thenReturn(false);
-        initHiveObject('key', obj, box);
+        obj.init('key', box);
 
         expect(obj.isInBox, true);
       });
@@ -115,7 +149,7 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
         when(box.lazy).thenReturn(true);
-        initHiveObject('key', obj, box);
+        obj.init('key', box);
 
         when(box.containsKey('key')).thenReturn(true);
         expect(obj.isInBox, true);

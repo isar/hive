@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
@@ -311,7 +312,7 @@ void main() {
 
     test('.readHiveList()', () {
       var br = _fromBytes([
-        3, 0x62, 0x6f, 0x78, 2, 0, 0, 0, 1, 4, //
+        2, 0, 0, 0, 3, 0x62, 0x6f, 0x78, 1, 4, //
         0x6b, 0x65, 0x79, 0x31, 0, 5, 0, 0, 0
       ]);
 

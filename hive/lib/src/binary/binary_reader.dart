@@ -94,6 +94,11 @@ abstract class BinaryReader {
   /// If [length] is not provided, it is read first.
   Map readMap([int length]);
 
+  /// Read a [HiveList] with [length].
+  ///
+  /// If [length] is not provided, it is read first.
+  HiveList readHiveList([int length]);
+
   /// Read and decode any value.
   ///
   /// If [typeId] is not provided, it is read first.

@@ -11,6 +11,7 @@ class BinaryWriterImpl extends BinaryWriter {
   static const _initBufferSize = 256;
 
   final TypeRegistryImpl typeRegistry;
+
   Uint8List _buffer = Uint8List(_initBufferSize);
 
   ByteData _byteDataInstance;
@@ -217,11 +218,14 @@ class BinaryWriterImpl extends BinaryWriter {
     });
   }
 
-  void writeHiveList(HiveList list) {
+  @override
+  void writeHiveList(HiveList list, {bool writeLength = true}) {
+    if (writeLength) {
+      writeUint32(list.length);
+    }
     var box = list.box.name;
     writeByte(box.length);
-    writeAsciiString(box);
-    writeUint32(list.length);
+    writeAsciiString(box, writeLength: false);
     for (var obj in list) {
       writeKey(obj.key);
     }

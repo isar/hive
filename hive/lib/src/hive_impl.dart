@@ -18,7 +18,8 @@ import 'backend/storage_backend.dart';
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, Box>();
 
-  String _homePath;
+  @visibleForTesting
+  String homePath;
 
   HiveImpl() {
     registerInternal(DateTimeAdapter(), 16);
@@ -27,7 +28,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   void init(String path) {
-    _homePath = path;
+    homePath = path;
 
     _boxes.clear();
   }
@@ -64,7 +65,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     } else {
       var cs = compactionStrategy ?? defaultCompactionStrategy;
       var crypto = getCryptoHelper(encryptionKey);
-      var boxPath = path ?? _homePath;
+      var boxPath = path ?? homePath;
       var backend =
           await openBackend(name, boxPath, lazy, crashRecovery, crypto);
       BoxBase<E> box;

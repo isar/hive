@@ -1,6 +1,6 @@
 library hive_object_internal;
 
-import 'dart:math';
+import 'dart:collection';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -31,21 +31,22 @@ abstract class HiveObject {
   /// not been added to a box yet.
   dynamic get key => _key;
 
-  /// Persists this object.
-  Future<void> save() {
+  void _requireInitialized() {
     if (_box == null) {
       throw HiveError('This object is currently not in a box.');
     }
+  }
+
+  /// Persists this object.
+  Future<void> save() {
+    _requireInitialized();
     return _box.put(_key, this);
   }
 
   /// Deletes this object from the box it is stored in.
   Future<void> delete() {
-    if (_box != null) {
-      return _box.delete(_key);
-    } else {
-      throw HiveError('This object is currently not in a box.');
-    }
+    _requireInitialized();
+    return _box.delete(_key);
   }
 
   /// Returns whether this object is currently stored in a box.
@@ -63,8 +64,9 @@ abstract class HiveObject {
     return false;
   }
 
-  HiveList backlink(Box box) {
-    var hiveList = HiveListImpl(box);
+  HiveList<T> backlink<T extends HiveObject>([List<T> objects]) {
+    _requireInitialized();
+    var hiveList = HiveListImpl<T>(box, objects: objects);
     _hiveLists.add(hiveList);
     return hiveList;
   }
@@ -101,17 +103,18 @@ abstract class HiveObject {
   @protected
   @visibleForTesting
   void linkRemoteHiveList(HiveList list) {
+    _requireInitialized();
     _remoteHiveLists[list] = (_remoteHiveLists[list] ?? 0) + 1;
   }
 
   @protected
   @visibleForTesting
   void unlinkRemoteHiveList(HiveListImpl list) {
-    var count = _remoteHiveLists[list];
+    var count = _remoteHiveLists[list]--;
     if (count == 0) {
       _remoteHiveLists.remove(list);
     } else {
-      _remoteHiveLists[list] = count - 1;
+      _remoteHiveLists[list] = count;
     }
   }
 }
