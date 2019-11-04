@@ -2,12 +2,18 @@ import 'dart:typed_data';
 
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+
+import 'common.dart';
 
 List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 
 BinaryWriterImpl getWriter() => BinaryWriterImpl(TypeRegistryImpl());
+
+class _TestObj extends HiveObject {}
 
 void main() {
   group('BinaryWriter', () {
@@ -390,6 +396,22 @@ void main() {
         FrameValueType.stringT.index, 1, 0, 0, 0, 0x68, //
         FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69, //
         FrameValueType.boolT.index, 1 //
+      ]);
+    });
+
+    test('.writeHiveList()', () {
+      var box = BoxMock();
+      when(box.name).thenReturn('box');
+
+      var obj1 = _TestObj()..init('key1', box);
+      var obj2 = _TestObj()..init(5, box);
+      var hiveList = HiveListImpl(box, objects: [obj1, obj2]);
+
+      var bw = getWriter();
+      bw.writeHiveList(hiveList);
+      expect(bw.toBytes(), [
+        2, 0, 0, 0, 3, 0x62, 0x6f, 0x78, 1, 4, //
+        0x6b, 0x65, 0x79, 0x31, 0, 5, 0, 0, 0
       ]);
     });
 

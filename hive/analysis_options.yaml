@@ -7,6 +7,7 @@ analyzer:
     implicit-casts: false
   errors:
     invalid_use_of_protected_member: error
+    invalid_use_of_visible_for_testing_member: error
     always_declare_return_types: error 
 linter:
   rules:

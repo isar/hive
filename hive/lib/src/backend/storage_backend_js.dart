@@ -12,7 +12,7 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
 
-Future<StorageBackend> openBackend(HiveInterface hive, String name, bool lazy,
+Future<StorageBackend> openBackend(String name, String path, bool lazy,
     bool crashRecovery, CryptoHelper crypto) async {
   var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;

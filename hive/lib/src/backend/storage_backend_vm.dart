@@ -15,15 +15,19 @@ import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<StorageBackend> openBackend(HiveInterface hive, String name, bool lazy,
+Future<StorageBackend> openBackend(String name, String path, bool lazy,
     bool crashRecovery, CryptoHelper crypto) async {
-  var dir = Directory(hive.path);
+  if (path == null) {
+    throw HiveError('Provide a path when opening a box or '
+        'call Hive.init() to set a default.');
+  }
+  var dir = Directory(path);
   if (!await dir.exists()) {
     await dir.create(recursive: true);
   }
 
   var file = await findHiveFileAndCleanUp(name, dir);
-  var lockFile = File(p.join(dir.path, '$name.lock'));
+  var lockFile = File(p.join(path, '$name.lock'));
 
   var backend = StorageBackendVm(file, lockFile, lazy, crashRecovery, crypto);
   await backend.open();

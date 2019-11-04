@@ -2,12 +2,6 @@ part of hive;
 
 /// The main API interface of Hive. Available through the `Hive` constant.
 abstract class HiveInterface implements TypeRegistry {
-  /// The home directory of Hive.
-  ///
-  /// All box files will be stored in this directory. In the browser, this is
-  /// always `null`.
-  String get path;
-
   /// Initialize Hive by giving it a home directory.
   ///
   /// (Not necessary in the browser)

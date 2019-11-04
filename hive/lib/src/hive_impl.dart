@@ -18,7 +18,8 @@ import 'backend/storage_backend.dart';
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, Box>();
 
-  String _homePath;
+  @visibleForTesting
+  String homePath;
 
   HiveImpl() {
     registerInternal(DateTimeAdapter(), 16);
@@ -26,17 +27,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  String get path {
-    if (_homePath == null) {
-      throw HiveError('Hive not initialized. Call Hive.init() first.');
-    }
-
-    return _homePath;
-  }
-
-  @override
   void init(String path) {
-    _homePath = path;
+    homePath = path;
 
     _boxes.clear();
   }
@@ -60,6 +52,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy,
     bool crashRecovery = true,
     bool lazy = false,
+    String path,
   }) async {
     if (isBoxOpen(name)) {
       var openedBox = box<E>(name);
@@ -72,7 +65,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     } else {
       var cs = compactionStrategy ?? defaultCompactionStrategy;
       var crypto = getCryptoHelper(encryptionKey);
-      var backend = await openBackend(this, name, lazy, crashRecovery, crypto);
+      var boxPath = path ?? homePath;
+      var backend =
+          await openBackend(name, boxPath, lazy, crashRecovery, crypto);
       BoxBase<E> box;
       if (lazy) {
         if (E == dynamic) {
@@ -125,6 +120,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       throw HiveError('Box not found. Did you forget to call Hive.openBox()?');
     }
   }
+
+  Box getBoxInternal(String name) => _boxes[name.toLowerCase()];
 
   @override
   bool isBoxOpen(String name) {

@@ -39,27 +39,30 @@ abstract class BinaryWriter {
   /// Write a list of [bytes].
   void writeByteList(List<int> bytes, {bool writeLength = true});
 
-  /// Write a [list] of integers.
+  /// Write a [List] of integers.
   void writeIntList(List<int> list, {bool writeLength = true});
 
-  /// Write a [list] of doubles.
+  /// Write a [List] of doubles.
   void writeDoubleList(List<double> list, {bool writeLength = true});
 
-  /// Write a [list] of booleans.
+  /// Write a [List] of booleans.
   void writeBoolList(List<bool> list, {bool writeLength = true});
 
-  /// Write a [list] of Strings.
+  /// Write a [List] of Strings.
   void writeStringList(
     List<String> list, {
     bool writeLength = true,
     Converter<String, List<int>> encoder = utf8Encoder,
   });
 
-  /// Write a [list].
+  /// Write a [List].
   void writeList(List list, {bool writeLength = true});
 
-  /// Write a [map].
+  /// Write a [Map].
   void writeMap(Map map, {bool writeLength = true});
+
+  /// Write a [HiveList].
+  void writeHiveList(HiveList list, {bool writeLength = true});
 
   /// Write any [value].
   void write<T>(T value, {bool writeTypeId = true});

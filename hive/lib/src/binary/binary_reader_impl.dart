@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 
 class BinaryReaderImpl extends BinaryReader {
@@ -220,6 +221,31 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
+  HiveList readHiveList([int length]) {
+    length ??= readUint32();
+    var boxNameLength = readByte();
+    var boxName = readAsciiString(boxNameLength);
+    var keys = List<dynamic>(length);
+    for (var i = 0; i < length; i++) {
+      keys[i] = readKey();
+    }
+
+    return HiveListImpl.lazy(boxName, keys);
+  }
+
+  dynamic readKey() {
+    var keyType = readByte();
+    if (keyType == FrameKeyType.uintT.index) {
+      return readUint32();
+    } else if (keyType == FrameKeyType.asciiStringT.index) {
+      var keyLength = readByte();
+      return readAsciiString(keyLength);
+    } else {
+      throw HiveError('Unsupported key type. Frame might be corrupted.');
+    }
+  }
+
+  @override
   dynamic read([int typeId]) {
     typeId ??= readByte();
     if (typeId < FrameValueType.values.length) {
@@ -249,6 +275,8 @@ class BinaryReaderImpl extends BinaryReader {
           return readList();
         case FrameValueType.mapT:
           return readMap();
+        case FrameValueType.hiveListT:
+          return readHiveList();
       }
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);
