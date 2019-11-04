@@ -95,6 +95,34 @@ void main() {
       });
     });
 
+    test('.linkRemoteHiveList()', () {
+      var box = BoxMock();
+      var obj = _TestObject();
+      obj.init('key', box);
+      var hiveList = HiveListMock();
+
+      obj.linkRemoteHiveList(hiveList);
+      expect(obj.debugRemoteHiveLists, {hiveList: 1});
+      obj.linkRemoteHiveList(hiveList);
+      expect(obj.debugRemoteHiveLists, {hiveList: 2});
+    });
+
+    test('.unlinkRemoteHiveList()', () {
+      var box = BoxMock();
+      var obj = _TestObject();
+      obj.init('key', box);
+      var hiveList = HiveListMock();
+
+      obj.linkRemoteHiveList(hiveList);
+      obj.linkRemoteHiveList(hiveList);
+      expect(obj.debugRemoteHiveLists, {hiveList: 2});
+
+      obj.unlinkRemoteHiveList(hiveList);
+      expect(obj.debugRemoteHiveLists, {hiveList: 1});
+      obj.unlinkRemoteHiveList(hiveList);
+      expect(obj.debugRemoteHiveLists, {});
+    });
+
     group('.save()', () {
       test('updates object in box', () {
         var obj = _TestObject();

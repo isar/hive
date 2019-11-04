@@ -110,11 +110,11 @@ abstract class HiveObject {
   @protected
   @visibleForTesting
   void unlinkRemoteHiveList(HiveListImpl list) {
-    var count = _remoteHiveLists[list]--;
-    if (count == 0) {
+    if (--_remoteHiveLists[list] == 0) {
       _remoteHiveLists.remove(list);
-    } else {
-      _remoteHiveLists[list] = count;
     }
   }
+
+  @visibleForTesting
+  Map<HiveList, int> get debugRemoteHiveLists => _remoteHiveLists;
 }
