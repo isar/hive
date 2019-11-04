@@ -100,7 +100,7 @@ class Keystore<E> {
     return _notifier.watch(key: key);
   }
 
-  Frame insert(Frame frame, [bool notify = true]) {
+  Frame insert(Frame frame, {bool notify = true}) {
     var value = frame.value;
     Frame deletedFrame;
 

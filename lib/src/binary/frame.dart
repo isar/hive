@@ -147,6 +147,14 @@ class Frame {
     }
   }
 
+  Frame toLazy() {
+    return Frame.lazy(
+      key,
+      length: length,
+      offset: offset,
+    );
+  }
+
   @override
   bool operator ==(dynamic other) {
     if (other is Frame) {

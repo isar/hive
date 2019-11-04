@@ -3,6 +3,7 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/object/hive_object.dart';
 
 class LazyBoxImpl extends BoxBase implements LazyBox {
   LazyBoxImpl(
@@ -27,18 +28,20 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     var frame = keystore.get(key);
 
     if (frame != null) {
-      return await backend.readValue(frame);
+      var value = await backend.readValue(frame);
+      if (value is HiveObject) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        value.init(key, this);
+      }
+      return value;
     } else {
       return defaultValue;
     }
   }
 
   @override
-  Future<dynamic> getAt(int index) async {
-    checkOpen();
-
-    var frame = keystore.getAt(index);
-    return await backend.readValue(frame);
+  Future<dynamic> getAt(int index) {
+    return get(keystore.keyAt(index));
   }
 
   @override
@@ -57,11 +60,11 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     await backend.writeFrames(frames);
 
     for (var frame in frames) {
-      keystore.insert(Frame.lazy(
-        frame.key,
-        length: frame.length,
-        offset: frame.offset,
-      ));
+      if (frame.value is HiveObject) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        (frame.value as HiveObject).init(frame.key, this);
+      }
+      keystore.insert(frame.toLazy());
     }
 
     await performCompactionIfNeeded();
