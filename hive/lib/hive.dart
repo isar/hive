@@ -20,8 +20,6 @@ part 'src/box/box.dart';
 part 'src/box/lazy_box.dart';
 part 'src/object/hive_collection.dart';
 part 'src/object/hive_list.dart';
-part 'src/query/hive_query.dart';
-part 'src/query/hive_results.dart';
 part 'src/registry/type_registry.dart';
 part 'src/registry/type_adapter.dart';
 part 'src/hive_error.dart';

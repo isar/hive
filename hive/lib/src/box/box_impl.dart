@@ -5,7 +5,6 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/query/hive_query_impl.dart';
 
 class BoxImpl<E> extends BoxBase<E> {
   BoxImpl(
@@ -81,11 +80,6 @@ class BoxImpl<E> extends BoxBase<E> {
     }
 
     await performCompactionIfNeeded();
-  }
-
-  @override
-  HiveQuery<T> query<T extends HiveObject>() {
-    return HiveQueryImpl(this);
   }
 
   @override
