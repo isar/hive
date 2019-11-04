@@ -18,7 +18,7 @@ class FrameHelper {
       if (frame == null) return frameOffset;
 
       frame.offset = frameOffset;
-      keystore.insert(frame, false);
+      keystore.insert(frame, notify: false);
     }
 
     return -1;

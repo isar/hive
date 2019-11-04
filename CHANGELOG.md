@@ -1,3 +1,11 @@
+## Next release
+
+### Breaking changes
+- Removed the `Hive.path` getter
+
+### Fixes
+- HiveObjects have not been initialized correctly in lazy boxes
+
 ## 1.1.1
 
 ### Breaking changes

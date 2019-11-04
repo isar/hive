@@ -90,7 +90,7 @@ class _KeyReader {
       _reader.resetLimit();
 
       _reader.skip(frameLength - 4 - (_reader.usedBytes - offsetBeforeDecode));
-      keystore.insert(frame, false);
+      keystore.insert(frame, notify: false);
     }
 
     return -1;
