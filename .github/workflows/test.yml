@@ -27,4 +27,3 @@ jobs:
       run: |
         pub get
         pub run test -p ${{ matrix.test-platform }}
-      working-directory: hive
