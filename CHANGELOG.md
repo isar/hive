@@ -2,6 +2,7 @@
 
 ### Breaking changes
 - Removed the `Hive.path` getter
+- Renamed `Hive.openBoxFromBytes()` to `Hive.openMemoryBox()`
 
 ### Fixes
 - HiveObjects have not been initialized correctly in lazy boxes

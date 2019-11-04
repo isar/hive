@@ -92,9 +92,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<Box<E>> openBoxFromBytes<E>(
-    String name,
-    Uint8List bytes, {
+  Future<Box<E>> openMemoryBox<E>(
+    String name, {
+    List<int> bytes = const [],
     List<int> encryptionKey,
     KeyComparator keyComparator,
   }) async {
@@ -102,7 +102,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       return box(name);
     } else {
       var crypto = getCryptoHelper(encryptionKey);
-      var backend = StorageBackendMemory(bytes, crypto);
+      var backend = StorageBackendMemory(Uint8List.fromList(bytes), crypto);
       var box = BoxImpl<E>(this, name, keyComparator, null, backend);
       await box.initialize();
       _boxes[name.toLowerCase()] = box;
