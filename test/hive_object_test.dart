@@ -8,12 +8,12 @@ class _TestObject extends HiveObject {}
 
 void main() {
   group('HiveObject', () {
-    group('initHiveObject()', () {
+    group('.init()', () {
       test('adds key and box to HiveObject', () {
         var obj = _TestObject();
         var box = BoxMock();
 
-        initHiveObject('someKey', obj, box);
+        obj.init('someKey', box);
 
         expect(obj.key, 'someKey');
         expect(obj.box, box);
@@ -23,8 +23,8 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        initHiveObject('someKey', obj, box);
-        initHiveObject('someKey', obj, box);
+        obj.init('someKey', box);
+        obj.init('someKey', box);
 
         expect(obj.key, 'someKey');
         expect(obj.box, box);
@@ -35,8 +35,8 @@ void main() {
         var box1 = BoxMock();
         var box2 = BoxMock();
 
-        initHiveObject('someKey', obj, box1);
-        expect(() => initHiveObject('someKey', obj, box2),
+        obj.init('someKey', box1);
+        expect(() => obj.init('someKey', box2),
             throwsHiveError('two different boxes'));
       });
 
@@ -44,84 +44,87 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        initHiveObject('key1', obj, box);
-        expect(() => initHiveObject('key2', obj, box),
-            throwsHiveError('two different keys'));
+        obj.init('key1', box);
+        expect(
+            () => obj.init('key2', box), throwsHiveError('two different keys'));
       });
     });
 
-    test('unloadHiveObject removes key and box', () {
-      var obj = _TestObject();
-      var box = BoxMock();
-
-      initHiveObject('key', obj, box);
-      unloadHiveObject(obj);
-
-      expect(obj.key, null);
-      expect(obj.box, null);
-    });
-
-    group('.save()', () {
-      test('updates object in box', () {
+    group('.unload()', () {
+      test('removes key and box', () {
         var obj = _TestObject();
         var box = BoxMock();
-        initHiveObject('key', obj, box);
-        verifyZeroInteractions(box);
 
-        obj.save();
-        verify(box.put('key', obj));
+        obj.init('key', box);
+        obj.unload();
+
+        expect(obj.key, null);
+        expect(obj.box, null);
       });
 
-      test('throws HiveError if object is not in a box', () async {
-        var obj = _TestObject();
-        await expectLater(() => obj.save(), throwsHiveError('not in a box'));
-      });
-    });
+      group('.save()', () {
+        test('updates object in box', () {
+          var obj = _TestObject();
+          var box = BoxMock();
+          obj.init('key', box);
+          verifyZeroInteractions(box);
 
-    group('.delete()', () {
-      test('removes object from box', () {
-        var obj = _TestObject();
-        var box = BoxMock();
-        initHiveObject('key', obj, box);
-        verifyZeroInteractions(box);
+          obj.save();
+          verify(box.put('key', obj));
+        });
 
-        obj.delete();
-        verify(box.delete('key'));
-      });
-
-      test('throws HiveError if object is not in a box', () async {
-        var obj = _TestObject();
-        await expectLater(() => obj.delete(), throwsHiveError('not in a box'));
-      });
-    });
-
-    group('.isInBox', () {
-      test('returns false if box is not set', () {
-        var obj = _TestObject();
-        expect(obj.isInBox, false);
+        test('throws HiveError if object is not in a box', () async {
+          var obj = _TestObject();
+          await expectLater(() => obj.save(), throwsHiveError('not in a box'));
+        });
       });
 
-      test('returns true if object is in normal box', () {
-        var obj = _TestObject();
-        var box = BoxMock();
-        when(box.lazy).thenReturn(false);
-        initHiveObject('key', obj, box);
+      group('.delete()', () {
+        test('removes object from box', () {
+          var obj = _TestObject();
+          var box = BoxMock();
+          obj.init('key', box);
+          verifyZeroInteractions(box);
 
-        expect(obj.isInBox, true);
+          obj.delete();
+          verify(box.delete('key'));
+        });
+
+        test('throws HiveError if object is not in a box', () async {
+          var obj = _TestObject();
+          await expectLater(
+              () => obj.delete(), throwsHiveError('not in a box'));
+        });
       });
 
-      test('returns the result ob box.containsKey() if object is in lazy box',
-          () {
-        var obj = _TestObject();
-        var box = BoxMock();
-        when(box.lazy).thenReturn(true);
-        initHiveObject('key', obj, box);
+      group('.isInBox', () {
+        test('returns false if box is not set', () {
+          var obj = _TestObject();
+          expect(obj.isInBox, false);
+        });
 
-        when(box.containsKey('key')).thenReturn(true);
-        expect(obj.isInBox, true);
+        test('returns true if object is in normal box', () {
+          var obj = _TestObject();
+          var box = BoxMock();
+          when(box.lazy).thenReturn(false);
+          obj.init('key', box);
 
-        when(box.containsKey('key')).thenReturn(false);
-        expect(obj.isInBox, false);
+          expect(obj.isInBox, true);
+        });
+
+        test('returns the result ob box.containsKey() if object is in lazy box',
+            () {
+          var obj = _TestObject();
+          var box = BoxMock();
+          when(box.lazy).thenReturn(true);
+          obj.init('key', box);
+
+          when(box.containsKey('key')).thenReturn(true);
+          expect(obj.isInBox, true);
+
+          when(box.containsKey('key')).thenReturn(false);
+          expect(obj.isInBox, false);
+        });
       });
     });
   });

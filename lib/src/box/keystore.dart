@@ -101,7 +101,8 @@ class Keystore<E> {
     return _notifier.watch(key: key);
   }
 
-  Frame insert(Frame frame, [bool notify = true]) {
+  Frame insert(Frame frame, {bool notify = true}) {
+    var value = frame.value;
     Frame deletedFrame;
 
     if (!frame.deleted) {
@@ -110,8 +111,9 @@ class Keystore<E> {
         _autoIncrement = key;
       }
 
-      if (frame.value is HiveObject) {
-        initHiveObject(key, frame.value as HiveObject, _box);
+      if (value is HiveObject) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        value.init(key, _box);
       }
 
       deletedFrame = _store.insert(key, frame);
@@ -122,8 +124,9 @@ class Keystore<E> {
     if (deletedFrame != null) {
       _deletedEntries++;
       if (deletedFrame.value is HiveObject &&
-          !identical(deletedFrame.value, frame.value)) {
-        unloadHiveObject(deletedFrame.value as HiveObject);
+          !identical(deletedFrame.value, value)) {
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        (deletedFrame.value as HiveObject).unload();
       }
     }
 
@@ -203,7 +206,8 @@ class Keystore<E> {
 
     for (var frame in frameList) {
       if (frame.value is HiveObject) {
-        unloadHiveObject(frame.value as HiveObject);
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        (frame.value as HiveObject).unload();
       }
       _notifier.notify(Frame.deleted(frame.key));
     }
