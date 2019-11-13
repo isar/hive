@@ -27,3 +27,12 @@ jobs:
       run: |
         pub get
         pub run test -p ${{ matrix.test-platform }}
+        
+  check-score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: axel-op/dart_package_analyzer@stable
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          minAnnotationLevel: warning
