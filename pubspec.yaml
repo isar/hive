@@ -1,5 +1,5 @@
 name: hive
-description: Lightweight and blazing fast key-value database written in pure Dart. Stronly encrypted using AES-256.
+description: Lightweight and blazing fast key-value database written in pure Dart. Strongly encrypted using AES-256.
 version: 1.2.0
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/hivedb/hive
