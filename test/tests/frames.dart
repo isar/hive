@@ -9,12 +9,12 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import 'mocks.dart';
 
-export 'generated/frame_values.g.dart';
-export 'generated/frame_values_encrypted.g.dart';
-export 'generated/frames.g.dart';
-export 'generated/frames_encrypted.g.dart';
+export '../generated/frame_values.g.dart';
+export '../generated/frame_values_encrypted.g.dart';
+export '../generated/frames.g.dart';
+export '../generated/frames_encrypted.g.dart';
 
 TypeRegistry get testRegistry => HiveImpl();
 

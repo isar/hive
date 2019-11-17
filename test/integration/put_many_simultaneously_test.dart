@@ -21,7 +21,7 @@ Future _performTest(bool lazy) async {
 
   box = await reopenBox(box);
   for (var i = 0; i < amount; i++) {
-    expect(await box.get('key$i'), 'value$i');
+    expect(await getFromBox(box, 'key$i'), 'value$i');
   }
   await box.close();
 }

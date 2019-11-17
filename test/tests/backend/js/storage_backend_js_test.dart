@@ -6,23 +6,23 @@ import 'dart:indexed_db';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/storage_backend_js.dart';
+import 'package:hive/src/backend/js/storage_backend.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
+import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:test/test.dart';
 
-import 'frames.dart';
+import '../../frames.dart';
 
 StorageBackendJs _getBackend({
   Database db,
-  bool lazy = false,
   CryptoHelper crypto,
   TypeRegistry registry,
 }) {
-  return StorageBackendJs(db, lazy, crypto, registry);
+  return StorageBackendJs(db, crypto, registry);
 }
 
 Future<Database> _openDb() async {
@@ -70,7 +70,7 @@ void main() {
       });
 
       test('crypto', () {
-        var backend = StorageBackendJs(null, false, testCrypto, testRegistry);
+        var backend = StorageBackendJs(null, testCrypto, testRegistry);
         var i = 0;
         for (var frame in testFrames) {
           var buffer = backend.encodeValue(frame) as ByteBuffer;
@@ -87,7 +87,7 @@ void main() {
             'key': Uint8List.fromList([1, 2, 3]),
             'otherKey': null
           });
-          var backend = StorageBackendJs(null, false, null);
+          var backend = StorageBackendJs(null, null);
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
@@ -165,8 +165,8 @@ void main() {
         var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = _getBackend(db: db);
 
-        var keystore = Keystore(null, ChangeNotifier());
-        expect(await backend.initialize(null, keystore), 0);
+        var keystore = Keystore(null, ChangeNotifier(), null);
+        expect(await backend.initialize(null, keystore, false), 0);
         expect(keystore.frames, [
           Frame('key1', 1),
           Frame('key2', null),
@@ -176,10 +176,10 @@ void main() {
 
       test('lazy', () async {
         var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
-        var backend = _getBackend(db: db, lazy: true);
+        var backend = _getBackend(db: db);
 
-        var keystore = Keystore(null, ChangeNotifier());
-        expect(await backend.initialize(null, keystore), 0);
+        var keystore = Keystore(null, ChangeNotifier(), null);
+        expect(await backend.initialize(null, keystore, true), 0);
         expect(keystore.frames, [
           Frame.lazy('key1'),
           Frame.lazy('key2'),

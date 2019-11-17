@@ -2,7 +2,7 @@
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../common.dart';
 
 Future<BufferedFileReader> openReader(List<int> bytes,
     [int chunkSize = BufferedFileReader.defaultChunkSize]) async {

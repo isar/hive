@@ -8,7 +8,7 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../mocks.dart';
 
 BoxImpl _getBox({
   String name,
@@ -24,7 +24,7 @@ BoxImpl _getBox({
     cStrategy ?? (total, deleted) => false,
     backend ?? BackendMock(),
   );
-  box.keystore = keystore ?? Keystore(box, ChangeNotifier());
+  box.keystore = keystore ?? Keystore(box, ChangeNotifier(), null);
   return box;
 }
 

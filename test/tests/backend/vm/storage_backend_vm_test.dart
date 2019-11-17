@@ -1,20 +1,21 @@
 @TestOn('vm')
+
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/read_write_sync.dart';
-import 'package:hive/src/backend/storage_backend_vm.dart';
+import 'package:hive/src/backend/vm/storage_backend.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 
-import 'common.dart';
-import 'frames.dart';
+import '../../common.dart';
+import '../../frames.dart';
+import '../../mocks.dart';
 
 class FrameIoHelperMock extends Mock implements FrameIoHelper {}
 
@@ -38,7 +39,6 @@ Uint8List getFrameBytes(Iterable<Frame> frames) {
 StorageBackendVm _getBackend({
   File file,
   File lockFile,
-  bool lazy = false,
   bool crashRecovery = false,
   CryptoHelper crypto,
   FrameIoHelper ioHelper,
@@ -50,7 +50,6 @@ StorageBackendVm _getBackend({
   return StorageBackendVm.debug(
     file ?? FileMock(),
     lockFile ?? FileMock(),
-    lazy,
     crashRecovery,
     crypto,
     ioHelper ?? FrameIoHelperMock(),
@@ -61,33 +60,6 @@ StorageBackendVm _getBackend({
 }
 
 void main() {
-  group('findHiveFileAndCleanUp', () {
-    Future<void> checkFindHiveFileAndCleanUp(String folder) async {
-      var hiveFileDir =
-          await getAssetDir('findHiveFileAndCleanUp', folder, 'before');
-      var hiveFile = await findHiveFileAndCleanUp('testBox', hiveFileDir);
-      expect(hiveFile.path, path.join(hiveFileDir.path, 'testBox.hive'));
-      await expectDirEqualsAssetDir(
-          hiveFileDir, 'findHiveFileAndCleanUp', folder, 'after');
-    }
-
-    test('no hive file', () async {
-      await checkFindHiveFileAndCleanUp('no_hive_file');
-    });
-
-    test('hive file', () async {
-      await checkFindHiveFileAndCleanUp('hive_file');
-    });
-
-    test('hive file and compact file', () async {
-      await checkFindHiveFileAndCleanUp('hive_file_and_compact_file');
-    });
-
-    test('only compact file', () async {
-      await checkFindHiveFileAndCleanUp('only_compact_file');
-    });
-  });
-
   group('StorageBackendVm', () {
     test('.path returns path for of open box file', () {
       var file = File('some/path');
@@ -157,10 +129,9 @@ void main() {
           var backend = _getBackend(
             lockFile: lockFile,
             ioHelper: getFrameIoHelper(-1),
-            lazy: lazy,
           );
 
-          await backend.initialize(null, KeystoreMock());
+          await backend.initialize(null, KeystoreMock(), lazy);
           verify(lockRaf.lock());
         });
 
@@ -169,12 +140,11 @@ void main() {
           var backend = _getBackend(
             lockFile: getLockFile(),
             ioHelper: getFrameIoHelper(20),
-            lazy: lazy,
             crashRecovery: true,
             writeRaf: writeRaf,
           );
 
-          await backend.initialize(null, KeystoreMock());
+          await backend.initialize(null, KeystoreMock(), lazy);
           verify(writeRaf.truncate(20));
         });
 
@@ -182,11 +152,11 @@ void main() {
           var backend = _getBackend(
             lockFile: getLockFile(),
             ioHelper: getFrameIoHelper(20),
-            lazy: lazy,
             crashRecovery: false,
           );
 
-          await expectLater(() => backend.initialize(null, KeystoreMock()),
+          await expectLater(
+              () => backend.initialize(null, KeystoreMock(), lazy),
               throwsHiveError('corrupted'));
         });
       }

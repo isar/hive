@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../common.dart';
 
 class TestAdapter extends TypeAdapter<int> {
   @override

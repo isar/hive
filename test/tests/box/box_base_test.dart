@@ -1,16 +1,18 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_base_impl.dart';
+
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../common.dart';
+import '../mocks.dart';
 
-class _BoxBaseMock extends BoxBase with Mock {
+class _BoxBaseMock extends BoxBaseImpl with Mock {
   _BoxBaseMock(
     HiveImpl hive,
     String name,
@@ -33,7 +35,7 @@ _BoxBaseMock _openBoxBaseMock({
   StorageBackend backend,
 }) {
   var mock = _BoxBaseMock(hive, name, cStrategy, backend);
-  mock.keystore = keystore ?? Keystore(mock, ChangeNotifier());
+  mock.keystore = keystore ?? Keystore(mock, ChangeNotifier(), null);
   return mock;
 }
 
@@ -131,7 +133,7 @@ void main() {
       var backend = BackendMock();
       var box = _openBoxBaseMock(backend: backend);
 
-      when(backend.initialize(any, any)).thenAnswer((i) async {
+      when(backend.initialize(any, any, any)).thenAnswer((i) async {
         i.positionalArguments[1].insert(Frame('key1', 1));
       });
 

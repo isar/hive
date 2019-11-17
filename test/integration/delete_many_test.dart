@@ -31,7 +31,7 @@ Future _performTest(bool lazy) async {
     expect(box.containsKey('bool$i'), false);
     expect(box.containsKey('null$i'), false);
   }
-  expect(await box.get('123123'), 'value');
+  expect(await getFromBox(box, '123123'), 'value');
   await box.close();
 }
 

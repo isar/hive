@@ -8,9 +8,9 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
-import '../common.dart';
-import '../frames.dart';
-import '../storage_backend_vm_test.dart';
+import '../tests/backend/vm/storage_backend_vm_test.dart';
+import '../tests/common.dart';
+import '../tests/frames.dart';
 import 'integration.dart';
 
 Future _performTest(bool lazy) async {
@@ -28,21 +28,21 @@ Future _performTest(bool lazy) async {
     var boxFile = File(path.join(dir.path, 'testBox$i.hive'));
     await boxFile.writeAsBytes(subBytes);
 
-    var box = await hive.openBox('testBox$i', lazy: lazy);
-
     var subFrames = frames.takeWhile((f) => f.offset + f.length <= i + 1);
     var subKeystore = Keystore.debug(frames: subFrames);
     if (lazy) {
+      var box = await hive.openLazyBox('testBox$i');
       expect(box.keys, subKeystore.getKeys());
+      await box.close();
     } else {
+      var box = await hive.openBox('testBox$i');
       var map = Map.fromIterables(
         subKeystore.getKeys(),
         subKeystore.getValues(),
       );
       expect(box.toMap(), map);
+      await box.close();
     }
-
-    await box.close();
 
     expect(await boxFile.readAsBytes(), getFrameBytes(subFrames));
   }

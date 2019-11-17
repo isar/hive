@@ -4,7 +4,7 @@ import 'package:hive/src/backend/storage_backend_memory.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../common.dart';
 
 void main() {
   group('StorageBackendMemory', () {
@@ -23,7 +23,7 @@ void main() {
         var bytes = Uint8List.fromList([1, 2, 3, 4]);
         var backend = StorageBackendMemory(bytes, null);
         expect(
-          () => backend.initialize(null, null),
+          () => backend.initialize(null, null, false),
           throwsHiveError('Wrong checksum'),
         );
       });

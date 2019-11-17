@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../frames.dart';
+import '../tests/frames.dart';
 import 'integration.dart';
 
 Future _performTest(bool lazy) async {
@@ -14,7 +14,7 @@ Future _performTest(bool lazy) async {
 
   for (var frame in valueTestFrames) {
     if (frame.deleted) continue;
-    var f = await box.get(frame.key);
+    var f = await getFromBox(box, frame.key);
     expect(f, frame.value);
   }
   await box.close();

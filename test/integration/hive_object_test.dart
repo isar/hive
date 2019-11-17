@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/hive_object.dart';
 import 'package:test/test.dart';
 
 import 'integration.dart';
@@ -40,8 +39,8 @@ Future _performTest(bool lazy) async {
   expect(obj2.key, 'someKey');
 
   box = await reopenBox(box);
-  obj1 = await box.get(0) as _TestObject;
-  obj2 = await box.get('someKey') as _TestObject;
+  obj1 = await getFromBox(box, 0) as _TestObject;
+  obj2 = await getFromBox(box, 'someKey') as _TestObject;
   expect(obj1.name, 'test1');
   expect(obj2.name, 'test2');
 
@@ -50,8 +49,8 @@ Future _performTest(bool lazy) async {
   await obj2.delete();
 
   box = await reopenBox(box);
-  obj1 = await box.get(0) as _TestObject;
-  obj2 = await box.get('someKey') as _TestObject;
+  obj1 = await getFromBox(box, 0) as _TestObject;
+  obj2 = await getFromBox(box, 'someKey') as _TestObject;
   expect(obj1.name, 'test1 updated');
   expect(obj2, null);
 

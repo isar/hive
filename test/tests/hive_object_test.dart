@@ -3,6 +3,7 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import 'common.dart';
+import 'mocks.dart';
 
 class _TestObject extends HiveObject {}
 
@@ -13,7 +14,7 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        obj.init('someKey', box);
+        obj.init('someKey', box); // ignore: invalid_use_of_protected_member
 
         expect(obj.key, 'someKey');
         expect(obj.box, box);
@@ -23,8 +24,8 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        obj.init('someKey', box);
-        obj.init('someKey', box);
+        obj.init('someKey', box); // ignore: invalid_use_of_protected_member
+        obj.init('someKey', box); // ignore: invalid_use_of_protected_member
 
         expect(obj.key, 'someKey');
         expect(obj.box, box);
@@ -35,8 +36,10 @@ void main() {
         var box1 = BoxMock();
         var box2 = BoxMock();
 
-        obj.init('someKey', box1);
-        expect(() => obj.init('someKey', box2),
+        obj.init('someKey', box1); // ignore: invalid_use_of_protected_member
+        expect(
+            // ignore: invalid_use_of_protected_member
+            () => obj.init('someKey', box2),
             throwsHiveError('two different boxes'));
       });
 
@@ -44,9 +47,12 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        obj.init('key1', box);
+        obj.init('key1', box); // ignore: invalid_use_of_protected_member
         expect(
-            () => obj.init('key2', box), throwsHiveError('two different keys'));
+          // ignore: invalid_use_of_protected_member
+          () => obj.init('key2', box),
+          throwsHiveError('two different keys'),
+        );
       });
     });
 
@@ -55,8 +61,8 @@ void main() {
         var obj = _TestObject();
         var box = BoxMock();
 
-        obj.init('key', box);
-        obj.unload();
+        obj.init('key', box); // ignore: invalid_use_of_protected_member
+        obj.unload(); // ignore: invalid_use_of_protected_member
 
         expect(obj.key, null);
         expect(obj.box, null);
@@ -66,7 +72,7 @@ void main() {
         test('updates object in box', () {
           var obj = _TestObject();
           var box = BoxMock();
-          obj.init('key', box);
+          obj.init('key', box); // ignore: invalid_use_of_protected_member
           verifyZeroInteractions(box);
 
           obj.save();
@@ -83,7 +89,7 @@ void main() {
         test('removes object from box', () {
           var obj = _TestObject();
           var box = BoxMock();
-          obj.init('key', box);
+          obj.init('key', box); // ignore: invalid_use_of_protected_member
           verifyZeroInteractions(box);
 
           obj.delete();
@@ -107,7 +113,7 @@ void main() {
           var obj = _TestObject();
           var box = BoxMock();
           when(box.lazy).thenReturn(false);
-          obj.init('key', box);
+          obj.init('key', box); // ignore: invalid_use_of_protected_member
 
           expect(obj.isInBox, true);
         });
@@ -117,7 +123,7 @@ void main() {
           var obj = _TestObject();
           var box = BoxMock();
           when(box.lazy).thenReturn(true);
-          obj.init('key', box);
+          obj.init('key', box); // ignore: invalid_use_of_protected_member
 
           when(box.containsKey('key')).thenReturn(true);
           expect(obj.isInBox, true);

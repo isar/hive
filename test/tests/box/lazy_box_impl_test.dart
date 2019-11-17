@@ -8,7 +8,7 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../mocks.dart';
 
 LazyBoxImpl _getBox({
   String name,
@@ -24,18 +24,12 @@ LazyBoxImpl _getBox({
     cStrategy ?? (total, deleted) => false,
     backend ?? BackendMock(),
   );
-  box.keystore = keystore ?? Keystore(box, ChangeNotifier());
+  box.keystore = keystore ?? Keystore(box, ChangeNotifier(), null);
   return box;
 }
 
 void main() {
   group('LazyBoxImpl', () {
-    test('.values', () {
-      var box = _getBox();
-
-      expect(() => box.values, throwsUnsupportedError);
-    });
-
     group('.get()', () {
       test('returns defaultValue if key does not exist', () async {
         var backend = BackendMock();
@@ -156,11 +150,6 @@ void main() {
           keystore.insert(Frame.deleted('key2')),
         ]);
       });
-    });
-
-    test('.toMap()', () async {
-      var box = _getBox();
-      expect(box.toMap, throwsUnsupportedError);
     });
   });
 }

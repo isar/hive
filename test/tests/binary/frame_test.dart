@@ -3,7 +3,7 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:test/test.dart';
 
-import 'frames.dart';
+import '../frames.dart';
 
 void main() {
   group('Frame', () {

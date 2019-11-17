@@ -7,8 +7,8 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
-import 'frames.dart';
+import '../common.dart';
+import '../frames.dart';
 
 Uint8List _getBytes(List<Uint8List> list) {
   var builder = BytesBuilder();

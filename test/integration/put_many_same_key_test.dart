@@ -17,10 +17,10 @@ Future _performTest(bool lazy) async {
 
   box = await reopenBox(box);
   for (var i = 0; i < amount; i++) {
-    expect(await box.get('string$i'), 'test99');
-    expect(await box.get('int$i'), 99);
-    expect(await box.get('bool$i'), false);
-    expect(await box.get('null$i', defaultValue: 0), null);
+    expect(await getFromBox(box, 'string$i'), 'test99');
+    expect(await getFromBox(box, 'int$i'), 99);
+    expect(await getFromBox(box, 'bool$i'), false);
+    expect(await getFromBox(box, 'null$i', defaultValue: 0), null);
   }
   await box.close();
 }

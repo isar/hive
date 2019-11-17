@@ -3,7 +3,7 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:test/test.dart';
 
-import 'common.dart';
+import '../mocks.dart';
 
 class _TestHiveObject extends HiveObject {}
 

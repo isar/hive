@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import '../frames.dart';
+import '../tests/frames.dart';
 import '../util/is_browser.dart';
 import 'integration.dart';
 
@@ -16,7 +16,7 @@ Future _performTest(bool lazy) async {
   box = await reopenBox(box);
   for (var i = 0; i < repeat; i++) {
     for (var frame in valueTestFrames) {
-      expect(await box.get('${frame.key}n$i'), frame.value);
+      expect(await getFromBox(box, '${frame.key}n$i'), frame.value);
     }
   }
   await box.close();

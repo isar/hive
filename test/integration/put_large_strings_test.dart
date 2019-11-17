@@ -11,7 +11,7 @@ Future _performTest(bool lazy) async {
 
   box = await reopenBox(box);
   for (var i = 0; i < 5; i++) {
-    var largeString = await box.get('string$i');
+    var largeString = await getFromBox(box, 'string$i');
 
     expect(largeString == i.toString() * 1000000, true);
   }

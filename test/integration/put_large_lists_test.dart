@@ -19,9 +19,9 @@ Future _performTest(bool lazy) async {
 
   box = await reopenBox(box);
   for (var i = 0; i < 5; i++) {
-    var readStringList = await box.get('stringList$i');
-    var readDoubleList = await box.get('doubleList$i');
-    var readByteList = await box.get('byteList$i');
+    var readStringList = await getFromBox(box, 'stringList$i');
+    var readDoubleList = await getFromBox(box, 'doubleList$i');
+    var readByteList = await getFromBox(box, 'byteList$i');
 
     expect(readStringList, stringList);
     expect(readDoubleList, doubleList);

@@ -1,11 +1,16 @@
+import 'dart:math';
+
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('IndexableSkipList', () {
     List<int> getRandomList() {
+      var rand = Random();
       var data = List.generate(1000, (i) => i);
-      data.addAll(List.generate(100, (i) => i));
+      data.addAll(List.generate(500, (i) => rand.nextInt(1000)));
+      data.addAll(List.generate(250, (i) => 1000 - i % 50));
+      data.addAll(List.generate(250, (i) => i));
       data.shuffle();
       return data;
     }

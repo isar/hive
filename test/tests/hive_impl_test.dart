@@ -1,15 +1,12 @@
 @TestOn('vm')
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 
 import 'common.dart';
-import 'generated/frames.g.dart';
 
 void main() {
   group('HiveImpl', () {
@@ -20,23 +17,14 @@ void main() {
       return hive;
     }
 
-    test('.home', () {
-      var hive = HiveImpl();
-
-      expect(() => hive.path, throwsHiveError('not initialized'));
-
-      hive.init('MYPATH');
-      expect(hive.path, 'MYPATH');
-    });
-
     test('.init()', () {
       var hive = HiveImpl();
 
       hive.init('MYPATH');
-      expect(hive.path, 'MYPATH');
+      expect(hive.homePath, 'MYPATH');
 
       hive.init('OTHERPATH');
-      expect(hive.path, 'OTHERPATH');
+      expect(hive.homePath, 'OTHERPATH');
 
       expect(
         hive.findAdapterForValue(DateTime.now()).adapter,
@@ -57,58 +45,43 @@ void main() {
           await hive.close();
         });
 
-        test('throw HiveError if opened box.isLazy != lazy', () async {
+        test('throw HiveError if opened box is lazy', () async {
           var hive = await initHive();
 
-          await hive.openBox('lazyBox', lazy: true);
+          await hive.openLazyBox('lazyBox');
           await expectLater(
             () => hive.openBox('lazyBox'),
-            throwsHiveError('lazy and non-lazy at the same time'),
-          );
-
-          await hive.openBox('nonLazyBox');
-          await expectLater(
-            () => hive.openBox('nonLazyBox', lazy: true),
-            throwsHiveError('lazy and non-lazy at the same time'),
+            throwsHiveError('is already open and of type LazyBox<dynamic>'),
           );
 
           await hive.close();
         });
       });
-
-      test('home directory is created', () async {
-        var tempDir = await getTempDir();
-        var hive = HiveImpl();
-
-        var hivePath = path.join(tempDir.path, 'somePath');
-        hive.init(hivePath);
-
-        await hive.openBox('testBox');
-        expect(await Directory(hivePath).exists(), true);
-
-        await hive.close();
-      });
-
-      test('throws HiveError if type arguments are set for lazy box', () async {
-        var hive = await initHive();
-
-        await expectLater(
-          () => hive.openBox<int>('box', lazy: true),
-          throwsHiveError('lazy boxes do not support type arguments'),
-        );
-
-        await hive.close();
-      });
     });
 
-    group('.openBoxFromBytes()', () {
-      test('opened box is returned if it exists', () async {
-        var hive = HiveImpl();
-        var testBox = await hive.openMemoryBox('testBox', bytes: frameBytes[0]);
-        var testBox2 = await hive.openMemoryBox('testBox');
-        expect(testBox == testBox2, true);
+    group('.openLazyBox()', () {
+      group('box already open', () {
+        test('opened box is returned if it exists', () async {
+          var hive = await initHive();
 
-        await hive.close();
+          var testBox = await hive.openLazyBox('testBox');
+          var testBox2 = await hive.openLazyBox('testBox');
+          expect(testBox == testBox2, true);
+
+          await hive.close();
+        });
+
+        test('throw HiveError if opened box is not lazy', () async {
+          var hive = await initHive();
+
+          await hive.openBox('lazyBox');
+          await expectLater(
+            () => hive.openLazyBox('lazyBox'),
+            throwsHiveError('is already open and of type Box<dynamic>'),
+          );
+
+          await hive.close();
+        });
       });
     });
 
@@ -129,17 +102,55 @@ void main() {
         await hive.openBox<int>('intBox');
         expect(
           () => hive.box('intBox'),
-          throwsHiveError('cannot open the same box as'),
-        );
-        expect(
-          () => hive.box<double>('intBox'),
-          throwsHiveError('cannot open the same box as'),
+          throwsHiveError('is already open and of type Box<int>'),
         );
 
         await hive.openBox('dynamicBox');
         expect(
           () => hive.box<int>('dynamicBox'),
-          throwsHiveError('cannot open the same box as'),
+          throwsHiveError('is already open and of type Box<dynamic>'),
+        );
+
+        await hive.openLazyBox('lazyBox');
+        expect(
+          () => hive.box('lazyBox'),
+          throwsHiveError('is already open and of type LazyBox<dynamic>'),
+        );
+
+        await hive.close();
+      });
+    });
+
+    group('.lazyBox()', () {
+      test('returns already opened box', () async {
+        var hive = await initHive();
+
+        var box = await hive.openLazyBox('testBox');
+        expect(hive.lazyBox('testBox'), box);
+        expect(() => hive.lazyBox('other'), throwsHiveError('not found'));
+
+        await hive.close();
+      });
+
+      test('throws HiveError if box type does not match', () async {
+        var hive = await initHive();
+
+        await hive.openLazyBox<int>('intBox');
+        expect(
+          () => hive.lazyBox('intBox'),
+          throwsHiveError('is already open and of type LazyBox<int>'),
+        );
+
+        await hive.openLazyBox('dynamicBox');
+        expect(
+          () => hive.lazyBox<int>('dynamicBox'),
+          throwsHiveError('is already open and of type LazyBox<dynamic>'),
+        );
+
+        await hive.openBox('box');
+        expect(
+          () => hive.lazyBox('box'),
+          throwsHiveError('is already open and of type Box<dynamic>'),
         );
 
         await hive.close();
