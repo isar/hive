@@ -1,14 +1,13 @@
-import 'package:hive/hive.dart';
-import 'package:meta/meta.dart';
+part of hive;
 
 /// Extend `HiveObject` to add useful methods to the objects you want to store
 /// in Hive
 abstract class HiveObject {
-  Box _box;
+  BoxBase _box;
 
   /// Get the box in which this object is stored. Returns `null` if object has
   /// not been added to a box yet.
-  Box get box => _box;
+  BoxBase get box => _box;
 
   dynamic _key;
 
@@ -50,8 +49,7 @@ abstract class HiveObject {
   }
 
   @protected
-  @visibleForTesting
-  void init(dynamic key, Box box) {
+  void init(dynamic key, BoxBase box) {
     if (_box != null) {
       if (_box != box) {
         throw HiveError('The same instance of an HiveObject cannot '
@@ -66,7 +64,6 @@ abstract class HiveObject {
   }
 
   @protected
-  @visibleForTesting
   void unload() {
     _box = null;
     _key = null;

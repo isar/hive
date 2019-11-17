@@ -23,7 +23,7 @@ class StorageBackendMemory extends StorageBackend {
   bool supportsCompaction = false;
 
   @override
-  Future<void> initialize(TypeRegistry registry, Keystore keystore) async {
+  Future<void> initialize(TypeRegistry registry, Keystore keystore, bool lazy) {
     var recoveryOffset =
         frameHelper.framesFromBytes(_bytes, keystore, registry, crypto);
 
@@ -32,6 +32,8 @@ class StorageBackendMemory extends StorageBackend {
     }
 
     _bytes = null;
+
+    return Future.value();
   }
 
   @override

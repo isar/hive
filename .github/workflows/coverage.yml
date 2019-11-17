@@ -18,7 +18,7 @@ jobs:
       run: |
         pub get
         pub global activate test_coverage
-        pub global run test_coverage --exclude "**_js_test.dart"
+        pub global run test_coverage --exclude "**/js/**"
     - uses: codecov/codecov-action@v1.0.0	
       with:
         token: ${{ secrets.CODECOV_TOKEN }}	

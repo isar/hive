@@ -12,26 +12,13 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
 
-Future<StorageBackend> openBackend(HiveInterface hive, String name, bool lazy,
-    bool crashRecovery, CryptoHelper crypto) async {
-  var db = await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
-    var db = e.target.result as Database;
-    if (!db.objectStoreNames.contains('box')) {
-      db.createObjectStore('box');
-    }
-  });
-
-  return StorageBackendJs(db, lazy, crypto);
-}
-
 class StorageBackendJs extends StorageBackend {
   final Database db;
-  final bool lazy;
   final CryptoHelper crypto;
 
   TypeRegistry _registry;
 
-  StorageBackendJs(this.db, this.lazy, this.crypto, [this._registry]);
+  StorageBackendJs(this.db, this.crypto, [this._registry]);
 
   @override
   String get path => null;
@@ -120,7 +107,8 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<int> initialize(TypeRegistry registry, Keystore keystore) async {
+  Future<int> initialize(
+      TypeRegistry registry, Keystore keystore, bool lazy) async {
     _registry = registry;
     var keys = await getKeys();
     if (!lazy) {

@@ -2,10 +2,22 @@
 
 ### Breaking changes
 - Removed the `Hive.path` getter
-- Renamed `Hive.openBoxFromBytes()` to `Hive.openMemoryBox()`
+- Removed `Hive.openBoxFromBytes()` (use the `bytes` parameter of `Hive.openBox()` instead)
+- `LazyBox` and `Box` now have a common parent class: `BoxBase`
+- Lazy boxes need to be opened using `Hive.openLazyBox()`
+- Open lazy boxes can be aquired using `Hive.lazyBox()`
+
+## Enhancements
+- Lazy boxes can now have a type argument `LazyBox<SomeClass>`
+- Added method to delete boxes without opening them `Hive.deleteBoxFromDisk()`
+- Added `path` parameter to open boxes in a custom path
 
 ### Fixes
 - HiveObjects have not been initialized correctly in lazy boxes
+- Fixed bug where uppercase box name resulted in uppercase file name
+
+### More
+- Changed type of `encryptionKey` from `Uint8List` to `List<int>`
 
 ## 1.1.1
 

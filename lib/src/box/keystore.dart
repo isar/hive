@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
-import 'package:hive/src/hive_object.dart';
+import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
@@ -15,16 +15,8 @@ class KeyTransaction<E> {
   KeyTransaction();
 }
 
-int _compareKeys(dynamic k1, dynamic k2) {
-  if (k1.runtimeType == k2.runtimeType) {
-    return (k1 as Comparable).compareTo(k2);
-  } else {
-    return k1 is int ? -1 : 1;
-  }
-}
-
 class Keystore<E> {
-  final Box _box;
+  final BoxBase<E> _box;
 
   final ChangeNotifier _notifier;
 
@@ -36,14 +28,14 @@ class Keystore<E> {
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
-  Keystore(this._box, this._notifier, [KeyComparator keyComparator])
-      : _store = IndexableSkipList(keyComparator ?? _compareKeys);
+  Keystore(this._box, this._notifier, KeyComparator keyComparator)
+      : _store = IndexableSkipList(keyComparator ?? defaultKeyComparator);
 
   factory Keystore.debug({
     Iterable<Frame> frames = const [],
-    Box<E> box,
+    BoxBase<E> box,
     ChangeNotifier notifier,
-    KeyComparator keyComparator,
+    KeyComparator keyComparator = defaultKeyComparator,
   }) {
     var keystore =
         Keystore<E>(box, notifier ?? ChangeNotifier(), keyComparator);
@@ -112,7 +104,7 @@ class Keystore<E> {
       }
 
       if (value is HiveObject) {
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        // ignore: invalid_use_of_protected_member
         value.init(key, _box);
       }
 
@@ -125,7 +117,7 @@ class Keystore<E> {
       _deletedEntries++;
       if (deletedFrame.value is HiveObject &&
           !identical(deletedFrame.value, value)) {
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        // ignore: invalid_use_of_protected_member
         (deletedFrame.value as HiveObject).unload();
       }
     }
@@ -206,7 +198,7 @@ class Keystore<E> {
 
     for (var frame in frameList) {
       if (frame.value is HiveObject) {
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        // ignore: invalid_use_of_protected_member
         (frame.value as HiveObject).unload();
       }
       _notifier.notify(Frame.deleted(frame.key));

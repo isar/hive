@@ -2,18 +2,8 @@ part of hive;
 
 /// [LazyBox]es don't keep the values in memory like normal boxes. Each time a
 /// value is read, it is loaded from the backend.
-abstract class LazyBox extends Box {
-  /// Not supported for lazy boxes.
-  @override
-  Iterable get values;
+abstract class LazyBox<E> extends BoxBase<E> {
+  Future<E> get(dynamic key, {E defaultValue});
 
-  @override
-  Future<dynamic> get(dynamic key, {dynamic defaultValue});
-
-  @override
-  Future<dynamic> getAt(int index);
-
-  /// Not supported for lazy boxes.
-  @override
-  Map<dynamic, dynamic> toMap();
+  Future<E> getAt(int index);
 }

@@ -1,11 +1,10 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/box/box_base.dart';
+import 'package:hive/src/box/box_base_impl.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:hive/src/hive_object.dart';
 
-class LazyBoxImpl extends BoxBase implements LazyBox {
+class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
   LazyBoxImpl(
     HiveImpl hive,
     String name,
@@ -18,11 +17,7 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
   final bool lazy = true;
 
   @override
-  Iterable get values =>
-      throw UnsupportedError('Only non-lazy boxes have this property.');
-
-  @override
-  Future<dynamic> get(dynamic key, {dynamic defaultValue}) async {
+  Future<E> get(dynamic key, {E defaultValue}) async {
     checkOpen();
 
     var frame = keystore.get(key);
@@ -30,17 +25,17 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     if (frame != null) {
       var value = await backend.readValue(frame);
       if (value is HiveObject) {
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        // ignore: invalid_use_of_protected_member
         value.init(key, this);
       }
-      return value;
+      return value as E;
     } else {
       return defaultValue;
     }
   }
 
   @override
-  Future<dynamic> getAt(int index) {
+  Future<E> getAt(int index) {
     return get(keystore.keyAt(index));
   }
 
@@ -61,7 +56,7 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
 
     for (var frame in frames) {
       if (frame.value is HiveObject) {
-        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        // ignore: invalid_use_of_protected_member
         (frame.value as HiveObject).init(frame.key, this);
       }
       keystore.insert(frame.toLazy());
@@ -89,10 +84,5 @@ class LazyBoxImpl extends BoxBase implements LazyBox {
     }
 
     await performCompactionIfNeeded();
-  }
-
-  @override
-  Map<dynamic, dynamic> toMap() {
-    throw UnsupportedError('Only non-lazy boxes support toMap().');
   }
 }

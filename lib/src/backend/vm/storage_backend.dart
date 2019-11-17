@@ -15,57 +15,9 @@ import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-Future<StorageBackend> openBackend(HiveInterface hive, String name, bool lazy,
-    bool crashRecovery, CryptoHelper crypto) async {
-  var dir = Directory(hive.path);
-  if (!await dir.exists()) {
-    await dir.create(recursive: true);
-  }
-
-  var file = await findHiveFileAndCleanUp(name, dir);
-  var lockFile = File(p.join(dir.path, '$name.lock'));
-
-  var backend = StorageBackendVm(file, lockFile, lazy, crashRecovery, crypto);
-  await backend.open();
-  return backend;
-}
-
-@visibleForTesting
-Future<File> findHiveFileAndCleanUp(String boxName, Directory dir) async {
-  File hiveFile;
-  File compactedFile;
-
-  var files = await dir.list(followLinks: false).toList();
-  for (var file in files) {
-    if (file is File) {
-      if (file.path.endsWith('$boxName.hive')) {
-        hiveFile = file;
-      } else if (file.path.endsWith('$boxName.hivec')) {
-        compactedFile = file;
-      }
-    }
-  }
-
-  if (hiveFile != null) {
-    if (compactedFile != null) {
-      await compactedFile.delete();
-    }
-    return hiveFile;
-  } else if (compactedFile != null) {
-    print('Restoring compacted file.');
-    var newPath = p.setExtension(compactedFile.path, '.hive');
-    return await compactedFile.rename(newPath);
-  } else {
-    hiveFile = File(p.join(dir.path, '$boxName.hive'));
-    await hiveFile.create();
-    return hiveFile;
-  }
-}
-
 class StorageBackendVm extends StorageBackend {
   final File file;
   final File lockFile;
-  final bool lazy;
   final bool crashRecovery;
   final CryptoHelper crypto;
   final FrameIoHelper frameHelper;
@@ -87,13 +39,12 @@ class StorageBackendVm extends StorageBackend {
   @visibleForTesting
   TypeRegistry registry;
 
-  StorageBackendVm(
-      this.file, this.lockFile, this.lazy, this.crashRecovery, this.crypto)
+  StorageBackendVm(this.file, this.lockFile, this.crashRecovery, this.crypto)
       : frameHelper = FrameIoHelper(),
         _sync = ReadWriteSync();
 
-  StorageBackendVm.debug(this.file, this.lockFile, this.lazy,
-      this.crashRecovery, this.crypto, this.frameHelper, this._sync);
+  StorageBackendVm.debug(this.file, this.lockFile, this.crashRecovery,
+      this.crypto, this.frameHelper, this._sync);
 
   @override
   String get path => file.path;
@@ -108,7 +59,8 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> initialize(TypeRegistry registry, Keystore keystore) async {
+  Future<void> initialize(
+      TypeRegistry registry, Keystore keystore, bool lazy) async {
     this.registry = registry;
 
     lockRaf = await lockFile.open(mode: FileMode.write);

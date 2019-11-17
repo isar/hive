@@ -1,173 +1,121 @@
-import 'package:hive/hive.dart';
-import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/box/change_notifier.dart';
-import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/hive_impl.dart';
-import 'package:meta/meta.dart';
+part of hive;
 
-abstract class BoxBase<E> implements Box<E> {
-  @override
-  final String name;
+/// A event representing a change in a box.
+class BoxEvent {
+  final dynamic key;
+  final dynamic value;
+  final bool deleted;
 
-  @visibleForTesting
-  final HiveImpl hive;
-
-  final CompactionStrategy _compactionStrategy;
-
-  @protected
-  final StorageBackend backend;
-
-  @protected
-  @visibleForTesting
-  Keystore<E> keystore;
-
-  bool _open = true;
-
-  BoxBase(
-    this.hive,
-    this.name,
-    KeyComparator keyComparator,
-    this._compactionStrategy,
-    this.backend,
-  ) {
-    keystore = Keystore(this, ChangeNotifier(), keyComparator);
-  }
-
-  Type get valueType => E;
+  BoxEvent(this.key, this.value, this.deleted);
 
   @override
-  bool get isOpen => _open;
-
-  @override
-  String get path => backend.path;
-
-  @override
-  Iterable<dynamic> get keys {
-    checkOpen();
-    return keystore.getKeys();
-  }
-
-  @override
-  int get length {
-    checkOpen();
-    return keystore.length;
-  }
-
-  @override
-  bool get isEmpty => length == 0;
-
-  @override
-  bool get isNotEmpty => length > 0;
-
-  @protected
-  void checkOpen() {
-    if (!_open) {
-      throw HiveError('Box has already been closed.');
+  bool operator ==(dynamic other) {
+    if (other is BoxEvent) {
+      return other.key == key && other.value == value;
     }
+    return false;
   }
+}
 
-  @override
-  Stream<BoxEvent> watch({dynamic key}) {
-    checkOpen();
-    return keystore.watch(key: key);
-  }
+/// Boxes contain all of your data. In the browser, each box has its own
+/// IndexedDB database. On all other platforms, each Box is stored in a
+/// seperate file in the Hive home directory.
+///
+/// Write operations are asynchronous but the new values are immeadiately
+/// available. The returned `Future` finishes when the change is written to
+/// the backend. If this operation fails, the changes are being reverted.
+///
+/// Read operations for normal boxes are ynchronous (the entries are in
+/// memory). Lazy boxes have asynchronous read operations.
+abstract class BoxBase<E> {
+  /// The name of the box. Names are always lowercase.
+  String get name;
 
-  @override
-  dynamic keyAt(int index) {
-    checkOpen();
-    return keystore.getAt(index).key;
-  }
+  /// Whether this box is currently open.
+  ///
+  /// Most of the operations on a box require it to be open.
+  bool get isOpen;
 
-  Future<void> initialize() {
-    return backend.initialize(hive, keystore);
-  }
+  /// The location of the box in the file system. In the browser, this is null.
+  String get path;
 
-  @override
-  bool containsKey(dynamic key) {
-    checkOpen();
-    return keystore.containsKey(key);
-  }
+  /// Whether this box is lazy or not.
+  ///
+  /// This is equivalent to `box is LazyBox`.
+  bool get lazy;
 
-  @override
-  Future<void> put(dynamic key, E value) => putAll({key: value});
+  /// All the keys in the box.
+  ///
+  /// The keys are sorted alphabetically in ascending order.
+  Iterable<dynamic> get keys;
 
-  @override
-  Future<void> delete(dynamic key) => deleteAll([key]);
+  /// The number of entries in the box.
+  int get length;
 
-  @override
-  Future<int> add(E value) async {
-    var key = keystore.autoIncrement();
-    await put(key, value);
-    return key;
-  }
+  /// Returns `true` if there are no entries in this box.
+  bool get isEmpty;
 
-  @override
-  Future<Iterable<int>> addAll(Iterable<E> values) async {
-    var entries = <int, E>{};
-    for (var value in values) {
-      entries[keystore.autoIncrement()] = value;
-    }
-    await putAll(entries);
-    return entries.keys;
-  }
+  /// Returns true if there is at least one entries in this box.
+  bool get isNotEmpty;
 
-  @override
-  Future<void> putAt(int index, E value) {
-    return putAll({keystore.getAt(index).key: value});
-  }
+  /// Get the n-th key in the box.
+  dynamic keyAt(int index);
 
-  @override
-  Future<void> deleteAt(int index) {
-    return deleteAll([keystore.getAt(index).key]);
-  }
+  /// Returns a broadcast stream of change events.
+  ///
+  /// If the [key] parameter is provided, only events for the specified key are
+  /// broadcasted.
+  Stream<BoxEvent> watch({dynamic key});
 
-  @override
-  Future<int> clear() async {
-    checkOpen();
+  /// Checks whether the box contains the [key].
+  bool containsKey(dynamic key);
 
-    await backend.clear();
-    return keystore.clear();
-  }
+  /// Saves the [key] - [value] pair.
+  Future<void> put(dynamic key, E value);
 
-  @override
-  Future<void> compact() async {
-    checkOpen();
+  /// Associates the [value] with the n-th key. An exception is raised if the
+  /// key does not exist.
+  Future<void> putAt(int index, E value);
 
-    if (!backend.supportsCompaction) return;
-    if (keystore.deletedEntries == 0) return;
+  /// Saves all the key - value pairs in the [entries] map.
+  Future<void> putAll(Map<dynamic, E> entries);
 
-    await backend.compact(keystore.frames);
-    keystore.resetDeletedEntries();
-  }
+  /// Saves the [value] with an auto-increment key.
+  Future<int> add(E value);
 
-  @protected
-  Future<void> performCompactionIfNeeded() {
-    if (_compactionStrategy(keystore.length, keystore.deletedEntries)) {
-      return compact();
-    }
+  /// Saves all the [values] with auto-increment keys.
+  Future<Iterable<int>> addAll(Iterable<E> values);
 
-    return Future.value();
-  }
+  /// Deletes the given [key] from the box.
+  ///
+  /// If it does not exist, nothing happens.
+  Future<void> delete(dynamic key);
 
-  @override
-  Future<void> close() async {
-    if (!_open) return;
+  /// Deletes the n-th key from the box.
+  ///
+  /// If it does not exist, nothing happens.
+  Future<void> deleteAt(int index);
 
-    _open = false;
-    await keystore.close();
-    hive.unregisterBox(name);
+  /// Deletes all the given [keys] from the box.
+  ///
+  /// If a key does not exist, it is skipped.
+  Future<void> deleteAll(Iterable<dynamic> keys);
 
-    await backend.close();
-  }
+  /// Induces compaction manually. This is rarely needed. You should consider
+  /// providing a custom compaction strategy instead.
+  Future<void> compact();
 
-  @override
-  Future<void> deleteFromDisk() async {
-    if (_open) {
-      _open = false;
-      await keystore.close();
-      hive.unregisterBox(name);
-    }
+  /// Removes all entries from the box.
+  Future<int> clear();
 
-    await backend.deleteFromDisk();
-  }
+  /// Closes the box.
+  ///
+  /// Be careful, this closes all instances of this box. You have to make sure
+  /// that you don't access the box anywhere else after that.
+  Future<void> close();
+
+  /// Removes the file which contains the box and closes the box.
+  ///
+  /// In the browser, the IndexedDB databese is being removed.
+  Future<void> deleteFromDisk();
 }
