@@ -33,6 +33,7 @@ Future _performTest(bool lazy) async {
     if (lazy) {
       var box = await hive.openLazyBox('testBox$i');
       expect(box.keys, subKeystore.getKeys());
+      await box.compact();
       await box.close();
     } else {
       var box = await hive.openBox('testBox$i');
@@ -41,6 +42,7 @@ Future _performTest(bool lazy) async {
         subKeystore.getValues(),
       );
       expect(box.toMap(), map);
+      await box.compact();
       await box.close();
     }
 
