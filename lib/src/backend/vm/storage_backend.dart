@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/read_write_sync.dart';
+import 'package:hive/src/backend/vm/read_write_sync.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
@@ -38,6 +38,8 @@ class StorageBackendVm extends StorageBackend {
 
   @visibleForTesting
   TypeRegistry registry;
+
+  bool compactionScheduled = false;
 
   StorageBackendVm(this.file, this.lockFile, this.crashRecovery, this.crypto)
       : frameHelper = FrameIoHelper(),
@@ -129,6 +131,9 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> compact(Iterable<Frame> frames) {
+    if (compactionScheduled) return Future.value();
+    compactionScheduled = true;
+
     return _sync.syncReadWrite(() async {
       await readRaf.setPosition(0);
       var reader = BufferedFileReader(readRaf);
@@ -175,6 +180,7 @@ class StorageBackendVm extends StorageBackend {
         frame.offset = offset;
         offset += frame.length;
       }
+      compactionScheduled = false;
     });
   }
 
