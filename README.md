@@ -74,7 +74,7 @@ print('Name: $name');
 Hive not only supports primitives, lists and maps but also any Dart object you like. You need to generate a type adapter before you can store objects.
 
 ```dart
-@HiveType
+@HiveType()
 class Person extends HiveObject {
 
   @HiveField(0)
