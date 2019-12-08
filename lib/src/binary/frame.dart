@@ -17,8 +17,8 @@ class Frame {
       : lazy = false,
         deleted = false,
         assert(
-            (key is int && key >= 0 && key < 4294967295) ||
-                (key is String && key.length <= 255),
+            (key is int && key >= 0 && key < 2 ^ 32) ||
+                (key is String && key.length < 2 ^ 8),
             'Unsupported key');
 
   Frame.deleted(this.key, {this.length})
@@ -27,8 +27,8 @@ class Frame {
         deleted = true,
         offset = -1,
         assert(
-            (key is int && key >= 0 && key < 4294967295) ||
-                (key is String && key.length <= 255),
+            (key is int && key >= 0 && key < 2 ^ 32) ||
+                (key is String && key.length < 2 ^ 8),
             'Unsupported key');
 
   Frame.lazy(this.key, {this.length, this.offset = -1})

@@ -16,6 +16,7 @@
 - HiveObjects have not been initialized correctly in lazy boxes
 - Fixed bug where uppercase box name resulted in uppercase file name
 - Fixed compaction bug which caused corrupted boxes
+- Fixed bug which did not allow the key `0xFFFFFFFF`
 
 ### More
 - Changed type of `encryptionKey` from `Uint8List` to `List<int>`
