@@ -23,23 +23,29 @@ class BufferedFileReader {
       : buffer = Uint8List(bufferSize);
 
   void skip(int bytes) {
-    assert(remainingInBuffer >= bytes);
+    assert(bytes >= 0 && remainingInBuffer >= bytes);
     _bufferOffset += bytes;
   }
 
   void unskip(int bytes) {
-    assert(_bufferOffset >= bytes);
+    assert(bytes >= 0 && _bufferOffset >= bytes);
     _bufferOffset -= bytes;
   }
 
   Uint8List viewBytes(int bytes) {
-    assert(remainingInBuffer >= bytes);
+    assert(bytes >= 0 && remainingInBuffer >= bytes);
     var view = Uint8List.view(buffer.buffer, _bufferOffset, bytes);
     _bufferOffset += bytes;
     return view;
   }
 
+  Uint8List peekBytes(int bytes) {
+    assert(bytes >= 0 && remainingInBuffer >= bytes);
+    return Uint8List.view(buffer.buffer, _bufferOffset, bytes);
+  }
+
   Future<int> loadBytes(int bytes) async {
+    assert(bytes > 0);
     var remaining = remainingInBuffer;
     if (remaining >= bytes) {
       return remaining;

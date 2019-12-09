@@ -3,12 +3,10 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
-import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
-import 'package:hive/src/util/crc32.dart';
 import 'package:meta/meta.dart';
 
 class FrameIoHelper extends FrameHelper {
@@ -48,12 +46,12 @@ class _KeyReader {
   _KeyReader(this.fileReader);
 
   Future<int> readKeys(Keystore keystore, CryptoHelper crypto) async {
-    await _read(4);
+    await _load(4);
     while (true) {
-      var frameOffset = fileReader.offset - _reader.availableBytes;
+      var frameOffset = fileReader.offset;
 
       if (_reader.availableBytes < 4) {
-        var available = await _read(4);
+        var available = await _load(4);
         if (available == 0) {
           break;
         } else if (available < 4) {
@@ -62,45 +60,29 @@ class _KeyReader {
       }
 
       var frameLength = _reader.peekUint32();
-      if (frameLength < 8) {
-        throw HiveError('This is an iternal error. Please open an issue on '
-            'GitHub and provide steps to reproduce this problem if possible.');
-      }
-
       if (_reader.availableBytes < frameLength) {
-        var available = await _read(frameLength);
-        if (available < frameLength) {
-          return frameOffset;
-        }
+        var available = await _load(frameLength);
+        if (available < frameLength) return frameOffset;
       }
 
-      var frameBytes = _reader.viewBytes(frameLength - 4);
-      var computedCrc = Crc32.compute(frameBytes, crc: crypto?.keyCrc ?? 0);
-      if (computedCrc != _reader.readUint32()) {
-        return frameOffset;
-      }
+      var frame = _reader.readFrame(
+        crypto: crypto,
+        lazy: true,
+        frameOffset: frameOffset,
+      );
+      if (frame == null) return frameOffset;
 
-      _reader.unskip(frameLength - 4);
-      var offsetBeforeDecode = _reader.usedBytes;
-
-      _reader.limitAvailableBytes(frameLength - 8);
-      var frame = Frame.decode(_reader, true, null)
-        ..length = frameLength
-        ..offset = frameOffset;
-      _reader.resetLimit();
-
-      _reader.skip(frameLength - 4 - (_reader.usedBytes - offsetBeforeDecode));
       keystore.insert(frame, notify: false);
+
+      fileReader.skip(frameLength);
     }
 
     return -1;
   }
 
-  Future<int> _read(int bytes) async {
-    fileReader.unskip(_reader?.availableBytes ?? 0);
-
+  Future<int> _load(int bytes) async {
     var loadedBytes = await fileReader.loadBytes(bytes);
-    var buffer = fileReader.viewBytes(loadedBytes);
+    var buffer = fileReader.peekBytes(loadedBytes);
     _reader = BinaryReaderImpl(buffer, null);
 
     return loadedBytes;

@@ -136,12 +136,14 @@ void main() {
       });
 
       test('copies unused bytes', () async {
-        var reader = await openReader([1, 2, 3, 4, 5], 3);
+        var reader = await openReader([1, 2, 3, 4, 5, 6, 7], 3);
         await reader.loadBytes(3);
         expect(reader.viewBytes(1), [1]);
 
-        expect(await reader.loadBytes(3), 3);
-        expect(reader.viewBytes(3), [2, 3, 4]);
+        expect(await reader.loadBytes(4), 4);
+        expect(reader.viewBytes(4), [2, 3, 4, 5]);
+        expect(await reader.loadBytes(4), 2);
+        expect(reader.viewBytes(2), [6, 7]);
 
         await reader.file.close();
       });
