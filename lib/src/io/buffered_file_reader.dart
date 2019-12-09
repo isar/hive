@@ -27,11 +27,6 @@ class BufferedFileReader {
     _bufferOffset += bytes;
   }
 
-  void unskip(int bytes) {
-    assert(bytes >= 0 && _bufferOffset >= bytes);
-    _bufferOffset -= bytes;
-  }
-
   Uint8List viewBytes(int bytes) {
     assert(bytes >= 0 && remainingInBuffer >= bytes);
     var view = Uint8List.view(buffer.buffer, _bufferOffset, bytes);

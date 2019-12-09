@@ -146,7 +146,10 @@ class StorageBackendVm extends StorageBackend {
       sortedFrames.sort((a, b) => a.offset.compareTo(b.offset));
       try {
         for (var frame in sortedFrames) {
-          if (frame.offset == -1) continue;
+          if (frame.offset == -1) {
+            throw StateError('The frame has not been written yet. '
+                'Please open a GitHub issue.');
+          }
           if (frame.offset != reader.offset) {
             var skip = frame.offset - reader.offset;
             if (reader.remainingInBuffer < skip) {
