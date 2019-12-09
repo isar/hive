@@ -52,7 +52,12 @@ class StorageBackendJs extends StorageBackend {
 
     var frameWriter = BinaryWriterImpl(_registry);
     frameWriter.writeByteList([0x90, 0xA9], writeLength: false);
-    frame.encodeValue(frameWriter, crypto);
+
+    if (crypto == null) {
+      frameWriter.write(value, writeTypeId: false);
+    } else {
+      frameWriter.writeEncrypted(value, crypto, writeTypeId: false);
+    }
 
     var bytes = frameWriter.toBytes();
     var sublist = bytes.sublist(0, bytes.length);
@@ -64,9 +69,13 @@ class StorageBackendJs extends StorageBackend {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
       if (_isEncoded(bytes)) {
-        var frameReader = BinaryReaderImpl(bytes, _registry);
-        frameReader.skip(2);
-        return Frame.decodeValue(frameReader, crypto);
+        var reader = BinaryReaderImpl(bytes, _registry);
+        reader.skip(2);
+        if (crypto == null) {
+          return reader.read();
+        } else {
+          return reader.readEncrypted(crypto);
+        }
       } else {
         return bytes;
       }

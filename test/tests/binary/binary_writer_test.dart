@@ -4,6 +4,9 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
+import 'package:dartx/dartx.dart';
+
+import '../frames.dart';
 
 List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 
@@ -391,6 +394,25 @@ void main() {
         FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69, //
         FrameValueType.boolT.index, 1 //
       ]);
+    });
+
+    group('.writeFrame()', () {
+      test('normal', () {
+        testFrames.forEachIndexed((frame, i) {
+          var writer = BinaryWriterImpl(testRegistry);
+          expect(writer.writeFrame(frame), frameBytes[i].length);
+          expect(writer.toBytes(), frameBytes[i]);
+        });
+      });
+
+      test('encrypted', () {
+        testFrames.forEachIndexed((frame, i) {
+          var writer = BinaryWriterImpl(testRegistry);
+          expect(writer.writeFrame(frame, crypto: testCrypto),
+              frameBytesEncrypted[i].length);
+          expect(writer.toBytes(), frameBytesEncrypted[i]);
+        });
+      });
     });
 
     group('.write()', () {

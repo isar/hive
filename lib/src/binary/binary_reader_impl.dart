@@ -3,7 +3,10 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:hive/src/util/crc32.dart';
+import 'package:hive/src/util/uint8_list_extension.dart';
 
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
@@ -26,12 +29,12 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   int get usedBytes => _offset;
 
-  void limitAvailableBytes(int bytes) {
+  void _limitAvailableBytes(int bytes) {
     _requireBytes(bytes);
     _bufferLimit = _offset + bytes;
   }
 
-  void resetLimit() {
+  void _resetLimit() {
     _bufferLimit = _bufferLength;
   }
 
@@ -47,11 +50,6 @@ class BinaryReaderImpl extends BinaryReader {
     _offset += bytes;
   }
 
-  void unskip(int bytes) {
-    assert(_offset >= bytes);
-    _offset -= bytes;
-  }
-
   @override
   int readByte() {
     _requireBytes(1);
@@ -61,17 +59,14 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   Uint8List viewBytes(int bytes) {
     _requireBytes(bytes);
-    var view =
-        Uint8List.view(_buffer.buffer, _buffer.offsetInBytes + _offset, bytes);
     _offset += bytes;
-    return view;
+    return _buffer.view(_offset - bytes, bytes);
   }
 
   @override
   Uint8List peekBytes(int bytes) {
     _requireBytes(bytes);
-    return Uint8List.view(
-        _buffer.buffer, _buffer.offsetInBytes + _offset, bytes);
+    return _buffer.view(_offset, bytes);
   }
 
   @override
@@ -83,26 +78,20 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   int readInt32() {
     _requireBytes(4);
-    var value = _byteData.getInt32(_offset, Endian.little);
     _offset += 4;
-    return value;
+    return _byteData.getInt32(_offset - 4, Endian.little);
   }
 
   @override
   int readUint32() {
     _requireBytes(4);
-    return _buffer[_offset++] |
-        _buffer[_offset++] << 8 |
-        _buffer[_offset++] << 16 |
-        _buffer[_offset++] << 24;
+    _offset += 4;
+    return _buffer.readUint32(_offset - 4);
   }
 
   int peekUint32() {
     _requireBytes(4);
-    return _buffer[_offset] |
-        _buffer[_offset + 1] << 8 |
-        _buffer[_offset + 2] << 16 |
-        _buffer[_offset + 3] << 24;
+    return _buffer.readUint32(_offset);
   }
 
   @override
@@ -219,6 +208,59 @@ class BinaryReaderImpl extends BinaryReader {
     return map;
   }
 
+  dynamic readKey() {
+    var keyType = readByte();
+    if (keyType == FrameKeyType.uintT.index) {
+      return readUint32();
+    } else if (keyType == FrameKeyType.asciiStringT.index) {
+      var keyLength = readByte();
+      return readAsciiString(keyLength);
+    } else {
+      throw HiveError('Unsupported key type. Frame might be corrupted.');
+    }
+  }
+
+  Frame readFrame({CryptoHelper crypto, bool lazy = false, int frameOffset}) {
+    if (availableBytes < 4) return null;
+
+    var frameLength = readUint32();
+    if (availableBytes < frameLength - 4) return null;
+
+    var crc = _buffer.readUint32(_offset + frameLength - 8);
+    var computedCrc = Crc32.compute(
+      _buffer,
+      offset: _offset - 4,
+      length: frameLength - 4,
+      crc: crypto?.keyCrc ?? 0,
+    );
+
+    if (computedCrc != crc) return null;
+
+    _limitAvailableBytes(frameLength - 8);
+    Frame frame;
+    dynamic key = readKey();
+
+    if (availableBytes == 0) {
+      frame = Frame.deleted(key);
+    } else if (lazy) {
+      frame = Frame.lazy(key);
+    } else if (crypto == null) {
+      frame = Frame(key, read());
+    } else {
+      frame = Frame(key, readEncrypted(crypto));
+    }
+
+    frame
+      ..length = frameLength
+      ..offset = frameOffset;
+
+    skip(availableBytes);
+    _resetLimit();
+    skip(4); // Skip CRC
+
+    return frame;
+  }
+
   @override
   dynamic read([int typeId]) {
     typeId ??= readByte();
@@ -258,5 +300,12 @@ class BinaryReaderImpl extends BinaryReader {
       }
       return resolved.adapter.read(this);
     }
+  }
+
+  dynamic readEncrypted(CryptoHelper crypto) {
+    var encryptedBytes = viewBytes(availableBytes);
+    var decryptedBytes = crypto.decrypt(encryptedBytes);
+    var valueReader = BinaryReaderImpl(decryptedBytes, typeRegistry);
+    return valueReader.read();
   }
 }

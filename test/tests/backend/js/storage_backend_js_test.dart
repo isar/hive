@@ -6,11 +6,10 @@ import 'dart:indexed_db';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/js/storage_backend.dart';
+import 'package:hive/src/backend/js/storage_backend_js.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
-import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:test/test.dart';
@@ -91,8 +90,8 @@ void main() {
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
-          var writer = BinaryWriterImpl(null);
-          frame.encodeValue(writer, null);
+          var writer = BinaryWriterImpl(null)
+            ..write(frame.value, writeTypeId: false);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
 
@@ -102,8 +101,8 @@ void main() {
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
-          var writer = BinaryWriterImpl(null);
-          frame.encodeValue(writer, null);
+          var writer = BinaryWriterImpl(null)
+            ..write(frame.value, writeTypeId: false);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
       });

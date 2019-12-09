@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/backend/vm/storage_backend.dart';
+import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path_helper;

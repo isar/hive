@@ -5,7 +5,7 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/vm/read_write_sync.dart';
-import 'package:hive/src/backend/vm/storage_backend.dart';
+import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
@@ -31,7 +31,7 @@ const testMap = {
 Uint8List getFrameBytes(Iterable<Frame> frames) {
   var writer = BinaryWriterImpl(testRegistry);
   for (var frame in frames) {
-    frame.toBytes(writer, null);
+    writer.writeFrame(frame);
   }
   return writer.toBytes();
 }

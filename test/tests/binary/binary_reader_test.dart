@@ -5,6 +5,9 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
+import 'package:dartx/dartx.dart';
+
+import '../frames.dart';
 
 BinaryReader fromByteData(ByteData byteData) {
   return BinaryReaderImpl(byteData.buffer.asUint8List(), TypeRegistryImpl());
@@ -307,6 +310,75 @@ void main() {
       expect(br.readMap(2), {'hi': true, false: 'hi'});
 
       expect(() => br.readMap(), throwsA(anything));
+    });
+
+    test('.readKey()', () {
+      testFrames.forEachIndexed((frame, i) {
+        var reader = BinaryReaderImpl(frameBytes[i].sublist(4), null);
+        expect(reader.readKey(), frame.key);
+      });
+    });
+
+    group('.readFrame()', () {
+      test('normal', () {
+        var frames = framesSetLengthOffset(testFrames, frameBytes);
+        var offset = 0;
+        frames.forEachIndexed((frame, i) {
+          var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
+          expectFrame(
+            reader.readFrame(lazy: false, frameOffset: offset),
+            frame,
+          );
+          offset += frameBytes[i].length;
+        });
+      });
+
+      test('lazy', () {
+        var frames = framesSetLengthOffset(testFrames, frameBytes);
+        var offset = 0;
+        frames.forEachIndexed((frame, i) {
+          var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
+          expectFrame(
+            reader.readFrame(lazy: true, frameOffset: offset),
+            frame.toLazy(),
+          );
+          offset += frameBytes[i].length;
+        });
+      });
+
+      test('encrypted', () {
+        var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
+        var offset = 0;
+        frames.forEachIndexed((frame, i) {
+          var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
+          expectFrame(
+            reader.readFrame(
+              lazy: false,
+              frameOffset: offset,
+              crypto: testCrypto,
+            ),
+            frame,
+          );
+          offset += frameBytesEncrypted[i].length;
+        });
+      });
+
+      test('lazy', () {
+        var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
+        var offset = 0;
+        frames.forEachIndexed((frame, i) {
+          var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
+          expectFrame(
+            reader.readFrame(
+              lazy: true,
+              frameOffset: offset,
+              crypto: testCrypto,
+            ),
+            frame.toLazy(),
+          );
+          offset += frameBytesEncrypted[i].length;
+        });
+      });
     });
 
     group('.read()', () {

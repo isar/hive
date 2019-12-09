@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
-import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/crypto_helper.dart';
 
@@ -14,10 +13,13 @@ class FrameHelper {
     while (reader.availableBytes != 0) {
       var frameOffset = reader.usedBytes;
 
-      var frame = Frame.fromBytes(reader, crypto);
+      var frame = reader.readFrame(
+        crypto: crypto,
+        lazy: false,
+        frameOffset: frameOffset,
+      );
       if (frame == null) return frameOffset;
 
-      frame.offset = frameOffset;
       keystore.insert(frame, notify: false);
     }
 

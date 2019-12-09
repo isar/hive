@@ -3,8 +3,11 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:hive/src/util/crc32.dart';
 import 'package:meta/meta.dart';
+import 'package:hive/src/util/uint8_list_extension.dart';
 
 class BinaryWriterImpl extends BinaryWriter {
   static const int _asciiMask = 0x7F;
@@ -77,10 +80,8 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeUint32(int value) {
     _reserveBytes(4);
-    _buffer[_offset++] = value;
-    _buffer[_offset++] = value >> 8;
-    _buffer[_offset++] = value >> 16;
-    _buffer[_offset++] = value >> 24;
+    _buffer.writeUint32(_offset, value);
+    _offset += 4;
   }
 
   @override
@@ -217,6 +218,46 @@ class BinaryWriterImpl extends BinaryWriter {
     });
   }
 
+  void writeKey(dynamic key) {
+    if (key is String) {
+      writeByte(FrameKeyType.asciiStringT.index);
+      writeByte(key.length);
+      writeAsciiString(key, writeLength: false);
+    } else {
+      writeByte(FrameKeyType.uintT.index);
+      writeUint32(key as int);
+    }
+  }
+
+  int writeFrame(Frame frame, {CryptoHelper crypto}) {
+    var startOffset = _offset;
+    _reserveBytes(4);
+    _offset += 4; // reserve bytes for length
+
+    writeKey(frame.key);
+
+    if (!frame.deleted) {
+      if (crypto == null) {
+        write(frame.value);
+      } else {
+        writeEncrypted(frame.value, crypto);
+      }
+    }
+
+    var frameLenght = _offset - startOffset + 4;
+    _buffer.writeUint32(startOffset, frameLenght);
+
+    var crc = Crc32.compute(
+      _buffer,
+      offset: startOffset,
+      length: frameLenght - 4,
+      crc: crypto?.keyCrc ?? 0,
+    );
+    writeUint32(crc);
+
+    return frameLenght;
+  }
+
   @override
   void write<T>(T value, {bool writeTypeId = true}) {
     if (value == null) {
@@ -296,6 +337,14 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       resolved.adapter.write(this, value);
     }
+  }
+
+  void writeEncrypted(dynamic value, CryptoHelper crypto,
+      {bool writeTypeId = true}) {
+    var valueWriter = BinaryWriterImpl(typeRegistry)
+      ..write(value, writeTypeId: writeTypeId);
+    var encryptedValue = crypto.encrypt(valueWriter.toBytes());
+    _addBytes(encryptedValue);
   }
 
   Uint8List view(int offset, int length) {

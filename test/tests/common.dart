@@ -42,6 +42,9 @@ Future<RandomAccessFile> getTempRaf(List<int> bytes,
 Future<Directory> getTempDir() async {
   var name = random.nextInt(pow(2, 32) as int);
   var dir = Directory(path.join(tempPath, '${name}_tmp'));
+  if (await dir.exists()) {
+    await dir.delete(recursive: true);
+  }
   await dir.create(recursive: true);
   return dir;
 }

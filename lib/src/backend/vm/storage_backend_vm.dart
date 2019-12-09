@@ -95,7 +95,7 @@ class StorageBackendVm extends StorageBackend {
       var bytes = await readRaf.read(frame.length);
 
       var reader = BinaryReaderImpl(bytes, registry);
-      var readFrame = Frame.fromBytes(reader, crypto);
+      var readFrame = reader.readFrame(crypto: crypto, lazy: false);
 
       if (readFrame == null) {
         throw HiveError(
@@ -112,7 +112,7 @@ class StorageBackendVm extends StorageBackend {
       var writer = BinaryWriterImpl(registry);
 
       for (var frame in frames) {
-        frame.length = frame.toBytes(writer, crypto);
+        frame.length = writer.writeFrame(frame, crypto: crypto);
       }
 
       try {

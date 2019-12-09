@@ -1,7 +1,7 @@
 import 'dart:html';
 import 'dart:indexed_db';
 
-import 'package:hive/src/backend/js/storage_backend.dart';
+import 'package:hive/src/backend/js/storage_backend_js.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/crypto_helper.dart';
 

@@ -179,22 +179,22 @@ void buildGoldens() async {
 
   await generate('frames', 'frameBytes', (f) {
     var writer = BinaryWriterImpl(testRegistry);
-    f.toBytes(writer, null);
+    writer.writeFrame(f);
     return writer.toBytes();
   });
   await generate('frame_values', 'frameValuesBytes', (f) {
-    var writer = BinaryWriterImpl(HiveImpl());
-    f.encodeValue(writer, null);
+    var writer = BinaryWriterImpl(HiveImpl())
+      ..write(f.value, writeTypeId: false);
     return writer.toBytes();
   });
   await generate('frames_encrypted', 'frameBytesEncrypted', (f) {
     var writer = BinaryWriterImpl(testRegistry);
-    f.toBytes(writer, testCrypto);
+    writer.writeFrame(f, crypto: testCrypto);
     return writer.toBytes();
   });
   await generate('frame_values_encrypted', 'frameValuesBytesEncrypted', (f) {
-    var writer = BinaryWriterImpl(HiveImpl());
-    f.encodeValue(writer, testCrypto);
+    var writer = BinaryWriterImpl(HiveImpl())
+      ..writeEncrypted(f.value, testCrypto, writeTypeId: false);
     return writer.toBytes();
   });
 }
