@@ -80,7 +80,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @override
   void writeUint32(int value) {
     _reserveBytes(4);
-    _buffer.writeUint32(_offset, value);
+    Uint8ListX.writeUint32(_buffer, _offset, value);
     _offset += 4;
   }
 
@@ -245,7 +245,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
 
     var frameLenght = _offset - startOffset + 4;
-    _buffer.writeUint32(startOffset, frameLenght);
+    Uint8ListX.writeUint32(_buffer, startOffset, frameLenght);
 
     var crc = Crc32.compute(
       _buffer,

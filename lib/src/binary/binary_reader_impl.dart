@@ -60,13 +60,13 @@ class BinaryReaderImpl extends BinaryReader {
   Uint8List viewBytes(int bytes) {
     _requireBytes(bytes);
     _offset += bytes;
-    return _buffer.view(_offset - bytes, bytes);
+    return Uint8ListX.view(_buffer, _offset - bytes, bytes);
   }
 
   @override
   Uint8List peekBytes(int bytes) {
     _requireBytes(bytes);
-    return _buffer.view(_offset, bytes);
+    return Uint8ListX.view(_buffer, _offset, bytes);
   }
 
   @override
@@ -86,12 +86,12 @@ class BinaryReaderImpl extends BinaryReader {
   int readUint32() {
     _requireBytes(4);
     _offset += 4;
-    return _buffer.readUint32(_offset - 4);
+    return Uint8ListX.readUint32(_buffer, _offset - 4);
   }
 
   int peekUint32() {
     _requireBytes(4);
-    return _buffer.readUint32(_offset);
+    return Uint8ListX.readUint32(_buffer, _offset);
   }
 
   @override
@@ -226,7 +226,7 @@ class BinaryReaderImpl extends BinaryReader {
     var frameLength = readUint32();
     if (availableBytes < frameLength - 4) return null;
 
-    var crc = _buffer.readUint32(_offset + frameLength - 8);
+    var crc = Uint8ListX.readUint32(_buffer, _offset + frameLength - 8);
     var computedCrc = Crc32.compute(
       _buffer,
       offset: _offset - 4,
