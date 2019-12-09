@@ -25,18 +25,18 @@ Future _performTest(bool lazy) async {
 
   for (var i = 0; i < bytes.length; i++) {
     var subBytes = bytes.sublist(0, i + 1);
-    var boxFile = File(path.join(dir.path, 'testBox$i.hive'));
+    var boxFile = File(path.join(dir.path, 'testbox$i.hive'));
     await boxFile.writeAsBytes(subBytes);
 
     var subFrames = frames.takeWhile((f) => f.offset + f.length <= i + 1);
     var subKeystore = Keystore.debug(frames: subFrames);
     if (lazy) {
-      var box = await hive.openLazyBox('testBox$i');
+      var box = await hive.openLazyBox('testbox$i');
       expect(box.keys, subKeystore.getKeys());
       await box.compact();
       await box.close();
     } else {
-      var box = await hive.openBox('testBox$i');
+      var box = await hive.openBox('testbox$i');
       var map = Map.fromIterables(
         subKeystore.getKeys(),
         subKeystore.getValues(),
@@ -52,7 +52,6 @@ Future _performTest(bool lazy) async {
 }
 
 Future _performTestWithoutOutput(bool lazy) {
-  return _performTest(lazy);
   return runZoned(
     () => _performTest(lazy),
     zoneSpecification: ZoneSpecification(

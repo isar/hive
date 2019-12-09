@@ -90,8 +90,7 @@ void main() {
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
-          var writer = BinaryWriterImpl(null)
-            ..write(frame.value, writeTypeId: false);
+          var writer = BinaryWriterImpl(null)..write(frame.value);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
 
@@ -101,8 +100,7 @@ void main() {
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
-          var writer = BinaryWriterImpl(null)
-            ..write(frame.value, writeTypeId: false);
+          var writer = BinaryWriterImpl(null)..write(frame.value);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
       });

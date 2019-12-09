@@ -13,6 +13,7 @@ import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
 
 class StorageBackendJs extends StorageBackend {
+  static const bytePrefix = [0x90, 0xA9];
   final Database db;
   final CryptoHelper crypto;
 
@@ -27,7 +28,9 @@ class StorageBackendJs extends StorageBackend {
   bool supportsCompaction = false;
 
   bool _isEncoded(Uint8List bytes) {
-    return bytes.length >= 2 && bytes[0] == 0x90 && bytes[1] == 0xA9;
+    return bytes.length >= bytePrefix.length &&
+        bytes[0] == bytePrefix[0] &&
+        bytes[1] == bytePrefix[1];
   }
 
   @visibleForTesting
@@ -51,12 +54,12 @@ class StorageBackendJs extends StorageBackend {
     }
 
     var frameWriter = BinaryWriterImpl(_registry);
-    frameWriter.writeByteList([0x90, 0xA9], writeLength: false);
+    frameWriter.writeByteList(bytePrefix, writeLength: false);
 
     if (crypto == null) {
-      frameWriter.write(value, writeTypeId: false);
+      frameWriter.write(value);
     } else {
-      frameWriter.writeEncrypted(value, crypto, writeTypeId: false);
+      frameWriter.writeEncrypted(value, crypto);
     }
 
     var bytes = frameWriter.toBytes();
