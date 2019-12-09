@@ -5,7 +5,7 @@ import '../util/is_browser.dart';
 import 'integration.dart';
 
 Future _performTest(bool lazy) async {
-  var repeat = isBrowser ? 100 : 1000;
+  var repeat = isBrowser ? 20 : 1000;
   var box = await openBox(lazy);
   var entries = <String, dynamic>{};
   for (var i = 0; i < repeat; i++) {

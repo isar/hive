@@ -5,7 +5,7 @@ import '../util/is_browser.dart';
 import 'integration.dart';
 
 Future _performTest(bool lazy) async {
-  var repeat = isBrowser ? 100 : 1000;
+  var repeat = isBrowser ? 20 : 1000;
   var box = await openBox(lazy);
   for (var i = 0; i < repeat; i++) {
     for (var frame in valueTestFrames) {
@@ -23,7 +23,7 @@ Future _performTest(bool lazy) async {
 }
 
 void main() {
-  group('put many entries', () {
+  group('put many strings', () {
     test('normal box', () => _performTest(false));
 
     test('lazy box', () => _performTest(true));
