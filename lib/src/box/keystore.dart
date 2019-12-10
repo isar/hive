@@ -1,3 +1,6 @@
+// ignore_for_file: invalid_use_of_protected_member
+// ignore_for_file: invalid_use_of_visible_for_testing_member
+
 import 'dart:collection';
 
 import 'package:hive/hive.dart';
@@ -104,7 +107,6 @@ class Keystore<E> {
       }
 
       if (value is HiveObject) {
-        // ignore: invalid_use_of_protected_member
         value.init(key, _box);
       }
 
@@ -117,7 +119,6 @@ class Keystore<E> {
       _deletedEntries++;
       if (deletedFrame.value is HiveObject &&
           !identical(deletedFrame.value, value)) {
-        // ignore: invalid_use_of_protected_member
         (deletedFrame.value as HiveObject).unload();
       }
     }

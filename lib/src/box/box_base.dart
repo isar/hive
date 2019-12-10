@@ -116,6 +116,6 @@ abstract class BoxBase<E> {
 
   /// Removes the file which contains the box and closes the box.
   ///
-  /// In the browser, the IndexedDB databese is being removed.
+  /// In the browser, the IndexedDB database is being removed.
   Future<void> deleteFromDisk();
 }

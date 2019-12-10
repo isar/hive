@@ -1,3 +1,6 @@
+// ignore_for_file: invalid_use_of_protected_member
+// ignore_for_file: invalid_use_of_visible_for_testing_member
+
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
@@ -25,7 +28,6 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
     if (frame != null) {
       var value = await backend.readValue(frame);
       if (value is HiveObject) {
-        // ignore: invalid_use_of_protected_member
         value.init(key, this);
       }
       return value as E;
@@ -56,7 +58,6 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
 
     for (var frame in frames) {
       if (frame.value is HiveObject) {
-        // ignore: invalid_use_of_protected_member
         (frame.value as HiveObject).init(frame.key, this);
       }
       keystore.insert(frame.toLazy());
