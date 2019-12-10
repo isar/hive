@@ -237,6 +237,10 @@ class BinaryReaderImpl extends BinaryReader {
     if (availableBytes < 4) return null;
 
     var frameLength = readUint32();
+    if (frameLength < 8) {
+      throw HiveError(
+          'This should not happen. Please open an issue on GitHub.');
+    }
     if (availableBytes < frameLength - 4) return null;
 
     var crc = Uint8ListX.readUint32(_buffer, _offset + frameLength - 8);
