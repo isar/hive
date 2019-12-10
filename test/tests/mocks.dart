@@ -29,3 +29,5 @@ class KeystoreMock extends Mock implements Keystore {}
 class FileMock extends Mock implements File {}
 
 class HiveObjectMock extends Mock implements HiveObject {}
+
+class HiveListMock extends Mock implements HiveListImpl {}
