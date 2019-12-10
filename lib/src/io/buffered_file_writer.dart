@@ -7,7 +7,7 @@ class BufferedFileWriter {
 
   final int maxBufferSize;
 
-  final _buffer = BytesBuilder(copy: false);
+  final _buffer = BytesBuilder(copy: true);
 
   BufferedFileWriter(this.file, [this.maxBufferSize = defaultMaxBufferSize]);
 
