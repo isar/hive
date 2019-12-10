@@ -135,7 +135,6 @@ class StorageBackendVm extends StorageBackend {
     compactionScheduled = true;
 
     return _sync.syncReadWrite(() async {
-      print('compacting');
       await readRaf.setPosition(0);
       var reader = BufferedFileReader(readRaf);
 
