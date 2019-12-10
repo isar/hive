@@ -51,38 +51,6 @@ void main() {
       });
     });
 
-    group('.unskip()', () {
-      test('reduces offset', () async {
-        var reader = await openReader([1, 2, 3, 4, 5]);
-        await reader.loadBytes(5);
-        reader.skip(5);
-        expect(reader.remainingInBuffer, 0);
-        expect(reader.offset, 5);
-
-        reader.unskip(2);
-        expect(reader.remainingInBuffer, 2);
-        expect(reader.offset, 3);
-
-        reader.unskip(3);
-        expect(reader.remainingInBuffer, 5);
-        expect(reader.offset, 0);
-
-        await reader.file.close();
-      });
-
-      test('fails if offset is too low', () async {
-        var reader = await openReader([1, 2, 3]);
-        await reader.loadBytes(3);
-        reader.skip(3);
-        expect(reader.remainingInBuffer, 0);
-        expect(reader.offset, 3);
-
-        expect(() => reader.unskip(4), throwsA(anything));
-
-        await reader.file.close();
-      });
-    });
-
     group('.viewBytes()', () {
       test('returns a view with the requested size', () async {
         var reader = await openReader([1, 2, 3, 4, 5]);
@@ -92,9 +60,7 @@ void main() {
         expect(reader.viewBytes(2), [1, 2]);
         expect(reader.offset, 2);
 
-        reader.unskip(1);
-
-        expect(reader.viewBytes(4), [2, 3, 4, 5]);
+        expect(reader.viewBytes(3), [3, 4, 5]);
         expect(reader.offset, 5);
 
         await reader.file.close();
@@ -112,13 +78,12 @@ void main() {
 
     group('.loadBytes()', () {
       test('returns remaining bytes if enough bytes available', () async {
-        var reader = await openReader([1, 2, 3, 4, 5]);
-        expect(await reader.loadBytes(2), 5);
-        expect(reader.viewBytes(5), [1, 2, 3, 4, 5]);
-        reader.unskip(5);
+        var reader = await openReader([1, 2, 3, 4, 5], 3);
+        expect(await reader.loadBytes(3), 3);
+        expect(await reader.loadBytes(2), 3);
 
-        expect(await reader.loadBytes(5), 5);
-        expect(reader.viewBytes(5), [1, 2, 3, 4, 5]);
+        expect(reader.viewBytes(2), [1, 2]);
+        expect(reader.viewBytes(1), [3]);
 
         await reader.file.close();
       });
@@ -127,10 +92,9 @@ void main() {
         var reader = await openReader([1, 2, 3, 4, 5], 2);
         await reader.loadBytes(2);
         expect(reader.viewBytes(2), [1, 2]);
-        reader.unskip(1);
 
-        expect(await reader.loadBytes(4), 4);
-        expect(reader.viewBytes(4), [2, 3, 4, 5]);
+        expect(await reader.loadBytes(3), 3);
+        expect(reader.viewBytes(3), [3, 4, 5]);
 
         await reader.file.close();
       });
@@ -140,10 +104,11 @@ void main() {
         await reader.loadBytes(3);
         expect(reader.viewBytes(1), [1]);
 
-        expect(await reader.loadBytes(4), 4);
-        expect(reader.viewBytes(4), [2, 3, 4, 5]);
-        expect(await reader.loadBytes(4), 2);
-        expect(reader.viewBytes(2), [6, 7]);
+        expect(await reader.loadBytes(1), 2);
+        expect(await reader.loadBytes(3), 3);
+        expect(reader.viewBytes(2), [2, 3]);
+        expect(await reader.loadBytes(5), 4);
+        expect(reader.viewBytes(3), [4, 5, 6]);
 
         await reader.file.close();
       });
