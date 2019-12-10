@@ -229,6 +229,19 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
+  @override
+  void writeHiveList(HiveList list, {bool writeLength = true}) {
+    if (writeLength) {
+      writeUint32(list.length);
+    }
+    var box = list.box.name;
+    writeByte(box.length);
+    writeAsciiString(box, writeLength: false);
+    for (var obj in list) {
+      writeKey(obj.key);
+    }
+  }
+
   int writeFrame(Frame frame, {CryptoHelper crypto}) {
     var startOffset = _offset;
     _reserveBytes(4);
@@ -285,7 +298,12 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeString(value);
     } else if (value is List) {
-      if (value.contains(null)) {
+      if (value is HiveList) {
+        if (writeTypeId) {
+          writeByte(FrameValueType.hiveListT.index);
+        }
+        writeHiveList(value);
+      } else if (value.contains(null)) {
         if (writeTypeId) {
           writeByte(FrameValueType.listT.index);
         }

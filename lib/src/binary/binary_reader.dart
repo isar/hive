@@ -98,4 +98,9 @@ abstract class BinaryReader {
   ///
   /// If [typeId] is not provided, it is read first.
   dynamic read([int typeId]);
+
+  /// Read a [HiveList] with [length].
+  ///
+  /// If [length] is not provided, it is read first.
+  HiveList readHiveList([int length]);
 }

@@ -220,6 +220,19 @@ class BinaryReaderImpl extends BinaryReader {
     }
   }
 
+  @override
+  HiveList readHiveList([int length]) {
+    length ??= readUint32();
+    var boxNameLength = readByte();
+    var boxName = readAsciiString(boxNameLength);
+    var keys = List<dynamic>(length);
+    for (var i = 0; i < length; i++) {
+      keys[i] = readKey();
+    }
+
+    return HiveListImpl.lazy(boxName, keys);
+  }
+
   Frame readFrame({CryptoHelper crypto, bool lazy = false, int frameOffset}) {
     if (availableBytes < 4) return null;
 
@@ -291,6 +304,8 @@ class BinaryReaderImpl extends BinaryReader {
           return readList();
         case FrameValueType.mapT:
           return readMap();
+        case FrameValueType.hiveListT:
+          return readHiveList();
       }
     } else {
       var resolved = typeRegistry.findAdapterForTypeId(typeId);

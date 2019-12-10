@@ -1,15 +1,31 @@
-part of hive;
+library hive_object_internal;
+
+import 'dart:collection';
+
+import 'package:hive/hive.dart';
+import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/object/hive_collection_mixin.dart';
+import 'package:hive/src/util/delegating_list_view_mixin.dart';
+import 'package:meta/meta.dart';
+
+part 'hive_list_impl.dart';
 
 /// Extend `HiveObject` to add useful methods to the objects you want to store
 /// in Hive
 abstract class HiveObject {
   BoxBase _box;
 
+  dynamic _key;
+
+  // HiveLists in this object
+  final _hiveLists = <HiveList>[];
+
+  // HiveLists containing this object
+  final _remoteHiveLists = <HiveList, int>{};
+
   /// Get the box in which this object is stored. Returns `null` if object has
   /// not been added to a box yet.
   BoxBase get box => _box;
-
-  dynamic _key;
 
   /// Get the key associated with this object. Returns `null` if object has
   /// not been added to a box yet.
@@ -48,7 +64,15 @@ abstract class HiveObject {
     return false;
   }
 
+  HiveList<T> backlink<T extends HiveObject>([List<T> objects]) {
+    _requireInitialized();
+    var hiveList = HiveListImpl<T>(box, objects: objects);
+    _hiveLists.add(hiveList);
+    return hiveList;
+  }
+
   @protected
+  @visibleForTesting
   void init(dynamic key, BoxBase box) {
     if (_box != null) {
       if (_box != box) {
@@ -64,8 +88,33 @@ abstract class HiveObject {
   }
 
   @protected
+  @visibleForTesting
   void unload() {
+    for (var list in _remoteHiveLists.keys) {
+      (list as HiveListImpl).notifyRemoveObject(this);
+    }
+    for (var list in _hiveLists) {
+      list.dispose();
+    }
     _box = null;
     _key = null;
   }
+
+  @protected
+  @visibleForTesting
+  void linkRemoteHiveList(HiveList list) {
+    _requireInitialized();
+    _remoteHiveLists[list] = (_remoteHiveLists[list] ?? 0) + 1;
+  }
+
+  @protected
+  @visibleForTesting
+  void unlinkRemoteHiveList(HiveListImpl list) {
+    if (--_remoteHiveLists[list] == 0) {
+      _remoteHiveLists.remove(list);
+    }
+  }
+
+  @visibleForTesting
+  Map<HiveList, int> get debugRemoteHiveLists => _remoteHiveLists;
 }

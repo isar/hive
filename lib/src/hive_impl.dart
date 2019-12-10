@@ -126,11 +126,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
   }
 
-  BoxBase<E> _box<E>(String name, bool lazy) {
+  BoxBase<E> getBoxInternal<E>(String name, [bool lazy]) {
     var lowerCaseName = name.toLowerCase();
     var box = _boxes[lowerCaseName];
     if (box != null) {
-      if (box.lazy == lazy && box.valueType == E) {
+      if ((lazy == null || box.lazy == lazy) && box.valueType == E) {
         return box as BoxBase<E>;
       } else {
         var typeName = box is LazyBox
@@ -145,10 +145,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Box<E> box<E>(String name) => _box<E>(name, false) as Box<E>;
+  Box<E> box<E>(String name) => getBoxInternal<E>(name, false) as Box<E>;
 
   @override
-  LazyBox<E> lazyBox<E>(String name) => _box<E>(name, true) as LazyBox<E>;
+  LazyBox<E> lazyBox<E>(String name) =>
+      getBoxInternal<E>(name, true) as LazyBox<E>;
 
   @override
   bool isBoxOpen(String name) {

@@ -61,6 +61,9 @@ abstract class BinaryWriter {
   /// Write a [map].
   void writeMap(Map map, {bool writeLength = true});
 
+  /// Write a [HiveList].
+  void writeHiveList(HiveList list, {bool writeLength = true});
+
   /// Write any [value].
   void write<T>(T value, {bool writeTypeId = true});
 }

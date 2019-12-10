@@ -41,4 +41,4 @@ Future<dynamic> getFromBox(BoxBase box, dynamic key, {dynamic defaultValue}) {
   throw ArgumentError('not possible');
 }
 
-const longTimeout = Timeout(Duration(minutes: 5));
+const longTimeout = Timeout(Duration(minutes: 2));

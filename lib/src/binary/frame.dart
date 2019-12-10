@@ -86,4 +86,5 @@ enum FrameValueType {
   stringListT,
   listT,
   mapT,
+  hiveListT,
 }
