@@ -1,21 +1,21 @@
 import 'dart:typed_data';
 
-abstract class Uint8ListX {
-  static int readUint32(Uint8List buffer, int offset) {
-    return buffer[offset] |
-        buffer[offset + 1] << 8 |
-        buffer[offset + 2] << 16 |
-        buffer[offset + 3] << 24;
+extension Uint8ListX on Uint8List {
+  int readUint32(int offset) {
+    return this[offset] |
+        this[offset + 1] << 8 |
+        this[offset + 2] << 16 |
+        this[offset + 3] << 24;
   }
 
-  static void writeUint32(Uint8List buffer, int offset, int value) {
-    buffer[offset] = value;
-    buffer[offset + 1] = value >> 8;
-    buffer[offset + 2] = value >> 16;
-    buffer[offset + 3] = value >> 24;
+  void writeUint32(int offset, int value) {
+    this[offset] = value;
+    this[offset + 1] = value >> 8;
+    this[offset + 2] = value >> 16;
+    this[offset + 3] = value >> 24;
   }
 
-  static Uint8List view(Uint8List buffer, int offset, int bytes) {
-    return Uint8List.view(buffer.buffer, buffer.offsetInBytes + offset, bytes);
+  Uint8List view(int offset, int bytes) {
+    return Uint8List.view(buffer, offsetInBytes + offset, bytes);
   }
 }
