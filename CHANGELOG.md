@@ -1,4 +1,4 @@
-## Next release
+## 1.2.0-dev
 
 ### Breaking changes
 - Removed the `Hive.path` getter
@@ -6,20 +6,26 @@
 - `LazyBox` and `Box` now have a common parent class: `BoxBase`
 - Lazy boxes need to be opened using `Hive.openLazyBox()`
 - Open lazy boxes can be aquired using `Hive.lazyBox()`
+- Box name bug resolved (more information below)
 
 ## Enhancements
-- Lazy boxes can now have a type argument `LazyBox<SomeClass>`
+- Lazy boxes can now have a type argument `LazyBox<YourModel>`
 - Added method to delete boxes without opening them `Hive.deleteBoxFromDisk()`
 - Added `path` parameter to open boxes in a custom path
+- Improved documentation
 
 ### Fixes
-- HiveObjects have not been initialized correctly in lazy boxes
-- Fixed bug where uppercase box name resulted in uppercase file name
+- `HiveObjects` have not been initialized correctly in lazy boxes
+- Fixed bug where uppercase box name resulted in an uppercase filename
 - Fixed compaction bug which caused corrupted boxes
 - Fixed bug which did not allow the key `0xFFFFFFFF`
 
 ### More
 - Changed type of `encryptionKey` from `Uint8List` to `List<int>`
+
+**Important:** Due to a bug in previous Hive versions, boxes whose name contains uppercase characters were stored in a file that also contains upper case characters (e.g. 'myBox' -> 'myBox.hive'). To avoid different behavior on case sensitive file systems, Hive should store files with lower case names.  
+This bug has been resolved in version 1.2.0. If your box name contains upper case characters, the new version will not find a box stored by an older version. Please rename the hive file manually in that case.  
+This also applies to the web version.
 
 ## 1.1.1
 
@@ -27,7 +33,7 @@
 - `object.delete()` now throws exception if object is not stored in a box
 
 ### Fixes
-- Fixed bug where `object.save()` would faild on subsequent calls
+- Fixed bug where `object.save()` would fail on subsequent calls
 
 ## 1.1.0+2
 
@@ -72,7 +78,7 @@
 ## 0.5.1
 - Fixed `Hive.init()` bug in browser
 - Fixed a bug with large lists or strings
-- Improved box opening time in browser
+- Improved box opening time in the browser
 - Improved general write performance
 - Improved docs
 - Added integration tests
@@ -81,9 +87,9 @@
 - Added `keyComparator` parameter for custom key order
 - Added `isEmpty` and `isNotEmpty` getters to box
 - Added support for reading and writing subclasses
-- Removed length limitation for Lists, Maps and Strings
+- Removed length limitation for Lists, Maps, and Strings
 - Greatly improved performance of storing Uint8Lists in browser
-- Removed CRC check in browser (not needed)
+- Removed CRC check in the browser (not needed)
 - Improved documentation
 - TypeIds are now allowed in the range of 0-223
 - Fixed compaction
@@ -101,7 +107,7 @@
 - Added `BigInt` support
 - Added `compactionStrategy` parameter
 - Added automatic crash recovery
-- Added `add()` and `addAll()` for auto increment keys
+- Added `add()` and `addAll()` for auto-increment keys
 - Added `getAt()`, `putAt()` and `deleteAt()` for working with indices
 - Support for int (32 bit unsigned) keys
 - Non-lazy boxes now notify their listeners immediately about changes
