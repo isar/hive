@@ -9,20 +9,21 @@ class HiveListImpl<E extends HiveObject>
 
   final String _boxName;
 
-  List<dynamic> _keys;
+  final List<dynamic> _keys;
 
   List<E> _delegate;
 
   BoxBase _box;
 
+  bool _disposed = false;
+
   HiveListImpl(BoxBase box, {List<E> objects})
       : _getBox = null,
         _boxName = box.name,
+        _keys = null,
         _box = box,
-        _delegate = objects ?? [] {
-    for (var element in _delegate) {
-      element.linkRemoteHiveList(this);
-    }
+        _delegate = [] {
+    addAll(objects);
   }
 
   HiveListImpl.lazy(String boxName, List<dynamic> keys)
@@ -51,6 +52,10 @@ class HiveListImpl<E extends HiveObject>
   @override
   List<E> get delegate {
     if (_delegate == null) {
+      if (_disposed) {
+        throw HiveError('This HiveList has already been disposed.');
+      }
+
       var list = <E>[];
       for (var key in _keys) {
         dynamic element;
@@ -84,8 +89,8 @@ class HiveListImpl<E extends HiveObject>
     for (var element in delegate) {
       element.unlinkRemoteHiveList(this);
     }
-    _keys = null;
     _delegate = null;
+    _disposed = true;
   }
 
   void _checkHiveObjectIsValid(E obj) {
