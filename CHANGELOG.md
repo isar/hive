@@ -8,7 +8,7 @@
 - Open lazy boxes can be aquired using `Hive.lazyBox()`
 - Box name bug resolved (more information below)
 
-## Enhancements
+### Enhancements
 - Lazy boxes can now have a type argument `LazyBox<YourModel>`
 - Added method to delete boxes without opening them `Hive.deleteBoxFromDisk()`
 - Added `path` parameter to open boxes in a custom path
