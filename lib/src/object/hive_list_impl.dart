@@ -23,7 +23,9 @@ class HiveListImpl<E extends HiveObject>
         _keys = null,
         _box = box,
         _delegate = [] {
-    addAll(objects);
+    if (objects != null) {
+      addAll(objects);
+    }
   }
 
   HiveListImpl.lazy(String boxName, List<dynamic> keys)
@@ -42,8 +44,8 @@ class HiveListImpl<E extends HiveObject>
     if (_box == null) {
       _box = _getBox(_boxName);
       if (_box == null) {
-        throw HiveError(
-            'To use this list, you have to open the box "$_boxName" first.');
+        throw HiveError('To use this list, you have to open the '
+            'box "${_boxName ?? _box.name}" first.');
       }
     }
     return _box;

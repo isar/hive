@@ -94,8 +94,9 @@ void main() {
       });
 
       test('throws HiveError if HiveObject is not valid', () {
-        var obj1 = HiveObjectMock();
-        var hiveList = HiveListImpl(BoxMock(), objects: <HiveObject>[obj1]);
+        var box = BoxMock();
+        var obj1 = _getHiveObject('key1', box);
+        var hiveList = HiveListImpl(box, objects: <HiveObject>[obj1]);
 
         var obj2 = _getHiveObject('key2', BoxMock());
         expect(() => hiveList[0] = obj2, throwsHiveError());
@@ -105,10 +106,10 @@ void main() {
     group('.add()', () {
       test('adds key', () {
         var box = BoxMock();
-        var obj1 = HiveObjectMock();
+        var obj1 = _getHiveObject('key1', box);
         var hiveList = HiveListImpl(box, objects: [obj1]);
 
-        var obj2 = _getHiveObject('key1', box);
+        var obj2 = _getHiveObject('key2', box);
         hiveList.add(obj2);
 
         verify(obj2.linkRemoteHiveList(hiveList));
@@ -126,11 +127,11 @@ void main() {
     group('.addAll()', () {
       test('adds keys', () {
         var box = BoxMock();
-        var obj1 = HiveObjectMock();
+        var obj1 = _getHiveObject('key1', box);
         var hiveList = HiveListImpl(box, objects: [obj1]);
 
-        var obj2 = _getHiveObject('key1', box);
-        var obj3 = _getHiveObject('key2', box);
+        var obj2 = _getHiveObject('key2', box);
+        var obj3 = _getHiveObject('key3', box);
         hiveList.addAll([obj2, obj3, obj2]);
         verifyInOrder([
           obj2.linkRemoteHiveList(hiveList),
@@ -150,9 +151,9 @@ void main() {
 
     test('set length', () {
       var box = BoxMock();
-      var obj1 = HiveObjectMock();
-      var obj2 = HiveObjectMock();
-      var obj3 = HiveObjectMock();
+      var obj1 = _getHiveObject('key1', box);
+      var obj2 = _getHiveObject('key2', box);
+      var obj3 = _getHiveObject('key3', box);
       var hiveList = HiveListImpl(box, objects: [obj1, obj2, obj3]);
 
       hiveList.length = 1;
