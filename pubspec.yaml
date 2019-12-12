@@ -3,6 +3,7 @@ description: Lightweight and blazing fast key-value database written in pure Dar
 version: 1.2.0-dev
 author: Simon Leier <simonleier@gmail.com>
 homepage: https://github.com/hivedb/hive
+documentation: http://docs.hivedb.dev/
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
