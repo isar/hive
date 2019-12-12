@@ -30,15 +30,6 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 - **NO** native dependencies
 
 
-## Benchmark
-
-|Read	1000 entries |Write 1000 entries|
-|:------------:|:------------:|
-|	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_read.png) |	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_write.png) |
-| SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
-
-This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
-
 ## Getting started
 To get started using Hive in a Flutter project, add the following dependencies to your `pubspec.yaml`. Use the latest version instead of `[version]`.
 
@@ -130,6 +121,19 @@ class SettingsPage extends StatelessWidget {
 ```
 
 Boxes are cached and therefore fast enough to be used directly in the `build()` method of Flutter widgets.
+
+
+## Benchmark
+
+|Read	1000 entries |Write 1000 entries|
+|:------------:|:------------:|
+|	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_read.png) |	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_write.png) |
+| SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
+
+This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
+
+*Take this benchmark with a grain of salt it is very hard to compare databases objectively since they werde made for different putposes.*
+
 
 ## Todo
 
