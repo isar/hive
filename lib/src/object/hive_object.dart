@@ -9,7 +9,6 @@ import 'package:hive/src/util/delegating_list_view_mixin.dart';
 import 'package:meta/meta.dart';
 
 part 'hive_list_impl.dart';
-part 'hive_object_internal.dart';
 
 /// Extend `HiveObject` to add useful methods to the objects you want to store
 /// in Hive
@@ -65,10 +64,57 @@ abstract class HiveObject {
     return false;
   }
 
-  HiveList<T> backlink<T extends HiveObject>(BoxBase box, [List<T> objects]) {
+  HiveList<T> backlink<T extends HiveObject>([List<T> objects]) {
     _requireInitialized();
     var hiveList = HiveListImpl<T>(box, objects: objects);
     _hiveLists.add(hiveList);
     return hiveList;
   }
+
+  @protected
+  @visibleForTesting
+  void init(dynamic key, BoxBase box) {
+    if (_box != null) {
+      if (_box != box) {
+        throw HiveError('The same instance of an HiveObject cannot '
+            'be stored in two different boxes.');
+      } else if (_key != key) {
+        throw HiveError('The same instance of an HiveObject cannot '
+            'be stored with two different keys.');
+      }
+    }
+    _box = box;
+    _key = key;
+  }
+
+  @protected
+  @visibleForTesting
+  void unload() {
+    for (var list in _remoteHiveLists.keys) {
+      (list as HiveListImpl).notifyRemoveObject(this);
+    }
+    for (var list in _hiveLists) {
+      list.dispose();
+    }
+    _box = null;
+    _key = null;
+  }
+
+  @protected
+  @visibleForTesting
+  void linkRemoteHiveList(HiveList list) {
+    _requireInitialized();
+    _remoteHiveLists[list] = (_remoteHiveLists[list] ?? 0) + 1;
+  }
+
+  @protected
+  @visibleForTesting
+  void unlinkRemoteHiveList(HiveListImpl list) {
+    if (--_remoteHiveLists[list] == 0) {
+      _remoteHiveLists.remove(list);
+    }
+  }
+
+  @visibleForTesting
+  Map<HiveList, int> get debugRemoteHiveLists => _remoteHiveLists;
 }
