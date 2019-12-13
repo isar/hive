@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import '../mocks.dart';
@@ -223,6 +224,17 @@ void main() {
           keystore.insert(Frame('key1', 'val2'));
           expect(keystore.deletedEntries, 1);
         });
+
+        test('broadcasts change event', () {
+          var notifier = ChangeNotifierMock();
+          var keystore = Keystore.debug(notifier: notifier);
+
+          keystore.insert(Frame('key1', 'val1'));
+          verify(notifier.notify(Frame('key1', 'val1')));
+
+          keystore.insert(Frame('key1', 'val2'));
+          verify(notifier.notify(Frame('key1', 'val2')));
+        });
       });
 
       group('delete', () {
@@ -262,12 +274,30 @@ void main() {
           keystore.insert(Frame.deleted('key1'));
           expect(keystore.deletedEntries, 1);
         });
+
+        test('broadcasts change event', () {
+          var notifier = ChangeNotifierMock();
+          var keystore = Keystore.debug(
+            frames: [Frame('key1', 'val1')],
+            notifier: notifier,
+          );
+
+          reset(notifier);
+
+          keystore.insert(Frame.deleted('key1'));
+          verify(notifier.notify(Frame.deleted('key1')));
+
+          keystore.insert(Frame.deleted('key1'));
+          verifyNoMoreInteractions(notifier);
+        });
       });
     });
 
     group('.beginTransaction()', () {
       test('adding new frames', () {
-        var keystore = Keystore.debug();
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(notifier: notifier);
+
         var created = keystore.beginTransaction([
           Frame('key1', 'val1'),
           Frame('key2', 'val2'),
@@ -276,10 +306,18 @@ void main() {
         expect(created, true);
         expect(keystore.transactions.first.added, ['key1', 'key2']);
         expect(keystore.frames, [Frame('key1', 'val1'), Frame('key2', 'val2')]);
+        verify(notifier.notify(Frame('key1', 'val1')));
+        verify(notifier.notify(Frame('key2', 'val2')));
       });
 
       test('overriding existing keys', () {
-        var keystore = Keystore.debug(frames: [Frame('key1', 'val1')]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key1', 'val1')],
+          notifier: notifier,
+        );
+        reset(notifier);
+
         var created = keystore.beginTransaction([
           Frame('key1', 'val2'),
           Frame('key2', 'val3'),
@@ -290,21 +328,36 @@ void main() {
           'key1': Frame('key1', 'val1'),
         });
         expect(keystore.frames, [Frame('key1', 'val2'), Frame('key2', 'val3')]);
+        verify(notifier.notify(Frame('key1', 'val2')));
+        verify(notifier.notify(Frame('key2', 'val3')));
       });
 
       test('empty transaction', () {
-        var keystore = Keystore.debug(frames: [Frame('key1', 'val1')]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key1', 'val1')],
+          notifier: notifier,
+        );
+        reset(notifier);
+
         var created = keystore.beginTransaction([]);
 
         expect(created, false);
         expect(keystore.frames, [Frame('key1', 'val1')]);
+        verifyZeroInteractions(notifier);
       });
 
       test('deleting frames', () {
-        var keystore = Keystore.debug(frames: [
-          Frame('key1', 'val1'),
-          Frame('key2', 'val2'),
-        ]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [
+            Frame('key1', 'val1'),
+            Frame('key2', 'val2'),
+          ],
+          notifier: notifier,
+        );
+        reset(notifier);
+
         var created = keystore.beginTransaction([
           Frame.deleted('key1'),
           Frame.deleted('key3'),
@@ -315,6 +368,7 @@ void main() {
           'key1': Frame('key1', 'val1'),
         });
         expect(keystore.frames, [Frame('key2', 'val2')]);
+        verify(notifier.notify(Frame.deleted('key1')));
       });
     });
 
@@ -341,28 +395,37 @@ void main() {
 
     group('.cancelTransaction()', () {
       test('add', () {
-        var keystore = Keystore.debug();
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(notifier: notifier);
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('otherKey', 'otherVal')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('otherKey', 'otherVal')]);
         expectTrx(
-            keystore.transactions, [KeyTransaction()..added.add('otherKey')]);
+          keystore.transactions,
+          [KeyTransaction()..added.add('otherKey')],
+        );
+        verify(notifier.notify(Frame.deleted('key')));
       });
 
       test('add then override', () {
-        var keystore = Keystore.debug();
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(notifier: notifier);
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val2')]);
         expectTrx(keystore.transactions, [KeyTransaction()..added.add('key')]);
+        verifyZeroInteractions(notifier);
       });
 
       test('add then delete', () {
-        var keystore = Keystore.debug();
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(notifier: notifier);
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([
           Frame('otherKey', 'otherVal'),
@@ -371,6 +434,7 @@ void main() {
         keystore.beginTransaction([
           Frame('key', 'val2'),
         ]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [
@@ -381,21 +445,33 @@ void main() {
           KeyTransaction()..added.add('otherKey'),
           KeyTransaction()..added.add('key'),
         ]);
+        verifyZeroInteractions(notifier);
       });
 
       test('override', () {
-        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key', 'val1')],
+          notifier: notifier,
+        );
         keystore.beginTransaction([Frame('key', 'val2')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val1')]);
         expectTrx(keystore.transactions, []);
+        verify(notifier.notify(Frame('key', 'val1')));
       });
 
       test('override then add', () {
-        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key', 'val1')],
+          notifier: notifier,
+        );
         keystore.beginTransaction([Frame('key', 'val2')]);
         keystore.beginTransaction([Frame('key', 'val3')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val3')]);
@@ -404,33 +480,48 @@ void main() {
             ..added.add('key')
             ..deleted['key'] = Frame('key', 'val1'),
         ]);
+        verifyZeroInteractions(notifier);
       });
 
       test('override then delete', () {
-        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key', 'val1')],
+          notifier: notifier,
+        );
         keystore.beginTransaction([Frame('key', 'val2')]);
         keystore.beginTransaction([Frame.deleted('key')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, []);
         expectTrx(keystore.transactions, [
           KeyTransaction()..deleted['key'] = Frame('key', 'val1'),
         ]);
+        verifyZeroInteractions(notifier);
       });
 
       test('delete', () {
-        var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key', 'val1')],
+          notifier: notifier,
+        );
         keystore.beginTransaction([Frame.deleted('key')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val1')]);
         expectTrx(keystore.transactions, []);
+        verify(notifier.notify(Frame('key', 'val1')));
       });
 
       test('delete then add', () {
+        var notifier = ChangeNotifierMock();
         var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame.deleted('key')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
+        reset(notifier);
 
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val2')]);
@@ -439,6 +530,7 @@ void main() {
             ..added.add('key')
             ..deleted['key'] = Frame('key', 'val1'),
         ]);
+        verifyZeroInteractions(notifier);
       });
     });
 
@@ -478,6 +570,19 @@ void main() {
 
         keystore.clear();
         expect(keystore.deletedEntries, 0);
+      });
+
+      test('broadcasts change event', () {
+        var notifier = ChangeNotifierMock();
+        var keystore = Keystore.debug(
+          frames: [Frame('key1', 'val1'), Frame('key2', 'val2')],
+          notifier: notifier,
+        );
+        reset(notifier);
+
+        keystore.clear();
+        verify(notifier.notify(Frame.deleted('key1')));
+        verify(notifier.notify(Frame.deleted('key2')));
       });
     });
   });

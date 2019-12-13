@@ -19,6 +19,7 @@
 - Fixed bug where uppercase box name resulted in an uppercase filename
 - Fixed compaction bug which caused corrupted boxes
 - Fixed bug which did not allow the key `0xFFFFFFFF`
+- Fixed bug where not all `BoxEvent`s have been broadcasted
 
 ### More
 - Changed type of `encryptionKey` from `Uint8List` to `List<int>`

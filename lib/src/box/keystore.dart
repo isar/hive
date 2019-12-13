@@ -123,7 +123,7 @@ class Keystore<E> {
       }
     }
 
-    if (notify) {
+    if (notify && (!frame.deleted || deletedFrame != null)) {
       _notifier.notify(frame);
     }
 
@@ -160,24 +160,28 @@ class Keystore<E> {
 
     deleted_loop:
     for (var key in canceled.deleted.keys) {
+      var deletedFrame = canceled.deleted[key];
       for (var t in transactions) {
         if (t.deleted.containsKey(key)) {
-          t.deleted[key] = canceled.deleted[key];
+          t.deleted[key] = deletedFrame;
           continue deleted_loop;
         }
         if (t.added.contains(key)) {
-          t.deleted[key] = canceled.deleted[key];
+          t.deleted[key] = deletedFrame;
           continue deleted_loop;
         }
       }
-      _store.insert(key, canceled.deleted[key]);
+
+      _store.insert(key, deletedFrame);
+      _notifier.notify(deletedFrame);
     }
 
     added_loop:
     for (var key in canceled.added) {
+      var isOverride = canceled.deleted.containsKey(key);
       for (var t in transactions) {
         if (t.deleted.containsKey(key)) {
-          if (!canceled.deleted.containsKey(key)) {
+          if (!isOverride) {
             t.deleted.remove(key);
           }
           continue added_loop;
@@ -186,8 +190,9 @@ class Keystore<E> {
           continue added_loop;
         }
       }
-      if (!canceled.deleted.containsKey(key)) {
+      if (!isOverride) {
         _store.delete(key);
+        _notifier.notify(Frame.deleted(key));
       }
     }
   }
