@@ -1,4 +1,4 @@
-## 1.2.0-dev
+## 1.2.0-dev2
 
 ### Breaking changes
 - Removed the `Hive.path` getter
@@ -9,6 +9,7 @@
 - Box name bug resolved (more information below)
 
 ### Enhancements
+- Support for relationships, `HiveLists` (see docs)
 - Lazy boxes can now have a type argument `LazyBox<YourModel>`
 - Added method to delete boxes without opening them `Hive.deleteBoxFromDisk()`
 - Added `path` parameter to open boxes in a custom path
