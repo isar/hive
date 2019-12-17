@@ -170,15 +170,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<void> deleteFromDisk() {
-    var deleteFutures = _boxes.values.toList().map((box) {
-      return box.deleteFromDisk();
-    });
-
-    return Future.wait(deleteFutures);
-  }
-
-  @override
   Future<void> deleteBoxFromDisk(String name, {String path}) async {
     var box = _boxes[name.toLowerCase()];
     if (box != null) {
@@ -186,6 +177,15 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     } else {
       await _manager.deleteBox(name, path ?? homePath);
     }
+  }
+
+  @override
+  Future<void> deleteFromDisk() {
+    var deleteFutures = _boxes.values.toList().map((box) {
+      return box.deleteFromDisk();
+    });
+
+    return Future.wait(deleteFutures);
   }
 
   @override
