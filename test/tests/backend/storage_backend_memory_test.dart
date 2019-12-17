@@ -35,9 +35,24 @@ void main() {
           () => backend.readValue(Frame('key', 'val')), throwsUnsupportedError);
     });
 
+    test('.writeFrames() does nothing', () async {
+      var backend = StorageBackendMemory(null, null);
+      await backend.writeFrames([Frame('key', 'val')]);
+    });
+
     test('.compact() throws UnsupportedError', () {
       var backend = StorageBackendMemory(null, null);
       expect(() => backend.compact([]), throwsUnsupportedError);
+    });
+
+    test('.clear() does nothing', () async {
+      var backend = StorageBackendMemory(null, null);
+      await backend.clear();
+    });
+
+    test('.close() does nothing', () async {
+      var backend = StorageBackendMemory(null, null);
+      await backend.close();
     });
 
     test('.deleteFromDisk() throws UnsupportedError', () {
