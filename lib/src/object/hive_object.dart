@@ -64,9 +64,14 @@ abstract class HiveObject {
     return false;
   }
 
-  HiveList<T> backlink<T extends HiveObject>([List<T> objects]) {
+  HiveList<T> hiveList<T extends HiveObject>([List<T> objects]) {
     _requireInitialized();
-    var hiveList = HiveListImpl<T>(box, objects: objects);
+
+    if (box is! Box) {
+      throw HiveError('Only objects in normal boxes can use backlinks.');
+    }
+
+    var hiveList = HiveListImpl<T>(box as Box, objects: objects);
     _hiveLists.add(hiveList);
     return hiveList;
   }
@@ -110,7 +115,7 @@ abstract class HiveObject {
   @protected
   @visibleForTesting
   void unlinkRemoteHiveList(HiveListImpl list) {
-    if (--_remoteHiveLists[list] == 0) {
+    if (--_remoteHiveLists[list] <= 0) {
       _remoteHiveLists.remove(list);
     }
   }

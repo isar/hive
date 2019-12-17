@@ -88,7 +88,7 @@ void main() {
         obj2.init('key2', box);
         obj3.init('key3', box);
 
-        var list1 = obj1.backlink();
+        var list1 = obj1.hiveList();
         list1.addAll([obj2, obj3, obj2]);
         obj2.unload();
 
