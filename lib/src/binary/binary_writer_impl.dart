@@ -20,8 +20,6 @@ class BinaryWriterImpl extends BinaryWriter {
 
   int _offset = 0;
 
-  int get offset => _offset;
-
   ByteData get _byteData {
     _byteDataInstance ??= ByteData.view(_buffer.buffer);
     return _byteDataInstance;
