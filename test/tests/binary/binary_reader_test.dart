@@ -70,6 +70,17 @@ void main() {
       expect(() => br.viewBytes(1), throwsA(anything));
     });
 
+    test('.peekBytes()', () {
+      var byteData = ByteData(3)
+        ..setUint8(0, 0)
+        ..setUint8(1, 17)
+        ..setUint8(2, 255);
+      var br = fromByteData(byteData);
+
+      expect(br.peekBytes(3), [0, 17, 255]);
+      expect(br.viewBytes(3), [0, 17, 255]);
+    });
+
     test('.readWord()', () {
       var byteData = ByteData(4)
         ..setUint16(0, 0, Endian.little)
