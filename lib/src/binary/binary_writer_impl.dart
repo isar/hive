@@ -298,47 +298,7 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeString(value);
     } else if (value is List) {
-      if (value is HiveList) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.hiveListT.index);
-        }
-        writeHiveList(value);
-      } else if (value.contains(null)) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.listT.index);
-        }
-        writeList(value);
-      } else if (value is Uint8List) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.byteListT.index);
-        }
-        writeByteList(value);
-      } else if (value is List<int>) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.intListT.index);
-        }
-        writeIntList(value);
-      } else if (value is List<double>) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.doubleListT.index);
-        }
-        writeDoubleList(value);
-      } else if (value is List<bool>) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.boolListT.index);
-        }
-        writeBoolList(value);
-      } else if (value is List<String>) {
-        if (writeTypeId) {
-          writeByte(FrameValueType.stringListT.index);
-        }
-        writeStringList(value);
-      } else {
-        if (writeTypeId) {
-          writeByte(FrameValueType.listT.index);
-        }
-        writeList(value);
-      }
+      _writeList(value, writeTypeId: writeTypeId);
     } else if (value is Map) {
       if (writeTypeId) {
         writeByte(FrameValueType.mapT.index);
@@ -354,6 +314,51 @@ class BinaryWriterImpl extends BinaryWriter {
         writeByte(resolved.typeId);
       }
       resolved.adapter.write(this, value);
+    }
+  }
+
+  /// TODO remove workaround once dart-lang/sdk#39752 is published
+  void _writeList(List value, {bool writeTypeId = true}) {
+    if (value is HiveList) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.hiveListT.index);
+      }
+      writeHiveList(value);
+    } else if (value.contains(null)) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.listT.index);
+      }
+      writeList(value);
+    } else if (value is Uint8List) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.byteListT.index);
+      }
+      writeByteList(value);
+    } else if (value is List<int>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.intListT.index);
+      }
+      writeIntList(value);
+    } else if (value is List<double>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.doubleListT.index);
+      }
+      writeDoubleList(value);
+    } else if (value is List<bool>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.boolListT.index);
+      }
+      writeBoolList(value);
+    } else if (value is List<String>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.stringListT.index);
+      }
+      writeStringList(value);
+    } else {
+      if (writeTypeId) {
+        writeByte(FrameValueType.listT.index);
+      }
+      writeList(value);
     }
   }
 
