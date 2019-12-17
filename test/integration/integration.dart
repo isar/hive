@@ -2,13 +2,15 @@ import 'dart:math';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/box/box_base_impl.dart';
+import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 
 import '../tests/common.dart';
 import '../util/is_browser.dart';
 
-Future<BoxBase> openBox(bool lazy, [HiveInterface hive]) async {
+Future<BoxBase> openBox(bool lazy,
+    {HiveInterface hive, List<int> encryptionKey}) async {
   hive ??= HiveImpl();
   if (!isBrowser) {
     var dir = await getTempDir();
@@ -16,19 +18,23 @@ Future<BoxBase> openBox(bool lazy, [HiveInterface hive]) async {
   }
   var id = Random().nextInt(99999999);
   if (lazy) {
-    return await hive.openLazyBox('box$id', crashRecovery: false);
+    return await hive.openLazyBox('box$id',
+        crashRecovery: false, encryptionKey: encryptionKey);
   } else {
-    return await hive.openBox('box$id', crashRecovery: false);
+    return await hive.openBox('box$id',
+        crashRecovery: false, encryptionKey: encryptionKey);
   }
 }
 
-Future<BoxBase> reopenBox(BoxBase box) async {
+Future<BoxBase> reopenBox(BoxBase box, {List<int> encryptionKey}) async {
   await box.close();
   var hive = (box as BoxBaseImpl).hive;
-  if (box is LazyBox) {
-    return await hive.openLazyBox(box.name, crashRecovery: false);
+  if (box is LazyBoxImpl) {
+    return await hive.openLazyBox(box.name,
+        crashRecovery: false, encryptionKey: encryptionKey);
   } else {
-    return await hive.openBox(box.name, crashRecovery: false);
+    return await hive.openBox(box.name,
+        crashRecovery: false, encryptionKey: encryptionKey);
   }
 }
 
