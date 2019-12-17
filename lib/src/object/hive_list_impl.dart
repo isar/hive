@@ -5,21 +5,21 @@ class HiveListImpl<E extends HiveObject>
     implements HiveList<E> {
   final _defaultValue = _DefaultValue();
 
-  final BoxBase Function(String) _getBox;
+  final HiveInterface _hive;
 
-  final String _boxName;
+  final String boxName;
 
   final List<dynamic> _keys;
 
   List<E> _delegate;
 
-  BoxBase _box;
+  Box _box;
 
   bool _disposed = false;
 
-  HiveListImpl(BoxBase box, {List<E> objects})
-      : _getBox = null,
-        _boxName = box.name,
+  HiveListImpl(Box box, {List<E> objects})
+      : _hive = null,
+        boxName = box.name,
         _keys = null,
         _box = box,
         _delegate = [] {
@@ -28,24 +28,26 @@ class HiveListImpl<E extends HiveObject>
     }
   }
 
-  HiveListImpl.lazy(String boxName, List<dynamic> keys)
-      : _getBox = (Hive as HiveImpl).getBoxInternal,
-        _boxName = boxName,
+  HiveListImpl.lazy(this.boxName, List<dynamic> keys)
+      : _hive = Hive,
         _keys = keys;
 
   @visibleForTesting
-  HiveListImpl.debug(String boxName, List<dynamic> keys, HiveImpl hive)
-      : _getBox = hive.getBoxInternal,
-        _boxName = boxName,
-        _keys = keys;
+  HiveListImpl.debug(this.boxName, List<dynamic> keys, this._hive)
+      : _keys = keys;
 
   @override
-  BoxBase get box {
+  Box get box {
     if (_box == null) {
-      _box = _getBox(_boxName);
-      if (_box == null) {
-        throw HiveError('To use this list, you have to open the '
-            'box "${_boxName ?? _box.name}" first.');
+      var box = (_hive as HiveImpl).getBoxInternal(boxName);
+      if (box == null) {
+        throw HiveError(
+            'To use this list, you have to open the box "$boxName" first.');
+      } else if (box is! Box) {
+        throw HiveError('The box "$boxName" is a lazy box. '
+            'You can only use HiveLists with normal boxes.');
+      } else {
+        _box = box as Box;
       }
     }
     return _box;
@@ -60,12 +62,7 @@ class HiveListImpl<E extends HiveObject>
 
       var list = <E>[];
       for (var key in _keys) {
-        dynamic element;
-        if (box is Box) {
-          element = (box as Box).get(key, defaultValue: _defaultValue);
-        } else {
-          element = (box as LazyBox).get(key, defaultValue: _defaultValue);
-        }
+        var element = box.get(key, defaultValue: _defaultValue);
         if (element != _defaultValue) {
           list.add(element as E);
         }
@@ -99,7 +96,7 @@ class HiveListImpl<E extends HiveObject>
     if (obj == null) {
       throw HiveError('HiveLists must not contain null elements.');
     } else if (obj.box != box) {
-      throw HiveError('The HiveObject needs to be in the box "$_boxName".');
+      throw HiveError('The HiveObject needs to be in the box "$boxName".');
     }
   }
 
@@ -141,9 +138,6 @@ class HiveListImpl<E extends HiveObject>
     }
     delegate.addAll(iterable);
   }
-
-  @visibleForTesting
-  String get debugBoxName => _boxName;
 
   @visibleForTesting
   List<dynamic> get debugKeys => _keys;

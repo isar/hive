@@ -232,9 +232,9 @@ class BinaryWriterImpl extends BinaryWriter {
     if (writeLength) {
       writeUint32(list.length);
     }
-    var box = list.box.name;
-    writeByte(box.length);
-    writeAsciiString(box, writeLength: false);
+    var boxName = (list as HiveListImpl).boxName;
+    writeByte(boxName.length);
+    writeAsciiString(boxName, writeLength: false);
     for (var obj in list) {
       writeKey(obj.key);
     }
