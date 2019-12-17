@@ -1,12 +1,15 @@
 import 'dart:typed_data';
 
+import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:dartx/dartx.dart';
 
 import '../frames.dart';
+import '../mocks.dart';
 
 List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 
@@ -396,6 +399,37 @@ void main() {
       ]);
     });
 
+    group('.writeHiveList()', () {
+      var box = BoxMock();
+      when(box.name).thenReturn('Box');
+
+      var obj = HiveObjectMock();
+      when(obj.box).thenReturn(box);
+      when(obj.key).thenReturn('key');
+
+      test('write length', () {
+        var list = HiveListImpl(box, objects: [obj]);
+        var bw = getWriter();
+        bw.writeHiveList(list);
+
+        expect(bw.toBytes(), [
+          1, 0, 0, 0, 3, 66, 111, 120, //
+          1, 3, 107, 101, 121, //
+        ]);
+      });
+
+      test('omit length', () {
+        var list = HiveListImpl(box, objects: [obj]);
+        var bw = getWriter();
+        bw.writeHiveList(list, writeLength: false);
+
+        expect(bw.toBytes(), [
+          3, 66, 111, 120, //
+          1, 3, 107, 101, 121, //
+        ]);
+      });
+    });
+
     group('.writeFrame()', () {
       test('normal', () {
         testFrames.forEachIndexed((frame, i) {
@@ -469,6 +503,25 @@ void main() {
         bw.write('hi', writeTypeId: true);
         expect(bw.toBytes(),
             [FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69]);
+      });
+
+      test('HiveList', () {
+        var box = BoxMock();
+        when(box.name).thenReturn('Box');
+
+        var obj = HiveObjectMock();
+        when(obj.box).thenReturn(box);
+        when(obj.key).thenReturn('key');
+
+        var list = HiveListImpl(box, objects: [obj]);
+        var bw = getWriter();
+        bw.write(list);
+
+        expect(bw.toBytes(), [
+          FrameValueType.hiveListT.index,
+          1, 0, 0, 0, 3, 66, 111, 120, //
+          1, 3, 107, 101, 121, //
+        ]);
       });
 
       test('byte list', () {
