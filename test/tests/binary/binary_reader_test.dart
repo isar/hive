@@ -7,13 +7,14 @@ import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 import 'package:dartx/dartx.dart';
 
+import '../common.dart';
 import '../frames.dart';
 
 BinaryReader fromByteData(ByteData byteData) {
   return BinaryReaderImpl(byteData.buffer.asUint8List(), TypeRegistryImpl());
 }
 
-BinaryReader fromBytes(List<int> bytes) {
+BinaryReaderImpl fromBytes(List<int> bytes) {
   return BinaryReaderImpl(Uint8List.fromList(bytes), TypeRegistryImpl());
 }
 
@@ -289,13 +290,13 @@ void main() {
     test('.readList()', () {
       var br = fromBytes([
         2, 0, 0, 0, FrameValueType.boolT.index, 1, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69 //
+        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readList(), [true, 'hi']);
 
       br = fromBytes([
         FrameValueType.boolT.index, 1, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69 //
+        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readList(2), [true, 'hi']);
 
@@ -305,28 +306,63 @@ void main() {
     test('.readMap()', () {
       var br = fromBytes([
         2, 0, 0, 0, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69, //
+        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105, //
         FrameValueType.boolT.index, 1, //
         FrameValueType.boolT.index, 0, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69 //
+        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readMap(), {'hi': true, false: 'hi'});
 
       br = fromBytes([
-        FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69, //
+        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105, //
         FrameValueType.boolT.index, 1, //
         FrameValueType.boolT.index, 0, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69 //
+        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readMap(2), {'hi': true, false: 'hi'});
 
       expect(() => br.readMap(), throwsA(anything));
     });
 
-    test('.readKey()', () {
-      testFrames.forEachIndexed((frame, i) {
-        var reader = BinaryReaderImpl(frameBytes[i].sublist(4), null);
-        expect(reader.readKey(), frame.key);
+    group('.readKey()', () {
+      test('int key', () {
+        var br = fromBytes([0, 123, 0, 0, 0]);
+        expect(br.readKey(), 123);
+      });
+
+      test('string key', () {
+        var br = fromBytes([1, 2, 104, 105]);
+        expect(br.readKey(), 'hi');
+      });
+
+      test('wrong key type', () {
+        var br = fromBytes([2, 0, 0, 0, 0]);
+        expect(() => br.readKey(), throwsHiveError('unsupported key type'));
+      });
+    });
+
+    group('.readHiveList()', () {
+      test('read length', () {
+        var br = fromBytes([
+          2, 0, 0, 0, //
+          3, 66, 111, 120, //
+          0, 123, 0, 0, 0, //
+          1, 2, 104, 105, //
+        ]);
+        var hiveList = br.readHiveList() as HiveListImpl;
+        expect(hiveList.boxName, 'Box');
+        expect(hiveList.debugKeys, [123, 'hi']);
+      });
+
+      test('given length', () {
+        var br = fromBytes([
+          3, 66, 111, 120, //
+          0, 123, 0, 0, 0, //
+          1, 2, 104, 105, //
+        ]);
+        var hiveList = br.readHiveList(2) as HiveListImpl;
+        expect(hiveList.boxName, 'Box');
+        expect(hiveList.debugKeys, [123, 'hi']);
       });
     });
 
@@ -438,19 +474,25 @@ void main() {
       });
 
       test('string', () {
-        var br = fromBytes([2, 0, 0, 0, 0x68, 0x69]);
+        var br = fromBytes([2, 0, 0, 0, 104, 105]);
         expect(br.read(FrameValueType.stringT.index), 'hi');
 
-        br = fromBytes([FrameValueType.stringT.index, 2, 0, 0, 0, 0x68, 0x69]);
+        br = fromBytes([FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105]);
         expect(br.read(), 'hi');
       });
 
       test('byte list', () {
-        var br = fromBytes([5, 0, 0, 0, 1, 2, 3, 4, 5]);
+        var br = fromBytes([
+          5, 0, 0, 0, //
+          1, 2, 3, 4, 5, //
+        ]);
         expect(br.read(FrameValueType.byteListT.index), [1, 2, 3, 4, 5]);
 
-        br = fromBytes(
-            [FrameValueType.byteListT.index, 5, 0, 0, 0, 1, 2, 3, 4, 5]);
+        br = fromBytes([
+          FrameValueType.byteListT.index, //
+          5, 0, 0, 0, //
+          1, 2, 3, 4, 5, //
+        ]);
         expect(br.read(), [1, 2, 3, 4, 5]);
       });
 
@@ -506,13 +548,12 @@ void main() {
       });
 
       test('string list', () {
-        var br =
-            fromBytes([2, 0, 0, 0, 2, 0, 0, 0, 0x68, 0x69, 1, 0, 0, 0, 0x68]);
+        var br = fromBytes([2, 0, 0, 0, 2, 0, 0, 0, 104, 105, 1, 0, 0, 0, 104]);
         expect(br.read(FrameValueType.stringListT.index), ['hi', 'h']);
 
         br = fromBytes([
           FrameValueType.stringListT.index,
-          2, 0, 0, 0, 2, 0, 0, 0, 0x68, 0x69, 1, 0, 0, 0, 0x68 //
+          2, 0, 0, 0, 2, 0, 0, 0, 104, 105, 1, 0, 0, 0, 104 //
         ]);
         expect(br.read(), ['hi', 'h']);
       });
@@ -538,6 +579,19 @@ void main() {
           ..setUint8(23, FrameValueType.nullT.index);
         br = fromByteData(byteData);
         expect(br.read(), [12345, 123, null]);
+      });
+
+      test('HiveList', () {
+        var br = fromBytes([
+          FrameValueType.hiveListT.index, 2, 0, 0, 0, //
+          3, 66, 111, 120, //
+          0, 123, 0, 0, 0, //
+          1, 2, 104, 105, //
+        ]);
+
+        var hiveList = br.read() as HiveListImpl;
+        expect(hiveList.boxName, 'Box');
+        expect(hiveList.debugKeys, [123, 'hi']);
       });
     });
   });
