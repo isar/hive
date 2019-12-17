@@ -370,10 +370,6 @@ class BinaryWriterImpl extends BinaryWriter {
     _addBytes(encryptedValue);
   }
 
-  Uint8List view(int offset, int length) {
-    return Uint8List.view(_buffer.buffer, offset, length);
-  }
-
   Uint8List toBytes() {
     return Uint8List.view(_buffer.buffer, 0, _offset);
   }
