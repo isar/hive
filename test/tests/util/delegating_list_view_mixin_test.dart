@@ -11,9 +11,22 @@ void main() {
       testList = _TestList(['a', 'b', 'cc']);
     });
 
+    test('operator +', () {
+      expect(testList + ['d', 'q'], ['a', 'b', 'cc', 'd', 'q']);
+    });
+
     test('.any()', () {
       expect(testList.any((e) => e == 'b'), isTrue);
       expect(testList.any((e) => e == 'd'), isFalse);
+    });
+
+    test('.asMap()', () {
+      expect(testList.asMap(), {0: 'a', 1: 'b', 2: 'cc'});
+    });
+
+    test('.cast()', () {
+      List dynamicList = testList;
+      expect(dynamicList.cast<String>(), isA<List<String>>());
     });
 
     test('.contains()', () {
@@ -22,7 +35,7 @@ void main() {
     });
 
     test('.elementAt()', () {
-      expect(testList.elementAt(1), equals('b'));
+      expect(testList.elementAt(1), 'b');
     });
 
     test('.every()', () {
@@ -31,27 +44,40 @@ void main() {
     });
 
     test('.expand()', () {
-      expect(testList.expand((e) => e.codeUnits), equals([97, 98, 99, 99]));
+      expect(testList.expand((e) => e.codeUnits), [97, 98, 99, 99]);
     });
 
     test('.first()', () {
-      expect(testList.first, equals('a'));
+      expect(testList.first, 'a');
     });
 
     test('.firstWhere()', () {
-      expect(testList.firstWhere((e) => e == 'b'), equals('b'));
-      expect(
-          testList.firstWhere((e) => e == 'd', orElse: () => 'e'), equals('e'));
+      expect(testList.firstWhere((e) => e == 'b'), 'b');
+      expect(testList.firstWhere((e) => e == 'd', orElse: () => 'e'), 'e');
     });
 
     test('.fold()', () {
-      expect(testList.fold('z', (p, e) => p + e), equals('zabcc'));
+      expect(testList.fold('z', (p, e) => p + e), 'zabcc');
     });
 
     test('.forEach()', () {
       final s = StringBuffer();
       testList.forEach(s.write);
-      expect(s.toString(), equals('abcc'));
+      expect(s.toString(), 'abcc');
+    });
+
+    test('.getRange()', () {
+      expect(testList.getRange(1, 2), ['b']);
+    });
+
+    test('.indexOf()', () {
+      expect(testList.indexOf('b'), 1);
+      expect(testList.indexOf('x'), -1);
+    });
+
+    test('.indexWhere()', () {
+      expect(testList.indexWhere((e) => e == 'b'), 1);
+      expect(testList.indexWhere((e) => e == 'x'), -1);
     });
 
     test('.isEmpty', () {
@@ -65,91 +91,108 @@ void main() {
     });
 
     test('.followedBy()', () {
-      expect(
-          testList.followedBy(['d', 'e']), equals(['a', 'b', 'cc', 'd', 'e']));
-      expect(testList.followedBy(testList),
-          equals(['a', 'b', 'cc', 'a', 'b', 'cc']));
+      expect(testList.followedBy(['d', 'e']), ['a', 'b', 'cc', 'd', 'e']);
+      expect(testList.followedBy(testList), ['a', 'b', 'cc', 'a', 'b', 'cc']);
     });
 
     test('.forEach()', () {
       final it = testList.iterator;
       expect(it.current, isNull);
       expect(it.moveNext(), isTrue);
-      expect(it.current, equals('a'));
+      expect(it.current, 'a');
       expect(it.moveNext(), isTrue);
-      expect(it.current, equals('b'));
+      expect(it.current, 'b');
       expect(it.moveNext(), isTrue);
-      expect(it.current, equals('cc'));
+      expect(it.current, 'cc');
       expect(it.moveNext(), isFalse);
       expect(it.current, isNull);
     });
 
     test('.join()', () {
-      expect(testList.join(), equals('abcc'));
-      expect(testList.join(','), equals('a,b,cc'));
+      expect(testList.join(), 'abcc');
+      expect(testList.join(','), 'a,b,cc');
+    });
+
+    test('.indexOf()', () {
+      expect(testList.lastIndexOf('b'), 1);
+      expect(testList.lastIndexOf('x'), -1);
+    });
+
+    test('.indexWhere()', () {
+      expect(testList.lastIndexWhere((e) => e == 'b'), 1);
+      expect(testList.lastIndexWhere((e) => e == 'x'), -1);
     });
 
     test('.last', () {
-      expect(testList.last, equals('cc'));
+      expect(testList.last, 'cc');
     });
 
     test('.lastWhere()', () {
-      expect(testList.lastWhere((e) => e == 'b'), equals('b'));
-      expect(
-          testList.lastWhere((e) => e == 'd', orElse: () => 'e'), equals('e'));
+      expect(testList.lastWhere((e) => e == 'b'), 'b');
+      expect(testList.lastWhere((e) => e == 'd', orElse: () => 'e'), 'e');
     });
 
     test('.length', () {
-      expect(testList.length, equals(3));
+      expect(testList.length, 3);
     });
 
     test('.map()', () {
-      expect(testList.map((e) => e.toUpperCase()), equals(['A', 'B', 'CC']));
+      expect(testList.map((e) => e.toUpperCase()), ['A', 'B', 'CC']);
     });
 
     test('.reduce()', () {
-      expect(
-          testList.reduce((value, element) => value + element), equals('abcc'));
+      expect(testList.reduce((value, element) => value + element), 'abcc');
+    });
+
+    test('.reversed ', () {
+      expect(testList.reversed, ['cc', 'b', 'a']);
     });
 
     test('single', () {
       expect(() => testList.single, throwsStateError);
-      expect(_TestList(['a']).single, equals('a'));
+      expect(_TestList(['a']).single, 'a');
     });
 
     test('.singleWhere()', () {
-      expect(testList.singleWhere((e) => e == 'b'), equals('b'));
+      expect(testList.singleWhere((e) => e == 'b'), 'b');
       expect(() => testList.singleWhere((e) => e == 'd'), throwsStateError);
-      expect(testList.singleWhere((e) => e == 'd', orElse: () => 'X'),
-          equals('X'));
+      expect(testList.singleWhere((e) => e == 'd', orElse: () => 'X'), 'X');
     });
 
     test('.skip()', () {
-      expect(testList.skip(1), equals(['b', 'cc']));
+      expect(testList.skip(1), ['b', 'cc']);
     });
 
     test('.skipWhile()', () {
-      expect(testList.skipWhile((e) => e == 'a'), equals(['b', 'cc']));
+      expect(testList.skipWhile((e) => e == 'a'), ['b', 'cc']);
+    });
+
+    test('.sublist()', () {
+      expect(testList.sublist(1, 2), ['b']);
     });
 
     test('.take()', () {
-      expect(testList.take(1), equals(['a']));
+      expect(testList.take(1), ['a']);
     });
 
     test('.skipWhile()', () {
-      expect(testList.takeWhile((e) => e == 'a'), equals(['a']));
+      expect(testList.takeWhile((e) => e == 'a'), ['a']);
     });
 
     test('.toList()', () {
-      expect(testList.toList(), equals(['a', 'b', 'cc']));
+      expect(testList.toList(), ['a', 'b', 'cc']);
     });
 
     test('.toSet()', () {
-      expect(testList.toSet(), equals(<String>{'a', 'b', 'cc'}));
+      expect(testList.toSet(), <String>{'a', 'b', 'cc'});
     });
 
     test('.where()', () {
-      expect(testList.where((e) => e.length == 1), equals(['a', 'b']));
+      expect(testList.where((e) => e.length == 1), ['a', 'b']);
+    });
+
+    test('.whereType()', () {
+      expect(testList.whereType<String>(), ['a', 'b', 'cc']);
     });
   });
 }

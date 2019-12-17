@@ -61,7 +61,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
 
   @override
   int indexOf(Object element, [int start = 0]) =>
-      delegate.indexOf(element); // ignore: argument_type_not_assignable
+      delegate.indexOf(element, start); // ignore: argument_type_not_assignable
 
   @override
   int indexWhere(bool Function(E element) test, [int start = 0]) =>
