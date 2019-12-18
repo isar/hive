@@ -44,8 +44,14 @@ class BackendManager implements BackendManagerInterface {
 
   @override
   Future<void> deleteBox(String name, String path) async {
-    await File(path_helper.join(path, '$name.hive')).delete();
-    await File(path_helper.join(path, '$name.hivec')).delete();
-    await File(path_helper.join(path, '$name.lock')).delete();
+    await _deleteFileIfExists(File(path_helper.join(path, '$name.hive')));
+    await _deleteFileIfExists(File(path_helper.join(path, '$name.hivec')));
+    await _deleteFileIfExists(File(path_helper.join(path, '$name.lock')));
+  }
+
+  Future<void> _deleteFileIfExists(File file) async {
+    if (await file.exists()) {
+      await file.delete();
+    }
   }
 }
