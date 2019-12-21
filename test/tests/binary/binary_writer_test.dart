@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:dartx/dartx.dart';
@@ -403,12 +404,10 @@ void main() {
       var box = BoxMock();
       when(box.name).thenReturn('Box');
 
-      var obj = HiveObjectMock();
-      when(obj.box).thenReturn(box);
-      when(obj.key).thenReturn('key');
+      var obj = TestHiveObject()..init('key', box);
 
       test('write length', () {
-        var list = HiveListImpl(box, objects: [obj]);
+        var list = HiveList(obj, box, objects: [obj]);
         var bw = getWriter();
         bw.writeHiveList(list);
 
@@ -419,7 +418,7 @@ void main() {
       });
 
       test('omit length', () {
-        var list = HiveListImpl(box, objects: [obj]);
+        var list = HiveList(obj, box, objects: [obj]);
         var bw = getWriter();
         bw.writeHiveList(list, writeLength: false);
 
@@ -509,11 +508,8 @@ void main() {
         var box = BoxMock();
         when(box.name).thenReturn('Box');
 
-        var obj = HiveObjectMock();
-        when(obj.box).thenReturn(box);
-        when(obj.key).thenReturn('key');
-
-        var list = HiveListImpl(box, objects: [obj]);
+        var obj = TestHiveObject()..init('key', box);
+        var list = HiveList(obj, box, objects: [obj]);
         var bw = getWriter();
         bw.write(list);
 

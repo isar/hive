@@ -5,17 +5,15 @@ import 'package:test/test.dart';
 
 import '../mocks.dart';
 
-class _TestObject = Object with HiveObject;
-
 HiveList _getTestList(Box box) {
-  var obj1 = _TestObject();
+  var obj1 = TestHiveObject();
   obj1.init('key1', box);
-  var obj2 = _TestObject();
+  var obj2 = TestHiveObject();
   obj2.init('key2', box);
-  var obj3 = _TestObject();
+  var obj3 = TestHiveObject();
   obj3.init('key3', box);
 
-  return HiveListImpl(box, objects: [obj1, obj2, obj3]);
+  return HiveList(obj1, box, objects: [obj1, obj2, obj3]);
 }
 
 void main() {
@@ -61,12 +59,12 @@ void main() {
 
     test('.toMap()', () {
       var box = BoxMock();
-      var obj1 = _TestObject();
+      var obj1 = TestHiveObject();
       obj1.init('key1', box);
-      var obj2 = _TestObject();
+      var obj2 = TestHiveObject();
       obj2.init('key2', box);
 
-      var hiveList = HiveListImpl(box, objects: [obj1, obj2]);
+      var hiveList = HiveList(obj1, box, objects: [obj1, obj2]);
 
       expect(hiveList.toMap(), {'key1': obj1, 'key2': obj2});
     });

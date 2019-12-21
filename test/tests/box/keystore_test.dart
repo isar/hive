@@ -6,8 +6,6 @@ import 'package:test/test.dart';
 
 import '../mocks.dart';
 
-class _TestHiveObject extends HiveObject {}
-
 void main() {
   void expectTrx(Iterable<KeyTransaction> i1, Iterable<KeyTransaction> i2) {
     expect(i1.length, i2.length);
@@ -166,7 +164,7 @@ void main() {
           var box = BoxMock();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = _TestHiveObject();
+          var hiveObject = TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
 
           expect(hiveObject.key, 'key');
@@ -194,9 +192,9 @@ void main() {
           var box = BoxMock();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = _TestHiveObject();
+          var hiveObject = TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
-          keystore.insert(Frame('key', HiveObjectMock()));
+          keystore.insert(Frame('key', TestHiveObject()));
 
           expect(hiveObject.key, null);
           expect(hiveObject.box, null);
@@ -206,7 +204,7 @@ void main() {
           var box = BoxMock();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = _TestHiveObject();
+          var hiveObject = TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
           keystore.insert(Frame('key', hiveObject));
 
@@ -258,7 +256,7 @@ void main() {
 
         test('unloads deleted HiveObject', () {
           var box = BoxMock();
-          var hiveObject = HiveObjectMock();
+          var hiveObject = TestHiveObject();
           var keystore =
               Keystore.debug(frames: [Frame('key', hiveObject)], box: box);
 
@@ -545,7 +543,7 @@ void main() {
       });
 
       test('unloads HiveObjects', () {
-        var hiveObject = _TestHiveObject();
+        var hiveObject = TestHiveObject();
         var box = BoxMock();
         var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
