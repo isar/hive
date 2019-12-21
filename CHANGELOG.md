@@ -1,4 +1,4 @@
-## 1.2.0-dev2
+## 1.2.0-dev3
 
 ### Breaking changes
 - Removed the `Hive.path` getter
@@ -25,8 +25,12 @@
 ### More
 - Changed type of `encryptionKey` from `Uint8List` to `List<int>`
 
-**Important:** Due to a bug in previous Hive versions, boxes whose name contains uppercase characters were stored in a file that also contains upper case characters (e.g. 'myBox' -> 'myBox.hive'). To avoid different behavior on case sensitive file systems, Hive should store files with lower case names.  
-This bug has been resolved in version 1.2.0. If your box name contains upper case characters, the new version will not find a box stored by an older version. Please rename the hive file manually in that case.  
+### Important:
+Due to a bug in previous Hive versions, boxes whose name contains uppercase characters were stored in a file that also contains upper case characters (e.g. 'myBox' -> 'myBox.hive').
+
+To avoid different behavior on case sensitive file systems, Hive should store files with lower case names. This bug has been resolved in version 1.2.0.
+
+If your box name contains upper case characters, the new version will not find a box stored by an older version. Please rename the hive file manually in that case.  
 This also applies to the web version.
 
 ## 1.1.1
