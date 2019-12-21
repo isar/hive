@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 import '../tests/common.dart';
 import '../util/is_browser.dart';
 
-Future<BoxBase> openBox(bool lazy,
+Future<BoxBase<T>> openBox<T>(bool lazy,
     {HiveInterface hive, List<int> encryptionKey}) async {
   hive ??= HiveImpl();
   if (!isBrowser) {
@@ -18,33 +18,35 @@ Future<BoxBase> openBox(bool lazy,
   }
   var id = Random().nextInt(99999999);
   if (lazy) {
-    return await hive.openLazyBox('box$id',
+    return await hive.openLazyBox<T>('box$id',
         crashRecovery: false, encryptionKey: encryptionKey);
   } else {
-    return await hive.openBox('box$id',
+    return await hive.openBox<T>('box$id',
         crashRecovery: false, encryptionKey: encryptionKey);
   }
 }
 
-Future<BoxBase> reopenBox(BoxBase box, {List<int> encryptionKey}) async {
-  await box.close();
-  var hive = (box as BoxBaseImpl).hive;
-  if (box is LazyBoxImpl) {
-    return await hive.openLazyBox(box.name,
-        crashRecovery: false, encryptionKey: encryptionKey);
-  } else {
-    return await hive.openBox(box.name,
-        crashRecovery: false, encryptionKey: encryptionKey);
+extension BoxBaseX<T> on BoxBase<T> {
+  Future<BoxBase<T>> reopen({List<int> encryptionKey}) async {
+    await close();
+    var hive = (this as BoxBaseImpl).hive;
+    if (this is LazyBoxImpl) {
+      return await hive.openLazyBox<T>(name,
+          crashRecovery: false, encryptionKey: encryptionKey);
+    } else {
+      return await hive.openBox<T>(name,
+          crashRecovery: false, encryptionKey: encryptionKey);
+    }
   }
-}
 
-Future<dynamic> getFromBox(BoxBase box, dynamic key, {dynamic defaultValue}) {
-  if (box is LazyBox) {
-    return box.get(key, defaultValue: defaultValue);
-  } else if (box is Box) {
-    return Future.value(box.get(key, defaultValue: defaultValue));
+  Future<dynamic> get(dynamic key, {dynamic defaultValue}) {
+    if (this is LazyBox) {
+      return (this as LazyBox).get(key, defaultValue: defaultValue);
+    } else if (this is Box) {
+      return Future.value((this as Box).get(key, defaultValue: defaultValue));
+    }
+    throw ArgumentError('not possible');
   }
-  throw ArgumentError('not possible');
 }
 
 const longTimeout = Timeout(Duration(minutes: 2));

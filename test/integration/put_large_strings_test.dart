@@ -9,9 +9,9 @@ Future _performTest(bool lazy) async {
     await box.put('string$i', largeString);
   }
 
-  box = await reopenBox(box);
+  box = await box.reopen();
   for (var i = 0; i < 5; i++) {
-    var largeString = await getFromBox(box, 'string$i');
+    var largeString = await await box.get('string$i');
 
     expect(largeString == i.toString() * 1000000, true);
   }

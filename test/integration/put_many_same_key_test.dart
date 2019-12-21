@@ -18,10 +18,10 @@ Future _performTest(bool lazy) async {
         await box.put('bool$i', n % 2 == 0);
         await box.put('null$i', null);
 
-        expect(await getFromBox(box, 'string$i'), 'test$n');
-        expect(await getFromBox(box, 'int$i'), n);
-        expect(await getFromBox(box, 'bool$i'), n % 2 == 0);
-        expect(await getFromBox(box, 'null$i', defaultValue: 0), null);
+        expect(await await box.get('string$i'), 'test$n');
+        expect(await await box.get('int$i'), n);
+        expect(await await box.get('bool$i'), n % 2 == 0);
+        expect(await await box.get('null$i', defaultValue: 0), null);
 
         completer.complete();
       });
@@ -29,12 +29,12 @@ Future _performTest(bool lazy) async {
     }
   }
 
-  box = await reopenBox(box);
+  box = await box.reopen();
   for (var i = 0; i < amount; i++) {
-    expect(await getFromBox(box, 'string$i'), 'test99');
-    expect(await getFromBox(box, 'int$i'), 99);
-    expect(await getFromBox(box, 'bool$i'), false);
-    expect(await getFromBox(box, 'null$i', defaultValue: 0), null);
+    expect(await await box.get('string$i'), 'test99');
+    expect(await await box.get('int$i'), 99);
+    expect(await await box.get('bool$i'), false);
+    expect(await await box.get('null$i', defaultValue: 0), null);
   }
   await box.close();
 }

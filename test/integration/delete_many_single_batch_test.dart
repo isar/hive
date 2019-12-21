@@ -16,17 +16,17 @@ Future _performTest(bool lazy) async {
   await box.putAll(entries);
   await box.put('123123', 'value');
 
-  box = await reopenBox(box);
+  box = await box.reopen();
   await box.deleteAll(entries.keys);
 
-  box = await reopenBox(box);
+  box = await box.reopen();
   for (var i = 0; i < amount; i++) {
     expect(box.containsKey('string$i'), false);
     expect(box.containsKey('int$i'), false);
     expect(box.containsKey('bool$i'), false);
     expect(box.containsKey('null$i'), false);
   }
-  expect(await getFromBox(box, '123123'), 'value');
+  expect(await await box.get('123123'), 'value');
 
   await box.close();
 }

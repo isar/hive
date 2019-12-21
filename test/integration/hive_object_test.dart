@@ -38,9 +38,9 @@ Future _performTest(bool lazy) async {
   await box.put('someKey', obj2);
   expect(obj2.key, 'someKey');
 
-  box = await reopenBox(box);
-  obj1 = await getFromBox(box, 0) as _TestObject;
-  obj2 = await getFromBox(box, 'someKey') as _TestObject;
+  box = await box.reopen();
+  obj1 = await await box.get(0) as _TestObject;
+  obj2 = await await box.get('someKey') as _TestObject;
   expect(obj1.name, 'test1');
   expect(obj2.name, 'test2');
 
@@ -48,9 +48,9 @@ Future _performTest(bool lazy) async {
   await obj1.save();
   await obj2.delete();
 
-  box = await reopenBox(box);
-  obj1 = await getFromBox(box, 0) as _TestObject;
-  obj2 = await getFromBox(box, 'someKey') as _TestObject;
+  box = await box.reopen();
+  obj1 = await await box.get(0) as _TestObject;
+  obj2 = await await box.get('someKey') as _TestObject;
   expect(obj1.name, 'test1 updated');
   expect(obj2, null);
 

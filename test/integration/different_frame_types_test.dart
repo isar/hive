@@ -11,11 +11,11 @@ Future _performTest(bool encrypted, bool lazy) async {
     await box.put(frame.key, frame.value);
   }
 
-  box = await reopenBox(box, encryptionKey: encryptionKey);
+  box = await box.reopen(encryptionKey: encryptionKey);
 
   for (var frame in valueTestFrames) {
     if (frame.deleted) continue;
-    var f = await getFromBox(box, frame.key);
+    var f = await await box.get(frame.key);
     expect(f, frame.value);
   }
   await box.close();
