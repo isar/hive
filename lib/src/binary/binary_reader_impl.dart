@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/util/crc32.dart';
 import 'package:hive/src/util/uint8_list_extension.dart';
 
