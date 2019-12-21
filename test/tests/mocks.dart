@@ -25,6 +25,8 @@ class SecureRandomMock extends Mock implements SecureRandom {}
 
 class BoxMock extends Mock implements Box {}
 
+class LazyBoxMock extends Mock implements LazyBox {}
+
 class KeystoreMock extends Mock implements Keystore {}
 
 class FileMock extends Mock implements File {}

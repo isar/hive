@@ -1,45 +1,62 @@
-part of hive_object_internal;
+import 'dart:collection';
+
+import 'package:hive/hive.dart';
+import 'package:hive/src/hive_impl.dart';
+import 'package:hive/src/object/hive_collection_mixin.dart';
+import 'package:hive/src/object/hive_object.dart';
+import 'package:hive/src/util/delegating_list_view_mixin.dart';
+import 'package:meta/meta.dart';
 
 class HiveListImpl<E extends HiveObject>
     with HiveCollectionMixin<E>, ListMixin<E>, DelegatingListViewMixin<E>
     implements HiveList<E> {
-  final _defaultValue = _DefaultValue();
-
-  final HiveInterface _hive;
-
   final String boxName;
 
   final List<dynamic> _keys;
+
+  HiveInterface _hive = Hive;
 
   List<E> _delegate;
 
   Box _box;
 
+  bool _invalidated = false;
+
   bool _disposed = false;
 
-  HiveListImpl(Box box, {List<E> objects})
-      : _hive = null,
-        boxName = box.name,
+  HiveObject _linkedHiveObject;
+
+  HiveListImpl(HiveObject hiveObject, Box box, {List<E> objects})
+      : boxName = box.name,
         _keys = null,
-        _box = box,
-        _delegate = [] {
+        _delegate = [],
+        _box = box {
+    if (hiveObject.box == null || hiveObject.box is LazyBox) {
+      throw HiveError('The HiveObject needs to be in a non-lazy box.');
+    }
+
+    link(hiveObject);
+
     if (objects != null) {
       addAll(objects);
     }
   }
 
-  HiveListImpl.lazy(this.boxName, List<dynamic> keys)
-      : _hive = Hive,
-        _keys = keys;
+  HiveListImpl.lazy(this.boxName, List<dynamic> keys) : _keys = keys;
 
-  @visibleForTesting
-  HiveListImpl.debug(this.boxName, List<dynamic> keys, this._hive)
-      : _keys = keys;
+  @override
+  Iterable<dynamic> get keys {
+    if (_delegate == null) {
+      return _keys;
+    } else {
+      return super.keys;
+    }
+  }
 
   @override
   Box get box {
     if (_box == null) {
-      var box = (_hive as HiveImpl).getBoxInternal(boxName);
+      var box = (_hive as HiveImpl).getBoxWithoutCheckInternal(boxName);
       if (box == null) {
         throw HiveError(
             'To use this list, you have to open the box "$boxName" first.');
@@ -55,16 +72,26 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   List<E> get delegate {
-    if (_delegate == null) {
-      if (_disposed) {
-        throw HiveError('This HiveList has already been disposed.');
-      }
+    if (_disposed) {
+      throw HiveError('This HiveList has already been disposed.');
+    }
 
+    if (_invalidated) {
+      var retained = <E>[];
+      for (var obj in _delegate) {
+        if (obj.hasRemoteHiveList(this)) {
+          retained.add(obj);
+        }
+      }
+      _delegate = retained;
+      _invalidated = false;
+    } else if (_delegate == null) {
       var list = <E>[];
       for (var key in _keys) {
-        var element = box.get(key, defaultValue: _defaultValue);
-        if (element != _defaultValue) {
-          list.add(element as E);
+        if (box.containsKey(key)) {
+          var obj = box.get(key) as E;
+          obj.linkRemoteHiveList(this);
+          list.add(obj);
         }
       }
       _delegate = list;
@@ -73,26 +100,37 @@ class HiveListImpl<E extends HiveObject>
     return _delegate;
   }
 
-  void notifyRemoveObject(HiveObject object) {
-    var retained = <E>[];
-    for (var obj in delegate) {
-      if (obj != object) {
-        retained.add(obj);
-      }
+  void link(HiveObject object) {
+    if (_linkedHiveObject != null) {
+      throw HiveError('HiveList is already linked to a HiveObject.');
     }
-    _delegate = retained;
+
+    _linkedHiveObject = object;
+    _linkedHiveObject.linkHiveList(this);
   }
 
   @override
   void dispose() {
-    for (var element in delegate) {
-      element.unlinkRemoteHiveList(this);
+    if (_delegate != null) {
+      for (var element in _delegate) {
+        element.unlinkRemoteHiveList(this);
+      }
+      _delegate = null;
     }
-    _delegate = null;
+
+    _linkedHiveObject?.unlinkHiveList(this);
+    _linkedHiveObject = null;
+
     _disposed = true;
   }
 
-  void _checkHiveObjectIsValid(E obj) {
+  void invalidate() {
+    if (_delegate != null) {
+      _invalidated = true;
+    }
+  }
+
+  void _checkElementIsValid(E obj) {
     if (obj == null) {
       throw HiveError('HiveLists must not contain null elements.');
     } else if (obj.box != box) {
@@ -102,9 +140,10 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   set length(int newLength) {
+    var delegate = this.delegate;
     if (newLength < delegate.length) {
       for (var i = newLength; i < delegate.length; i++) {
-        delegate[i].unlinkRemoteHiveList(this);
+        delegate[i]?.unlinkRemoteHiveList(this);
       }
     }
     delegate.length = newLength;
@@ -112,18 +151,18 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   void operator []=(int index, E value) {
-    _checkHiveObjectIsValid(value);
+    _checkElementIsValid(value);
     value.linkRemoteHiveList(this);
 
     var oldValue = delegate[index];
     delegate[index] = value;
 
-    oldValue.unlinkRemoteHiveList(this);
+    oldValue?.unlinkRemoteHiveList(this);
   }
 
   @override
   void add(E element) {
-    _checkHiveObjectIsValid(element);
+    _checkElementIsValid(element);
     element.linkRemoteHiveList(this);
     delegate.add(element);
   }
@@ -131,7 +170,7 @@ class HiveListImpl<E extends HiveObject>
   @override
   void addAll(Iterable<E> iterable) {
     for (var element in iterable) {
-      _checkHiveObjectIsValid(element);
+      _checkElementIsValid(element);
     }
     for (var element in iterable) {
       element.linkRemoteHiveList(this);
@@ -139,8 +178,15 @@ class HiveListImpl<E extends HiveObject>
     delegate.addAll(iterable);
   }
 
-  @visibleForTesting
-  List<dynamic> get debugKeys => _keys;
-}
+  @override
+  HiveList<T> castHiveList<T extends HiveObject>() {
+    if (_delegate != null) {
+      return HiveListImpl(_linkedHiveObject, box, objects: _delegate.cast());
+    } else {
+      return HiveListImpl.lazy(boxName, _keys);
+    }
+  }
 
-class _DefaultValue {}
+  @visibleForTesting
+  set debugHive(HiveInterface hive) => _hive = hive;
+}

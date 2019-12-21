@@ -144,6 +144,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     }
   }
 
+  BoxBase getBoxWithoutCheckInternal(String name) {
+    var lowerCaseName = name.toLowerCase();
+    return _boxes[lowerCaseName];
+  }
+
   @override
   Box<E> box<E>(String name) => getBoxInternal<E>(name, false) as Box<E>;
 
