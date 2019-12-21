@@ -192,18 +192,26 @@ void main() {
       expect(key1, isNot(key2));
     });
 
-    test('.deleteBoxFromDisk()', () async {
-      var hive = await initHive();
+    group('.deleteBoxFromDisk()', () {
+      test('deletes box files', () async {
+        var hive = await initHive();
 
-      var box1 = await hive.openBox('testBox1');
-      await box1.put('key', 'value');
-      var box1File = File(box1.path);
+        var box1 = await hive.openBox('testBox1');
+        await box1.put('key', 'value');
+        var box1File = File(box1.path);
 
-      await hive.deleteBoxFromDisk('testBox1');
-      expect(await box1File.exists(), false);
-      expect(hive.isBoxOpen('testBox1'), false);
+        await hive.deleteBoxFromDisk('testBox1');
+        expect(await box1File.exists(), false);
+        expect(hive.isBoxOpen('testBox1'), false);
 
-      await hive.close();
+        await hive.close();
+      });
+
+      test('does nothing if files do not exist', () async {
+        var hive = await initHive();
+        await hive.deleteBoxFromDisk('testBox1');
+        await hive.close();
+      });
     });
 
     test('.deleteFromDisk()', () async {

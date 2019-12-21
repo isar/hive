@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 import 'package:dartx/dartx.dart';
@@ -351,7 +352,7 @@ void main() {
         ]);
         var hiveList = br.readHiveList() as HiveListImpl;
         expect(hiveList.boxName, 'Box');
-        expect(hiveList.debugKeys, [123, 'hi']);
+        expect(hiveList.keys, [123, 'hi']);
       });
 
       test('given length', () {
@@ -362,7 +363,7 @@ void main() {
         ]);
         var hiveList = br.readHiveList(2) as HiveListImpl;
         expect(hiveList.boxName, 'Box');
-        expect(hiveList.debugKeys, [123, 'hi']);
+        expect(hiveList.keys, [123, 'hi']);
       });
     });
 
@@ -591,7 +592,7 @@ void main() {
 
         var hiveList = br.read() as HiveListImpl;
         expect(hiveList.boxName, 'Box');
-        expect(hiveList.debugKeys, [123, 'hi']);
+        expect(hiveList.keys, [123, 'hi']);
       });
     });
   });
