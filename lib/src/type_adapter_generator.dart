@@ -83,7 +83,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
         }
       }
 
-      var setter = cls.lookUpSetter(name, library);
+      var setter = cls.lookUpSetter('$name=', library);
       if (setter != null) {
         var setterAnn =
             getHiveFieldAnn(setter.variable) ?? getHiveFieldAnn(setter);
