@@ -114,7 +114,7 @@ class HiveListImpl<E extends HiveObject>
     if (obj == null) {
       throw HiveError('HiveLists must not contain null elements.');
     } else if (obj.box != box) {
-      throw HiveError('The HiveObject needs to be in the box "$boxName".');
+      throw HiveError('HiveObjects needs to be in the box "$boxName".');
     }
   }
 
