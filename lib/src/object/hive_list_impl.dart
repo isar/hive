@@ -73,7 +73,9 @@ class HiveListImpl<E extends HiveObject>
   @override
   List<E> get delegate {
     if (_disposed) {
-      throw HiveError('This HiveList has already been disposed.');
+      throw HiveError('HiveList has already been disposed.');
+    } else if (_linkedHiveObject == null) {
+      throw HiveError('HiveList has not been linked to a HiveObject yet.');
     }
 
     if (_invalidated) {
@@ -100,6 +102,7 @@ class HiveListImpl<E extends HiveObject>
     return _delegate;
   }
 
+  @override
   void link(HiveObject object) {
     if (_linkedHiveObject != null) {
       throw HiveError('HiveList is already linked to a HiveObject.');
