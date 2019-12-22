@@ -13,11 +13,8 @@ abstract class HiveObject {
 
   dynamic _key;
 
-  // HiveLists in this object
-  final _hiveLists = <HiveList>[];
-
   // HiveLists containing this object
-  final _remoteHiveLists = <HiveList, int>{};
+  final _hiveLists = <HiveList, int>{};
 
   /// Get the box in which this object is stored. Returns `null` if object has
   /// not been added to a box yet.

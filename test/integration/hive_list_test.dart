@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:test/test.dart';
 
 import 'integration.dart';
@@ -37,8 +38,8 @@ void main() {
     var box = await openBox<_TestObject>(false, hive: hive) as Box<_TestObject>;
 
     var obj = _TestObject('obj');
+    obj.list = HiveListImpl(box);
     await box.put('obj', obj);
-    obj.list = HiveListImpl(obj, obj.box as Box);
 
     for (var i = 0; i < 100; i++) {
       var element = _TestObject('element$i');

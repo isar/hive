@@ -67,51 +67,39 @@ void main() {
         obj.init('key', box);
 
         var list = HiveListMock();
-        obj.linkRemoteHiveList(list);
+        obj.linkHiveList(list);
         obj.unload();
 
         verify(list.invalidate());
       });
-
-      test('disposes HiveLists', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
-        obj.init('key', box);
-
-        var list = HiveListMock();
-        obj.linkHiveList(list);
-        obj.unload();
-
-        verify(list.dispose());
-      });
     });
 
-    test('.linkRemoteHiveList()', () {
+    test('.linkHiveList()', () {
       var box = BoxMock();
       var obj = TestHiveObject();
       obj.init('key', box);
       var hiveList = HiveListMock();
 
-      obj.linkRemoteHiveList(hiveList);
-      expect(obj.debugRemoteHiveLists, {hiveList: 1});
-      obj.linkRemoteHiveList(hiveList);
-      expect(obj.debugRemoteHiveLists, {hiveList: 2});
+      obj.linkHiveList(hiveList);
+      expect(obj.debugHiveLists, {hiveList: 1});
+      obj.linkHiveList(hiveList);
+      expect(obj.debugHiveLists, {hiveList: 2});
     });
 
-    test('.unlinkRemoteHiveList()', () {
+    test('.unlinkHiveList()', () {
       var box = BoxMock();
       var obj = TestHiveObject();
       obj.init('key', box);
       var hiveList = HiveListMock();
 
-      obj.linkRemoteHiveList(hiveList);
-      obj.linkRemoteHiveList(hiveList);
-      expect(obj.debugRemoteHiveLists, {hiveList: 2});
+      obj.linkHiveList(hiveList);
+      obj.linkHiveList(hiveList);
+      expect(obj.debugHiveLists, {hiveList: 2});
 
-      obj.unlinkRemoteHiveList(hiveList);
-      expect(obj.debugRemoteHiveLists, {hiveList: 1});
-      obj.unlinkRemoteHiveList(hiveList);
-      expect(obj.debugRemoteHiveLists, {});
+      obj.unlinkHiveList(hiveList);
+      expect(obj.debugHiveLists, {hiveList: 1});
+      obj.unlinkHiveList(hiveList);
+      expect(obj.debugHiveLists, {});
     });
 
     group('.save()', () {

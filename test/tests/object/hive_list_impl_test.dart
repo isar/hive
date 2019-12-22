@@ -21,43 +21,15 @@ HiveObject _getHiveObject(String key, BoxMock box) {
 
 void main() {
   group('HiveListImpl', () {
-    group('HiveListImpl()', () {
-      test('throws exception if given HiveObject is in no box or a LazyBox',
-          () {
-        var objInNoBox = TestHiveObject();
-        expect(
-          () => HiveListImpl(objInNoBox, BoxMock()),
-          throwsHiveError('needs to be in a non-lazy box'),
-        );
+    test('HiveListImpl()', () {
+      var box = BoxMock();
 
-        var objInLazyBox = TestHiveObject();
-        objInLazyBox.init('key', LazyBoxMock());
-        expect(
-          () => HiveListImpl(objInNoBox, BoxMock()),
-          throwsHiveError('needs to be in a non-lazy box'),
-        );
-      });
+      var item1 = _getHiveObject('item1', box);
+      var item2 = _getHiveObject('item2', box);
+      var list = HiveListImpl(box, objects: [item1, item2, item1]);
 
-      test('links HiveList to HiveObject', () {
-        var box = BoxMock();
-        var obj = _getHiveObject('key', box);
-
-        var list = HiveListImpl(obj, box);
-
-        expect(obj.debughiveLists, [list]);
-      });
-
-      test('adds given objects', () {
-        var box = BoxMock();
-        var obj = _getHiveObject('key', box);
-
-        var item1 = _getHiveObject('item1', box);
-        var item2 = _getHiveObject('item2', box);
-        var list = HiveListImpl(obj, box, objects: [item1, item2, item1]);
-
-        expect(item1.debugRemoteHiveLists, {list: 2});
-        expect(item2.debugRemoteHiveLists, {list: 1});
-      });
+      expect(item1.debugHiveLists, {list: 2});
+      expect(item2.debugHiveLists, {list: 1});
     });
 
     test('HiveListImpl.lazy()', () {
@@ -90,13 +62,11 @@ void main() {
 
       test('removes correct elements if invalidated', () {
         var box = BoxMock();
-        var obj = _getHiveObject('key', box);
-
         var item1 = _getHiveObject('item1', box);
         var item2 = _getHiveObject('item2', box);
-        var list = HiveListImpl(obj, box, objects: [item1, item2, item1]);
+        var list = HiveListImpl(box, objects: [item1, item2, item1]);
 
-        item1.debugRemoteHiveLists.clear();
+        item1.debugHiveLists.clear();
         expect(list.delegate, [item1, item2, item1]);
         list.invalidate();
         expect(list.delegate, [item2]);
@@ -116,75 +86,57 @@ void main() {
         var list = HiveListImpl.lazy('box', ['item1', 'none', 'item2', 'item1'])
           ..debugHive = hive;
         expect(list.delegate, [item1, item2, item1]);
-        expect(item1.debugRemoteHiveLists, {list: 2});
-        expect(item2.debugRemoteHiveLists, {list: 1});
+        expect(item1.debugHiveLists, {list: 2});
+        expect(item2.debugHiveLists, {list: 1});
       });
     });
 
     group('.dispose()', () {
       test('unlinks remote HiveObjects if delegate exists', () {
         var box = BoxMock();
-        var obj = _getHiveObject('key', box);
-
         var item1 = _getHiveObject('item1', box);
         var item2 = _getHiveObject('item2', box);
 
-        var list = HiveListImpl(obj, box, objects: [item1, item2, item1]);
+        var list = HiveListImpl(box, objects: [item1, item2, item1]);
         list.dispose();
 
-        expect(item1.debugRemoteHiveLists, {});
-        expect(item2.debugRemoteHiveLists, {});
-      });
-
-      test('unlinks HiveObject', () {
-        var box = BoxMock();
-        var obj = _getHiveObject('key', box);
-        var list = HiveListImpl(obj, box);
-
-        expect(obj.debughiveLists, [list]);
-        list.dispose();
-        expect(obj.debughiveLists, []);
+        expect(item1.debugHiveLists, {});
+        expect(item2.debugHiveLists, {});
       });
     });
 
     test('set length', () {
       var box = BoxMock();
-
-      var obj = _getHiveObject('key', box);
       var item1 = _getHiveObject('item1', box);
       var item2 = _getHiveObject('item2', box);
 
-      var list = HiveListImpl(obj, box, objects: [item1, item2]);
+      var list = HiveListImpl(box, objects: [item1, item2]);
       list.length = 1;
 
-      expect(item2.debugRemoteHiveLists, {});
+      expect(item2.debugHiveLists, {});
       expect(list, [item1]);
     });
 
     group('operator []=', () {
       test('sets key at index', () {
         var box = BoxMock();
-
-        var obj = _getHiveObject('key', box);
         var oldItem = _getHiveObject('old', box);
         var newItem = _getHiveObject('new', box);
 
-        var list = HiveListImpl(obj, box, objects: [oldItem]);
+        var list = HiveListImpl(box, objects: [oldItem]);
         list[0] = newItem;
 
-        expect(oldItem.debugRemoteHiveLists, {});
-        expect(newItem.debugRemoteHiveLists, {list: 1});
+        expect(oldItem.debugHiveLists, {});
+        expect(newItem.debugHiveLists, {list: 1});
         expect(list, [newItem]);
       });
 
       test('throws HiveError if HiveObject is not valid', () {
         var box = BoxMock();
-
-        var obj = _getHiveObject('key', box);
         var oldItem = _getHiveObject('old', box);
         var newItem = _getHiveObject('new', BoxMock());
 
-        var list = HiveListImpl(obj, box, objects: [oldItem]);
+        var list = HiveListImpl(box, objects: [oldItem]);
         expect(() => list[0] = newItem, throwsHiveError());
       });
     });
@@ -192,25 +144,20 @@ void main() {
     group('.add()', () {
       test('adds key', () {
         var box = BoxMock();
-
-        var obj = _getHiveObject('key', box);
         var item1 = _getHiveObject('item1', box);
         var item2 = _getHiveObject('item2', box);
 
-        var list = HiveListImpl(obj, box, objects: [item1]);
+        var list = HiveListImpl(box, objects: [item1]);
         list.add(item2);
 
-        expect(item2.debugRemoteHiveLists, {list: 1});
+        expect(item2.debugHiveLists, {list: 1});
         expect(list, [item1, item2]);
       });
 
       test('throws HiveError if HiveObject is not valid', () {
         var box = BoxMock();
-
-        var obj = _getHiveObject('key', box);
         var item = _getHiveObject('item', BoxMock());
-
-        var list = HiveListImpl(obj, box);
+        var list = HiveListImpl(box);
         expect(() => list.add(item), throwsHiveError('needs to be in the box'));
       });
     });
@@ -218,25 +165,21 @@ void main() {
     group('.addAll()', () {
       test('adds keys', () {
         var box = BoxMock();
-
-        var obj = _getHiveObject('key', box);
         var item1 = _getHiveObject('item1', box);
         var item2 = _getHiveObject('item2', box);
 
-        var list = HiveListImpl(obj, box, objects: [item1]);
+        var list = HiveListImpl(box, objects: [item1]);
         list.addAll([item2, item2]);
 
-        expect(item2.debugRemoteHiveLists, {list: 2});
+        expect(item2.debugHiveLists, {list: 2});
         expect(list, [item1, item2, item2]);
       });
 
       test('throws HiveError if HiveObject is not valid', () {
         var box = BoxMock();
-
-        var obj = _getHiveObject('key', box);
         var item = _getHiveObject('item', BoxMock());
 
-        var list = HiveListImpl(obj, box);
+        var list = HiveListImpl(box);
         expect(() => list.addAll([item]),
             throwsHiveError('needs to be in the box'));
       });

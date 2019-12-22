@@ -16,15 +16,10 @@ extension HiveObjectInternal on HiveObject {
   }
 
   void unload() {
-    for (var list in _remoteHiveLists.keys) {
+    for (var list in _hiveLists.keys) {
       (list as HiveListImpl).invalidate();
     }
 
-    for (var list in _hiveLists) {
-      list.dispose();
-    }
-
-    _remoteHiveLists.clear();
     _hiveLists.clear();
 
     _box = null;
@@ -33,31 +28,19 @@ extension HiveObjectInternal on HiveObject {
 
   void linkHiveList(HiveList list) {
     _requireInitialized();
-    _hiveLists.add(list);
+    _hiveLists[list] = (_hiveLists[list] ?? 0) + 1;
   }
 
   void unlinkHiveList(HiveList list) {
-    _hiveLists.remove(list);
-  }
-
-  void linkRemoteHiveList(HiveList list) {
-    _requireInitialized();
-    _remoteHiveLists[list] = (_remoteHiveLists[list] ?? 0) + 1;
-  }
-
-  void unlinkRemoteHiveList(HiveList list) {
-    if (--_remoteHiveLists[list] <= 0) {
-      _remoteHiveLists.remove(list);
+    if (--_hiveLists[list] <= 0) {
+      _hiveLists.remove(list);
     }
   }
 
-  bool hasRemoteHiveList(HiveList list) {
-    return _remoteHiveLists.containsKey(list);
+  bool isInHiveList(HiveList list) {
+    return _hiveLists.containsKey(list);
   }
 
   @visibleForTesting
-  List<HiveList> get debughiveLists => _hiveLists;
-
-  @visibleForTesting
-  Map<HiveList, int> get debugRemoteHiveLists => _remoteHiveLists;
+  Map<HiveList, int> get debugHiveLists => _hiveLists;
 }

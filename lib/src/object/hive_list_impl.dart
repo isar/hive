@@ -24,19 +24,11 @@ class HiveListImpl<E extends HiveObject>
 
   bool _disposed = false;
 
-  HiveObject _linkedHiveObject;
-
-  HiveListImpl(HiveObject hiveObject, Box box, {List<E> objects})
+  HiveListImpl(Box box, {List<E> objects})
       : boxName = box.name,
         _keys = null,
         _delegate = [],
         _box = box {
-    if (hiveObject.box == null || hiveObject.box is LazyBox) {
-      throw HiveError('The HiveObject needs to be in a non-lazy box.');
-    }
-
-    link(hiveObject);
-
     if (objects != null) {
       addAll(objects);
     }
@@ -74,14 +66,12 @@ class HiveListImpl<E extends HiveObject>
   List<E> get delegate {
     if (_disposed) {
       throw HiveError('HiveList has already been disposed.');
-    } else if (_linkedHiveObject == null) {
-      throw HiveError('HiveList has not been linked to a HiveObject yet.');
     }
 
     if (_invalidated) {
       var retained = <E>[];
       for (var obj in _delegate) {
-        if (obj.hasRemoteHiveList(this)) {
+        if (obj.isInHiveList(this)) {
           retained.add(obj);
         }
       }
@@ -92,7 +82,7 @@ class HiveListImpl<E extends HiveObject>
       for (var key in _keys) {
         if (box.containsKey(key)) {
           var obj = box.get(key) as E;
-          obj.linkRemoteHiveList(this);
+          obj.linkHiveList(this);
           list.add(obj);
         }
       }
@@ -103,26 +93,13 @@ class HiveListImpl<E extends HiveObject>
   }
 
   @override
-  void link(HiveObject object) {
-    if (_linkedHiveObject != null) {
-      throw HiveError('HiveList is already linked to a HiveObject.');
-    }
-
-    _linkedHiveObject = object;
-    _linkedHiveObject.linkHiveList(this);
-  }
-
-  @override
   void dispose() {
     if (_delegate != null) {
       for (var element in _delegate) {
-        element.unlinkRemoteHiveList(this);
+        element.unlinkHiveList(this);
       }
       _delegate = null;
     }
-
-    _linkedHiveObject?.unlinkHiveList(this);
-    _linkedHiveObject = null;
 
     _disposed = true;
   }
@@ -146,7 +123,7 @@ class HiveListImpl<E extends HiveObject>
     var delegate = this.delegate;
     if (newLength < delegate.length) {
       for (var i = newLength; i < delegate.length; i++) {
-        delegate[i]?.unlinkRemoteHiveList(this);
+        delegate[i]?.unlinkHiveList(this);
       }
     }
     delegate.length = newLength;
@@ -155,18 +132,18 @@ class HiveListImpl<E extends HiveObject>
   @override
   void operator []=(int index, E value) {
     _checkElementIsValid(value);
-    value.linkRemoteHiveList(this);
+    value.linkHiveList(this);
 
     var oldValue = delegate[index];
     delegate[index] = value;
 
-    oldValue?.unlinkRemoteHiveList(this);
+    oldValue?.unlinkHiveList(this);
   }
 
   @override
   void add(E element) {
     _checkElementIsValid(element);
-    element.linkRemoteHiveList(this);
+    element.linkHiveList(this);
     delegate.add(element);
   }
 
@@ -176,7 +153,7 @@ class HiveListImpl<E extends HiveObject>
       _checkElementIsValid(element);
     }
     for (var element in iterable) {
-      element.linkRemoteHiveList(this);
+      element.linkHiveList(this);
     }
     delegate.addAll(iterable);
   }
@@ -184,7 +161,7 @@ class HiveListImpl<E extends HiveObject>
   @override
   HiveList<T> castHiveList<T extends HiveObject>() {
     if (_delegate != null) {
-      return HiveListImpl(_linkedHiveObject, box, objects: _delegate.cast());
+      return HiveListImpl(box, objects: _delegate.cast());
     } else {
       return HiveListImpl.lazy(boxName, _keys);
     }

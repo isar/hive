@@ -407,7 +407,7 @@ void main() {
       var obj = TestHiveObject()..init('key', box);
 
       test('write length', () {
-        var list = HiveList(obj, box, objects: [obj]);
+        var list = HiveList(box, objects: [obj]);
         var bw = getWriter();
         bw.writeHiveList(list);
 
@@ -418,7 +418,7 @@ void main() {
       });
 
       test('omit length', () {
-        var list = HiveList(obj, box, objects: [obj]);
+        var list = HiveList(box, objects: [obj]);
         var bw = getWriter();
         bw.writeHiveList(list, writeLength: false);
 
@@ -509,7 +509,7 @@ void main() {
         when(box.name).thenReturn('Box');
 
         var obj = TestHiveObject()..init('key', box);
-        var list = HiveList(obj, box, objects: [obj]);
+        var list = HiveList(box, objects: [obj]);
         var bw = getWriter();
         bw.write(list);
 
