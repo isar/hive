@@ -1,4 +1,4 @@
-## 1.2.0-dev3
+## 1.2.0
 
 ### Breaking changes
 - Removed the `Hive.path` getter
