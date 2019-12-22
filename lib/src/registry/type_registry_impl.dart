@@ -5,7 +5,7 @@ class _ResolvedAdapter<T> {
   final TypeAdapter adapter;
   final int typeId;
 
-  const _ResolvedAdapter(this.adapter, this.typeId);
+  _ResolvedAdapter(this.adapter, this.typeId);
 
   bool matches(dynamic value) => value is T;
 }
@@ -14,21 +14,17 @@ class TypeRegistryImpl implements TypeRegistry {
   @visibleForTesting
   static const reservedTypeIds = 32;
 
-  final TypeRegistryImpl parent;
   final _typeAdapters = <int, _ResolvedAdapter>{};
-
-  TypeRegistryImpl([this.parent]);
 
   _ResolvedAdapter findAdapterForValue(dynamic value) {
     for (var adapter in _typeAdapters.values) {
       if (adapter.matches(value)) return adapter;
     }
-    return parent?.findAdapterForValue(value);
+    return null;
   }
 
   _ResolvedAdapter findAdapterForTypeId(int typeId) {
-    var adapter = _typeAdapters[typeId];
-    return adapter ?? parent?.findAdapterForTypeId(typeId);
+    return _typeAdapters[typeId];
   }
 
   @override

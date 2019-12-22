@@ -7,8 +7,7 @@ import '../common.dart';
 class TestAdapter extends TypeAdapter<int> {
   @override
   int read(BinaryReader reader) {
-    // ignore: avoid_returning_null
-    return null;
+    return 5;
   }
 
   @override
@@ -18,8 +17,7 @@ class TestAdapter extends TypeAdapter<int> {
 class TestAdapter2 extends TypeAdapter<int> {
   @override
   int read(BinaryReader reader) {
-    // ignore: avoid_returning_null
-    return null;
+    return 5;
   }
 
   @override
@@ -53,32 +51,20 @@ void main() {
         expect(() => registry.registerAdapter(TestAdapter(), 0),
             throwsHiveError('already a TypeAdapter for typeId'));
       });
-
-      test('duplicate parent typeId', () {
-        var parent = TypeRegistryImpl();
-        var registry = TypeRegistryImpl(parent);
-
-        parent.registerAdapter(TestAdapter(), 0);
-        expect(() => registry.registerAdapter(TestAdapter(), 0),
-            throwsHiveError('already a TypeAdapter for typeId'));
-      });
-
-      //TODO: handle duplocate type registrations
-      /*test('duplicate type', () {
-        var registry = TypeRegistryImpl();
-        var adapter1 = TestAdapter();
-        registry.registerAdapter(adapter1, 0);
-        var adapter2 = TestAdapter2();
-        registry.registerAdapter(adapter2, 1);
-
-        var resolvedAdapter = registry.findAdapterForValue(111);
-        expect(resolvedAdapter.typeId, 33);
-        expect(resolvedAdapter.adapter, adapter2);
-      });*/
     });
 
-    group('.findAdapterForValue() / .findAdapterForTypeId()', () {
-      test('find', () {
+    test('.findAdapterForTypeId()', () {
+      var registry = TypeRegistryImpl();
+      var adapter = TestAdapter();
+      registry.registerAdapter(adapter, 0);
+
+      var resolvedAdapter = registry.findAdapterForTypeId(32);
+      expect(resolvedAdapter.typeId, 32);
+      expect(resolvedAdapter.adapter, adapter);
+    });
+
+    group('.findAdapterForValue()', () {
+      test('finds adapter', () {
         var registry = TypeRegistryImpl();
         var adapter = TestAdapter();
         registry.registerAdapter(adapter, 0);
@@ -86,40 +72,18 @@ void main() {
         var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 32);
         expect(resolvedAdapter.adapter, adapter);
-
-        resolvedAdapter = registry.findAdapterForTypeId(32);
-        expect(resolvedAdapter.typeId, 32);
-        expect(resolvedAdapter.adapter, adapter);
       });
 
-      test('find in parent', () {
-        var parent = TypeRegistryImpl();
-        var registry = TypeRegistryImpl(parent);
-        var adapter = TestAdapter();
-        parent.registerAdapter(adapter, 0);
-
-        var resolvedAdapter = registry.findAdapterForValue(123);
-        expect(resolvedAdapter.typeId, 32);
-        expect(resolvedAdapter.adapter, adapter);
-
-        resolvedAdapter = registry.findAdapterForTypeId(32);
-        expect(resolvedAdapter.typeId, 32);
-        expect(resolvedAdapter.adapter, adapter);
-      });
-
-      test('prefer child', () {
-        var parent = TypeRegistryImpl();
-        var registry = TypeRegistryImpl(parent);
-
+      test('returns first matching adapter', () {
+        var registry = TypeRegistryImpl();
         var adapter1 = TestAdapter();
-        parent.registerAdapter(adapter1, 0);
-
         var adapter2 = TestAdapter();
+        registry.registerAdapter(adapter1, 0);
         registry.registerAdapter(adapter2, 1);
 
         var resolvedAdapter = registry.findAdapterForValue(123);
-        expect(resolvedAdapter.typeId, 33);
-        expect(resolvedAdapter.adapter, adapter2);
+        expect(resolvedAdapter.typeId, 32);
+        expect(resolvedAdapter.adapter, adapter1);
       });
     });
 
