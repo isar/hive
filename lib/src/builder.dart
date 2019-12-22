@@ -11,11 +11,10 @@ class AdapterField {
 
 abstract class Builder {
   final ClassElement cls;
-  final List<AdapterField> fields;
+  final List<AdapterField> getters;
+  final List<AdapterField> setters;
 
-  Builder(this.cls, this.fields)
-      : assert(cls != null),
-        assert(fields != null);
+  Builder(this.cls, this.getters, this.setters) : assert(cls != null);
 
   String buildRead();
 

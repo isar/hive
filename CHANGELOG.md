@@ -1,3 +1,8 @@
+## 0.6.0
+- Support for HiveLists
+- Support for getters & setters
+- Support for inheritance
+
 ## 0.5.2
 - Fix bug with Uint8Lists
 

@@ -9,13 +9,22 @@ import 'package:hive/hive.dart';
 
 class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   @override
-  String generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) {
+  Future<String> generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) async {
     var cls = getClass(element);
-    var fields = getFields(cls);
+    var library = await buildStep.inputLibrary;
+    var gettersAndSetters = getAccessors(cls, library);
+
+    var getters = gettersAndSetters[0];
+    verifyFieldIndices(getters);
+
+    var setters = gettersAndSetters[1];
+    verifyFieldIndices(setters);
+
     var adapterName = getAdapterName(cls.name, annotation);
-    var builder =
-        cls.isEnum ? EnumBuilder(cls, fields) : ClassBuilder(cls, fields);
+    var builder = cls.isEnum
+        ? EnumBuilder(cls, getters)
+        : ClassBuilder(cls, getters, setters);
 
     return '''
     class $adapterName extends TypeAdapter<${cls.name}> {
@@ -36,61 +45,73 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     check(element.kind == ElementKind.CLASS,
         'Only classes or enums are allowed to be annotated with @HiveType.');
 
-    var cls = element as ClassElement;
-
-    check(!cls.isAbstract,
-        'Classes annotated with @HiveType must not be abstract.');
-
-    return cls;
+    return element as ClassElement;
   }
 
-  Iterable<AdapterField> getAccessors(ClassElement cls) {
-    var fields = <AdapterField>[];
-    for (var field in cls.fields) {
-      var fieldAnn = getHiveFieldAnn(field);
-      if (fieldAnn == null) continue;
+  Set<String> getAllAccessorNames(ClassElement cls) {
+    var accessorNames = <String>{};
 
-      fields.add(AdapterField(fieldAnn.index, field.name, field.type));
-    }
-
-    for (var field in cls.accessors) {
-      var fieldAnn = getHiveFieldAnn(field);
-      if (fieldAnn == null || !field.isGetter) continue;
-
-      fields.add(AdapterField(fieldAnn.index, field.name, field.type));
-    }
-
-    return fields;
-  }
-
-  List<AdapterField> getFields(ClassElement cls) {
-    var types =
-        getTypeAndAllSupertypes(cls).where((it) => getHiveTypeAnn(it) != null);
-    for (var type in types) {
-      print('TYPE: $type');
-    }
-    var adapterFields = <AdapterField>[];
-    for (var type in types) {
-      var fields = getAccessors(type);
-      for (var field in fields) {
-        print(field.name);
-        check(field.index >= 0 || field.index <= 255,
-            'Field numbers can only be in the range 0-255.');
-
-        for (var otherField in fields) {
-          if (otherField == field) continue;
-          if (otherField.index == field.index) {
-            throw HiveError(
-              'Duplicate field number: ${field.index}. Fields "${field.name}" '
-              'and "${otherField.name}" have the same number.',
-            );
-          }
+    var supertypes = cls.allSupertypes.map((it) => it.element);
+    for (var type in [cls, ...supertypes]) {
+      for (var accessor in type.accessors) {
+        if (accessor.isSetter) {
+          var name = accessor.name;
+          accessorNames.add(name.substring(0, name.length - 1));
+        } else {
+          accessorNames.add(accessor.name);
         }
-
-        adapterFields.add(field);
       }
     }
-    return adapterFields;
+
+    return accessorNames;
+  }
+
+  List<List<AdapterField>> getAccessors(
+      ClassElement cls, LibraryElement library) {
+    var accessorNames = getAllAccessorNames(cls);
+
+    var getters = <AdapterField>[];
+    var setters = <AdapterField>[];
+    for (var name in accessorNames) {
+      var getter = cls.lookUpGetter(name, library);
+      if (getter != null) {
+        var getterAnn =
+            getHiveFieldAnn(getter.variable) ?? getHiveFieldAnn(getter);
+        if (getterAnn != null) {
+          var field = getter.variable;
+          getters.add(AdapterField(getterAnn.index, field.name, field.type));
+        }
+      }
+
+      var setter = cls.lookUpSetter(name, library);
+      if (setter != null) {
+        var setterAnn =
+            getHiveFieldAnn(setter.variable) ?? getHiveFieldAnn(setter);
+        if (setterAnn != null) {
+          var field = setter.variable;
+          setters.add(AdapterField(setterAnn.index, field.name, field.type));
+        }
+      }
+    }
+
+    return [getters, setters];
+  }
+
+  void verifyFieldIndices(List<AdapterField> fields) {
+    for (var field in fields) {
+      check(field.index >= 0 || field.index <= 255,
+          'Field numbers can only be in the range 0-255.');
+
+      for (var otherField in fields) {
+        if (otherField == field) continue;
+        if (otherField.index == field.index) {
+          throw HiveError(
+            'Duplicate field number: ${field.index}. Fields "${field.name}" '
+            'and "${otherField.name}" have the same number.',
+          );
+        }
+      }
+    }
   }
 
   String getAdapterName(String typeName, ConstantReader annotation) {
