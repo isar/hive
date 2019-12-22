@@ -9,7 +9,7 @@
 - Box name bug resolved (more information below)
 
 ### Enhancements
-- Support for relationships, `HiveLists` (see docs)
+- Support for relationships, `HiveLists` (use latest `hive_generator`)
 - Lazy boxes can now have a type argument `LazyBox<YourModel>`
 - Added method to delete boxes without opening them `Hive.deleteBoxFromDisk()`
 - Added `path` parameter to open boxes in a custom path
