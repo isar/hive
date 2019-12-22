@@ -1,5 +1,7 @@
 ## 1.2.0
 
+*Use latest version of `hive_generator`*
+
 ### Breaking changes
 - Removed the `Hive.path` getter
 - Removed `Hive.openBoxFromBytes()` (use the `bytes` parameter of `Hive.openBox()` instead)
@@ -9,7 +11,8 @@
 - Box name bug resolved (more information below)
 
 ### Enhancements
-- Support for relationships, `HiveLists` (use latest `hive_generator`)
+- Support for relationships, `HiveLists` (see docs for details)
+- Support for inheritance
 - Lazy boxes can now have a type argument `LazyBox<YourModel>`
 - Added method to delete boxes without opening them `Hive.deleteBoxFromDisk()`
 - Added `path` parameter to open boxes in a custom path
