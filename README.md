@@ -5,6 +5,7 @@
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
 - [Documentation](https://docs.hivedb.dev/) 📖
+- [Hive Studio](https://hivedb.dev/studio/) 🧭 (preview)
 - [Frequently Asked Questions](https://docs.hivedb.dev/more/faq) 🙋
 - [Samples](https://docs.hivedb.dev/more/examples) 🔥
 
