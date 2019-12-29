@@ -7,5 +7,5 @@ abstract class TypeRegistry {
   /// Register a [TypeAdapter] to announce it to Hive.
   ///
   /// This is a necessary step before custom adapter can be used by Hive.
-  void registerAdapter<T>(TypeAdapter<T> adapter, int typeId);
+  void registerAdapter<T>(TypeAdapter<T> adapter, [int typeId]);
 }

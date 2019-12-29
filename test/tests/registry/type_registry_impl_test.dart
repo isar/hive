@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import '../common.dart';
 
 class TestAdapter extends TypeAdapter<int> {
+  TestAdapter([this.typeId = 0]);
+
+  @override
+  final int typeId;
+
   @override
   int read(BinaryReader reader) {
     return 5;
@@ -15,6 +20,9 @@ class TestAdapter extends TypeAdapter<int> {
 }
 
 class TestAdapter2 extends TypeAdapter<int> {
+  @override
+  int get typeId => 1;
+
   @override
   int read(BinaryReader reader) {
     return 5;
@@ -39,9 +47,9 @@ void main() {
 
       test('unsupported typeId', () {
         var registry = TypeRegistryImpl();
-        expect(() => registry.registerAdapter(TestAdapter(), -1),
+        expect(() => registry.registerAdapter(TestAdapter(-1), -1),
             throwsHiveError('not allowed'));
-        expect(() => registry.registerAdapter(TestAdapter(), 224),
+        expect(() => registry.registerAdapter(TestAdapter(224), 224),
             throwsHiveError('not allowed'));
       });
 
