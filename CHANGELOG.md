@@ -1,6 +1,6 @@
 ## 0.3.0
 - Added `box.listenable()` which returns a `ValueListenable<Box>`
-- Added `Hive.simpleInit()`
+- Added `Hive.initFlutter()`
 - **Breaking** Deprecated `WatchBoxBuilder` in favor of `box.listenable()`. Will be removed in a future version
 
 ## 0.2.1
