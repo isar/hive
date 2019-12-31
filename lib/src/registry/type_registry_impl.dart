@@ -28,23 +28,23 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   @override
-  void registerAdapter<T>(TypeAdapter<T> adapter, int typeId) {
-    if (typeId < 0 || typeId > 223) {
-      throw HiveError('TypeId $typeId not allowed.');
+  void registerAdapter<T>(TypeAdapter<T> adapter, [int typeId]) {
+    if (adapter.typeId < 0 || adapter.typeId > 223) {
+      throw HiveError('TypeId ${adapter.typeId} not allowed.');
     }
 
-    var updatedTypeId = typeId + reservedTypeIds;
+    var updatedTypeId = adapter.typeId + reservedTypeIds;
 
     if (findAdapterForTypeId(updatedTypeId) != null) {
       throw HiveError('There is already a TypeAdapter for typeId $typeId.');
     }
 
-    registerInternal(adapter, updatedTypeId);
+    registerInternal(adapter);
   }
 
-  void registerInternal<T>(TypeAdapter<T> adapter, int typeId) {
-    var resolved = _ResolvedAdapter<T>(adapter, typeId);
-    _typeAdapters[typeId] = resolved;
+  void registerInternal<T>(TypeAdapter<T> adapter) {
+    var resolved = _ResolvedAdapter<T>(adapter, adapter.typeId);
+    _typeAdapters[adapter.typeId] = resolved;
   }
 
   void resetAdapters() {
