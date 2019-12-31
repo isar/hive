@@ -1,15 +1,19 @@
 part of hive_flutter;
 
+/// Flutter extensions for Hive.
 extension HiveX on HiveInterface {
-  Future simpleInit([String path]) async {
+  /// Initializes Hive with the path from [getApplicationDocumentsDirectory].
+  ///
+  /// You can provide a sub[directory] where the boxes should be stored.
+  Future simpleInit([String directory]) async {
     WidgetsFlutterBinding.ensureInitialized();
     if (!kIsWeb) {
       var appDir = await getApplicationDocumentsDirectory();
-      var hivePath = appDir.path;
-      if (path != null) {
-        hivePath = path_helper.join(hivePath, path);
+      var path = appDir.path;
+      if (directory != null) {
+        path = path_helper.join(path, directory);
       }
-      init(hivePath);
+      init(path);
     }
   }
 }

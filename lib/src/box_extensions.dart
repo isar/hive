@@ -1,5 +1,6 @@
 part of hive_flutter;
 
+/// Flutter extensions for boxes.
 extension BoxX<T> on Box<T> {
   /// Returns a [ValueListenable] which notifies its listeners when an entry
   /// in the box changes.
@@ -10,6 +11,7 @@ extension BoxX<T> on Box<T> {
       _HiveListenable(this, key);
 }
 
+/// Flutter extensions for lazy boxes.
 extension LazyBoxX<T> on LazyBox<T> {
   /// Returns a [ValueListenable] which notifies its listeners when an entry
   /// in the box changes.
