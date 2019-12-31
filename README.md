@@ -100,21 +100,43 @@ print(box.getAt(0)) // Dave - 30
 Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies to your `pubspec.yaml`, you are able to use Hive in your project:
 
 ```dart
+import 'package:flutter/material.dart';
+
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+void main() async {
+  await Hive.simpleInit();
+  await Hive.openBox('settings');
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Demo Settings',
+      home: Scaffold(
+        body: SettingsPage(),
+      ),
+    );
+  }
+}
 
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return WatchBoxBuilder(
-      box: Hive.box('settings'),
-      builder: (context, box) {
-        return Switch(
-          value: box.get('darkMode'),
-          onChanged: (val) {
-            box.put('darkMode', val);
-          }
-        )
+    return ValueListenableBuilder(
+      valueListenable: Hive.box('settings').listenable(),
+      builder: (context, box, widget) {
+        return Center(
+          child: Switch(
+            value: box.get('darkMode', defaultValue: false),
+            onChanged: (val) {
+              box.put('darkMode', val);
+            },
+          ),
+        );
       },
     );
   }
