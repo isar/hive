@@ -1,3 +1,11 @@
+## Upcoming release
+
+### Fixes
+- `box.clear()` resets auto increment counter
+
+### More
+- Not calling `Hive.init()` results in better exception
+
 ## 1.2.0
 
 *Use latest version of `hive_generator`*
