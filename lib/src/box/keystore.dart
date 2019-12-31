@@ -212,6 +212,7 @@ class Keystore<E> {
     }
 
     _deletedEntries = 0;
+    _autoIncrement = -1;
     return frameList.length;
   }
 

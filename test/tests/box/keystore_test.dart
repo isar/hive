@@ -1,4 +1,3 @@
-import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:mockito/mockito.dart';
@@ -568,6 +567,15 @@ void main() {
 
         keystore.clear();
         expect(keystore.deletedEntries, 0);
+      });
+
+      test('resets auto increment counter', () {
+        var keystore = Keystore.debug();
+        expect(keystore.autoIncrement(), 0);
+        expect(keystore.autoIncrement(), 1);
+
+        keystore.clear();
+        expect(keystore.autoIncrement(), 0);
       });
 
       test('broadcasts change event', () {
