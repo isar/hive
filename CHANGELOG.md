@@ -3,6 +3,9 @@
 ### Fixes
 - `box.clear()` resets auto increment counter
 
+### Breaking changes
+- `TypeAdapter` requires a `typeId`. `Hive.registerAdapter()` does not anymore.
+
 ### More
 - Not calling `Hive.init()` results in better exception
 

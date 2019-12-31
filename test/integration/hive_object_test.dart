@@ -30,7 +30,7 @@ class _TestObjectAdapter extends TypeAdapter<_TestObject> {
 
 Future _performTest(bool lazy) async {
   var hive = HiveImpl();
-  hive.registerAdapter(_TestObjectAdapter(), 0);
+  hive.registerAdapter(_TestObjectAdapter());
   var box = await openBox(lazy, hive: hive);
 
   var obj1 = _TestObject('test1');
@@ -42,8 +42,8 @@ Future _performTest(bool lazy) async {
   expect(obj2.key, 'someKey');
 
   box = await box.reopen();
-  obj1 = await await box.get(0) as _TestObject;
-  obj2 = await await box.get('someKey') as _TestObject;
+  obj1 = await box.get(0) as _TestObject;
+  obj2 = await box.get('someKey') as _TestObject;
   expect(obj1.name, 'test1');
   expect(obj2.name, 'test2');
 
@@ -52,8 +52,8 @@ Future _performTest(bool lazy) async {
   await obj2.delete();
 
   box = await box.reopen();
-  obj1 = await await box.get(0) as _TestObject;
-  obj2 = await await box.get('someKey') as _TestObject;
+  obj1 = await box.get(0) as _TestObject;
+  obj2 = await box.get('someKey') as _TestObject;
   expect(obj1.name, 'test1 updated');
   expect(obj2, null);
 

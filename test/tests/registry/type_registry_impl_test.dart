@@ -38,7 +38,7 @@ void main() {
       test('register', () {
         var registry = TypeRegistryImpl();
         var adapter = TestAdapter();
-        registry.registerAdapter(adapter, 0);
+        registry.registerAdapter(adapter);
 
         var resolved = registry.findAdapterForValue(123);
         expect(resolved.typeId, 32);
@@ -47,16 +47,16 @@ void main() {
 
       test('unsupported typeId', () {
         var registry = TypeRegistryImpl();
-        expect(() => registry.registerAdapter(TestAdapter(-1), -1),
+        expect(() => registry.registerAdapter(TestAdapter(-1)),
             throwsHiveError('not allowed'));
-        expect(() => registry.registerAdapter(TestAdapter(224), 224),
+        expect(() => registry.registerAdapter(TestAdapter(224)),
             throwsHiveError('not allowed'));
       });
 
       test('duplicate typeId', () {
         var registry = TypeRegistryImpl();
-        registry.registerAdapter(TestAdapter(), 0);
-        expect(() => registry.registerAdapter(TestAdapter(), 0),
+        registry.registerAdapter(TestAdapter());
+        expect(() => registry.registerAdapter(TestAdapter()),
             throwsHiveError('already a TypeAdapter for typeId'));
       });
     });
@@ -64,7 +64,7 @@ void main() {
     test('.findAdapterForTypeId()', () {
       var registry = TypeRegistryImpl();
       var adapter = TestAdapter();
-      registry.registerAdapter(adapter, 0);
+      registry.registerAdapter(adapter);
 
       var resolvedAdapter = registry.findAdapterForTypeId(32);
       expect(resolvedAdapter.typeId, 32);
@@ -75,7 +75,7 @@ void main() {
       test('finds adapter', () {
         var registry = TypeRegistryImpl();
         var adapter = TestAdapter();
-        registry.registerAdapter(adapter, 0);
+        registry.registerAdapter(adapter);
 
         var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 32);
@@ -84,10 +84,10 @@ void main() {
 
       test('returns first matching adapter', () {
         var registry = TypeRegistryImpl();
-        var adapter1 = TestAdapter();
-        var adapter2 = TestAdapter();
-        registry.registerAdapter(adapter1, 0);
-        registry.registerAdapter(adapter2, 1);
+        var adapter1 = TestAdapter(0);
+        var adapter2 = TestAdapter(1);
+        registry.registerAdapter(adapter1);
+        registry.registerAdapter(adapter2);
 
         var resolvedAdapter = registry.findAdapterForValue(123);
         expect(resolvedAdapter.typeId, 32);
@@ -98,7 +98,7 @@ void main() {
     test('.resetAdapters()', () {
       var registry = TypeRegistryImpl();
       var adapter = TestAdapter();
-      registry.registerAdapter(adapter, 0);
+      registry.registerAdapter(adapter);
 
       registry.resetAdapters();
       expect(registry.findAdapterForValue(123), null);

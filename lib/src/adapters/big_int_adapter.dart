@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 class BigIntAdapter extends TypeAdapter<BigInt> {
   @override
-  int get typeId => 17;
+  final typeId = 17;
 
   @override
   BigInt read(BinaryReader reader) {
