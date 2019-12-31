@@ -76,13 +76,16 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       }
     } else {
       var crypto = getCryptoHelper(key);
-      var boxPath = path ?? homePath;
 
       StorageBackend backend;
       if (bytes != null) {
         backend = StorageBackendMemory(Uint8List.fromList(bytes), crypto);
       } else {
-        backend = await _manager.open(name, boxPath, recovery, crypto);
+        if (path == null && homePath == null) {
+          throw HiveError('You need to initialize Hive or '
+              'provide a path to store the box.');
+        }
+        backend = await _manager.open(name, path ?? homePath, recovery, crypto);
       }
 
       BoxBaseImpl<E> box;
