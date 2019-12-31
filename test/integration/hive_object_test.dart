@@ -15,6 +15,9 @@ class _TestObject extends HiveObject {
 
 class _TestObjectAdapter extends TypeAdapter<_TestObject> {
   @override
+  int get typeId => 0;
+
+  @override
   _TestObject read(BinaryReader reader) {
     return _TestObject(reader.readString());
   }

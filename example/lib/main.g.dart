@@ -8,6 +8,9 @@ part of 'main.dart';
 
 class PersonAdapter extends TypeAdapter<Person> {
   @override
+  int get typeId => 1;
+
+  @override
   Person read(BinaryReader reader) {
     var numOfFields = reader.readByte();
     var fields = <int, dynamic>{
