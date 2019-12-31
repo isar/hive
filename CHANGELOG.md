@@ -1,3 +1,8 @@
+## 0.3.0
+- Added `box.listenable()` which returns a `ValueListenable<Box>`
+- Added `Hive.simpleInit()`
+- **Breaking** renamed the `watchKeys` parameter of `WatchBoxBuilder` to `watchKey`
+
 ## 0.2.1
 - Bump Hive version
 - Changed WatchBoxBuilderState to _WatchBoxBuilderState
