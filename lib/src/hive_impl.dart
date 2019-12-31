@@ -81,10 +81,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       if (bytes != null) {
         backend = StorageBackendMemory(Uint8List.fromList(bytes), crypto);
       } else {
-        if (path == null && homePath == null) {
-          throw HiveError('You need to initialize Hive or '
-              'provide a path to store the box.');
-        }
         backend = await _manager.open(name, path ?? homePath, recovery, crypto);
       }
 
