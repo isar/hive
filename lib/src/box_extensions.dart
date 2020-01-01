@@ -5,10 +5,10 @@ extension BoxX<T> on Box<T> {
   /// Returns a [ValueListenable] which notifies its listeners when an entry
   /// in the box changes.
   ///
-  /// If a [key] or [keys] filter is provided, only changes to entries with the
+  /// If [keys] filter is provided, only changes to entries with the
   /// specified keys notify the listeners.
-  ValueListenable<Box<T>> listenable({String key, List<String> keys}) =>
-      _BoxListenable(this, key, keys);
+  ValueListenable<Box<T>> listenable({List<dynamic> keys}) =>
+      _BoxListenable(this, keys.toSet());
 }
 
 /// Flutter extensions for lazy boxes.
@@ -16,26 +16,22 @@ extension LazyBoxX<T> on LazyBox<T> {
   /// Returns a [ValueListenable] which notifies its listeners when an entry
   /// in the box changes.
   ///
-  /// If a [key] or [keys] filter is provided, only changes to entries with the
+  /// If [keys] filter is provided, only changes to entries with the
   /// specified keys notify the listeners.
-  ValueListenable<LazyBox<T>> listenable({String key, List<String> keys}) =>
-      _BoxListenable(this, key, keys);
+  ValueListenable<LazyBox<T>> listenable({List<dynamic> keys}) =>
+      _BoxListenable(this, keys.toSet());
 }
 
 class _BoxListenable<T, B extends BoxBase<T>> extends ValueListenable<B> {
   final B box;
 
-  final String key;
-
-  final List<String> keys;
+  final Set<dynamic> keys;
 
   final List<VoidCallback> _listeners = [];
 
   StreamSubscription _subscription;
 
-  _BoxListenable(this.box, this.key, this.keys)
-      : assert(key == null || keys == null,
-            'You cannot specify both, the key and keys parameters.');
+  _BoxListenable(this.box, this.keys);
 
   @override
   void addListener(VoidCallback listener) {
@@ -49,7 +45,7 @@ class _BoxListenable<T, B extends BoxBase<T>> extends ValueListenable<B> {
           }
         });
       } else {
-        _subscription = box.watch(key: key).listen((_) {
+        _subscription = box.watch().listen((_) {
           for (var listener in _listeners) {
             listener();
           }
