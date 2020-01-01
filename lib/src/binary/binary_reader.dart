@@ -51,11 +51,6 @@ abstract class BinaryReader {
     Converter<List<int>, String> decoder = utf8Decoder,
   ]);
 
-  /// Read an ASCII-String with [length].
-  ///
-  /// If [length] is not provided, it is read first.
-  String readAsciiString([int length]);
-
   /// Read a list of bytes with [length].
   ///
   /// If [length] is not provided, it is read first.

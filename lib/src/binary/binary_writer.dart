@@ -33,9 +33,6 @@ abstract class BinaryWriter {
     Converter<String, List<int>> encoder = utf8Encoder,
   });
 
-  /// Encode the ASCII String [value] and write its bytes.
-  void writeAsciiString(String value, {bool writeLength = true});
-
   /// Write a list of [bytes].
   void writeByteList(List<int> bytes, {bool writeLength = true});
 

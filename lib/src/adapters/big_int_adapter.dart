@@ -15,6 +15,6 @@ class BigIntAdapter extends TypeAdapter<BigInt> {
   void write(BinaryWriter writer, BigInt obj) {
     var intStr = obj.toString();
     writer.writeByte(intStr.length);
-    writer.writeAsciiString(intStr, writeLength: false);
+    writer.writeString(intStr, writeByteCount: false);
   }
 }

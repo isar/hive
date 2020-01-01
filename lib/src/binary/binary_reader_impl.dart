@@ -124,14 +124,6 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
-  String readAsciiString([int length]) {
-    length ??= readUint32();
-    var view = viewBytes(length);
-    var str = String.fromCharCodes(view);
-    return str;
-  }
-
-  @override
   Uint8List readByteList([int length]) {
     length ??= readUint32();
     _requireBytes(length);
@@ -215,7 +207,7 @@ class BinaryReaderImpl extends BinaryReader {
       return readUint32();
     } else if (keyType == FrameKeyType.asciiStringT.index) {
       var keyLength = readByte();
-      return readAsciiString(keyLength);
+      return String.fromCharCodes(viewBytes(keyLength));
     } else {
       throw HiveError('Unsupported key type. Frame might be corrupted.');
     }
@@ -225,7 +217,7 @@ class BinaryReaderImpl extends BinaryReader {
   HiveList readHiveList([int length]) {
     length ??= readUint32();
     var boxNameLength = readByte();
-    var boxName = readAsciiString(boxNameLength);
+    var boxName = String.fromCharCodes(viewBytes(boxNameLength));
     var keys = List<dynamic>(length);
     for (var i = 0; i < length; i++) {
       keys[i] = readKey();

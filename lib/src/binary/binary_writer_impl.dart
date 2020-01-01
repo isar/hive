@@ -11,7 +11,6 @@ import 'package:meta/meta.dart';
 import 'package:hive/src/util/uint8_list_extension.dart';
 
 class BinaryWriterImpl extends BinaryWriter {
-  static const int _asciiMask = 0x7F;
   static const _initBufferSize = 256;
 
   final TypeRegistryImpl typeRegistry;
@@ -117,24 +116,6 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeAsciiString(String value, {bool writeLength = true}) {
-    var length = value.length;
-
-    if (writeLength) {
-      writeUint32(length);
-    }
-
-    _reserveBytes(length);
-    for (var i = 0; i < length; i++) {
-      var codeUnit = value.codeUnitAt(i);
-      if ((codeUnit & ~_asciiMask) != 0) {
-        throw HiveError('String contains non-ASCII characters.');
-      }
-      _buffer[_offset++] = codeUnit;
-    }
-  }
-
-  @override
   void writeByteList(List<int> bytes, {bool writeLength = true}) {
     if (writeLength) {
       writeUint32(bytes.length);
@@ -221,7 +202,7 @@ class BinaryWriterImpl extends BinaryWriter {
     if (key is String) {
       writeByte(FrameKeyType.asciiStringT.index);
       writeByte(key.length);
-      writeAsciiString(key, writeLength: false);
+      writeByteList(key.codeUnits, writeLength: false);
     } else {
       writeByte(FrameKeyType.uintT.index);
       writeUint32(key as int);
@@ -235,7 +216,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
     var boxName = (list as HiveListImpl).boxName;
     writeByte(boxName.length);
-    writeAsciiString(boxName, writeLength: false);
+    writeByteList(boxName.codeUnits, writeLength: false);
     for (var obj in list) {
       writeKey(obj.key);
     }

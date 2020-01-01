@@ -163,22 +163,6 @@ void main() {
       expect(() => br.readBool(), throwsA(anything));
     });
 
-    test('.readAsciiString()', () {
-      var br = fromBytes([0, 0, 0, 0]);
-      expect(br.readAsciiString(), '');
-
-      br = fromBytes([]);
-      expect(br.readAsciiString(0), '');
-
-      br = fromBytes([6, 0, 0, 0, 84, 46, 44, 114, 32, 10]);
-      expect(br.readAsciiString(), 'T.,r \n');
-
-      br = fromBytes([84, 46, 44, 114, 32, 10]);
-      expect(br.readAsciiString(6), 'T.,r \n');
-
-      expect(() => br.readAsciiString(), throwsRangeError);
-    });
-
     test('.readString()', () {
       var br = fromBytes([0, 0, 0, 0]);
       expect(br.readString(), '');

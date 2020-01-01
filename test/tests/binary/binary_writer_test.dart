@@ -209,27 +209,6 @@ void main() {
       expect(() => bw.writeBool(null), throwsA(anything));
     });
 
-    test('.writeAsciiString()', () {
-      var bw = getWriter();
-      bw.writeAsciiString('');
-      expect(bw.toBytes(), [0, 0, 0, 0]);
-
-      bw = getWriter();
-      bw.writeAsciiString('', writeLength: false);
-      expect(bw.toBytes(), []);
-
-      bw = getWriter();
-      bw.writeAsciiString('T.,r \n');
-      expect(bw.toBytes(), [6, 0, 0, 0, 84, 46, 44, 114, 32, 10]);
-
-      bw = getWriter();
-      bw.writeAsciiString('T.,r \n', writeLength: false);
-      expect(bw.toBytes(), [84, 46, 44, 114, 32, 10]);
-
-      expect(() => bw.writeAsciiString('😍'), throwsA(anything));
-      expect(() => bw.writeAsciiString(null), throwsA(anything));
-    });
-
     test('.writeString()', () {
       var bw = getWriter();
       bw.writeString('');
