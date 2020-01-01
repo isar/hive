@@ -7,9 +7,7 @@
 
 Hive is an embedded key-value database written in pure Dart. It provides an easy-to-use API to persist and retrieve Dart objects. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
-- [Documentation](https://docs.hivedb.dev/) 📖
-- [Web Demos](https://hivedb.dev/studio/) 🕸️
-- [Samples](https://docs.hivedb.dev/more/examples) 🔥
+### [Documentation](https://docs.hivedb.dev/) 📖
 
 ### Flutter Web Demos 🕸️
 - [Counter](https://hivedb.github.io/hive/demos/counter)
@@ -78,7 +76,7 @@ print(box.getAt(0)) // Dave - 30
 ```
 
 ## Hive ❤️ Flutter
-Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies and initializing Hive, you are able to use Hive in your project:
+Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies and initializing Hive, you can use Hive in your project:
 
 ```dart
 import 'package:hive/hive.dart';
