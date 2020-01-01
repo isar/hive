@@ -1,12 +1,14 @@
-<img src="https://raw.githubusercontent.com/hivedb/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hivedb/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
+</p>
+<h2 align="center">Fast, Enjoyable & Safe NoSQL Database</h2>
 
 [![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive)
 
-Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
+Hive is an embedded key-value database written in pure Dart. It provides an easy-to-use API to persist and retrieve Dart objects. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
 - [Documentation](https://docs.hivedb.dev/) 📖
-- [Hive Studio](https://studio.hivedb.dev/) 🧭 (preview)
-- [Hive Dartpad](https://dartpad.hivedb.dev/) 🗒️
+- [Web Demos](https://hivedb.dev/studio/) 🕸️
 - [Samples](https://docs.hivedb.dev/more/examples) 🔥
 
 ### Flutter Web Demos 🕸️
@@ -16,43 +18,23 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 
 ## Features
 
-### Cross-platform ⚡
-- Runs on desktop, mobile & in browser
-- Very good performance (see [benchmark](#benchmark))
-
-### Easy to use ❤️
-- Keys are of type String or uint32 and values are arbitrary objects
-- The basic operations are `put(key, value)`, `get(key)`, `delete(key)`
-- Strong encryption built in
-
-### Lightweight 🎈
-- Small runtime
-- Small disk space consumption
-- **NO** native dependencies
+- 🚀 Mobile, Desktop, & Browser Support
+- ⚡ Great Performance (see [benchmark](#benchmark))
+- ❤️ Simple, Powerful, & Intuitive API
+- 🔒 Strong Encryption built in
+- 🎈 **NO** Native Dependencies
+- 🔋 Batteries Included
 
 
-## Getting started
-To get started using Hive in a Flutter project, add the following dependencies to your `pubspec.yaml`. Use the latest version instead of `[version]`.
-
-[![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive) [![Generator version](https://img.shields.io/pub/v/hive_generator.svg?label=hive_generator)](https://pub.dev/packages/hive_generator) [![Hive Flutter version](https://img.shields.io/pub/v/hive_flutter?label=hive_flutter)](https://pub.dev/packages/hive_flutter) [![Build runner version](https://img.shields.io/pub/v/build_runner.svg?label=build_runner)](https://pub.dev/packages/build_runner)
-
-```yaml
-dependencies:
-  hive: ^[version]
-  hive_flutter: ^[version]
-
-dev_dependencies:
-  hive_generator: ^[version]
-  build_runner: ^[version]
-```
+## Getting Started
+Check out the [Quick Start](https://docs.hivedb.dev) documentation to get started.
 
 ## Usage
 
-You can use Hive just like a map. It is not necessary to await `Future`s.
+You can use Hive just like a map. It is not necessary to await `Futures`.
 
 ```dart
-Hive.init(Directory.current.path);
-var box = await Hive.openBox('myBox');
+var box = Hive.box('myBox');
 
 box.put('name', 'David');
 
@@ -66,7 +48,7 @@ print('Name: $name');
 Hive not only supports primitives, lists and maps but also any Dart object you like. You need to generate a type adapter before you can store objects.
 
 ```dart
-@HiveType()
+@HiveType(typeId: 0)
 class Person extends HiveObject {
 
   @HiveField(0)
@@ -80,7 +62,6 @@ class Person extends HiveObject {
 Extending `HiveObject` is optional but it provides handy methods like `save()` and `delete()`.
 
 ```dart
-Hive.init(Directory.current.path);
 var box = await Hive.openBox('myBox');
 
 var person = Person()
@@ -97,31 +78,11 @@ print(box.getAt(0)) // Dave - 30
 ```
 
 ## Hive ❤️ Flutter
-Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies to your `pubspec.yaml`, you are able to use Hive in your project:
+Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies and initializing Hive, you are able to use Hive in your project:
 
 ```dart
-import 'package:flutter/material.dart';
-
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
-void main() async {
-  await Hive.simpleInit();
-  await Hive.openBox('settings');
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Demo Settings',
-      home: Scaffold(
-        body: SettingsPage(),
-      ),
-    );
-  }
-}
 
 class SettingsPage extends StatelessWidget {
   @override
@@ -129,13 +90,11 @@ class SettingsPage extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: Hive.box('settings').listenable(),
       builder: (context, box, widget) {
-        return Center(
-          child: Switch(
-            value: box.get('darkMode', defaultValue: false),
-            onChanged: (val) {
-              box.put('darkMode', val);
-            },
-          ),
+        return Switch(
+          value: box.get('darkMode'),
+          onChanged: (val) {
+            box.put('darkMode', val);
+          }
         );
       },
     );
