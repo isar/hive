@@ -1,6 +1,6 @@
 name: hive_flutter
 description: Extension for Hive. Makes it easier to use Hive in Flutter apps.
-version: 0.3.0
+version: 0.3.0+1
 homepage: https://github.com/leisim/hive
 
 environment:
