@@ -5,14 +5,9 @@
 
 [![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive)
 
-Hive is an embedded key-value database written in pure Dart. It provides an easy-to-use API to persist and retrieve Dart objects. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
+Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
-### [Documentation](https://docs.hivedb.dev/) 📖
-
-### Flutter Web Demos 🕸️
-- [Counter](https://hivedb.github.io/hive/demos/counter)
-- [Sketchpad](https://hivedb.github.io/hive/demos/sketchpad)
-- [Todo App](https://hivedb.github.io/hive/demos/todo)
+### [Documentation & Samples](https://docs.hivedb.dev/) 📖
 
 ## Features
 
@@ -105,29 +100,15 @@ Boxes are cached and therefore fast enough to be used directly in the `build()` 
 
 ## Benchmark
 
-|Read	1000 entries |Write 1000 entries|
+|1000 read iterations |1000 write iterations|
 |:------------:|:------------:|
 |	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_read.png) |	![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_write.png) |
 | SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
 
-This benchmark was performed on a Oneplus 6T with Android Q. All entries are read and written one after another. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
+The benchmark was performed on a Oneplus 6T with Android Q. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
 
-*Take this benchmark with a grain of salt it is very hard to compare databases objectively since they werde made for different putposes.*
+*Take this benchmark with a grain of salt it is very hard to compare databases objectively since they were made for different purpose
 
-
-## Todo
-
-The work on Hive has just started. If you want to contribute, it would be amazing if you helped me with one of these:
-
-- [x] Good test coverage
-- [x] Many examples, especially for Flutter
-- [x] Benchmarks and comparison
-- [x] Finalize API
-- [x] Even more tests
-- [ ] Queries
-- [ ] Improve documentation
-- [ ] Write binary format spec
-- [ ] You can never have enough tests
 
 ### Licence
 

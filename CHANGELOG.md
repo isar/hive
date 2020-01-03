@@ -1,10 +1,16 @@
-## Upcoming release
+## 1.3.0
+
+### Breaking changes
+- `TypeAdapters` and `@HiveType()` now require a `typeId`
+- `Hive.registerAdapter()` does not need a `typeId` anymore.
+- Removed `BinaryReader.readAsciiString()`
+- Removed `BinaryWriter.writeAsciiString()`
+
+### Enhancements
+- New documentation with tutorials and live code
 
 ### Fixes
 - `box.clear()` resets auto increment counter
-
-### Breaking changes
-- `TypeAdapter` requires a `typeId`. `Hive.registerAdapter()` does not anymore.
 
 ### More
 - Not calling `Hive.init()` results in better exception

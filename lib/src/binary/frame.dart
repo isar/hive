@@ -1,3 +1,6 @@
+import 'package:hive/hive.dart';
+import 'package:hive/src/util/string_extension.dart';
+
 class Frame {
   final dynamic key;
   final dynamic value;
@@ -10,29 +13,37 @@ class Frame {
   Frame(this.key, this.value, {this.length, this.offset = -1})
       : lazy = false,
         deleted = false,
-        assert(
-            (key is int && key >= 0 && key <= 0xFFFFFFFF) ||
-                (key is String && key.length <= 0xFF),
-            'Unsupported key');
+        assert(assertKey(key));
 
   Frame.deleted(this.key, {this.length})
       : value = null,
         lazy = false,
         deleted = true,
         offset = -1,
-        assert(
-            (key is int && key >= 0 && key <= 0xFFFFFFFF) ||
-                (key is String && key.length <= 0xFF),
-            'Unsupported key');
+        assert(assertKey(key));
 
   Frame.lazy(this.key, {this.length, this.offset = -1})
       : value = null,
         lazy = true,
         deleted = false,
-        assert(
-            (key is int && key >= 0 && key <= 0xFFFFFFFF) ||
-                (key is String && key.length <= 0xFF),
-            'Unsupported key');
+        assert(assertKey(key));
+
+  static bool assertKey(dynamic key) {
+    if (key is int) {
+      if (key < 0 || key > 0xFFFFFFFF) {
+        throw HiveError('Integer keys need to be in the range 0 - 0xFFFFFFFF');
+      }
+    } else if (key is String) {
+      if (key.length > 0xFF || !key.isAscii) {
+        throw HiveError(
+            'String keys need to be ASCII Strings with a max length of 255');
+      }
+    } else {
+      throw HiveError('Keys need to be Strings or integers');
+    }
+
+    return true;
+  }
 
   Frame toLazy() {
     if (deleted) return this;

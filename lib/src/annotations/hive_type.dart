@@ -2,6 +2,7 @@ part of hive;
 
 /// Annotate classes with [HiveType] to generate a `TypeAdapter`.
 class HiveType {
+  /// The typeId of the annotated class.
   final int typeId;
 
   /// The name of the generated adapter.

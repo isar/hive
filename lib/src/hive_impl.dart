@@ -10,6 +10,7 @@ import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
+import 'package:hive/src/util/string_extension.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
@@ -67,6 +68,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     assert(comparator != null);
     assert(compaction != null);
     assert(path == null || bytes == null);
+    assert(name.length <= 255 && name.isAscii,
+        'Box names need to be ASCII Strings with a max length of 255.');
     name = name.toLowerCase();
     if (isBoxOpen(name)) {
       if (lazy) {
