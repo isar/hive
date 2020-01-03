@@ -1,3 +1,7 @@
+## 0.7.0
+- Fixed final fields in constructor
+- Support for `typeId` parameter
+
 ## 0.6.0
 - Support for HiveLists
 - Support for getters & setters

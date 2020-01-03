@@ -31,7 +31,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     return '''
     class $adapterName extends TypeAdapter<${cls.name}> {
       @override
-      int get typeId => $typeId;
+      final typeId = $typeId;
 
       @override
       ${cls.name} read(BinaryReader reader) {
@@ -129,6 +129,10 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   }
 
   int getTypeId(ConstantReader annotation) {
+    check(
+      !annotation.read('typeId').isNull,
+      'You have to provide a non-null typeId.',
+    );
     return annotation.read('typeId').intValue;
   }
 }
