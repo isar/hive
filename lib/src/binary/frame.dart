@@ -12,21 +12,24 @@ class Frame {
 
   Frame(this.key, this.value, {this.length, this.offset = -1})
       : lazy = false,
-        deleted = false,
-        assert(assertKey(key));
+        deleted = false {
+    assert(assertKey(key));
+  }
 
   Frame.deleted(this.key, {this.length})
       : value = null,
         lazy = false,
         deleted = true,
-        offset = -1,
-        assert(assertKey(key));
+        offset = -1 {
+    assert(assertKey(key));
+  }
 
   Frame.lazy(this.key, {this.length, this.offset = -1})
       : value = null,
         lazy = true,
-        deleted = false,
-        assert(assertKey(key));
+        deleted = false {
+    assert(assertKey(key));
+  }
 
   static bool assertKey(dynamic key) {
     if (key is int) {
