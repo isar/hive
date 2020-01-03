@@ -34,7 +34,7 @@ void main() async {
     ..age = 22
     ..friends = ['Linda', 'Marc', 'Anne'];
 
-  box.put('dave', person);
+  await box.put('dave', person);
 
   print(box.get('dave')); // Dave: 22
 }

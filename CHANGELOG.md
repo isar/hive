@@ -1,5 +1,7 @@
 ## 1.3.0
 
+*Use latest version of `hive_generator`*
+
 ### Breaking changes
 - `TypeAdapters` and `@HiveType()` now require a `typeId`
 - `Hive.registerAdapter()` does not need a `typeId` anymore.
@@ -16,8 +18,6 @@
 - Not calling `Hive.init()` results in better exception
 
 ## 1.2.0
-
-*Use latest version of `hive_generator`*
 
 ### Breaking changes
 - Removed the `Hive.path` getter

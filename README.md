@@ -11,12 +11,12 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 
 ## Features
 
-- 🚀 Mobile, Desktop, & Browser Support
-- ⚡ Great Performance (see [benchmark](#benchmark))
-- ❤️ Simple, Powerful, & Intuitive API
-- 🔒 Strong Encryption built in
-- 🎈 **NO** Native Dependencies
-- 🔋 Batteries Included
+- 🚀 Cross plarform: mobile, desktop, browser
+- ⚡ Great performance (see [benchmark](#benchmark))
+- ❤️ Simple, powerful, & intuitive API
+- 🔒 Strong encryption built in
+- 🎈 **NO** native dependencies
+- 🔋 Batteries included
 
 
 ## Getting Started
