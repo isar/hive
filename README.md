@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/hivedb/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
 </p>
-<h2 align="center">Fast, Enjoyable & Safe NoSQL Database</h2>
+<h2 align="center">Fast, Enjoyable & Secure NoSQL Database</h2>
 
 [![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive)
 
