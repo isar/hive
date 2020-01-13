@@ -3,7 +3,7 @@
 </p>
 <h2 align="center">Fast, Enjoyable & Secure NoSQL Database</h2>
 
-[![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive)
+[![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg?branch=master)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive)
 
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
@@ -107,7 +107,7 @@ Boxes are cached and therefore fast enough to be used directly in the `build()` 
 
 The benchmark was performed on a Oneplus 6T with Android Q. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
 
-*Take this benchmark with a grain of salt it is very hard to compare databases objectively since they were made for different purpose
+*Take this benchmark with a grain of salt. It is very hard to compare databases objectively since they were made for different purposes.
 
 
 ### Licence
