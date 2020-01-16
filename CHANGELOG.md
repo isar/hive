@@ -2,6 +2,7 @@
 
 ### Enhancements
 - Added `HiveObject.init()` and `HiveObject.dispose()`
+- Added `legacyFieldIds` parameter to `@HiveType` to keep track of old fieldIds
 
 ## 1.3.0
 
