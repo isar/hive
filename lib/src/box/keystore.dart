@@ -120,7 +120,7 @@ class Keystore<E> {
       _deletedEntries++;
       if (deletedFrame.value is HiveObject &&
           !identical(deletedFrame.value, value)) {
-        (deletedFrame.value as HiveObject).unload();
+        (deletedFrame.value as HiveObject).dispose();
       }
     }
 
@@ -206,7 +206,7 @@ class Keystore<E> {
     for (var frame in frameList) {
       if (frame.value is HiveObject) {
         // ignore: invalid_use_of_protected_member
-        (frame.value as HiveObject).unload();
+        (frame.value as HiveObject).dispose();
       }
       _notifier.notify(Frame.deleted(frame.key));
     }

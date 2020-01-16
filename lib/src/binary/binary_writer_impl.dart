@@ -289,6 +289,8 @@ class BinaryWriterImpl extends BinaryWriter {
       if (resolved == null) {
         throw HiveError('Cannot write, unknown type: ${value.runtimeType}. '
             'Did you forget to register an adapter?');
+      } else {
+        print('resolvedID: ${resolved.typeId}');
       }
       if (writeTypeId) {
         writeByte(resolved.typeId);

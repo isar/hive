@@ -1,3 +1,8 @@
+## Upcoming release
+
+### Enhancements
+- Added `HiveObject.init()` and `HiveObject.dispose()`
+
 ## 1.3.0
 
 *Use latest version of `hive_generator`*

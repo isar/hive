@@ -49,13 +49,13 @@ void main() {
       });
     });
 
-    group('.unload()', () {
+    group('.dispose()', () {
       test('removes key and box', () {
         var obj = TestHiveObject();
         var box = BoxMock();
 
         obj.init('key', box);
-        obj.unload();
+        obj.dispose();
 
         expect(obj.key, null);
         expect(obj.box, null);
@@ -68,7 +68,7 @@ void main() {
 
         var list = HiveListMock();
         obj.linkHiveList(list);
-        obj.unload();
+        obj.dispose();
 
         verify(list.invalidate());
       });
