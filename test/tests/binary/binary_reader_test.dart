@@ -274,14 +274,14 @@ void main() {
 
     test('.readList()', () {
       var br = fromBytes([
-        2, 0, 0, 0, FrameValueType.boolT.index, 1, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
+        2, 0, 0, 0, FrameValueType.boolT, 1, //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readList(), [true, 'hi']);
 
       br = fromBytes([
-        FrameValueType.boolT.index, 1, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
+        FrameValueType.boolT, 1, //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readList(2), [true, 'hi']);
 
@@ -291,18 +291,18 @@ void main() {
     test('.readMap()', () {
       var br = fromBytes([
         2, 0, 0, 0, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105, //
-        FrameValueType.boolT.index, 1, //
-        FrameValueType.boolT.index, 0, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105, //
+        FrameValueType.boolT, 1, //
+        FrameValueType.boolT, 0, //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readMap(), {'hi': true, false: 'hi'});
 
       br = fromBytes([
-        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105, //
-        FrameValueType.boolT.index, 1, //
-        FrameValueType.boolT.index, 0, //
-        FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105 //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105, //
+        FrameValueType.boolT, 1, //
+        FrameValueType.boolT, 0, //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105 //
       ]);
       expect(br.readMap(2), {'hi': true, false: 'hi'});
 
@@ -416,19 +416,19 @@ void main() {
     group('.read()', () {
       test('null', () {
         var br = fromBytes([]);
-        expect(br.read(FrameValueType.nullT.index), null);
+        expect(br.read(FrameValueType.nullT), null);
 
-        br = fromBytes([FrameValueType.nullT.index]);
+        br = fromBytes([FrameValueType.nullT]);
         expect(br.read(), null);
       });
 
       test('int', () {
         var byteData = ByteData(8)..setFloat64(0, 12345, Endian.little);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.intT.index), 12345);
+        expect(br.read(FrameValueType.intT), 12345);
 
         byteData = ByteData(9)
-          ..setUint8(0, FrameValueType.intT.index)
+          ..setUint8(0, FrameValueType.intT)
           ..setFloat64(1, 12345, Endian.little);
         br = fromByteData(byteData);
         expect(br.read(), 12345);
@@ -437,10 +437,10 @@ void main() {
       test('double', () {
         var byteData = ByteData(8)..setFloat64(0, 234.99283, Endian.little);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.doubleT.index), 234.99283);
+        expect(br.read(FrameValueType.doubleT), 234.99283);
 
         byteData = ByteData(9)
-          ..setUint8(0, FrameValueType.doubleT.index)
+          ..setUint8(0, FrameValueType.doubleT)
           ..setFloat64(1, 234.99283, Endian.little);
         br = fromByteData(byteData);
         expect(br.read(), 234.99283);
@@ -449,10 +449,10 @@ void main() {
       test('bool', () {
         var byteData = ByteData(2)..setUint8(0, 1);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.boolT.index), true);
+        expect(br.read(FrameValueType.boolT), true);
 
         byteData = ByteData(2)
-          ..setUint8(0, FrameValueType.boolT.index)
+          ..setUint8(0, FrameValueType.boolT)
           ..setInt8(1, 1);
         br = fromByteData(byteData);
         expect(br.read(), true);
@@ -460,9 +460,9 @@ void main() {
 
       test('string', () {
         var br = fromBytes([2, 0, 0, 0, 104, 105]);
-        expect(br.read(FrameValueType.stringT.index), 'hi');
+        expect(br.read(FrameValueType.stringT), 'hi');
 
-        br = fromBytes([FrameValueType.stringT.index, 2, 0, 0, 0, 104, 105]);
+        br = fromBytes([FrameValueType.stringT, 2, 0, 0, 0, 104, 105]);
         expect(br.read(), 'hi');
       });
 
@@ -471,10 +471,10 @@ void main() {
           5, 0, 0, 0, //
           1, 2, 3, 4, 5, //
         ]);
-        expect(br.read(FrameValueType.byteListT.index), [1, 2, 3, 4, 5]);
+        expect(br.read(FrameValueType.byteListT), [1, 2, 3, 4, 5]);
 
         br = fromBytes([
-          FrameValueType.byteListT.index, //
+          FrameValueType.byteListT, //
           5, 0, 0, 0, //
           1, 2, 3, 4, 5, //
         ]);
@@ -487,10 +487,10 @@ void main() {
           ..setFloat64(4, 12345, Endian.little)
           ..setFloat64(12, 123, Endian.little);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.intListT.index), [12345, 123]);
+        expect(br.read(FrameValueType.intListT), [12345, 123]);
 
         byteData = ByteData(21)
-          ..setUint8(0, FrameValueType.intListT.index)
+          ..setUint8(0, FrameValueType.intListT)
           ..setUint32(1, 2, Endian.little)
           ..setFloat64(5, 12345, Endian.little)
           ..setFloat64(13, 123, Endian.little);
@@ -504,10 +504,10 @@ void main() {
           ..setFloat64(4, 11.11, Endian.little)
           ..setFloat64(12, 12.12, Endian.little);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.doubleListT.index), [11.11, 12.12]);
+        expect(br.read(FrameValueType.doubleListT), [11.11, 12.12]);
 
         byteData = ByteData(21)
-          ..setUint8(0, FrameValueType.doubleListT.index)
+          ..setUint8(0, FrameValueType.doubleListT)
           ..setUint32(1, 2, Endian.little)
           ..setFloat64(5, 11.11, Endian.little)
           ..setFloat64(13, 12.12, Endian.little);
@@ -521,10 +521,10 @@ void main() {
           ..setUint8(4, 0)
           ..setUint8(5, 1);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.boolListT.index), [false, true]);
+        expect(br.read(FrameValueType.boolListT), [false, true]);
 
         byteData = ByteData(7)
-          ..setUint8(0, FrameValueType.boolListT.index)
+          ..setUint8(0, FrameValueType.boolListT)
           ..setUint32(1, 2, Endian.little)
           ..setUint8(5, 0)
           ..setUint8(6, 1);
@@ -534,10 +534,10 @@ void main() {
 
       test('string list', () {
         var br = fromBytes([2, 0, 0, 0, 2, 0, 0, 0, 104, 105, 1, 0, 0, 0, 104]);
-        expect(br.read(FrameValueType.stringListT.index), ['hi', 'h']);
+        expect(br.read(FrameValueType.stringListT), ['hi', 'h']);
 
         br = fromBytes([
-          FrameValueType.stringListT.index,
+          FrameValueType.stringListT,
           2, 0, 0, 0, 2, 0, 0, 0, 104, 105, 1, 0, 0, 0, 104 //
         ]);
         expect(br.read(), ['hi', 'h']);
@@ -546,29 +546,29 @@ void main() {
       test('list with null', () {
         var byteData = ByteData(23)
           ..setUint32(0, 3, Endian.little)
-          ..setUint8(4, FrameValueType.intT.index)
+          ..setUint8(4, FrameValueType.intT)
           ..setFloat64(5, 12345, Endian.little)
-          ..setUint8(13, FrameValueType.intT.index)
+          ..setUint8(13, FrameValueType.intT)
           ..setFloat64(14, 123, Endian.little)
-          ..setUint8(22, FrameValueType.nullT.index);
+          ..setUint8(22, FrameValueType.nullT);
         var br = fromByteData(byteData);
-        expect(br.read(FrameValueType.listT.index), [12345, 123, null]);
+        expect(br.read(FrameValueType.listT), [12345, 123, null]);
 
         byteData = ByteData(24)
-          ..setInt8(0, FrameValueType.listT.index)
+          ..setInt8(0, FrameValueType.listT)
           ..setUint32(1, 3, Endian.little)
-          ..setUint8(5, FrameValueType.intT.index)
+          ..setUint8(5, FrameValueType.intT)
           ..setFloat64(6, 12345, Endian.little)
-          ..setUint8(14, FrameValueType.intT.index)
+          ..setUint8(14, FrameValueType.intT)
           ..setFloat64(15, 123, Endian.little)
-          ..setUint8(23, FrameValueType.nullT.index);
+          ..setUint8(23, FrameValueType.nullT);
         br = fromByteData(byteData);
         expect(br.read(), [12345, 123, null]);
       });
 
       test('HiveList', () {
         var br = fromBytes([
-          FrameValueType.hiveListT.index, 2, 0, 0, 0, //
+          FrameValueType.hiveListT, 2, 0, 0, 0, //
           3, 66, 111, 120, //
           0, 123, 0, 0, 0, //
           1, 2, 104, 105, //
