@@ -82,23 +82,23 @@ class Frame {
   }
 }
 
-enum FrameKeyType {
-  uintT,
-  asciiStringT,
+class FrameKeyType {
+  static const uintT = 0;
+  static const asciiStringT = 1;
 }
 
-enum FrameValueType {
-  nullT,
-  intT,
-  doubleT,
-  boolT,
-  stringT,
-  byteListT,
-  intListT,
-  doubleListT,
-  boolListT,
-  stringListT,
-  listT,
-  mapT,
-  hiveListT,
+class FrameValueType {
+  static const nullT = 0;
+  static const intT = 1;
+  static const doubleT = 2;
+  static const boolT = 3;
+  static const stringT = 4;
+  static const byteListT = 5;
+  static const intListT = 6;
+  static const doubleListT = 7;
+  static const boolListT = 8;
+  static const stringListT = 9;
+  static const listT = 10;
+  static const mapT = 11;
+  static const hiveListT = 12;
 }

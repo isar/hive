@@ -130,8 +130,9 @@ class BinaryWriterImpl extends BinaryWriter {
       writeUint32(length);
     }
     _reserveBytes(length * 8);
+    var byteData = _byteData;
     for (var i = 0; i < length; i++) {
-      _byteData.setFloat64(_offset, list[i].toDouble(), Endian.little);
+      byteData.setFloat64(_offset, list[i].toDouble(), Endian.little);
       _offset += 8;
     }
   }
@@ -143,8 +144,9 @@ class BinaryWriterImpl extends BinaryWriter {
       writeUint32(length);
     }
     _reserveBytes(length * 8);
+    var byteData = _byteData;
     for (var i = 0; i < length; i++) {
-      _byteData.setFloat64(_offset, list[i], Endian.little);
+      byteData.setFloat64(_offset, list[i], Endian.little);
       _offset += 8;
     }
   }
@@ -192,19 +194,19 @@ class BinaryWriterImpl extends BinaryWriter {
     if (writeLength) {
       writeUint32(map.length);
     }
-    map.forEach((dynamic k, dynamic v) {
-      write(k);
-      write(v);
-    });
+    for (var key in map.keys) {
+      write(key);
+      write(map[key]);
+    }
   }
 
   void writeKey(dynamic key) {
     if (key is String) {
-      writeByte(FrameKeyType.asciiStringT.index);
+      writeByte(FrameKeyType.asciiStringT);
       writeByte(key.length);
-      writeByteList(key.codeUnits, writeLength: false);
+      _addBytes(key.codeUnits);
     } else {
-      writeByte(FrameKeyType.uintT.index);
+      writeByte(FrameKeyType.uintT);
       writeUint32(key as int);
     }
   }
@@ -216,7 +218,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
     var boxName = (list as HiveListImpl).boxName;
     writeByte(boxName.length);
-    writeByteList(boxName.codeUnits, writeLength: false);
+    _addBytes(boxName.codeUnits);
     for (var obj in list) {
       writeKey(obj.key);
     }
@@ -255,33 +257,33 @@ class BinaryWriterImpl extends BinaryWriter {
   void write<T>(T value, {bool writeTypeId = true}) {
     if (value == null) {
       if (writeTypeId) {
-        writeByte(FrameValueType.nullT.index);
+        writeByte(FrameValueType.nullT);
       }
     } else if (value is int) {
       if (writeTypeId) {
-        writeByte(FrameValueType.intT.index);
+        writeByte(FrameValueType.intT);
       }
       writeInt(value);
     } else if (value is double) {
       if (writeTypeId) {
-        writeByte(FrameValueType.doubleT.index);
+        writeByte(FrameValueType.doubleT);
       }
       writeDouble(value);
     } else if (value is bool) {
       if (writeTypeId) {
-        writeByte(FrameValueType.boolT.index);
+        writeByte(FrameValueType.boolT);
       }
       writeBool(value);
     } else if (value is String) {
       if (writeTypeId) {
-        writeByte(FrameValueType.stringT.index);
+        writeByte(FrameValueType.stringT);
       }
       writeString(value);
     } else if (value is List) {
       _writeList(value, writeTypeId: writeTypeId);
     } else if (value is Map) {
       if (writeTypeId) {
-        writeByte(FrameValueType.mapT.index);
+        writeByte(FrameValueType.mapT);
       }
       writeMap(value);
     } else {
@@ -303,42 +305,42 @@ class BinaryWriterImpl extends BinaryWriter {
   void _writeList(List value, {bool writeTypeId = true}) {
     if (value is HiveList) {
       if (writeTypeId) {
-        writeByte(FrameValueType.hiveListT.index);
+        writeByte(FrameValueType.hiveListT);
       }
       writeHiveList(value);
     } else if (value.contains(null)) {
       if (writeTypeId) {
-        writeByte(FrameValueType.listT.index);
+        writeByte(FrameValueType.listT);
       }
       writeList(value);
     } else if (value is Uint8List) {
       if (writeTypeId) {
-        writeByte(FrameValueType.byteListT.index);
+        writeByte(FrameValueType.byteListT);
       }
       writeByteList(value);
     } else if (value is List<int>) {
       if (writeTypeId) {
-        writeByte(FrameValueType.intListT.index);
+        writeByte(FrameValueType.intListT);
       }
       writeIntList(value);
     } else if (value is List<double>) {
       if (writeTypeId) {
-        writeByte(FrameValueType.doubleListT.index);
+        writeByte(FrameValueType.doubleListT);
       }
       writeDoubleList(value);
     } else if (value is List<bool>) {
       if (writeTypeId) {
-        writeByte(FrameValueType.boolListT.index);
+        writeByte(FrameValueType.boolListT);
       }
       writeBoolList(value);
     } else if (value is List<String>) {
       if (writeTypeId) {
-        writeByte(FrameValueType.stringListT.index);
+        writeByte(FrameValueType.stringListT);
       }
       writeStringList(value);
     } else {
       if (writeTypeId) {
-        writeByte(FrameValueType.listT.index);
+        writeByte(FrameValueType.listT);
       }
       writeList(value);
     }

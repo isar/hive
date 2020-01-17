@@ -136,9 +136,10 @@ class BinaryReaderImpl extends BinaryReader {
   List<int> readIntList([int length]) {
     length ??= readUint32();
     _requireBytes(length * 8);
+    var byteData = _byteData;
     var list = <int>[]..length = length;
     for (var i = 0; i < length; i++) {
-      list[i] = _byteData.getFloat64(_offset, Endian.little).toInt();
+      list[i] = byteData.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
     }
     return list;
@@ -148,9 +149,10 @@ class BinaryReaderImpl extends BinaryReader {
   List<double> readDoubleList([int length]) {
     length ??= readUint32();
     _requireBytes(length * 8);
+    var byteData = _byteData;
     var list = <double>[]..length = length;
     for (var i = 0; i < length; i++) {
-      list[i] = _byteData.getFloat64(_offset, Endian.little);
+      list[i] = byteData.getFloat64(_offset, Endian.little);
       _offset += 8;
     }
     return list;
@@ -194,18 +196,16 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     var map = <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
-      var key = read();
-      var value = read();
-      map[key] = value;
+      map[read()] = read();
     }
     return map;
   }
 
   dynamic readKey() {
     var keyType = readByte();
-    if (keyType == FrameKeyType.uintT.index) {
+    if (keyType == FrameKeyType.uintT) {
       return readUint32();
-    } else if (keyType == FrameKeyType.asciiStringT.index) {
+    } else if (keyType == FrameKeyType.asciiStringT) {
       var keyLength = readByte();
       return String.fromCharCodes(viewBytes(keyLength));
     } else {
@@ -274,43 +274,40 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   dynamic read([int typeId]) {
     typeId ??= readByte();
-    if (typeId < FrameValueType.values.length) {
-      var typeEnum = FrameValueType.values[typeId];
-      switch (typeEnum) {
-        case FrameValueType.nullT:
-          return null;
-        case FrameValueType.intT:
-          return readInt();
-        case FrameValueType.doubleT:
-          return readDouble();
-        case FrameValueType.boolT:
-          return readBool();
-        case FrameValueType.stringT:
-          return readString();
-        case FrameValueType.byteListT:
-          return readByteList();
-        case FrameValueType.intListT:
-          return readIntList();
-        case FrameValueType.doubleListT:
-          return readDoubleList();
-        case FrameValueType.boolListT:
-          return readBoolList();
-        case FrameValueType.stringListT:
-          return readStringList();
-        case FrameValueType.listT:
-          return readList();
-        case FrameValueType.mapT:
-          return readMap();
-        case FrameValueType.hiveListT:
-          return readHiveList();
-      }
-    } else {
-      var resolved = typeRegistry.findAdapterForTypeId(typeId);
-      if (resolved == null) {
-        throw HiveError('Cannot read, unknown typeId: $typeId. '
-            'Did you forget to register an adapter?');
-      }
-      return resolved.adapter.read(this);
+    switch (typeId) {
+      case FrameValueType.nullT:
+        return null;
+      case FrameValueType.intT:
+        return readInt();
+      case FrameValueType.doubleT:
+        return readDouble();
+      case FrameValueType.boolT:
+        return readBool();
+      case FrameValueType.stringT:
+        return readString();
+      case FrameValueType.byteListT:
+        return readByteList();
+      case FrameValueType.intListT:
+        return readIntList();
+      case FrameValueType.doubleListT:
+        return readDoubleList();
+      case FrameValueType.boolListT:
+        return readBoolList();
+      case FrameValueType.stringListT:
+        return readStringList();
+      case FrameValueType.listT:
+        return readList();
+      case FrameValueType.mapT:
+        return readMap();
+      case FrameValueType.hiveListT:
+        return readHiveList();
+      default:
+        var resolved = typeRegistry.findAdapterForTypeId(typeId);
+        if (resolved == null) {
+          throw HiveError('Cannot read, unknown typeId: $typeId. '
+              'Did you forget to register an adapter?');
+        }
+        return resolved.adapter.read(this);
     }
   }
 
