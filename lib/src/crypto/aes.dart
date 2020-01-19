@@ -1,50 +1,38 @@
 import 'dart:typed_data';
 
 import 'package:hive/src/crypto/aes_tables.dart';
+import 'package:hive/src/util/uint8_list_extension.dart';
 
-class AESFastEngine {
+class AESEngine {
   static const rounds = 14;
 
-  List<List<int>> workingKey;
+  static const blockSize = 16;
 
-  int subWord(int x) {
-    return (sBox[x & 255] & 255 |
-        ((sBox[(x >> 8) & 255] & 255) << 8) |
-        ((sBox[(x >> 16) & 255] & 255) << 16) |
-        sBox[(x >> 24) & 255] << 24);
-  }
+  static const _m1 = 0x80808080;
+  static const _m2 = 0x7f7f7f7f;
+  static const _m3 = 0x0000001b;
 
-  int littleEndianToInt(List<int> buffer, int offset) {
-    return buffer[offset] |
-        buffer[offset + 1] << 8 |
-        buffer[offset + 2] << 16 |
-        buffer[offset + 3] << 24;
-  }
+  static const _mask8 = 0xFF;
+  static const _mask16 = 0xFFFF;
+  static const _mask32 = 0xFFFFFFFF;
 
-  int intTolittleEndian(int x, List<int> buffer, int offset) {
-    return buffer[offset] |
-        buffer[offset + 1] << 8 |
-        buffer[offset + 2] << 16 |
-        buffer[offset + 3] << 24;
-  }
-
-  List<List<int>> generateWorkingKey(Uint8List key, bool forEncryption) {
+  static List<List<int>> generateWorkingKey(Uint8List key, bool forEncryption) {
     var w = List.generate(rounds + 1, (_) => List<int>(4));
-    var t0 = littleEndianToInt(key, 0);
-    var t1 = littleEndianToInt(key, 4);
-    var t2 = littleEndianToInt(key, 8);
-    var t3 = littleEndianToInt(key, 12);
-    var t4 = littleEndianToInt(key, 16);
-    var t5 = littleEndianToInt(key, 20);
-    var t6 = littleEndianToInt(key, 24);
-    var t7 = littleEndianToInt(key, 28);
+    var t0 = key.readUint32(0);
+    var t1 = key.readUint32(4);
+    var t2 = key.readUint32(8);
+    var t3 = key.readUint32(12);
+    var t4 = key.readUint32(16);
+    var t5 = key.readUint32(20);
+    var t6 = key.readUint32(24);
+    var t7 = key.readUint32(28);
     w[0] = [t0, t1, t2, t3];
     w[1] = [t4, t5, t6, t7];
 
     int u, rcon = 1;
 
     for (var i = 2; i < 14; i += 2) {
-      u = subWord(shift(t7, 8)) ^ rcon;
+      u = _subWord((t7 >> 8) | (((t7 & _mask8) << 24) & _mask32)) ^ rcon;
       rcon <<= 1;
       t0 ^= u;
       w[i][0] = t0;
@@ -54,7 +42,7 @@ class AESFastEngine {
       w[i][2] = t2;
       t3 ^= t2;
       w[i][3] = t3;
-      u = subWord(t3);
+      u = _subWord(t3);
       t4 ^= u;
       w[i + 1][0] = t4;
       t5 ^= t4;
@@ -65,7 +53,7 @@ class AESFastEngine {
       w[i + 1][3] = t7;
     }
 
-    u = subWord(shift(t7, 8)) ^ rcon;
+    u = _subWord((t7 >> 8) | (((t7 & _mask8) << 24) & _mask32)) ^ rcon;
     t0 ^= u;
     w[14][0] = t0;
     t1 ^= t0;
@@ -78,7 +66,7 @@ class AESFastEngine {
     if (!forEncryption) {
       for (var j = 1; j < rounds; j++) {
         for (var i = 0; i < 4; i++) {
-          w[j][i] = inv_mcol(w[j][i]);
+          w[j][i] = _invMcol(w[j][i]);
         }
       }
     }
@@ -86,11 +74,32 @@ class AESFastEngine {
     return w;
   }
 
-  void encryptBlock(Uint8List inp, int inpOff, Uint8List out, int outOff) {
-    var c0 = littleEndianToInt(inp, inpOff) ^ workingKey[0][0];
-    var c1 = littleEndianToInt(inp, inpOff + 4) ^ workingKey[0][1];
-    var c2 = littleEndianToInt(inp, inpOff + 8) ^ workingKey[0][2];
-    var c3 = littleEndianToInt(inp, inpOff + 12) ^ workingKey[0][3];
+  static int _subWord(int x) {
+    return sBox[x & 255] & 255 |
+        ((sBox[(x >> 8) & 255] & 255) << 8) |
+        ((sBox[(x >> 16) & 255] & 255) << 16) |
+        sBox[(x >> 24) & 255] << 24;
+  }
+
+  static int _invMcol(int x) {
+    var f2 = ((x & _m2) << 1) ^ (((x & _m1) >> 7) * _m3);
+    var f4 = ((f2 & _m2) << 1) ^ (((f2 & _m1) >> 7) * _m3);
+    var f8 = ((f4 & _m2) << 1) ^ (((f4 & _m1) >> 7) * _m3);
+    var f9 = x ^ f8;
+
+    var s1 = (f2 ^ f9 >> 8) | ((((f2 ^ f9) & _mask8) << 24) & _mask32);
+    var s2 = (f4 ^ f9 >> 16) | ((((f4 ^ f9) & _mask16) << 16) & _mask32);
+    var s3 = (f9 >> 24) | (((f9 & _mask32) << 8) & _mask32);
+
+    return f2 ^ f4 ^ f8 ^ s1 ^ s2 ^ s3;
+  }
+
+  static void encryptBlock(List<List<int>> workingKey, Uint8List inp,
+      int inpOff, Uint8List out, int outOff) {
+    var c0 = inp.readUint32(inpOff) ^ workingKey[0][0];
+    var c1 = inp.readUint32(inpOff + 4) ^ workingKey[0][1];
+    var c2 = inp.readUint32(inpOff + 8) ^ workingKey[0][2];
+    var c3 = inp.readUint32(inpOff + 12) ^ workingKey[0][3];
 
     int r0, r1, r2, r3;
     var r = 1;
@@ -183,17 +192,18 @@ class AESFastEngine {
         (sBox[(r2 >> 24) & 255] << 24) ^
         workingKey[r][3];
 
-    intTolittleEndian(c0, out, outOff);
-    intTolittleEndian(c1, out, outOff + 4);
-    intTolittleEndian(c2, out, outOff + 8);
-    intTolittleEndian(c3, out, outOff + 16);
+    out.writeUint32(outOff, c0);
+    out.writeUint32(outOff + 4, c1);
+    out.writeUint32(outOff + 8, c2);
+    out.writeUint32(outOff + 12, c3);
   }
 
-  void decryptBlock(Uint8List inp, int inpOff, Uint8List out, int outOff) {
-    var c0 = littleEndianToInt(inp, inpOff) ^ workingKey[rounds][0];
-    var c1 = littleEndianToInt(inp, inpOff + 4) ^ workingKey[rounds][1];
-    var c2 = littleEndianToInt(inp, inpOff + 8) ^ workingKey[rounds][2];
-    var c3 = littleEndianToInt(inp, inpOff + 12) ^ workingKey[rounds][3];
+  static void decryptBlock(List<List<int>> workingKey, Uint8List inp,
+      int inpOff, Uint8List out, int outOff) {
+    var c0 = inp.readUint32(inpOff) ^ workingKey[rounds][0];
+    var c1 = inp.readUint32(inpOff + 4) ^ workingKey[rounds][1];
+    var c2 = inp.readUint32(inpOff + 8) ^ workingKey[rounds][2];
+    var c3 = inp.readUint32(inpOff + 12) ^ workingKey[rounds][3];
 
     int r0, r1, r2, r3;
     var r = rounds - 1;
@@ -285,9 +295,9 @@ class AESFastEngine {
         (sBoxInv[(r0 >> 24) & 255] << 24) ^
         workingKey[0][3];
 
-    intTolittleEndian(c0, out, outOff);
-    intTolittleEndian(c1, out, outOff + 4);
-    intTolittleEndian(c2, out, outOff + 8);
-    intTolittleEndian(c3, out, outOff + 16);
+    out.writeUint32(outOff, c0);
+    out.writeUint32(outOff + 4, c1);
+    out.writeUint32(outOff + 8, c2);
+    out.writeUint32(outOff + 12, c3);
   }
 }

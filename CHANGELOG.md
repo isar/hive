@@ -3,6 +3,10 @@
 ### Enhancements
 - Added `HiveObject.init()` and `HiveObject.dispose()`
 - Added `legacyFieldIds` parameter to `@HiveType` to keep track of old fieldIds
+- 1000% encryption performance improvement
+
+### More
+- Dropped `pointycastle` dependency
 
 ## Fixes
 - `Hive.deleteBoxFromDisk()` did not work for boxes with upper-case names 
