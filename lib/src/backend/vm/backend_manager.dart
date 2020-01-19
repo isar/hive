@@ -5,9 +5,10 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:hive/src/crypto_helper.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path_helper;
 
 class BackendManager implements BackendManagerInterface {
+  final delimiter = Platform.isWindows ? '\\' : '/';
+
   @override
   Future<StorageBackend> open(
       String name, String path, bool crashRecovery, CryptoHelper crypto) async {
@@ -21,7 +22,7 @@ class BackendManager implements BackendManagerInterface {
     }
 
     var file = await findHiveFileAndCleanUp(name, path);
-    var lockFile = File(path_helper.join(path, '$name.lock'));
+    var lockFile = File('$path$delimiter$name.lock');
 
     var backend = StorageBackendVm(file, lockFile, crashRecovery, crypto);
     await backend.open();
@@ -30,8 +31,8 @@ class BackendManager implements BackendManagerInterface {
 
   @visibleForTesting
   Future<File> findHiveFileAndCleanUp(String name, String path) async {
-    var hiveFile = File(path_helper.join(path, '$name.hive'));
-    var compactedFile = File(path_helper.join(path, '$name.hivec'));
+    var hiveFile = File('$path$delimiter$name.hive');
+    var compactedFile = File('$path$delimiter$name.hivec');
 
     if (await hiveFile.exists()) {
       if (await compactedFile.exists()) {
@@ -49,9 +50,9 @@ class BackendManager implements BackendManagerInterface {
 
   @override
   Future<void> deleteBox(String name, String path) async {
-    await _deleteFileIfExists(File(path_helper.join(path, '$name.hive')));
-    await _deleteFileIfExists(File(path_helper.join(path, '$name.hivec')));
-    await _deleteFileIfExists(File(path_helper.join(path, '$name.lock')));
+    await _deleteFileIfExists(File('$path$delimiter$name.hive'));
+    await _deleteFileIfExists(File('$path$delimiter$name.hivec'));
+    await _deleteFileIfExists(File('$path$delimiter$name.lock'));
   }
 
   Future<void> _deleteFileIfExists(File file) async {

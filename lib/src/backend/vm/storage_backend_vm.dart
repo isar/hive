@@ -13,7 +13,6 @@ import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as p;
 
 class StorageBackendVm extends StorageBackend {
   final File file;
@@ -138,7 +137,8 @@ class StorageBackendVm extends StorageBackend {
       await readRaf.setPosition(0);
       var reader = BufferedFileReader(readRaf);
 
-      var compactFile = File('${p.withoutExtension(path)}.hivec');
+      var fileDirectory = path.substring(0, path.length - 5);
+      var compactFile = File('$fileDirectory.hivec');
       var compactRaf = await compactFile.open(mode: FileMode.write);
       var writer = BufferedFileWriter(compactRaf);
 

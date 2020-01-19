@@ -4,6 +4,9 @@
 - Added `HiveObject.init()` and `HiveObject.dispose()`
 - Added `legacyFieldIds` parameter to `@HiveType` to keep track of old fieldIds
 
+### More
+- Dropped `path` dependency
+
 ## 1.3.0
 
 *Use latest version of `hive_generator`*
