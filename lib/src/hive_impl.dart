@@ -178,11 +178,12 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   Future<void> deleteBoxFromDisk(String name, {String path}) async {
-    var box = _boxes[name.toLowerCase()];
+    var lowerCaseName = name.toLowerCase();
+    var box = _boxes[lowerCaseName];
     if (box != null) {
       await box.deleteFromDisk();
     } else {
-      await _manager.deleteBox(name, path ?? homePath);
+      await _manager.deleteBox(lowerCaseName, path ?? homePath);
     }
   }
 
