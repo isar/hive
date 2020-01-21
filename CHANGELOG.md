@@ -36,7 +36,7 @@
 - Removed `Hive.openBoxFromBytes()` (use the `bytes` parameter of `Hive.openBox()` instead)
 - `LazyBox` and `Box` now have a common parent class: `BoxBase`
 - Lazy boxes need to be opened using `Hive.openLazyBox()`
-- Open lazy boxes can be aquired using `Hive.lazyBox()`
+- Open lazy boxes can be acquired using `Hive.lazyBox()`
 - Box name bug resolved (more information below)
 
 ### Enhancements

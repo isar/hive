@@ -120,7 +120,7 @@ void main() {
       }
 
       void runTests(bool lazy) {
-        test('opens lock file and aquires lock', () async {
+        test('opens lock file and acquires lock', () async {
           var lockFile = FileMock();
           var lockRaf = RAFMock();
           when(lockFile.open(mode: FileMode.write))

@@ -21,11 +21,11 @@ class BoxEvent {
 /// IndexedDB database. On all other platforms, each Box is stored in a
 /// seperate file in the Hive home directory.
 ///
-/// Write operations are asynchronous but the new values are immeadiately
+/// Write operations are asynchronous but the new values are immediately
 /// available. The returned `Future` finishes when the change is written to
 /// the backend. If this operation fails, the changes are being reverted.
 ///
-/// Read operations for normal boxes are ynchronous (the entries are in
+/// Read operations for normal boxes are synchronous (the entries are in
 /// memory). Lazy boxes have asynchronous read operations.
 abstract class BoxBase<E> {
   /// The name of the box. Names are always lowercase.

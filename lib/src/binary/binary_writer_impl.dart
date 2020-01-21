@@ -239,18 +239,18 @@ class BinaryWriterImpl extends BinaryWriter {
       }
     }
 
-    var frameLenght = _offset - startOffset + 4;
-    _buffer.writeUint32(startOffset, frameLenght);
+    var frameLength = _offset - startOffset + 4;
+    _buffer.writeUint32(startOffset, frameLength);
 
     var crc = Crc32.compute(
       _buffer,
       offset: startOffset,
-      length: frameLenght - 4,
+      length: frameLength - 4,
       crc: crypto?.keyCrc ?? 0,
     );
     writeUint32(crc);
 
-    return frameLenght;
+    return frameLength;
   }
 
   @override

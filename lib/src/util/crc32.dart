@@ -1,6 +1,6 @@
 class Crc32 {
   ///
-  /// Computes the CRC32 checksum of [bytes] usign a previous [crc] value.
+  /// Computes the CRC32 checksum of [bytes] using a previous [crc] value.
   ///
   static int compute(
     List<int> bytes, {
