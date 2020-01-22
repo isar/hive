@@ -1,8 +1,11 @@
 import 'dart:typed_data';
 
 abstract class Cipher {
+  final List<List<int>> workingKey;
+
+  Cipher(this.workingKey);
+
   void init(Uint8List iv);
 
-  void processBlock(List<List<int>> workingKey, Uint8List inp, int inpOff,
-      Uint8List out, int outOff);
+  void processBlock(Uint8List inp, int inpOff, Uint8List out, int outOff);
 }

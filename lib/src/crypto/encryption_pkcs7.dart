@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'package:hive/src/crypto/aes_engine.dart';
 import 'package:hive/src/crypto/cipher.dart';
 import 'package:hive/src/crypto/padded_cipher.dart';
+import 'package:meta/meta.dart';
 
 class PaddedEncryptionCipher extends PaddedCipher {
-  PaddedEncryptionCipher(Cipher cipher, List<List<int>> workingKey)
-      : super(cipher, workingKey);
+  PaddedEncryptionCipher(Cipher cipher) : super(cipher);
 
   @override
   int doFinal(Uint8List inp, int inpOff, Uint8List out, int outOff) {
@@ -20,17 +20,16 @@ class PaddedEncryptionCipher extends PaddedCipher {
       // Padding goes embedded in last block of data
       addPadding(lastInputBlock, (inp.length - inpOff));
 
-      cipher.processBlock(workingKey, lastInputBlock, 0, out, outOff);
+      cipher.processBlock(lastInputBlock, 0, out, outOff);
 
       return aesBlockSize;
     } else {
       // Padding goes alone in an additional block
-      cipher.processBlock(workingKey, inp, inpOff, out, outOff);
+      cipher.processBlock(inp, inpOff, out, outOff);
 
       addPadding(lastInputBlock, 0);
 
-      cipher.processBlock(
-          workingKey, lastInputBlock, 0, out, outOff + aesBlockSize);
+      cipher.processBlock(lastInputBlock, 0, out, outOff + aesBlockSize);
 
       return 2 * aesBlockSize;
     }
@@ -39,5 +38,13 @@ class PaddedEncryptionCipher extends PaddedCipher {
   @override
   int numberOfOutputBlocks(Uint8List data, int numberOfInputBlocks) {
     return (data.length + aesBlockSize) ~/ aesBlockSize;
+  }
+
+  @protected
+  @visibleForTesting
+  int addPadding(Uint8List data, int offset) {
+    var code = data.length - offset;
+    data.fillRange(offset, data.length, code);
+    return code;
   }
 }

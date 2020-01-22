@@ -7,9 +7,8 @@ import 'package:meta/meta.dart';
 
 abstract class PaddedCipher {
   final Cipher cipher;
-  final List<List<int>> workingKey;
 
-  PaddedCipher(this.cipher, this.workingKey);
+  PaddedCipher(this.cipher);
 
   void init(Uint8List iv) {
     cipher.init(iv);
@@ -23,10 +22,10 @@ abstract class PaddedCipher {
 
     for (var i = 0; i < inputBlocks - 1; i++) {
       var offset = i * aesBlockSize;
-      cipher.processBlock(workingKey, data, offset, out, offset);
+      cipher.processBlock(data, offset, out, offset);
     }
 
-    var lastBlockOffset = ((inputBlocks - 1) * aesBlockSize);
+    var lastBlockOffset = (inputBlocks - 1) * aesBlockSize;
     var lastBlockSize = doFinal(data, lastBlockOffset, out, lastBlockOffset);
 
     return out.view(0, lastBlockOffset + lastBlockSize);
@@ -37,30 +36,4 @@ abstract class PaddedCipher {
 
   @visibleForTesting
   int doFinal(Uint8List inp, int inpOff, Uint8List out, int outOff);
-
-  @protected
-  @visibleForTesting
-  int addPadding(Uint8List data, int offset) {
-    var code = data.length - offset;
-    data.fillRange(offset, data.length, code);
-    return code;
-  }
-
-  @protected
-  @visibleForTesting
-  int padCount(Uint8List data) {
-    var count = data[data.length - 1];
-
-    if (count > data.length || count == 0) {
-      throw ArgumentError('Invalid or corrupted pad block');
-    }
-
-    for (var i = 1; i <= count; i++) {
-      if (data[data.length - i] != count) {
-        throw ArgumentError('Invalid or corrupted pad block');
-      }
-    }
-
-    return count;
-  }
 }

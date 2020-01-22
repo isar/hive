@@ -14,7 +14,7 @@ void main() {
 
     test('.encryptBlock()', () {
       var out = Uint8List(256);
-      for (var i = 0; i < message.length; i += blockSize) {
+      for (var i = 0; i < message.length; i += aesBlockSize) {
         AESEngine.encryptBlock(encryptionKey, message, i, out, i);
       }
       expect(out, encrypted);
@@ -22,7 +22,7 @@ void main() {
 
     test('.decryptBlock()', () {
       var out = Uint8List(256);
-      for (var i = 0; i < message.length; i += blockSize) {
+      for (var i = 0; i < message.length; i += aesBlockSize) {
         AESEngine.decryptBlock(decryptionKey, encrypted, i, out, i);
       }
       expect(out, message);

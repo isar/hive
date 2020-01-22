@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'package:hive/src/crypto/aes_engine.dart';
 import 'package:hive/src/crypto/cipher.dart';
 
-class EncryptionCBC implements Cipher {
+class EncryptionCBC extends Cipher {
   Uint8List _cbcV;
+
+  EncryptionCBC(List<List<int>> workingKey) : super(workingKey);
 
   @override
   void init(Uint8List iv) {
@@ -13,8 +15,7 @@ class EncryptionCBC implements Cipher {
   }
 
   @override
-  void processBlock(List<List<int>> workingKey, Uint8List inp, int inpOff,
-      Uint8List out, int outOff) {
+  void processBlock(Uint8List inp, int inpOff, Uint8List out, int outOff) {
     // XOR the cbcV and the input, then encrypt the cbcV
     for (var i = 0; i < aesBlockSize; i++) {
       _cbcV[i] ^= inp[inpOff + i];

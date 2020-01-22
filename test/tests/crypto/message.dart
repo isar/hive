@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 final key = Uint8List.fromList(List.generate(32, (i) => i));
+
 const encryptionKey = [
   [50462976, 117835012, 185207048, 252579084],
   [319951120, 387323156, 454695192, 522067228],
@@ -35,5 +36,7 @@ const decryptionKey = [
   [4291948852, 799723199, 1608706556, 1845581861],
   [3430546468, 3917023679, 1019353655, 920545389]
 ];
+
+final iv = Uint8List.fromList(List.generate(16, (i) => i * 7));
 
 final message = Uint8List.fromList(List.generate(256, (i) => i));
