@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:hive/src/util/crc32.dart';
+import 'package:hive/src/crypto/crc32.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
 
