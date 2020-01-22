@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'package:hive/src/crypto/aes_tables.dart';
 import 'package:hive/src/util/uint8_list_extension.dart';
 
+const aesBlockSize = 16;
+
 class AESEngine {
   static const rounds = 14;
-
-  static const blockSize = 16;
 
   static const _m1 = 0x80808080;
   static const _m2 = 0x7f7f7f7f;
@@ -75,9 +75,9 @@ class AESEngine {
   }
 
   static int _subWord(int x) {
-    return sBox[x & 255] & 255 |
-        ((sBox[(x >> 8) & 255] & 255) << 8) |
-        ((sBox[(x >> 16) & 255] & 255) << 16) |
+    return sBox[x & 255] |
+        (sBox[(x >> 8) & 255] << 8) |
+        (sBox[(x >> 16) & 255] << 16) |
         sBox[(x >> 24) & 255] << 24;
   }
 
@@ -87,8 +87,8 @@ class AESEngine {
     var f8 = ((f4 & _m2) << 1) ^ (((f4 & _m1) >> 7) * _m3);
     var f9 = x ^ f8;
 
-    var s1 = (f2 ^ f9 >> 8) | ((((f2 ^ f9) & _mask8) << 24) & _mask32);
-    var s2 = (f4 ^ f9 >> 16) | ((((f4 ^ f9) & _mask16) << 16) & _mask32);
+    var s1 = ((f2 ^ f9) >> 8) | ((((f2 ^ f9) & _mask8) << 24) & _mask32);
+    var s2 = ((f4 ^ f9) >> 16) | ((((f4 ^ f9) & _mask16) << 16) & _mask32);
     var s3 = (f9 >> 24) | (((f9 & _mask32) << 8) & _mask32);
 
     return f2 ^ f4 ^ f8 ^ s1 ^ s2 ^ s3;
@@ -172,23 +172,23 @@ class AESEngine {
 
     // the final round's table is a simple function of S so we don't use a whole other four tables for it
     c0 = (sBox[r0 & 255] & 255) ^
-        ((sBox[(r1 >> 8) & 255] & 255) << 8) ^
-        ((sBox[(r2 >> 16) & 255] & 255) << 16) ^
+        (sBox[(r1 >> 8) & 255] << 8) ^
+        (sBox[(r2 >> 16) & 255] << 16) ^
         (sBox[(r3 >> 24) & 255] << 24) ^
         workingKey[r][0];
     c1 = (sBox[r1 & 255] & 255) ^
-        ((sBox[(r2 >> 8) & 255] & 255) << 8) ^
-        ((sBox[(r3 >> 16) & 255] & 255) << 16) ^
+        (sBox[(r2 >> 8) & 255] << 8) ^
+        (sBox[(r3 >> 16) & 255] << 16) ^
         (sBox[(r0 >> 24) & 255] << 24) ^
         workingKey[r][1];
     c2 = (sBox[r2 & 255] & 255) ^
-        ((sBox[(r3 >> 8) & 255] & 255) << 8) ^
-        ((sBox[(r0 >> 16) & 255] & 255) << 16) ^
+        (sBox[(r3 >> 8) & 255] << 8) ^
+        (sBox[(r0 >> 16) & 255] << 16) ^
         (sBox[(r1 >> 24) & 255] << 24) ^
         workingKey[r][2];
     c3 = (sBox[r3 & 255] & 255) ^
-        ((sBox[(r0 >> 8) & 255] & 255) << 8) ^
-        ((sBox[(r1 >> 16) & 255] & 255) << 16) ^
+        (sBox[(r0 >> 8) & 255] << 8) ^
+        (sBox[(r1 >> 16) & 255] << 16) ^
         (sBox[(r2 >> 24) & 255] << 24) ^
         workingKey[r][3];
 
@@ -274,24 +274,24 @@ class AESEngine {
         workingKey[r][3];
 
     // the final round's table is a simple function of Si so we don't use a whole other four tables for it
-    c0 = (sBoxInv[r0 & 255] & 255) ^
-        ((sBoxInv[(r3 >> 8) & 255] & 255) << 8) ^
-        ((sBoxInv[(r2 >> 16) & 255] & 255) << 16) ^
+    c0 = sBoxInv[r0 & 255] ^
+        (sBoxInv[(r3 >> 8) & 255] << 8) ^
+        (sBoxInv[(r2 >> 16) & 255] << 16) ^
         (sBoxInv[(r1 >> 24) & 255] << 24) ^
         workingKey[0][0];
     c1 = (sBoxInv[r1 & 255] & 255) ^
-        ((sBoxInv[(r0 >> 8) & 255] & 255) << 8) ^
-        ((sBoxInv[(r3 >> 16) & 255] & 255) << 16) ^
+        (sBoxInv[(r0 >> 8) & 255] << 8) ^
+        (sBoxInv[(r3 >> 16) & 255] << 16) ^
         (sBoxInv[(r2 >> 24) & 255] << 24) ^
         workingKey[0][1];
     c2 = (sBoxInv[r2 & 255] & 255) ^
-        ((sBoxInv[(r1 >> 8) & 255] & 255) << 8) ^
-        ((sBoxInv[(r0 >> 16) & 255] & 255) << 16) ^
+        (sBoxInv[(r1 >> 8) & 255] << 8) ^
+        (sBoxInv[(r0 >> 16) & 255] << 16) ^
         (sBoxInv[(r3 >> 24) & 255] << 24) ^
         workingKey[0][2];
     c3 = (sBoxInv[r3 & 255] & 255) ^
-        ((sBoxInv[(r2 >> 8) & 255] & 255) << 8) ^
-        ((sBoxInv[(r1 >> 16) & 255] & 255) << 16) ^
+        (sBoxInv[(r2 >> 8) & 255] << 8) ^
+        (sBoxInv[(r1 >> 16) & 255] << 16) ^
         (sBoxInv[(r0 >> 24) & 255] << 24) ^
         workingKey[0][3];
 

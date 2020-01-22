@@ -7,12 +7,10 @@
 
 ### More
 - Dropped `pointycastle` dependency
+- Dropped `path` dependency
 
 ## Fixes
-- `Hive.deleteBoxFromDisk()` did not work for boxes with upper-case names 
-
-### More
-- Dropped `path` dependency
+- `Hive.deleteBoxFromDisk()` did not work for boxes with upper-case names
 
 ## 1.3.0
 
