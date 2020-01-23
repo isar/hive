@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
@@ -10,8 +11,8 @@ import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
-import 'package:hive/src/util/string_extension.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
+import 'package:hive/src/util/extensions.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
@@ -20,6 +21,7 @@ import 'backend/storage_backend.dart';
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, BoxBaseImpl>();
   final BackendManager _manager;
+  final Random _secureRandom = Random.secure();
 
   @visibleForTesting
   String homePath;
@@ -42,17 +44,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     homePath = path;
 
     _boxes.clear();
-  }
-
-  @visibleForTesting
-  CryptoHelper getCryptoHelper(List<int> encryptionKey) {
-    if (encryptionKey == null) return null;
-    if (encryptionKey.length != 32 ||
-        encryptionKey.any((it) => it < 0 || it > 255)) {
-      throw ArgumentError(
-          'The encryption key has to be a 32 byte (256 bit) array.');
-    }
-    return CryptoHelper(Uint8List.fromList(encryptionKey));
   }
 
   Future<BoxBase<E>> _openBox<E>(
@@ -78,13 +69,16 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         return box(name);
       }
     } else {
-      var crypto = getCryptoHelper(key);
+      PaddedCipher cipher;
+      if (key != null) {
+        cipher = PaddedCipher(Uint8List.fromList(key));
+      }
 
       StorageBackend backend;
       if (bytes != null) {
-        backend = StorageBackendMemory(Uint8List.fromList(bytes), crypto);
+        backend = StorageBackendMemory(bytes, cipher);
       } else {
-        backend = await _manager.open(name, path ?? homePath, recovery, crypto);
+        backend = await _manager.open(name, path ?? homePath, recovery, cipher);
       }
 
       BoxBaseImpl<E> box;
@@ -198,7 +192,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   List<int> generateSecureKey() {
-    var secureRandom = CryptoHelper.createSecureRandom();
-    return secureRandom.nextBytes(32);
+    return _secureRandom.nextBytes(32);
   }
 }

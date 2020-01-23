@@ -5,16 +5,16 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 
 class StorageBackendMemory extends StorageBackend {
-  final CryptoHelper crypto;
+  final PaddedCipher cipher;
 
   final FrameHelper frameHelper;
 
   Uint8List _bytes;
 
-  StorageBackendMemory(this._bytes, this.crypto) : frameHelper = FrameHelper();
+  StorageBackendMemory(this._bytes, this.cipher) : frameHelper = FrameHelper();
 
   @override
   String get path => null;
@@ -25,7 +25,7 @@ class StorageBackendMemory extends StorageBackend {
   @override
   Future<void> initialize(TypeRegistry registry, Keystore keystore, bool lazy) {
     var recoveryOffset =
-        frameHelper.framesFromBytes(_bytes, keystore, registry, crypto);
+        frameHelper.framesFromBytes(_bytes, keystore, registry, cipher);
 
     if (recoveryOffset != -1) {
       throw HiveError('Wrong checksum in bytes. Box may be corrupted.');

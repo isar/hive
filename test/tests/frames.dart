@@ -4,12 +4,9 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-
-import 'mocks.dart';
 
 export '../generated/frame_values.g.dart';
 export '../generated/frame_values_encrypted.g.dart';
@@ -18,15 +15,14 @@ export '../generated/frames_encrypted.g.dart';
 
 TypeRegistry get testRegistry => HiveImpl();
 
-CryptoHelper get testCrypto {
-  var secMock = SecureRandomMock();
-  when(secMock.nextUint8()).thenReturn(1);
-  when(secMock.nextUint16()).thenReturn(2);
-  when(secMock.nextUint32()).thenReturn(3);
-  when(secMock.nextBytes(any)).thenAnswer((i) =>
-      Uint8List.fromList(List.filled(i.positionalArguments[0] as int, 4)));
-  return CryptoHelper.debug(Uint8List.fromList(List.filled(32, 1)), secMock);
+class _PaddedCipherStaticIV extends PaddedCipher {
+  _PaddedCipherStaticIV() : super(Uint8List.fromList(List.filled(32, 1)));
+
+  @override
+  Uint8List generateIV() => Uint8List.fromList(List.filled(16, 4));
 }
+
+PaddedCipher get testCipher => _PaddedCipherStaticIV();
 
 List<Frame> get testFrames => <Frame>[
       Frame.deleted(0),
@@ -189,12 +185,12 @@ void buildGoldens() async {
   });
   await generate('frames_encrypted', 'frameBytesEncrypted', (f) {
     var writer = BinaryWriterImpl(testRegistry);
-    writer.writeFrame(f, crypto: testCrypto);
+    writer.writeFrame(f, cipher: testCipher);
     return writer.toBytes();
   });
   await generate('frame_values_encrypted', 'frameValuesBytesEncrypted', (f) {
     var writer = BinaryWriterImpl(HiveImpl())
-      ..writeEncrypted(f.value, testCrypto, writeTypeId: false);
+      ..writeEncrypted(f.value, testCipher, writeTypeId: false);
     return writer.toBytes();
   });
 }

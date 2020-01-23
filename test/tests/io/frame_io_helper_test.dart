@@ -54,7 +54,7 @@ void main() {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytesEncrypted));
         var recoveryOffset =
-            await ioHelper.keysFromFile(null, keystore, testCrypto);
+            await ioHelper.keysFromFile(null, keystore, testCipher);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -88,7 +88,7 @@ void main() {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytesEncrypted));
         var recoveryOffset = await ioHelper.framesFromFile(
-            null, keystore, testRegistry, testCrypto);
+            null, keystore, testRegistry, testCipher);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(

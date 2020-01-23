@@ -8,7 +8,7 @@ import 'package:hive/src/backend/vm/read_write_sync.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
@@ -40,7 +40,7 @@ StorageBackendVm _getBackend({
   File file,
   File lockFile,
   bool crashRecovery = false,
-  CryptoHelper crypto,
+  PaddedCipher cipher,
   FrameIoHelper ioHelper,
   TypeRegistry registry,
   ReadWriteSync sync,
@@ -51,7 +51,7 @@ StorageBackendVm _getBackend({
     file ?? FileMock(),
     lockFile ?? FileMock(),
     crashRecovery,
-    crypto,
+    cipher,
     ioHelper ?? FrameIoHelperMock(),
     sync ?? ReadWriteSync(),
   )

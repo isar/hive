@@ -3,18 +3,18 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 
 class FrameHelper {
   int framesFromBytes(Uint8List bytes, Keystore keystore, TypeRegistry registry,
-      CryptoHelper crypto) {
+      PaddedCipher cipher) {
     var reader = BinaryReaderImpl(bytes, registry);
 
     while (reader.availableBytes != 0) {
       var frameOffset = reader.usedBytes;
 
       var frame = reader.readFrame(
-        crypto: crypto,
+        cipher: cipher,
         lazy: false,
         frameOffset: frameOffset,
       );

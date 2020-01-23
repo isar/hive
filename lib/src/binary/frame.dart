@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/util/string_extension.dart';
+import 'package:hive/src/util/extensions.dart';
 
 class Frame {
   final dynamic key;

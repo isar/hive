@@ -1,10 +1,10 @@
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 
 class BackendManager implements BackendManagerInterface {
   @override
   Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, CryptoHelper crypto) {
+      String name, String path, bool crashRecovery, PaddedCipher cipher) {
     throw UnimplementedError();
   }
 

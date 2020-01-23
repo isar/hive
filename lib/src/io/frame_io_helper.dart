@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:meta/meta.dart';
 
@@ -21,20 +21,20 @@ class FrameIoHelper extends FrameHelper {
   }
 
   Future<int> keysFromFile(
-      String path, Keystore keystore, CryptoHelper crypto) async {
+      String path, Keystore keystore, PaddedCipher cipher) async {
     var raf = await openFile(path);
     var fileReader = BufferedFileReader(raf);
     try {
-      return await _KeyReader(fileReader).readKeys(keystore, crypto);
+      return await _KeyReader(fileReader).readKeys(keystore, cipher);
     } finally {
       await raf.close();
     }
   }
 
   Future<int> framesFromFile(String path, Keystore keystore,
-      TypeRegistry registry, CryptoHelper crypto) async {
+      TypeRegistry registry, PaddedCipher cipher) async {
     var bytes = await readFile(path);
-    return framesFromBytes(bytes as Uint8List, keystore, registry, crypto);
+    return framesFromBytes(bytes as Uint8List, keystore, registry, cipher);
   }
 }
 
@@ -45,7 +45,7 @@ class _KeyReader {
 
   _KeyReader(this.fileReader);
 
-  Future<int> readKeys(Keystore keystore, CryptoHelper crypto) async {
+  Future<int> readKeys(Keystore keystore, PaddedCipher cipher) async {
     await _load(4);
     while (true) {
       var frameOffset = fileReader.offset;
@@ -66,7 +66,7 @@ class _KeyReader {
       }
 
       var frame = _reader.readFrame(
-        crypto: crypto,
+        cipher: cipher,
         lazy: true,
         frameOffset: frameOffset,
       );
