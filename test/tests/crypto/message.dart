@@ -1,4 +1,7 @@
+import 'dart:math';
 import 'dart:typed_data';
+
+import 'package:hive/src/util/extensions.dart';
 
 final key = Uint8List.fromList(List.generate(32, (i) => i));
 
@@ -39,4 +42,4 @@ const decryptionKey = [
 
 final iv = Uint8List.fromList(List.generate(16, (i) => i * 7));
 
-final message = Uint8List.fromList(List.generate(256, (i) => i));
+final message = Random(123).nextBytes(1024);

@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 
 export 'package:hive/src/backend/stub/backend_manager.dart'
     if (dart.library.io) 'package:hive/src/backend/vm/backend_manager.dart'
@@ -29,7 +29,7 @@ abstract class StorageBackend {
 
 abstract class BackendManagerInterface {
   Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, CryptoHelper crypto);
+      String name, String path, bool crashRecovery, PaddedCipher cipher);
 
   Future<void> deleteBox(String name, String path);
 }

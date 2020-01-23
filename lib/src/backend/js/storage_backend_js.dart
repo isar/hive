@@ -9,17 +9,17 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:meta/meta.dart';
 
 class StorageBackendJs extends StorageBackend {
   static const bytePrefix = [0x90, 0xA9];
   final Database db;
-  final CryptoHelper crypto;
+  final PaddedCipher cipher;
 
   TypeRegistry _registry;
 
-  StorageBackendJs(this.db, this.crypto, [this._registry]);
+  StorageBackendJs(this.db, this.cipher, [this._registry]);
 
   @override
   String get path => null;
@@ -36,7 +36,7 @@ class StorageBackendJs extends StorageBackend {
   @visibleForTesting
   dynamic encodeValue(Frame frame) {
     var value = frame.value;
-    if (crypto == null) {
+    if (cipher == null) {
       if (value == null) {
         return value;
       } else if (value is Uint8List) {
@@ -56,10 +56,10 @@ class StorageBackendJs extends StorageBackend {
     var frameWriter = BinaryWriterImpl(_registry);
     frameWriter.writeByteList(bytePrefix, writeLength: false);
 
-    if (crypto == null) {
+    if (cipher == null) {
       frameWriter.write(value);
     } else {
-      frameWriter.writeEncrypted(value, crypto);
+      frameWriter.writeEncrypted(value, cipher);
     }
 
     var bytes = frameWriter.toBytes();
@@ -74,10 +74,10 @@ class StorageBackendJs extends StorageBackend {
       if (_isEncoded(bytes)) {
         var reader = BinaryReaderImpl(bytes, _registry);
         reader.skip(2);
-        if (crypto == null) {
+        if (cipher == null) {
           return reader.read();
         } else {
-          return reader.readEncrypted(crypto);
+          return reader.readEncrypted(cipher);
         }
       } else {
         return bytes;

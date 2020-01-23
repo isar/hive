@@ -11,17 +11,17 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:test/test.dart';
 
 import '../../frames.dart';
 
 StorageBackendJs _getBackend({
   Database db,
-  CryptoHelper crypto,
+  PaddedCipher cipher,
   TypeRegistry registry,
 }) {
-  return StorageBackendJs(db, crypto, registry);
+  return StorageBackendJs(db, cipher, registry);
 }
 
 Future<Database> _openDb() async {
@@ -69,7 +69,7 @@ void main() {
       });
 
       test('crypto', () {
-        var backend = StorageBackendJs(null, testCrypto, testRegistry);
+        var backend = StorageBackendJs(null, testCipher, testRegistry);
         var i = 0;
         for (var frame in testFrames) {
           var buffer = backend.encodeValue(frame) as ByteBuffer;
@@ -122,8 +122,8 @@ void main() {
       });
 
       test('crypto', () {
-        var crypto = CryptoHelper(Uint8List.fromList(List.filled(32, 1)));
-        var backend = _getBackend(crypto: crypto, registry: testRegistry);
+        var cipher = PaddedCipher(Uint8List.fromList(List.filled(32, 1)));
+        var backend = _getBackend(cipher: cipher, registry: testRegistry);
         var i = 0;
         for (var testFrame in testFrames) {
           var bytes = [0x90, 0xA9, ...frameValuesBytesEncrypted[i]];

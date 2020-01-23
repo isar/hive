@@ -8,7 +8,7 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
@@ -18,7 +18,7 @@ class StorageBackendVm extends StorageBackend {
   final File file;
   final File lockFile;
   final bool crashRecovery;
-  final CryptoHelper crypto;
+  final PaddedCipher cipher;
   final FrameIoHelper frameHelper;
 
   final ReadWriteSync _sync;
@@ -40,12 +40,12 @@ class StorageBackendVm extends StorageBackend {
 
   bool compactionScheduled = false;
 
-  StorageBackendVm(this.file, this.lockFile, this.crashRecovery, this.crypto)
+  StorageBackendVm(this.file, this.lockFile, this.crashRecovery, this.cipher)
       : frameHelper = FrameIoHelper(),
         _sync = ReadWriteSync();
 
   StorageBackendVm.debug(this.file, this.lockFile, this.crashRecovery,
-      this.crypto, this.frameHelper, this._sync);
+      this.cipher, this.frameHelper, this._sync);
 
   @override
   String get path => file.path;
@@ -70,9 +70,9 @@ class StorageBackendVm extends StorageBackend {
     int recoveryOffset;
     if (!lazy) {
       recoveryOffset =
-          await frameHelper.framesFromFile(path, keystore, registry, crypto);
+          await frameHelper.framesFromFile(path, keystore, registry, cipher);
     } else {
-      recoveryOffset = await frameHelper.keysFromFile(path, keystore, crypto);
+      recoveryOffset = await frameHelper.keysFromFile(path, keystore, cipher);
     }
 
     if (recoveryOffset != -1) {
@@ -94,7 +94,7 @@ class StorageBackendVm extends StorageBackend {
       var bytes = await readRaf.read(frame.length);
 
       var reader = BinaryReaderImpl(bytes, registry);
-      var readFrame = reader.readFrame(crypto: crypto, lazy: false);
+      var readFrame = reader.readFrame(cipher: cipher, lazy: false);
 
       if (readFrame == null) {
         throw HiveError(
@@ -111,7 +111,7 @@ class StorageBackendVm extends StorageBackend {
       var writer = BinaryWriterImpl(registry);
 
       for (var frame in frames) {
-        frame.length = writer.writeFrame(frame, crypto: crypto);
+        frame.length = writer.writeFrame(frame, cipher: cipher);
       }
 
       try {

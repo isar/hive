@@ -419,7 +419,7 @@ void main() {
       test('encrypted', () {
         testFrames.forEachIndexed((frame, i) {
           var writer = BinaryWriterImpl(testRegistry);
-          expect(writer.writeFrame(frame, crypto: testCrypto),
+          expect(writer.writeFrame(frame, cipher: testCipher),
               frameBytesEncrypted[i].length);
           expect(writer.toBytes(), frameBytesEncrypted[i]);
         });

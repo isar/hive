@@ -387,7 +387,7 @@ void main() {
             reader.readFrame(
               lazy: false,
               frameOffset: offset,
-              crypto: testCrypto,
+              cipher: testCipher,
             ),
             frame,
           );
@@ -404,7 +404,7 @@ void main() {
             reader.readFrame(
               lazy: true,
               frameOffset: offset,
-              crypto: testCrypto,
+              cipher: testCipher,
             ),
             frame.toLazy(),
           );

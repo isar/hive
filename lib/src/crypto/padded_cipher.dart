@@ -1,39 +1,98 @@
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:hive/src/crypto/aes_engine.dart';
-import 'package:hive/src/crypto/cipher.dart';
-import 'package:hive/src/util/uint8_list_extension.dart';
-import 'package:meta/meta.dart';
+import 'package:hive/src/crypto/crc32.dart';
+import 'package:hive/src/util/extensions.dart';
 
-abstract class PaddedCipher {
-  final Cipher cipher;
+class PaddedCipher {
+  static final _lastInputBlockBuffer = Uint8List(16);
+  static final _ivRandom = Random.secure();
 
-  PaddedCipher(this.cipher);
+  final Uint8List keyBytes;
 
-  void init(Uint8List iv) {
-    cipher.init(iv);
+  List<Uint32List> _encryptionKey;
+  List<Uint32List> _decryptionKey;
+
+  PaddedCipher(this.keyBytes) {
+    if (keyBytes.length != 32 || keyBytes.any((it) => it < 0 || it > 255)) {
+      throw ArgumentError(
+          'The encryption key has to be a 32 byte (256 bit) array.');
+    }
   }
 
-  Uint8List process(Uint8List data) {
-    var inputBlocks = (data.length + aesBlockSize - 1) ~/ aesBlockSize;
+  int get keyCrc => Crc32.compute(sha256.convert(keyBytes).bytes);
 
-    var outputBlocks = numberOfOutputBlocks(data, inputBlocks);
-    var out = Uint8List(outputBlocks * aesBlockSize);
+  Uint8List generateIV() => _ivRandom.nextBytes(16);
 
+  int encrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
+      Uint8List out, int outOff) {
+    _encryptionKey ??= generateWorkingKey(keyBytes, true);
+
+    var cbcV = Uint8List.fromList(iv);
+
+    var inputBlocks = (inpLength + aesBlockSize) ~/ aesBlockSize;
+    var remaining = inpLength % aesBlockSize;
+
+    var offset = 0;
     for (var i = 0; i < inputBlocks - 1; i++) {
-      var offset = i * aesBlockSize;
-      cipher.processBlock(data, offset, out, offset);
+      // XOR the cbcV and the input, then encrypt the cbcV
+      for (var i = 0; i < aesBlockSize; i++) {
+        cbcV[i] ^= inp[inpOff + offset + i];
+      }
+
+      encryptBlock(_encryptionKey, cbcV, 0, out, outOff + offset);
+
+      // copy ciphertext to cbcV
+      cbcV.setRange(0, aesBlockSize, out, outOff + offset);
+      offset += aesBlockSize;
     }
 
-    var lastBlockOffset = (inputBlocks - 1) * aesBlockSize;
-    var lastBlockSize = doFinal(data, lastBlockOffset, out, lastBlockOffset);
+    var lastInputBlock = _lastInputBlockBuffer;
+    lastInputBlock.setRange(0, remaining, inp, inpOff + offset);
+    lastInputBlock.fillRange(remaining, aesBlockSize, aesBlockSize - remaining);
 
-    return out.view(0, lastBlockOffset + lastBlockSize);
+    for (var i = 0; i < aesBlockSize; i++) {
+      cbcV[i] ^= lastInputBlock[i];
+    }
+    encryptBlock(_encryptionKey, cbcV, 0, out, outOff + offset);
+
+    return offset + aesBlockSize;
   }
 
-  @visibleForTesting
-  int numberOfOutputBlocks(Uint8List data, int numberOfInputBlocks);
+  int decrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
+      Uint8List out, int outOff) {
+    _decryptionKey ??= generateWorkingKey(keyBytes, false);
 
-  @visibleForTesting
-  int doFinal(Uint8List inp, int inpOff, Uint8List out, int outOff);
+    var inputBlocks = (inpLength + aesBlockSize - 1) ~/ aesBlockSize;
+
+    var offset = 0;
+
+    decryptBlock(_decryptionKey, inp, inpOff, out, outOff);
+    for (var i = 0; i < aesBlockSize; i++) {
+      out[outOff + i] ^= iv[i];
+    }
+    offset += aesBlockSize;
+
+    for (var i = 0; i < inputBlocks - 1; i++) {
+      decryptBlock(_decryptionKey, inp, inpOff + offset, out, outOff + offset);
+      for (var i = 0; i < aesBlockSize; i++) {
+        out[outOff + offset + i] ^= inp[inpOff - aesBlockSize + offset + i];
+      }
+      offset += aesBlockSize;
+    }
+
+    var lastDecryptedByte = out[outOff + offset - 1];
+    if (lastDecryptedByte > aesBlockSize) {
+      throw ArgumentError('Invalid or corrupted pad block');
+    }
+    for (var i = 0; i < lastDecryptedByte; i++) {
+      if (out[outOff + offset - i - 1] != lastDecryptedByte) {
+        throw ArgumentError('Invalid or corrupted pad block');
+      }
+    }
+
+    return offset - lastDecryptedByte;
+  }
 }

@@ -3,12 +3,12 @@ import 'dart:indexed_db';
 
 import 'package:hive/src/backend/js/storage_backend_js.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/crypto_helper.dart';
+import 'package:hive/src/crypto/padded_cipher.dart';
 
 class BackendManager implements BackendManagerInterface {
   @override
   Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, CryptoHelper crypto) async {
+      String name, String path, bool crashRecovery, PaddedCipher cipher) async {
     var db =
         await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
       var db = e.target.result as Database;
@@ -17,7 +17,7 @@ class BackendManager implements BackendManagerInterface {
       }
     });
 
-    return StorageBackendJs(db, crypto);
+    return StorageBackendJs(db, cipher);
   }
 
   @override

@@ -8,11 +8,12 @@ environment:
   sdk: ">=2.6.0 <3.0.0"
 
 dependencies:
-  pointycastle: ^1.0.2
   meta: ^1.1.7
+  crypto: ^2.1.4
 
 dev_dependencies:
   test: ^1.9.4
   mockito: ^4.1.1
   pedantic: ^1.9.0
   dartx: ^0.2.0
+  pointycastle: ^1.0.2
