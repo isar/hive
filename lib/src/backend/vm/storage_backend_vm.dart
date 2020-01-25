@@ -8,7 +8,6 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
@@ -18,7 +17,7 @@ class StorageBackendVm extends StorageBackend {
   final File file;
   final File lockFile;
   final bool crashRecovery;
-  final PaddedCipher cipher;
+  final HiveCipher cipher;
   final FrameIoHelper frameHelper;
 
   final ReadWriteSync _sync;

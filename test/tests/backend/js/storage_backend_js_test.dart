@@ -11,14 +11,13 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:test/test.dart';
 
 import '../../frames.dart';
 
 StorageBackendJs _getBackend({
   Database db,
-  PaddedCipher cipher,
+  HiveCipher cipher,
   TypeRegistry registry,
 }) {
   return StorageBackendJs(db, cipher, registry);
@@ -122,7 +121,7 @@ void main() {
       });
 
       test('crypto', () {
-        var cipher = PaddedCipher(Uint8List.fromList(List.filled(32, 1)));
+        var cipher = HiveAesCipher(Uint8List.fromList(List.filled(32, 1)));
         var backend = _getBackend(cipher: cipher, registry: testRegistry);
         var i = 0;
         for (var testFrame in testFrames) {

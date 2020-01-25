@@ -35,7 +35,7 @@ int _invMcol(int x) {
   return f2 ^ f4 ^ f8 ^ s1 ^ s2 ^ s3;
 }
 
-class AESEngine {
+class AesEngine {
   static List<Uint32List> generateWorkingKey(
       List<int> key, bool forEncryption) {
     var w = List.generate(rounds + 1, (_) => Uint32List(4));

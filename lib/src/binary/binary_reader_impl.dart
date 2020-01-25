@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto/crc32.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:hive/src/util/extensions.dart';
@@ -226,7 +225,7 @@ class BinaryReaderImpl extends BinaryReader {
     return HiveListImpl.lazy(boxName, keys);
   }
 
-  Frame readFrame({PaddedCipher cipher, bool lazy = false, int frameOffset}) {
+  Frame readFrame({HiveCipher cipher, bool lazy = false, int frameOffset}) {
     if (availableBytes < 4) return null;
 
     var frameLength = readUint32();
@@ -241,7 +240,7 @@ class BinaryReaderImpl extends BinaryReader {
       _buffer,
       offset: _offset - 4,
       length: frameLength - 4,
-      crc: cipher?.keyCrc ?? 0,
+      crc: cipher?.calculateKeyCrc() ?? 0,
     );
 
     if (computedCrc != crc) return null;
@@ -311,12 +310,10 @@ class BinaryReaderImpl extends BinaryReader {
     }
   }
 
-  dynamic readEncrypted(PaddedCipher cipher) {
-    var iv = viewBytes(16);
-
+  dynamic readEncrypted(HiveCipher cipher) {
     var inpLength = availableBytes;
     var out = Uint8List(inpLength);
-    var outLength = cipher.decrypt(iv, _buffer, _offset, inpLength, out, 0);
+    var outLength = cipher.decrypt(_buffer, _offset, inpLength, out, 0);
     _offset += inpLength;
 
     var valueReader = BinaryReaderImpl(out, typeRegistry, outLength);

@@ -3,7 +3,11 @@
 ### Enhancements
 - Added `HiveObject.init()` and `HiveObject.dispose()`
 - Added `legacyFieldIds` parameter to `@HiveType` to keep track of old fieldIds
-- ~1000% encryption performance improvement
+- ~1000% encryption / decryption performance improvement
+- Allow tree shaking to drop encryption engine if no encryption is used
+
+### Breaking
+- Changed initialization of encrypted box. Use `Hive.openBox('name', encryptionCipher: HiveAesCipher(yourKey))`.
 
 ### More
 - Dropped `pointycastle` dependency

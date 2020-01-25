@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   meta: ^1.1.7
+  crypto: ^2.1.4
 
 dev_dependencies:
   test: ^1.9.4

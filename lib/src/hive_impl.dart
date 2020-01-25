@@ -11,7 +11,6 @@ import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/util/extensions.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
@@ -49,7 +48,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<BoxBase<E>> _openBox<E>(
     String name,
     bool lazy,
-    List<int> key,
+    HiveCipher cipher,
     KeyComparator comparator,
     CompactionStrategy compaction,
     bool recovery,
@@ -69,11 +68,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         return box(name);
       }
     } else {
-      PaddedCipher cipher;
-      if (key != null) {
-        cipher = PaddedCipher(Uint8List.fromList(key));
-      }
-
       StorageBackend backend;
       if (bytes != null) {
         backend = StorageBackendMemory(bytes, cipher);
@@ -98,27 +92,27 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @override
   Future<Box<E>> openBox<E>(
     String name, {
-    List<int> encryptionKey,
+    HiveCipher encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String path,
     Uint8List bytes,
   }) async {
-    return await _openBox<E>(name, false, encryptionKey, keyComparator,
+    return await _openBox<E>(name, false, encryptionCipher, keyComparator,
         compactionStrategy, crashRecovery, path, bytes) as Box<E>;
   }
 
   @override
   Future<LazyBox<E>> openLazyBox<E>(
     String name, {
-    List<int> encryptionKey,
+    HiveCipher encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String path,
   }) async {
-    return await _openBox<E>(name, true, encryptionKey, keyComparator,
+    return await _openBox<E>(name, true, encryptionCipher, keyComparator,
         compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
   }
 
