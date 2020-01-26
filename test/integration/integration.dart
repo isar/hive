@@ -17,12 +17,16 @@ Future<BoxBase<T>> openBox<T>(bool lazy,
     hive.init(dir.path);
   }
   var id = Random().nextInt(99999999);
+  HiveCipher cipher;
+  if (encryptionKey != null) {
+    cipher = HiveAesCipher(encryptionKey);
+  }
   if (lazy) {
     return await hive.openLazyBox<T>('box$id',
-        crashRecovery: false, encryptionKey: encryptionKey);
+        crashRecovery: false, encryptionCipher: cipher);
   } else {
     return await hive.openBox<T>('box$id',
-        crashRecovery: false, encryptionKey: encryptionKey);
+        crashRecovery: false, encryptionCipher: cipher);
   }
 }
 
@@ -30,12 +34,16 @@ extension BoxBaseX<T> on BoxBase<T> {
   Future<BoxBase<T>> reopen({List<int> encryptionKey}) async {
     await close();
     var hive = (this as BoxBaseImpl).hive;
+    HiveCipher cipher;
+    if (encryptionKey != null) {
+      cipher = HiveAesCipher(encryptionKey);
+    }
     if (this is LazyBoxImpl) {
       return await hive.openLazyBox<T>(name,
-          crashRecovery: false, encryptionKey: encryptionKey);
+          crashRecovery: false, encryptionCipher: cipher);
     } else {
       return await hive.openBox<T>(name,
-          crashRecovery: false, encryptionKey: encryptionKey);
+          crashRecovery: false, encryptionCipher: cipher);
     }
   }
 

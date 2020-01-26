@@ -1,9 +1,9 @@
+import 'dart:typed_data';
+
 class Crc32 {
-  ///
   /// Computes the CRC32 checksum of [bytes] using a previous [crc] value.
-  ///
   static int compute(
-    List<int> bytes, {
+    Uint8List bytes, {
     int crc = 0,
     int offset = 0,
     int length,

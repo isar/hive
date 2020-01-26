@@ -4,11 +4,10 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/crypto/crc32.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:meta/meta.dart';
 import 'package:hive/src/util/extensions.dart';
+import 'package:meta/meta.dart';
 
 class BinaryWriterImpl extends BinaryWriter {
   static const _initBufferSize = 256;
@@ -224,7 +223,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
-  int writeFrame(Frame frame, {PaddedCipher cipher}) {
+  int writeFrame(Frame frame, {HiveCipher cipher}) {
     var startOffset = _offset;
     _reserveBytes(4);
     _offset += 4; // reserve bytes for length
@@ -246,7 +245,7 @@ class BinaryWriterImpl extends BinaryWriter {
       _buffer,
       offset: startOffset,
       length: frameLength - 4,
-      crc: cipher?.keyCrc ?? 0,
+      crc: cipher?.calculateKeyCrc() ?? 0,
     );
     writeUint32(crc);
 
@@ -344,17 +343,16 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
-  void writeEncrypted(dynamic value, PaddedCipher cipher,
+  void writeEncrypted(dynamic value, HiveCipher cipher,
       {bool writeTypeId = true}) {
-    var iv = cipher.generateIV();
-    _addBytes(iv);
-
     var valueWriter = BinaryWriterImpl(typeRegistry)
       ..write(value, writeTypeId: writeTypeId);
     var inp = valueWriter._buffer;
     var inpLength = valueWriter._offset;
 
-    var len = cipher.encrypt(iv, inp, 0, inpLength, _buffer, _offset);
+    _reserveBytes(cipher.maxEncryptedSize(inp));
+
+    var len = cipher.encrypt(inp, 0, inpLength, _buffer, _offset);
 
     _offset += len;
   }

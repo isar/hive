@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 
@@ -15,14 +14,14 @@ export '../generated/frames_encrypted.g.dart';
 
 TypeRegistry get testRegistry => HiveImpl();
 
-class _PaddedCipherStaticIV extends PaddedCipher {
-  _PaddedCipherStaticIV() : super(Uint8List.fromList(List.filled(32, 1)));
+class _HiveAesCipherStaticIV extends HiveAesCipher {
+  _HiveAesCipherStaticIV() : super(Uint8List.fromList(List.filled(32, 1)));
 
   @override
-  Uint8List generateIV() => Uint8List.fromList(List.filled(16, 4));
+  Uint8List generateIv() => Uint8List.fromList(List.filled(16, 4));
 }
 
-PaddedCipher get testCipher => _PaddedCipherStaticIV();
+HiveCipher get testCipher => _HiveAesCipherStaticIV();
 
 List<Frame> get testFrames => <Frame>[
       Frame.deleted(0),

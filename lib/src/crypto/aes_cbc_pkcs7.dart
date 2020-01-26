@@ -1,34 +1,20 @@
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:hive/src/crypto/aes_engine.dart';
-import 'package:hive/src/crypto/crc32.dart';
-import 'package:hive/src/util/extensions.dart';
 
-class PaddedCipher {
+class AesCbcPkcs7 {
   static final _lastInputBlockBuffer = Uint8List(16);
-  static final _ivRandom = Random.secure();
 
   final Uint8List keyBytes;
 
   List<Uint32List> _encryptionKey;
   List<Uint32List> _decryptionKey;
 
-  PaddedCipher(this.keyBytes) {
-    if (keyBytes.length != 32 || keyBytes.any((it) => it < 0 || it > 255)) {
-      throw ArgumentError(
-          'The encryption key has to be a 32 byte (256 bit) array.');
-    }
-  }
-
-  int get keyCrc => Crc32.compute(sha256.convert(keyBytes).bytes);
-
-  Uint8List generateIV() => _ivRandom.nextBytes(16);
+  AesCbcPkcs7(this.keyBytes);
 
   int encrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
       Uint8List out, int outOff) {
-    _encryptionKey ??= generateWorkingKey(keyBytes, true);
+    _encryptionKey ??= AesEngine.generateWorkingKey(keyBytes, true);
 
     var cbcV = Uint8List.fromList(iv);
 
@@ -42,7 +28,7 @@ class PaddedCipher {
         cbcV[i] ^= inp[inpOff + offset + i];
       }
 
-      encryptBlock(_encryptionKey, cbcV, 0, out, outOff + offset);
+      AesEngine.encryptBlock(_encryptionKey, cbcV, 0, out, outOff + offset);
 
       // copy ciphertext to cbcV
       cbcV.setRange(0, aesBlockSize, out, outOff + offset);
@@ -56,27 +42,28 @@ class PaddedCipher {
     for (var i = 0; i < aesBlockSize; i++) {
       cbcV[i] ^= lastInputBlock[i];
     }
-    encryptBlock(_encryptionKey, cbcV, 0, out, outOff + offset);
+    AesEngine.encryptBlock(_encryptionKey, cbcV, 0, out, outOff + offset);
 
     return offset + aesBlockSize;
   }
 
   int decrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
       Uint8List out, int outOff) {
-    _decryptionKey ??= generateWorkingKey(keyBytes, false);
+    _decryptionKey ??= AesEngine.generateWorkingKey(keyBytes, false);
 
     var inputBlocks = (inpLength + aesBlockSize - 1) ~/ aesBlockSize;
 
     var offset = 0;
 
-    decryptBlock(_decryptionKey, inp, inpOff, out, outOff);
+    AesEngine.decryptBlock(_decryptionKey, inp, inpOff, out, outOff);
     for (var i = 0; i < aesBlockSize; i++) {
       out[outOff + i] ^= iv[i];
     }
     offset += aesBlockSize;
 
     for (var i = 0; i < inputBlocks - 1; i++) {
-      decryptBlock(_decryptionKey, inp, inpOff + offset, out, outOff + offset);
+      AesEngine.decryptBlock(
+          _decryptionKey, inp, inpOff + offset, out, outOff + offset);
       for (var i = 0; i < aesBlockSize; i++) {
         out[outOff + offset + i] ^= inp[inpOff - aesBlockSize + offset + i];
       }

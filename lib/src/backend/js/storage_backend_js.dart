@@ -9,13 +9,12 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:meta/meta.dart';
 
 class StorageBackendJs extends StorageBackend {
   static const bytePrefix = [0x90, 0xA9];
   final Database db;
-  final PaddedCipher cipher;
+  final HiveCipher cipher;
 
   TypeRegistry _registry;
 

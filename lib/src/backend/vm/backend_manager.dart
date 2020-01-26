@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 import 'package:meta/meta.dart';
 
 class BackendManager implements BackendManagerInterface {
@@ -11,7 +10,7 @@ class BackendManager implements BackendManagerInterface {
 
   @override
   Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, PaddedCipher cipher) async {
+      String name, String path, bool crashRecovery, HiveCipher cipher) async {
     if (path == null) {
       throw HiveError('You need to initialize Hive or '
           'provide a path to store the box.');

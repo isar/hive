@@ -3,11 +3,10 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/crypto/padded_cipher.dart';
 
 class FrameHelper {
   int framesFromBytes(Uint8List bytes, Keystore keystore, TypeRegistry registry,
-      PaddedCipher cipher) {
+      HiveCipher cipher) {
     var reader = BinaryReaderImpl(bytes, registry);
 
     while (reader.availableBytes != 0) {

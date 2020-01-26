@@ -13,7 +13,7 @@ abstract class HiveInterface implements TypeRegistry {
   /// parameters are being ignored.
   Future<Box<E>> openBox<E>(
     String name, {
-    List<int> encryptionKey,
+    HiveCipher encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
@@ -27,7 +27,7 @@ abstract class HiveInterface implements TypeRegistry {
   /// parameters are being ignored.
   Future<LazyBox<E>> openLazyBox<E>(
     String name, {
-    List<int> encryptionKey,
+    HiveCipher encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
@@ -52,9 +52,6 @@ abstract class HiveInterface implements TypeRegistry {
   ///
   /// The home directory will not be deleted.
   Future<void> deleteFromDisk();
-
-  /// Generates a secure encryption key using the fortuna random algorithm.
-  List<int> generateSecureKey();
 }
 
 ///
