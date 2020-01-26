@@ -52,6 +52,9 @@ abstract class HiveInterface implements TypeRegistry {
   ///
   /// The home directory will not be deleted.
   Future<void> deleteFromDisk();
+
+  /// Generates a secure encryption key using the fortuna random algorithm.
+  List<int> generateSecureKey();
 }
 
 ///

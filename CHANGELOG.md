@@ -1,4 +1,4 @@
-## 1.4.0-dev2
+## 1.4.0-dev3
 
 ### Enhancements
 - Added `HiveObject.init()` and `HiveObject.dispose()`
