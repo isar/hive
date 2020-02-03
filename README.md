@@ -3,7 +3,7 @@
 </p>
 <h2 align="center">Fast, Enjoyable & Secure NoSQL Database</h2>
 
-[![Dart CI](https://github.com/hivedb/hive/workflows/Dart%20CI/badge.svg?branch=master)](https://github.com/hivedb/hive/actions) [![Codecov](https://img.shields.io/codecov/c/github/hivedb/hive.svg)](https://codecov.io/gh/hivedb/hive) [![Core version](https://img.shields.io/pub/v/hive?label=hive)](https://pub.dev/packages/hive)
+[![GitHub Workflow](https://img.shields.io/github/workflow/status/hivedb/hive/Dart%20CI/master?label=tests&logo=github&style=flat-square)](https://github.com/hivedb/hive/actions) [![Codecov branch](https://img.shields.io/codecov/c/github/hivedb/hive/master?logo=codecov&logoColor=white&style=flat-square)](https://codecov.io/gh/hivedb/hive) [![Pub Version](https://img.shields.io/pub/v/hive?label=pub.dev&logo=dart&style=flat-square)](https://pub.dev/packages/hive) [![GitHub](https://img.shields.io/github/license/hivedb/hive?color=%23007A88&logo=apache&style=flat-square)](https://github.com/hivedb/hive/blob/master/LICENSE)
 
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
