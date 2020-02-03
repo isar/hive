@@ -26,6 +26,13 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
+  Iterable<E> valuesBetween({dynamic startKey, dynamic endKey}) {
+    checkOpen();
+
+    return keystore.getValuesBetween(startKey, endKey);
+  }
+
+  @override
   E get(dynamic key, {E defaultValue}) {
     checkOpen();
 

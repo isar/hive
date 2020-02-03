@@ -146,6 +146,31 @@ void main() {
       expect(keystore.getValues(), [null, 2, 3, 4]);
     });
 
+    group('.getValuesBetween()', () {
+      Keystore keystore() => Keystore.debug(frames: [
+            Frame('key1', 4),
+            Frame(2, 2),
+            Frame(0, null),
+            Frame('0', 3),
+          ]);
+
+      test('startKey and endKey specified', () {
+        expect(keystore().getValuesBetween(2, '0'), [2, 3]);
+      });
+
+      test('only startKey specified', () {
+        expect(keystore().getValuesBetween(2, null), [2, 3, 4]);
+      });
+
+      test('only endKey specified', () {
+        expect(keystore().getValuesBetween(null, '0'), [null, 2, 3]);
+      });
+
+      test('endKey before startKey', () {
+        expect(keystore().getValuesBetween(2, 0), [2, 3, 4]);
+      });
+    });
+
     group('.insert()', () {
       group('add', () {
         test('updates auto increment', () {

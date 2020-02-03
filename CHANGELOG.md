@@ -4,6 +4,8 @@
 - Added `HiveObject.init()` and `HiveObject.dispose()`
 - Added `legacyFieldIds` parameter to `@HiveType` to keep track of old fieldIds
 - ~1000% encryption / decryption performance improvement
+- Added option to implement custom encryption algorithm
+- Added `box.valuesBetween(startKey, endKey)`
 - Allow tree shaking to drop encryption engine if no encryption is used
 
 ### Breaking

@@ -93,6 +93,21 @@ class Keystore<E> {
     return _store.values.map((e) => e.value as E);
   }
 
+  Iterable<E> getValuesBetween([dynamic startKey, dynamic endKey]) sync* {
+    Iterable<Frame> iterable;
+    if (startKey != null) {
+      iterable = _store.valuesFromKey(startKey);
+    } else {
+      iterable = _store.values;
+    }
+
+    for (var frame in iterable) {
+      yield frame.value as E;
+
+      if (frame.key == endKey) break;
+    }
+  }
+
   Stream<BoxEvent> watch({dynamic key}) {
     return _notifier.watch(key: key);
   }

@@ -7,7 +7,7 @@ class IndexableSkipList<K, V> {
   static const maxHeight = 12;
 
   @visibleForTesting
-  final Node<K, V> head = Node(
+  final _Node<K, V> head = _Node(
     null,
     null,
     List(maxHeight),
@@ -48,7 +48,7 @@ class IndexableSkipList<K, V> {
       newLevel = _height++;
     }
 
-    var newNode = Node<K, V>(
+    var newNode = _Node<K, V>(
       key,
       value,
       List(newLevel + 1),
@@ -147,9 +147,16 @@ class IndexableSkipList<K, V> {
 
   V get(K key) => _getNode(key)?.value;
 
-  Node<K, V> _getNode(K key) {
+  // TODO: write test
+  Iterable<V> valuesFromKey(K key) {
+    var node = _getNode(key);
+    var virtualHead = _Node(null, null, [node], [0]);
+    return _ValueIterable(virtualHead);
+  }
+
+  _Node<K, V> _getNode(K key) {
     var prev = head;
-    Node<K, V> node;
+    _Node<K, V> node;
     for (var i = _height - 1; i >= 0; i--) {
       node = prev.next[i];
 
@@ -169,11 +176,11 @@ class IndexableSkipList<K, V> {
 
   K getKeyAt(int index) => _getNodeAt(index).key;
 
-  Node<K, V> _getNodeAt(int index) {
+  _Node<K, V> _getNodeAt(int index) {
     RangeError.checkValidIndex(index, this);
 
     var prev = head;
-    Node<K, V> node;
+    _Node<K, V> node;
     for (var level = _height - 1; level >= 0; level--) {
       node = prev.next[level];
 
@@ -197,22 +204,22 @@ class IndexableSkipList<K, V> {
   }
 }
 
-class Node<K, V> {
+class _Node<K, V> {
   final K key;
 
   V value;
 
-  final List<Node<K, V>> next;
+  final List<_Node<K, V>> next;
 
   final List<int> width;
 
   int get level => next.length - 1;
 
-  Node(this.key, this.value, this.next, this.width);
+  _Node(this.key, this.value, this.next, this.width);
 }
 
 abstract class _Iterator<K, V, E> implements Iterator<E> {
-  Node<K, V> node;
+  _Node<K, V> node;
 
   _Iterator(this.node);
 
@@ -221,14 +228,14 @@ abstract class _Iterator<K, V, E> implements Iterator<E> {
 }
 
 class _KeyIterator<K, V> extends _Iterator<K, V, K> {
-  _KeyIterator(Node<K, V> node) : super(node);
+  _KeyIterator(_Node<K, V> node) : super(node);
 
   @override
   K get current => node.key;
 }
 
 class _KeyIterable<K, V> extends IterableBase<K> {
-  final Node<K, V> head;
+  final _Node<K, V> head;
 
   _KeyIterable(this.head);
 
@@ -237,14 +244,14 @@ class _KeyIterable<K, V> extends IterableBase<K> {
 }
 
 class _ValueIterator<K, V> extends _Iterator<K, V, V> {
-  _ValueIterator(Node<K, V> node) : super(node);
+  _ValueIterator(_Node<K, V> node) : super(node);
 
   @override
   V get current => node.value;
 }
 
 class _ValueIterable<K, V> extends IterableBase<V> {
-  final Node<K, V> head;
+  final _Node<K, V> head;
 
   _ValueIterable(this.head);
 

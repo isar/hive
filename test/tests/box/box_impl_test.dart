@@ -41,6 +41,18 @@ void main() {
       expect(box.values, [123, null, 'value1']);
     });
 
+    test('.valuesBetween()', () {
+      var keystore = Keystore.debug(frames: [
+        Frame(0, 0),
+        Frame(1, 1),
+        Frame('0', 2),
+        Frame('1', 3),
+      ]);
+      var box = _getBox(keystore: keystore);
+
+      expect(box.valuesBetween(startKey: 1, endKey: '0'), [1, 2]);
+    });
+
     group('.get()', () {
       test('returns defaultValue if key does not exist', () {
         var backend = BackendMock();

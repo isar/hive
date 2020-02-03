@@ -16,6 +16,16 @@ abstract class Box<E> implements BoxBase<E> {
   /// The values are in the same order as their keys.
   Iterable<E> get values;
 
+  /// Returns an iterable which contains all values starting with the value
+  /// associated with [startKey] (inclusive) to the value associated with
+  /// [endKey] (inclusive).
+  ///
+  /// If [startKey] does not exist, an empty iterable is returned. If [endKey]
+  /// does not exist or is before [startKey], it is ignored.
+  ///
+  /// The values are in the same order as their keys.
+  Iterable<E> valuesBetween({dynamic startKey, dynamic endKey});
+
   /// Returns the value associated with the given [key]. If the key does not
   /// exist, `null` is returned.
   ///
