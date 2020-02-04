@@ -3,7 +3,7 @@
 </p>
 <h2 align="center">Fast, Enjoyable & Secure NoSQL Database</h2>
 
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/hivedb/hive/Dart%20CI/master?label=tests&labelColor=333940&logoWidth=20&logo=github)](https://github.com/hivedb/hive/actions) [![Codecov branch](https://img.shields.io/codecov/c/github/hivedb/hive/master?labelColor=333940&logo=codecov&logoColor=white)](https://codecov.io/gh/hivedb/hive) [![Pub Version](https://img.shields.io/pub/v/hive?label=pub.dev&labelColor=333940&logo=dart)](https://pub.dev/packages/hive) [![GitHub](https://img.shields.io/github/license/hivedb/hive?color=%23007A88&labelColor=333940&logo=apache)](https://github.com/hivedb/hive/blob/master/LICENSE)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/hivedb/hive/Dart%20CI/master?label=tests&labelColor=333940&logo=github)](https://github.com/hivedb/hive/actions) [![Codecov branch](https://img.shields.io/codecov/c/github/hivedb/hive/master?labelColor=333940&logo=codecov&logoColor=white)](https://codecov.io/gh/hivedb/hive) [![Pub Version](https://img.shields.io/pub/v/hive?label=pub.dev&labelColor=333940&logo=dart)](https://pub.dev/packages/hive) [![GitHub](https://img.shields.io/github/license/hivedb/hive?color=%23007A88&labelColor=333940&logo=apache)](https://github.com/hivedb/hive/blob/master/LICENSE)
 
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
