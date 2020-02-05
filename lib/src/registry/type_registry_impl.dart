@@ -37,7 +37,7 @@ class TypeRegistryImpl implements TypeRegistry {
       typeId = typeId + reservedTypeIds;
 
       if (findAdapterForTypeId(typeId) != null) {
-        throw HiveError('There is already a TypeAdapter for typeId $typeId.');
+        throw HiveError('There is already a TypeAdapter for typeId ${typeId - reservedTypeIds}.');
       }
     }
 
