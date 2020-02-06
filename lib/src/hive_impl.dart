@@ -98,7 +98,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool crashRecovery = true,
     String path,
     Uint8List bytes,
+    @deprecated List<int> encryptionKey,
   }) async {
+    if (encryptionKey != null) {
+      encryptionCipher = HiveAesCipher(encryptionKey);
+    }
     return await _openBox<E>(name, false, encryptionCipher, keyComparator,
         compactionStrategy, crashRecovery, path, bytes) as Box<E>;
   }
@@ -111,7 +115,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String path,
+    @deprecated List<int> encryptionKey,
   }) async {
+    if (encryptionKey != null) {
+      encryptionCipher = HiveAesCipher(encryptionKey);
+    }
     return await _openBox<E>(name, true, encryptionCipher, keyComparator,
         compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
   }

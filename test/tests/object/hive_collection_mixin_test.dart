@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:hive/src/object/hive_object.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 

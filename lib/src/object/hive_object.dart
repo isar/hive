@@ -30,33 +30,6 @@ abstract class HiveObject {
     }
   }
 
-  @mustCallSuper
-  void init(dynamic key, BoxBase box) {
-    if (_box != null) {
-      if (_box != box) {
-        throw HiveError('The same instance of an HiveObject cannot '
-            'be stored in two different boxes.');
-      } else if (_key != key) {
-        throw HiveError('The same instance of an HiveObject cannot '
-            'be stored with two different keys ("$_key" and "$key").');
-      }
-    }
-    _box = box;
-    _key = key;
-  }
-
-  @mustCallSuper
-  void dispose() {
-    for (var list in _hiveLists.keys) {
-      (list as HiveListImpl).invalidate();
-    }
-
-    _hiveLists.clear();
-
-    _box = null;
-    _key = null;
-  }
-
   /// Persists this object.
   Future<void> save() {
     _requireInitialized();
