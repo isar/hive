@@ -6,13 +6,13 @@
 - Added `box.valuesBetween(startKey, endKey)`
 - Allow tree shaking to drop encryption engine if no encryption is used
 
+### Fixes
+- `Hive.deleteBoxFromDisk()` did not work for boxes with upper-case names
+
 ### More
 - Deprecated `encryptionKey` parameter. Use `Hive.openBox('name', encryptionCipher: HiveAesCipher(yourKey))`.
 - Dropped `pointycastle` dependency
 - Dropped `path` dependency
-
-## Fixes
-- `Hive.deleteBoxFromDisk()` did not work for boxes with upper-case names
 
 ## 1.3.0
 
