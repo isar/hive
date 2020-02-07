@@ -145,8 +145,12 @@ class IndexableSkipList<K, V> {
     return node.value;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   V get(K key) => _getNode(key)?.value;
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   // TODO: write test
   Iterable<V> valuesFromKey(K key) {
     var node = _getNode(key);
@@ -172,8 +176,12 @@ class IndexableSkipList<K, V> {
     return null;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   V getAt(int index) => _getNodeAt(index).value;
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   K getKeyAt(int index) => _getNodeAt(index).key;
 
   _Node<K, V> _getNodeAt(int index) {

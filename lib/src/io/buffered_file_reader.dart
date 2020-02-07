@@ -22,11 +22,15 @@ class BufferedFileReader {
   BufferedFileReader(this.file, [int bufferSize = defaultChunkSize])
       : buffer = Uint8List(bufferSize);
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void skip(int bytes) {
     assert(bytes >= 0 && remainingInBuffer >= bytes);
     _bufferOffset += bytes;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   Uint8List viewBytes(int bytes) {
     assert(bytes >= 0 && remainingInBuffer >= bytes);
     var view = Uint8List.view(buffer.buffer, _bufferOffset, bytes);
@@ -34,6 +38,8 @@ class BufferedFileReader {
     return view;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   Uint8List peekBytes(int bytes) {
     assert(bytes >= 0 && remainingInBuffer >= bytes);
     return Uint8List.view(buffer.buffer, _bufferOffset, bytes);

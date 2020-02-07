@@ -23,6 +23,8 @@ class BinaryReaderImpl extends BinaryReader {
         _bufferLimit = bufferLength ?? _buffer.length,
         typeRegistry = typeRegistry as TypeRegistryImpl;
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   int get availableBytes => _bufferLimit - _offset;
 
@@ -38,24 +40,32 @@ class BinaryReaderImpl extends BinaryReader {
     _bufferLimit = _bufferLength;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void _requireBytes(int bytes) {
     if (_offset + bytes > _bufferLimit) {
       throw RangeError('Not enough bytes available.');
     }
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   void skip(int bytes) {
     _requireBytes(bytes);
     _offset += bytes;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   int readByte() {
     _requireBytes(1);
     return _buffer[_offset++];
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   Uint8List viewBytes(int bytes) {
     _requireBytes(bytes);
@@ -82,6 +92,8 @@ class BinaryReaderImpl extends BinaryReader {
     return _byteData.getInt32(_offset - 4, Endian.little);
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   int readUint32() {
     _requireBytes(4);
@@ -109,8 +121,7 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   bool readBool() {
-    _requireBytes(1);
-    return _buffer[_offset++] > 0;
+    return readByte() > 0;
   }
 
   @override
@@ -310,6 +321,8 @@ class BinaryReaderImpl extends BinaryReader {
     }
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   dynamic readEncrypted(HiveCipher cipher) {
     var inpLength = availableBytes;
     var out = Uint8List(inpLength);

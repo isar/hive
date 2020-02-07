@@ -19,6 +19,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   int _offset = 0;
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   ByteData get _byteData {
     _byteDataInstance ??= ByteData.view(_buffer.buffer);
     return _byteDataInstance;
@@ -30,17 +32,25 @@ class BinaryWriterImpl extends BinaryWriter {
   @visibleForTesting
   BinaryWriterImpl.withBuffer(this._buffer, this.typeRegistry);
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void _reserveBytes(int count) {
     if (_buffer.length - _offset < count) {
-      // We will create a list in the range of 2-4 times larger than required.
-      var newSize = _pow2roundup((_offset + count) * 2);
-      var newBuffer = Uint8List(newSize);
-      newBuffer.setRange(0, _offset, _buffer);
-      _buffer = newBuffer;
-      _byteDataInstance = null;
+      _increaseBufferSize(count);
     }
   }
 
+  void _increaseBufferSize(int count) {
+// We will create a list in the range of 2-4 times larger than required.
+    var newSize = _pow2roundup((_offset + count) * 2);
+    var newBuffer = Uint8List(newSize);
+    newBuffer.setRange(0, _offset, _buffer);
+    _buffer = newBuffer;
+    _byteDataInstance = null;
+  }
+
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void _addBytes(List<int> bytes) {
     var length = bytes.length;
     _reserveBytes(length);
@@ -48,6 +58,8 @@ class BinaryWriterImpl extends BinaryWriter {
     _offset += length;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   void writeByte(int byte) {
     if (byte == null) {
@@ -74,6 +86,8 @@ class BinaryWriterImpl extends BinaryWriter {
     _offset += 4;
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   @override
   void writeUint32(int value) {
     _reserveBytes(4);
@@ -298,7 +312,8 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
-  /// TODO remove workaround once dart-lang/sdk#39752 is published
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void _writeList(List value, {bool writeTypeId = true}) {
     if (value is HiveList) {
       if (writeTypeId) {
@@ -343,6 +358,8 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void writeEncrypted(dynamic value, HiveCipher cipher,
       {bool writeTypeId = true}) {
     var valueWriter = BinaryWriterImpl(typeRegistry)
@@ -361,6 +378,8 @@ class BinaryWriterImpl extends BinaryWriter {
     return Uint8List.view(_buffer.buffer, 0, _offset);
   }
 
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   static int _pow2roundup(int x) {
     assert(x > 0);
     --x;
