@@ -15,6 +15,8 @@ const _mask8 = 0xff;
 const _mask16 = 0xffff;
 const _mask32 = 0xffffffff;
 
+@pragma('vm:prefer-inline')
+@pragma('dart2js:tryInline')
 int _subWord(int x) {
   return sBox[x & 255] |
       (sBox[(x >> 8) & 255] << 8) |
@@ -22,6 +24,8 @@ int _subWord(int x) {
       sBox[(x >> 24) & 255] << 24;
 }
 
+@pragma('vm:prefer-inline')
+@pragma('dart2js:tryInline')
 int _invMcol(int x) {
   var f2 = ((x & _m2) << 1) ^ (((x & _m1) >> 7) * _m3);
   var f4 = ((f2 & _m2) << 1) ^ (((f2 & _m1) >> 7) * _m3);

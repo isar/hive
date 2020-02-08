@@ -1,6 +1,8 @@
 part of hive_object_internal;
 
 extension HiveObjectInternal on HiveObject {
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
   void init(dynamic key, BoxBase box) {
     if (_box != null) {
       if (_box != box) {
