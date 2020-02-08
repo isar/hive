@@ -1,3 +1,11 @@
+## 1.4.0+1
+
+### Enhancements
+- Minor performance improvements
+
+### Fixes
+- Allow more versions of `crypto`
+
 ## 1.4.0
 
 ### Enhancements
