@@ -1,3 +1,8 @@
+## Future release
+
+### Fixes
+- When a database operation failed, subsequent operations would not be performed
+
 ## 1.4.0+1
 
 ### Enhancements

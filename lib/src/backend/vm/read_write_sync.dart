@@ -7,35 +7,39 @@ class ReadWriteSync {
 
   Future<T> syncRead<T>(Future<T> Function() task) async {
     var previousTask = readTask;
-    var completer = Completer();
+    var completer = Completer.sync();
 
     readTask = completer.future;
     if (previousTask != null) {
       await previousTask;
     }
 
-    var result = await task();
-    completer.complete();
-    return result;
+    try {
+      return await task();
+    } finally {
+      completer.complete();
+    }
   }
 
   Future<T> syncWrite<T>(Future<T> Function() task) async {
     var previousTask = writeTask;
-    var completer = Completer();
+    var completer = Completer.sync();
 
     writeTask = completer.future;
     if (previousTask != null) {
       await previousTask;
     }
 
-    var result = await task();
-    completer.complete();
-    return result;
+    try {
+      return await task();
+    } finally {
+      completer.complete();
+    }
   }
 
   Future<T> syncReadWrite<T>(Future<T> Function() task) async {
     var previousReadTask = readTask;
-    var completer = Completer();
+    var completer = Completer.sync();
     var future = completer.future;
 
     readTask = future;
@@ -49,8 +53,10 @@ class ReadWriteSync {
       await previousWriteTask;
     }
 
-    var result = await task();
-    completer.complete();
-    return result;
+    try {
+      return await task();
+    } finally {
+      completer.complete();
+    }
   }
 }
