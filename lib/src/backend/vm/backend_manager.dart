@@ -5,8 +5,11 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:meta/meta.dart';
 
+// From: https://api.flutter.dev/flutter/foundation/kIsWeb-constant.html
+const bool kIsWeb = identical(0, 0.0);
+
 class BackendManager implements BackendManagerInterface {
-  final delimiter = Platform.isWindows ? '\\' : '/';
+  final delimiter = (kIsWeb || !Platform.isWindows) ? '/' : '\\';
 
   @override
   Future<StorageBackend> open(
