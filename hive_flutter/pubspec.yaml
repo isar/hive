@@ -17,5 +17,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   pedantic: ">=1.8.0 <2.0.0"
+
+dependency_overrides:
+  hive:
+    path: ../hive
