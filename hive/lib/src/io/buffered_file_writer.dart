@@ -1,7 +1,7 @@
 import 'dart:io';
 
 class BufferedFileWriter {
-  static const defaultMaxBufferSize = 1000000;
+  static const defaultMaxBufferSize = 64000;
 
   final RandomAccessFile file;
 
@@ -11,11 +11,12 @@ class BufferedFileWriter {
 
   BufferedFileWriter(this.file, [this.maxBufferSize = defaultMaxBufferSize]);
 
-  Future<void> write(List<int> bytes) async {
-    if (_buffer.length >= maxBufferSize) {
-      await flush();
-    }
+  Future<void> write(List<int> bytes) {
     _buffer.add(bytes);
+    if (_buffer.length >= maxBufferSize) {
+      return flush();
+    }
+    return Future.value();
   }
 
   Future<void> flush() {
