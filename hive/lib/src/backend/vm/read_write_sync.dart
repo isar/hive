@@ -1,62 +1,39 @@
 import 'dart:async';
 
 class ReadWriteSync {
-  Future readTask;
+  Future _readTask = Future.value();
 
-  Future writeTask;
+  Future _writeTask = Future.value();
 
-  Future<T> syncRead<T>(Future<T> Function() task) async {
-    var previousTask = readTask;
-    var completer = Completer.sync();
+  Future<T> syncRead<T>(Future<T> Function() task) {
+    var previousTask = _readTask;
 
-    readTask = completer.future;
-    if (previousTask != null) {
-      await previousTask;
-    }
+    var completer = Completer();
+    _readTask = completer.future;
 
-    try {
-      return await task();
-    } finally {
-      completer.complete();
-    }
+    return previousTask.then((_) => task()).whenComplete(completer.complete);
   }
 
-  Future<T> syncWrite<T>(Future<T> Function() task) async {
-    var previousTask = writeTask;
-    var completer = Completer.sync();
+  Future<T> syncWrite<T>(Future<T> Function() task) {
+    var previousTask = _writeTask;
 
-    writeTask = completer.future;
-    if (previousTask != null) {
-      await previousTask;
-    }
+    var completer = Completer();
+    _writeTask = completer.future;
 
-    try {
-      return await task();
-    } finally {
-      completer.complete();
-    }
+    return previousTask.then((_) => task()).whenComplete(completer.complete);
   }
 
-  Future<T> syncReadWrite<T>(Future<T> Function() task) async {
-    var previousReadTask = readTask;
-    var completer = Completer.sync();
+  Future<T> syncReadWrite<T>(FutureOr<T> Function() task) {
+    var previousReadTask = _readTask;
+    var previousWriteTask = _writeTask;
+
+    var completer = Completer();
     var future = completer.future;
+    _readTask = future;
+    _writeTask = future;
 
-    readTask = future;
-    if (previousReadTask != null) {
-      await previousReadTask;
-    }
-
-    var previousWriteTask = writeTask;
-    writeTask = future;
-    if (previousWriteTask != null) {
-      await previousWriteTask;
-    }
-
-    try {
-      return await task();
-    } finally {
-      completer.complete();
-    }
+    return previousReadTask.then((_) {
+      return previousWriteTask.then((_) => task());
+    }).whenComplete(completer.complete);
   }
 }

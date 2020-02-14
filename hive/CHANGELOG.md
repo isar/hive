@@ -1,5 +1,8 @@
 # Future release
 
+### Enhancements
+- Minor performance improvements
+
 ### Fixes
 - When a database operation failed, subsequent operations would not be performed
 
