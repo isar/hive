@@ -18,6 +18,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   pedantic: ">=1.8.0 <2.0.0"
+  mockito: ^4.1.1
 
 dependency_overrides:
   hive:
