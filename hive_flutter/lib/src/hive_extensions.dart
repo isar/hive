@@ -8,7 +8,10 @@ extension HiveX on HiveInterface {
   Future initFlutter([String subDir]) async {
     WidgetsFlutterBinding.ensureInitialized();
     if (!kIsWeb) {
-      var appDir = await getApplicationDocumentsDirectory();
+      var appDir = Platform.isMacOS
+          ? await getDownloadsDirectory()
+          : await getApplicationDocumentsDirectory();
+
       var path = appDir.path;
       if (subDir != null) {
         path = path_helper.join(path, subDir);
