@@ -1,3 +1,9 @@
+## 0.7.0+2
+- Fixed Changelog
+
+## 0.7.0+2
+- Fixed GitHub homepage path
+
 ## 0.7.0
 - Fixed final fields in constructor
 - Support for `typeId` parameter

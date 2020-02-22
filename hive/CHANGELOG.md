@@ -1,10 +1,13 @@
-# Future release
+# 1.4.1
 
 ### Enhancements
 - Minor performance improvements
 
 ### Fixes
 - When a database operation failed, subsequent operations would not be performed
+
+### Other
+- Fixed GitHub homepage path
 
 # 1.4.0+1
 
