@@ -2,19 +2,22 @@ import 'dart:typed_data';
 
 import 'package:hive/src/crypto/aes_engine.dart';
 
+/// AES CBC implementation with PKCS7 padding
 class AesCbcPkcs7 {
   static final _lastInputBlockBuffer = Uint8List(16);
 
-  final Uint8List keyBytes;
+  final Uint8List _keyBytes;
 
   List<Uint32List> _encryptionKey;
   List<Uint32List> _decryptionKey;
 
-  AesCbcPkcs7(this.keyBytes);
+  /// Not part of public API
+  AesCbcPkcs7(this._keyBytes);
 
+  /// Not part of public API
   int encrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
       Uint8List out, int outOff) {
-    _encryptionKey ??= AesEngine.generateWorkingKey(keyBytes, true);
+    _encryptionKey ??= AesEngine.generateWorkingKey(_keyBytes, true);
 
     var cbcV = Uint8List.fromList(iv);
 
@@ -47,9 +50,10 @@ class AesCbcPkcs7 {
     return offset + aesBlockSize;
   }
 
+  /// Not part of public API
   int decrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
       Uint8List out, int outOff) {
-    _decryptionKey ??= AesEngine.generateWorkingKey(keyBytes, false);
+    _decryptionKey ??= AesEngine.generateWorkingKey(_keyBytes, false);
 
     var inputBlocks = (inpLength + aesBlockSize - 1) ~/ aesBlockSize;
 

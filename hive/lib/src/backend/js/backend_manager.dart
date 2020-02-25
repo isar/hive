@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/backend/js/storage_backend_js.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 
+/// Opens IndexedDB databases
 class BackendManager implements BackendManagerInterface {
   @override
   Future<StorageBackend> open(

@@ -5,24 +5,29 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
 abstract class BoxBaseImpl<E> implements BoxBase<E> {
   @override
   final String name;
 
+  /// Not part of public API
   @visibleForTesting
   final HiveImpl hive;
 
   final CompactionStrategy _compactionStrategy;
 
+  /// Not part of public API
   @protected
   final StorageBackend backend;
 
+  /// Not part of public API
   @protected
   @visibleForTesting
   Keystore<E> keystore;
 
   bool _open = true;
 
+  /// Not part of public API
   BoxBaseImpl(
     this.hive,
     this.name,
@@ -33,6 +38,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
     keystore = Keystore(this, ChangeNotifier(), keyComparator);
   }
 
+  /// Not part of public API
   Type get valueType => E;
 
   @override
@@ -59,6 +65,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   @override
   bool get isNotEmpty => length > 0;
 
+  /// Not part of public API
   @protected
   void checkOpen() {
     if (!_open) {
@@ -78,6 +85,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
     return keystore.getAt(index).key;
   }
 
+  /// Not part of public API
   Future<void> initialize() {
     return backend.initialize(hive, keystore, lazy);
   }
@@ -140,6 +148,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
     keystore.resetDeletedEntries();
   }
 
+  /// Not part of public API
   @protected
   Future<void> performCompactionIfNeeded() {
     if (_compactionStrategy(keystore.length, keystore.deletedEntries)) {

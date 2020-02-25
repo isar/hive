@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 
+/// Adapter for DateTime
 class DateTimeAdapter extends TypeAdapter<DateTime> {
   @override
   final typeId = 16;

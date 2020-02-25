@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 
+/// Adapter for BigInt
 class BigIntAdapter extends TypeAdapter<BigInt> {
   @override
   final typeId = 17;

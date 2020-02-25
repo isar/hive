@@ -7,9 +7,11 @@ import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/util/delegating_list_view_mixin.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
 class HiveListImpl<E extends HiveObject>
     with HiveCollectionMixin<E>, ListMixin<E>, DelegatingListViewMixin<E>
     implements HiveList<E> {
+  /// Not part of public API
   final String boxName;
 
   final List<dynamic> _keys;
@@ -24,6 +26,7 @@ class HiveListImpl<E extends HiveObject>
 
   bool _disposed = false;
 
+  /// Not part of public API
   HiveListImpl(Box box, {List<E> objects})
       : boxName = box.name,
         _keys = null,
@@ -34,6 +37,7 @@ class HiveListImpl<E extends HiveObject>
     }
   }
 
+  /// Not part of public API
   HiveListImpl.lazy(this.boxName, List<dynamic> keys) : _keys = keys;
 
   @override
@@ -104,6 +108,7 @@ class HiveListImpl<E extends HiveObject>
     _disposed = true;
   }
 
+  /// Not part of public API
   void invalidate() {
     if (_delegate != null) {
       _invalidated = true;
@@ -167,6 +172,7 @@ class HiveListImpl<E extends HiveObject>
     }
   }
 
+  /// Not part of public API
   @visibleForTesting
   set debugHive(HiveInterface hive) => _hive = hive;
 }

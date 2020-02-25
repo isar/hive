@@ -1,5 +1,6 @@
 part of hive;
 
+/// List containing [HiveObject]s.
 abstract class HiveCollection<E extends HiveObject> implements List<E> {
   /// The box which contains all the objects in this collection
   BoxBase get box;

@@ -6,7 +6,9 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/box_base_impl.dart';
 import 'package:hive/src/hive_impl.dart';
 
+/// Not part of public API
 class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
+  /// Not part of public API
   BoxImpl(
     HiveImpl hive,
     String name,

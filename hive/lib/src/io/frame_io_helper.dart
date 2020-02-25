@@ -8,17 +8,21 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
 class FrameIoHelper extends FrameHelper {
+  /// Not part of public API
   @visibleForTesting
   Future<RandomAccessFile> openFile(String path) {
     return File(path).open();
   }
 
+  /// Not part of public API
   @visibleForTesting
   Future<List<int>> readFile(String path) {
     return File(path).readAsBytes();
   }
 
+  /// Not part of public API
   Future<int> keysFromFile(
       String path, Keystore keystore, HiveCipher cipher) async {
     var raf = await openFile(path);
@@ -30,6 +34,7 @@ class FrameIoHelper extends FrameHelper {
     }
   }
 
+  /// Not part of public API
   Future<int> framesFromFile(String path, Keystore keystore,
       TypeRegistry registry, HiveCipher cipher) async {
     var bytes = await readFile(path);

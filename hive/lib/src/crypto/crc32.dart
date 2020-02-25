@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+/// Efficient CRC32 implementation
 class Crc32 {
   /// Computes the CRC32 checksum of [bytes] using a previous [crc] value.
   static int compute(

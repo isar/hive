@@ -13,48 +13,58 @@ import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:meta/meta.dart';
 
+/// Storage backend for the Dart VM
 class StorageBackendVm extends StorageBackend {
-  final File file;
-  final File lockFile;
-  final bool crashRecovery;
-  final HiveCipher cipher;
-  final FrameIoHelper frameHelper;
+  final File _file;
+  final File _lockFile;
+  final bool _crashRecovery;
+  final HiveCipher _cipher;
+  final FrameIoHelper _frameHelper;
 
   final ReadWriteSync _sync;
 
+  /// Not part of public API
   @visibleForTesting
   RandomAccessFile readRaf;
 
+  /// Not part of public API
   @visibleForTesting
   RandomAccessFile writeRaf;
 
+  /// Not part of public API
   @visibleForTesting
   RandomAccessFile lockRaf;
 
+  /// Not part of public API
   @visibleForTesting
   int writeOffset = 0;
 
+  /// Not part of public API
   @visibleForTesting
   TypeRegistry registry;
 
-  bool compactionScheduled = false;
+  bool _compactionScheduled = false;
 
-  StorageBackendVm(this.file, this.lockFile, this.crashRecovery, this.cipher)
-      : frameHelper = FrameIoHelper(),
+  /// Not part of public API
+  StorageBackendVm(
+      this._file, this._lockFile, this._crashRecovery, this._cipher)
+      : _frameHelper = FrameIoHelper(),
         _sync = ReadWriteSync();
 
-  StorageBackendVm.debug(this.file, this.lockFile, this.crashRecovery,
-      this.cipher, this.frameHelper, this._sync);
+  /// Not part of public API
+  StorageBackendVm.debug(this._file, this._lockFile, this._crashRecovery,
+      this._cipher, this._frameHelper, this._sync);
 
   @override
-  String get path => file.path;
+  String get path => _file.path;
 
   @override
   bool supportsCompaction = true;
 
+  /// Not part of public API
   Future open() async {
-    readRaf = await file.open();
-    writeRaf = await file.open(mode: FileMode.writeOnlyAppend);
+    readRaf = await _file.open();
+    writeRaf = await _file.open(mode: FileMode.writeOnlyAppend);
     writeOffset = await writeRaf.length();
   }
 
@@ -63,19 +73,19 @@ class StorageBackendVm extends StorageBackend {
       TypeRegistry registry, Keystore keystore, bool lazy) async {
     this.registry = registry;
 
-    lockRaf = await lockFile.open(mode: FileMode.write);
+    lockRaf = await _lockFile.open(mode: FileMode.write);
     await lockRaf.lock();
 
     int recoveryOffset;
     if (!lazy) {
       recoveryOffset =
-          await frameHelper.framesFromFile(path, keystore, registry, cipher);
+          await _frameHelper.framesFromFile(path, keystore, registry, _cipher);
     } else {
-      recoveryOffset = await frameHelper.keysFromFile(path, keystore, cipher);
+      recoveryOffset = await _frameHelper.keysFromFile(path, keystore, _cipher);
     }
 
     if (recoveryOffset != -1) {
-      if (crashRecovery) {
+      if (_crashRecovery) {
         print('Recovering corrupted box.');
         await writeRaf.truncate(recoveryOffset);
         writeOffset = recoveryOffset;
@@ -93,7 +103,7 @@ class StorageBackendVm extends StorageBackend {
       var bytes = await readRaf.read(frame.length);
 
       var reader = BinaryReaderImpl(bytes, registry);
-      var readFrame = reader.readFrame(cipher: cipher, lazy: false);
+      var readFrame = reader.readFrame(cipher: _cipher, lazy: false);
 
       if (readFrame == null) {
         throw HiveError(
@@ -110,7 +120,7 @@ class StorageBackendVm extends StorageBackend {
       var writer = BinaryWriterImpl(registry);
 
       for (var frame in frames) {
-        frame.length = writer.writeFrame(frame, cipher: cipher);
+        frame.length = writer.writeFrame(frame, cipher: _cipher);
       }
 
       try {
@@ -129,8 +139,8 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> compact(Iterable<Frame> frames) {
-    if (compactionScheduled) return Future.value();
-    compactionScheduled = true;
+    if (_compactionScheduled) return Future.value();
+    _compactionScheduled = true;
 
     return _sync.syncReadWrite(() async {
       await readRaf.setPosition(0);
@@ -179,7 +189,7 @@ class StorageBackendVm extends StorageBackend {
         frame.offset = offset;
         offset += frame.length;
       }
-      compactionScheduled = false;
+      _compactionScheduled = false;
     });
   }
 
@@ -197,7 +207,7 @@ class StorageBackendVm extends StorageBackend {
     await writeRaf.close();
 
     await lockRaf.close();
-    await lockFile.delete();
+    await _lockFile.delete();
   }
 
   @override
@@ -209,7 +219,7 @@ class StorageBackendVm extends StorageBackend {
   Future<void> deleteFromDisk() {
     return _sync.syncReadWrite(() async {
       await _closeInternal();
-      await file.delete();
+      await _file.delete();
     });
   }
 }

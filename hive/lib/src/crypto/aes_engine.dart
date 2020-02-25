@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'package:hive/src/crypto/aes_tables.dart';
 import 'package:hive/src/util/extensions.dart';
 
+/// The block size of an AES block
 const aesBlockSize = 16;
 
+/// The number of encryption rounds
 const rounds = 14;
 
 const _m1 = 0x80808080;
@@ -39,7 +41,9 @@ int _invMcol(int x) {
   return f2 ^ f4 ^ f8 ^ s1 ^ s2 ^ s3;
 }
 
+/// AES implementation (some of the code is from Bouncycastle)
 class AesEngine {
+  /// Expand an encryption or decryption key.
   static List<Uint32List> generateWorkingKey(
       List<int> key, bool forEncryption) {
     var w = List.generate(rounds + 1, (_) => Uint32List(4));
@@ -107,6 +111,7 @@ class AesEngine {
     return w;
   }
 
+  /// Encrypt a single block with the [workingKey].
   static void encryptBlock(List<List<int>> workingKey, Uint8List inp,
       int inpOff, Uint8List out, int outOff) {
     var c0 = inp.readUint32(inpOff) ^ workingKey[0][0];
@@ -212,6 +217,7 @@ class AesEngine {
     out.writeUint32(outOff + 12, c3);
   }
 
+  /// Decrypt a single block with [workingKey].
   static void decryptBlock(List<List<int>> workingKey, Uint8List inp,
       int inpOff, Uint8List out, int outOff) {
     var c0 = inp.readUint32(inpOff) ^ workingKey[rounds][0];

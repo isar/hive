@@ -1,5 +1,6 @@
 part of hive;
 
+/// Allows defining references to other [HiveObject]s.
 @experimental
 abstract class HiveList<E extends HiveObject> extends HiveCollection<E>
     implements List<E> {

@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 
+/// Not part of public API
 class BackendManager implements BackendManagerInterface {
   @override
   Future<StorageBackend> open(

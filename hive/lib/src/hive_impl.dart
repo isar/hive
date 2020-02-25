@@ -17,18 +17,23 @@ import 'package:meta/meta.dart';
 
 import 'backend/storage_backend.dart';
 
+/// Not part of public API
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, BoxBaseImpl>();
   final BackendManager _manager;
   final Random _secureRandom = Random.secure();
 
+  /// Not part of public API
   @visibleForTesting
   String homePath;
 
+  /// Not part of public API
   HiveImpl() : _manager = BackendManager() {
     _registerDefaultAdapters();
   }
 
+  /// Not part of public API
+  @visibleForTesting
   HiveImpl.debug(this._manager) {
     _registerDefaultAdapters();
   }
@@ -124,7 +129,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
   }
 
-  BoxBase<E> getBoxInternal<E>(String name, [bool lazy]) {
+  BoxBase<E> _getBoxInternal<E>(String name, [bool lazy]) {
     var lowerCaseName = name.toLowerCase();
     var box = _boxes[lowerCaseName];
     if (box != null) {
@@ -142,17 +147,18 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     }
   }
 
+  /// Not part of public API
   BoxBase getBoxWithoutCheckInternal(String name) {
     var lowerCaseName = name.toLowerCase();
     return _boxes[lowerCaseName];
   }
 
   @override
-  Box<E> box<E>(String name) => getBoxInternal<E>(name, false) as Box<E>;
+  Box<E> box<E>(String name) => _getBoxInternal<E>(name, false) as Box<E>;
 
   @override
   LazyBox<E> lazyBox<E>(String name) =>
-      getBoxInternal<E>(name, true) as LazyBox<E>;
+      _getBoxInternal<E>(name, true) as LazyBox<E>;
 
   @override
   bool isBoxOpen(String name) {
@@ -168,6 +174,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     return Future.wait(closeFutures);
   }
 
+  /// Not part of public API
   void unregisterBox(String name) {
     _boxes.remove(name.toLowerCase());
   }

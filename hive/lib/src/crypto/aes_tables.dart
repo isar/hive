@@ -1,4 +1,4 @@
-// The S box
+/// The S box
 const sBox = [
   //
   99, 124, 119, 123, 242, 107, 111, 197,
@@ -35,7 +35,7 @@ const sBox = [
   65, 153, 45, 15, 176, 84, 187, 22,
 ];
 
-// The inverse S-box
+/// The inverse S-box
 const sBoxInv = [
   //
   82, 9, 106, 213, 48, 54, 165, 56,
@@ -72,6 +72,7 @@ const sBoxInv = [
   225, 105, 20, 99, 85, 33, 12, 125,
 ];
 
+///
 const rcon = [
   //
   0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36,
@@ -79,7 +80,7 @@ const rcon = [
   0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91,
 ];
 
-// precomputation tables of calculations for rounds
+/// precomputation tables of calculations for rounds
 const table0 = [
   //
   0xa56363c6, 0x847c7cf8, 0x997777ee, 0x8d7b7bf6, 0x0df2f2ff,
@@ -136,6 +137,7 @@ const table0 = [
   0x3a16162c,
 ];
 
+///
 const table1 = [
   //
   0x6363c6a5, 0x7c7cf884, 0x7777ee99, 0x7b7bf68d, 0xf2f2ff0d,
@@ -192,6 +194,7 @@ const table1 = [
   0x16162c3a,
 ];
 
+///
 const table2 = [
   //
   0x63c6a563, 0x7cf8847c, 0x77ee9977, 0x7bf68d7b, 0xf2ff0df2,
@@ -248,6 +251,7 @@ const table2 = [
   0x162c3a16,
 ];
 
+///
 const table3 = [
   //
   0xc6a56363, 0xf8847c7c, 0xee997777, 0xf68d7b7b, 0xff0df2f2,
@@ -304,6 +308,7 @@ const table3 = [
   0x2c3a1616
 ];
 
+///
 const table0Inv = [
   //
   0x50a7f451, 0x5365417e, 0xc3a4171a, 0x965e273a, 0xcb6bab3b,
@@ -360,6 +365,7 @@ const table0Inv = [
   0x4257b8d0,
 ];
 
+///
 const table1Inv = [
   //
   0xa7f45150, 0x65417e53, 0xa4171ac3, 0x5e273a96, 0x6bab3bcb,
@@ -416,6 +422,7 @@ const table1Inv = [
   0x57b8d042,
 ];
 
+///
 const table2Inv = [
   //
   0xf45150a7, 0x417e5365, 0x171ac3a4, 0x273a965e, 0xab3bcb6b,
@@ -472,6 +479,7 @@ const table2Inv = [
   0xb8d04257,
 ];
 
+///
 const table3Inv = [
   //
   0x5150a7f4, 0x7e536541, 0x1ac3a417, 0x3a965e27, 0x3bcb6bab,

@@ -11,14 +11,16 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:meta/meta.dart';
 
+/// Handles all IndexedDB related tasks
 class StorageBackendJs extends StorageBackend {
-  static const bytePrefix = [0x90, 0xA9];
-  final Database db;
-  final HiveCipher cipher;
+  static const _bytePrefix = [0x90, 0xA9];
+  final Database _db;
+  final HiveCipher _cipher;
 
   TypeRegistry _registry;
 
-  StorageBackendJs(this.db, this.cipher, [this._registry]);
+  /// Not part of public API
+  StorageBackendJs(this._db, this._cipher, [this._registry]);
 
   @override
   String get path => null;
@@ -27,15 +29,16 @@ class StorageBackendJs extends StorageBackend {
   bool supportsCompaction = false;
 
   bool _isEncoded(Uint8List bytes) {
-    return bytes.length >= bytePrefix.length &&
-        bytes[0] == bytePrefix[0] &&
-        bytes[1] == bytePrefix[1];
+    return bytes.length >= _bytePrefix.length &&
+        bytes[0] == _bytePrefix[0] &&
+        bytes[1] == _bytePrefix[1];
   }
 
+  /// Not part of public API
   @visibleForTesting
   dynamic encodeValue(Frame frame) {
     var value = frame.value;
-    if (cipher == null) {
+    if (_cipher == null) {
       if (value == null) {
         return value;
       } else if (value is Uint8List) {
@@ -53,12 +56,12 @@ class StorageBackendJs extends StorageBackend {
     }
 
     var frameWriter = BinaryWriterImpl(_registry);
-    frameWriter.writeByteList(bytePrefix, writeLength: false);
+    frameWriter.writeByteList(_bytePrefix, writeLength: false);
 
-    if (cipher == null) {
+    if (_cipher == null) {
       frameWriter.write(value);
     } else {
-      frameWriter.writeEncrypted(value, cipher);
+      frameWriter.writeEncrypted(value, _cipher);
     }
 
     var bytes = frameWriter.toBytes();
@@ -66,6 +69,7 @@ class StorageBackendJs extends StorageBackend {
     return sublist.buffer;
   }
 
+  /// Not part of public API
   @visibleForTesting
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
@@ -73,10 +77,10 @@ class StorageBackendJs extends StorageBackend {
       if (_isEncoded(bytes)) {
         var reader = BinaryReaderImpl(bytes, _registry);
         reader.skip(2);
-        if (cipher == null) {
+        if (_cipher == null) {
           return reader.read();
         } else {
-          return reader.readEncrypted(cipher);
+          return reader.readEncrypted(_cipher);
         }
       } else {
         return bytes;
@@ -86,12 +90,16 @@ class StorageBackendJs extends StorageBackend {
     }
   }
 
+  /// Not part of public API
+  @visibleForTesting
   ObjectStore getStore(bool write, [String box = 'box']) {
-    return db
+    return _db
         .transaction(box, write ? 'readwrite' : 'readonly')
         .objectStore(box);
   }
 
+  /// Not part of public API
+  @visibleForTesting
   Future<List<dynamic>> getKeys() {
     var completer = Completer<List<dynamic>>();
     var request = getStore(false).getAllKeys(null);
@@ -104,6 +112,8 @@ class StorageBackendJs extends StorageBackend {
     return completer.future;
   }
 
+  /// Not part of public API
+  @visibleForTesting
   Future<Iterable<dynamic>> getValues() {
     var completer = Completer<Iterable<dynamic>>();
     var request = getStore(false).getAll(null);
@@ -168,12 +178,12 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<void> close() {
-    db.close();
+    _db.close();
     return Future.value();
   }
 
   @override
   Future<void> deleteFromDisk() {
-    return window.indexedDB.deleteDatabase(db.name);
+    return window.indexedDB.deleteDatabase(_db.name);
   }
 }
