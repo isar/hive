@@ -1,3 +1,8 @@
+## 1.4.1+1
+
+### Other
+- Added docs to all public members
+
 # 1.4.1
 
 ### Enhancements
