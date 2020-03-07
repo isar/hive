@@ -75,7 +75,7 @@ class ClassBuilder extends Builder {
     } else if (mapChecker.isExactlyType(type)) {
       return '($variable as Map)${_castMap(type)}';
     } else {
-      return '$variable as ${type.name}';
+      return '$variable as ${type.getDisplayString()}';
     }
   }
 
@@ -92,7 +92,7 @@ class ClassBuilder extends Builder {
 
   String _castIterable(DartType type) {
     var paramType = type as ParameterizedType;
-    var arg = paramType.typeArguments[0];
+    var arg = paramType.typeArguments.first;
     if (isMapOrIterable(arg) && !isUint8List(arg)) {
       var cast = '';
       if (listChecker.isExactlyType(type)) {
@@ -102,7 +102,7 @@ class ClassBuilder extends Builder {
       }
       return '?.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
     } else {
-      return '?.cast<${arg.name}>()';
+      return '?.cast<${arg.getDisplayString()}>()';
     }
   }
 
@@ -114,7 +114,7 @@ class ClassBuilder extends Builder {
       return '?.map((dynamic k, dynamic v)=>'
           'MapEntry(${_cast(arg1, 'k')},${_cast(arg2, 'v')}))';
     } else {
-      return '?.cast<${arg1.name}, ${arg2.name}>()';
+      return '?.cast<${arg1.getDisplayString()}, ${arg2.getDisplayString()}>()';
     }
   }
 
