@@ -25,4 +25,15 @@ class BackendManager implements BackendManagerInterface {
   Future<void> deleteBox(String name, String path) {
     return window.indexedDB.deleteDatabase(name);
   }
+
+  @override
+  Future<bool> boxExists(String name, String path) async {
+    // https://stackoverflow.com/a/17473952
+    var _exists = true;
+    await window.indexedDB.open(name, onUpgradeNeeded: (e) {
+      e.target.transaction.abort();
+      _exists = false;
+    });
+    return _exists;
+  }
 }

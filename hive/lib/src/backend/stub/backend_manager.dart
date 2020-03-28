@@ -13,4 +13,9 @@ class BackendManager implements BackendManagerInterface {
   Future<void> deleteBox(String name, String path) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<bool> boxExists(String name, String path) {
+    throw UnimplementedError();
+  }
 }

@@ -44,4 +44,7 @@ abstract class BackendManagerInterface {
 
   /// Deletes database
   Future<void> deleteBox(String name, String path);
+
+  /// Checks if box exists
+  Future<bool> boxExists(String name, String path);
 }

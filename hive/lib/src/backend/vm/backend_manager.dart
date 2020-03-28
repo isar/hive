@@ -61,4 +61,11 @@ class BackendManager implements BackendManagerInterface {
       await file.delete();
     }
   }
+
+  @override
+  Future<bool> boxExists(String name, String path) async {
+    return await File('$path$_delimiter$name.hive').exists() ||
+        await File('$path$_delimiter$name.hivec').exists() ||
+        await File('$path$_delimiter$name.lock').exists();
+  }
 }
