@@ -1,21 +1,34 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/util/extensions.dart';
 
+/// Not part of public API
 class Frame {
+  /// Not part of public API
   final dynamic key;
+
+  /// Not part of public API
   final dynamic value;
+
+  /// Not part of public API
   final bool deleted;
+
+  /// Not part of public API
   final bool lazy;
 
+  /// Not part of public API
   int length;
+
+  /// Not part of public API
   int offset = -1;
 
+  /// Not part of public API
   Frame(this.key, this.value, {this.length, this.offset = -1})
       : lazy = false,
         deleted = false {
     assert(assertKey(key));
   }
 
+  /// Not part of public API
   Frame.deleted(this.key, {this.length})
       : value = null,
         lazy = false,
@@ -24,6 +37,7 @@ class Frame {
     assert(assertKey(key));
   }
 
+  /// Not part of public API
   Frame.lazy(this.key, {this.length, this.offset = -1})
       : value = null,
         lazy = true,
@@ -31,6 +45,7 @@ class Frame {
     assert(assertKey(key));
   }
 
+  /// Not part of public API
   static bool assertKey(dynamic key) {
     if (key is int) {
       if (key < 0 || key > 0xFFFFFFFF) {
@@ -48,6 +63,7 @@ class Frame {
     return true;
   }
 
+  /// Not part of public API
   Frame toLazy() {
     if (deleted) return this;
     return Frame.lazy(
@@ -82,23 +98,53 @@ class Frame {
   }
 }
 
+/// Possible Key types
 class FrameKeyType {
+  /// Integer key
   static const uintT = 0;
+
+  /// String key
   static const asciiStringT = 1;
 }
 
+/// Possible value types
 class FrameValueType {
+  /// null
   static const nullT = 0;
+
+  /// int
   static const intT = 1;
+
+  /// double
   static const doubleT = 2;
+
+  /// bool
   static const boolT = 3;
+
+  /// String
   static const stringT = 4;
+
+  /// Uint8List
   static const byteListT = 5;
+
+  /// List<int>
   static const intListT = 6;
+
+  /// List<double>
   static const doubleListT = 7;
+
+  /// List<bool>
   static const boolListT = 8;
+
+  /// List<String>
   static const stringListT = 9;
+
+  /// List<dynamic>
   static const listT = 10;
+
+  /// Map<dynamic, dynamic>
   static const mapT = 11;
+
+  /// List<HiveObject>
   static const hiveListT = 12;
 }

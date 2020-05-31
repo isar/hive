@@ -8,7 +8,9 @@ import 'package:hive/src/box/box_base_impl.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/hive_impl.dart';
 
+/// Not part of public API
 class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
+  /// Not part of public API
   LazyBoxImpl(
     HiveImpl hive,
     String name,

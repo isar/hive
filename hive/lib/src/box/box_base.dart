@@ -2,10 +2,16 @@ part of hive;
 
 /// A event representing a change in a box.
 class BoxEvent {
+  /// The key of the changed entry
   final dynamic key;
+
+  /// The value of a new entry of `null` if the entry has been deleted
   final dynamic value;
+
+  /// Whether the entry has been deleted
   final bool deleted;
 
+  /// Create a new BoxEvent (Hive internal)
   BoxEvent(this.key, this.value, this.deleted);
 
   @override

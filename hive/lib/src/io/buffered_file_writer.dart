@@ -1,27 +1,31 @@
 import 'dart:io';
 
+/// Not part of public API
 class BufferedFileWriter {
-  static const defaultMaxBufferSize = 64000;
+  static const _defaultMaxBufferSize = 64000;
 
-  final RandomAccessFile file;
+  final RandomAccessFile _file;
 
-  final int maxBufferSize;
+  final int _maxBufferSize;
 
   final _buffer = BytesBuilder(copy: true);
 
-  BufferedFileWriter(this.file, [this.maxBufferSize = defaultMaxBufferSize]);
+  /// Not part of public API
+  BufferedFileWriter(this._file, [this._maxBufferSize = _defaultMaxBufferSize]);
 
+  /// Not part of public API
   Future<void> write(List<int> bytes) {
     _buffer.add(bytes);
-    if (_buffer.length >= maxBufferSize) {
+    if (_buffer.length >= _maxBufferSize) {
       return flush();
     }
     return Future.value();
   }
 
+  /// Not part of public API
   Future<void> flush() {
     if (_buffer.isNotEmpty) {
-      return file.writeFrom(_buffer.takeBytes());
+      return _file.writeFrom(_buffer.takeBytes());
     } else {
       return Future.value();
     }

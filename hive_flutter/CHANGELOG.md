@@ -1,3 +1,6 @@
+## 0.3.0+2
+- Fixed GitHub homepage path
+
 ## 0.3.0+1
 - Added `box.listenable()` which returns a `ValueListenable<Box>`
 - Added `Hive.initFlutter()`

@@ -1,36 +1,39 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:meta/meta.dart';
-
+/// Not part of public API
 class IndexableSkipList<K, V> {
-  static const maxHeight = 12;
+  static const _maxHeight = 12;
 
-  @visibleForTesting
-  final _Node<K, V> head = _Node(
+  final _Node<K, V> _head = _Node(
     null,
     null,
-    List(maxHeight),
-    List.filled(maxHeight, 0),
+    List(_maxHeight),
+    List.filled(_maxHeight, 0),
   );
 
-  final Random random;
+  final Random _random;
 
-  final Comparator<K> comparator;
+  final Comparator<K> _comparator;
 
   int _height = 1;
 
   int _length = 0;
 
-  IndexableSkipList(this.comparator, [Random random])
-      : random = random ?? Random();
+  /// Not part of public API
+  IndexableSkipList(this._comparator, [Random random])
+      : _random = random ?? Random();
 
+  /// Not part of public API
   int get length => _length;
 
-  Iterable<K> get keys => _KeyIterable(head);
+  /// Not part of public API
+  Iterable<K> get keys => _KeyIterable(_head);
 
-  Iterable<V> get values => _ValueIterable(head);
+  /// Not part of public API
+  Iterable<V> get values => _ValueIterable(_head);
 
+  /// Not part of public API
   V insert(K key, V value) {
     var existingNode = _getNode(key);
     if (existingNode != null) {
@@ -41,7 +44,7 @@ class IndexableSkipList<K, V> {
 
     // calculate this new node's level
     var newLevel = 0;
-    while (random.nextBool() && newLevel < maxHeight - 1) {
+    while (_random.nextBool() && newLevel < _maxHeight - 1) {
       newLevel++;
     }
     if (newLevel >= _height) {
@@ -55,12 +58,12 @@ class IndexableSkipList<K, V> {
       List.filled(newLevel + 1, 0),
     );
 
-    var current = head;
+    var current = _head;
     // Next & Down
     for (var level = _height - 1; level >= 0; level--) {
       while (true) {
         var next = current.next[level];
-        if (next == null || comparator(key, next.key) < 0) break;
+        if (next == null || _comparator(key, next.key) < 0) break;
         current = next;
       }
 
@@ -80,7 +83,7 @@ class IndexableSkipList<K, V> {
         // CHANGE 3 - Calculate the width of the level
         var width = 0;
         var node = current.next[level - 1];
-        while (node != null && comparator(key, node.key) >= 0) {
+        while (node != null && _comparator(key, node.key) >= 0) {
           width += node.width[level - 1];
           node = node.next[level - 1];
         }
@@ -108,16 +111,17 @@ class IndexableSkipList<K, V> {
     return null;
   }
 
+  /// Not part of public API
   V delete(K key) {
     var node = _getNode(key);
     if (node == null) return null;
 
-    var current = head;
+    var current = _head;
     // Next & Down
     for (var level = _height - 1; level >= 0; level--) {
       while (true) {
         var next = current.next[level];
-        if (next == null || comparator(key, next.key) <= 0) break;
+        if (next == null || _comparator(key, next.key) <= 0) break;
         current = next;
       }
 
@@ -137,7 +141,7 @@ class IndexableSkipList<K, V> {
 
     if (node.level == _height - 1 &&
         _height > 1 &&
-        head.next[node.level] == null) {
+        _head.next[node.level] == null) {
       _height--;
     }
 
@@ -145,13 +149,15 @@ class IndexableSkipList<K, V> {
     return node.value;
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   V get(K key) => _getNode(key)?.value;
 
+  /// Not part of public API
+  // TODO: write test
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  // TODO: write test
   Iterable<V> valuesFromKey(K key) {
     var node = _getNode(key);
     var virtualHead = _Node(null, null, [node], [0]);
@@ -159,27 +165,29 @@ class IndexableSkipList<K, V> {
   }
 
   _Node<K, V> _getNode(K key) {
-    var prev = head;
+    var prev = _head;
     _Node<K, V> node;
     for (var i = _height - 1; i >= 0; i--) {
       node = prev.next[i];
 
-      while (node != null && comparator(key, node.key) > 0) {
+      while (node != null && _comparator(key, node.key) > 0) {
         prev = node;
         node = node.next[i];
       }
     }
 
-    if (node != null && comparator(key, node.key) == 0) {
+    if (node != null && _comparator(key, node.key) == 0) {
       return node;
     }
     return null;
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   V getAt(int index) => _getNodeAt(index).value;
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   K getKeyAt(int index) => _getNodeAt(index).key;
@@ -187,7 +195,7 @@ class IndexableSkipList<K, V> {
   _Node<K, V> _getNodeAt(int index) {
     RangeError.checkValidIndex(index, this);
 
-    var prev = head;
+    var prev = _head;
     _Node<K, V> node;
     for (var level = _height - 1; level >= 0; level--) {
       node = prev.next[level];
@@ -202,10 +210,11 @@ class IndexableSkipList<K, V> {
     return node;
   }
 
+  /// Not part of public API
   void clear() {
     _height = 1;
-    for (var i = 0; i < maxHeight; i++) {
-      head.next[i] = null;
+    for (var i = 0; i < _maxHeight; i++) {
+      _head.next[i] = null;
     }
     _height = 1;
     _length = 0;

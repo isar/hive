@@ -1,5 +1,6 @@
 part of hive;
 
+/// Default encryption algorithm. Uses AES256 CBC with PKCS7 padding.
 class HiveAesCipher implements HiveCipher {
   static final _ivRandom = Random.secure();
 
@@ -7,6 +8,7 @@ class HiveAesCipher implements HiveCipher {
 
   int _keyCrc;
 
+  /// Create a cipher with the given [key].
   HiveAesCipher(List<int> key) {
     if (key.length != 32 || key.any((it) => it < 0 || it > 255)) {
       throw ArgumentError(
@@ -29,6 +31,7 @@ class HiveAesCipher implements HiveCipher {
     return _cipher.decrypt(iv, inp, inpOff + 16, inpLength - 16, out, 0);
   }
 
+  /// Generates a random initialization vector (internal)
   @visibleForTesting
   Uint8List generateIv() => _ivRandom.nextBytes(16);
 

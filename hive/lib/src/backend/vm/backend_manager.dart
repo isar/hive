@@ -5,8 +5,9 @@ import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
 class BackendManager implements BackendManagerInterface {
-  final delimiter = Platform.isWindows ? '\\' : '/';
+  final _delimiter = Platform.isWindows ? '\\' : '/';
 
   @override
   Future<StorageBackend> open(
@@ -21,17 +22,18 @@ class BackendManager implements BackendManagerInterface {
     }
 
     var file = await findHiveFileAndCleanUp(name, path);
-    var lockFile = File('$path$delimiter$name.lock');
+    var lockFile = File('$path$_delimiter$name.lock');
 
     var backend = StorageBackendVm(file, lockFile, crashRecovery, cipher);
     await backend.open();
     return backend;
   }
 
+  /// Not part of public API
   @visibleForTesting
   Future<File> findHiveFileAndCleanUp(String name, String path) async {
-    var hiveFile = File('$path$delimiter$name.hive');
-    var compactedFile = File('$path$delimiter$name.hivec');
+    var hiveFile = File('$path$_delimiter$name.hive');
+    var compactedFile = File('$path$_delimiter$name.hivec');
 
     if (await hiveFile.exists()) {
       if (await compactedFile.exists()) {
@@ -49,14 +51,21 @@ class BackendManager implements BackendManagerInterface {
 
   @override
   Future<void> deleteBox(String name, String path) async {
-    await _deleteFileIfExists(File('$path$delimiter$name.hive'));
-    await _deleteFileIfExists(File('$path$delimiter$name.hivec'));
-    await _deleteFileIfExists(File('$path$delimiter$name.lock'));
+    await _deleteFileIfExists(File('$path$_delimiter$name.hive'));
+    await _deleteFileIfExists(File('$path$_delimiter$name.hivec'));
+    await _deleteFileIfExists(File('$path$_delimiter$name.lock'));
   }
 
   Future<void> _deleteFileIfExists(File file) async {
     if (await file.exists()) {
       await file.delete();
     }
+  }
+
+  @override
+  Future<bool> boxExists(String name, String path) async {
+    return await File('$path$_delimiter$name.hive').exists() ||
+        await File('$path$_delimiter$name.hivec').exists() ||
+        await File('$path$_delimiter$name.lock').exists();
   }
 }

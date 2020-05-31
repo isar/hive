@@ -48,7 +48,10 @@ abstract class HiveInterface implements TypeRegistry {
   /// Closes all open boxes.
   Future<void> close();
 
-  Future<void> deleteBoxFromDisk(String nme);
+  /// Removes the file which contains the box and closes the box.
+  ///
+  /// In the browser, the IndexedDB database is being removed.
+  Future<void> deleteBoxFromDisk(String name);
 
   /// Deletes all currently open boxes from disk.
   ///
@@ -57,6 +60,9 @@ abstract class HiveInterface implements TypeRegistry {
 
   /// Generates a secure encryption key using the fortuna random algorithm.
   List<int> generateSecureKey();
+
+  /// Checks if a box exists
+  Future<bool> boxExists(String name);
 }
 
 ///

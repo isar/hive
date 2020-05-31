@@ -1,3 +1,4 @@
+/// Efficient default implementation to compare keys
 int defaultKeyComparator(dynamic k1, dynamic k2) {
   if (k1 is int) {
     if (k2 is int) {

@@ -11,14 +11,20 @@ import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
 class KeyTransaction<E> {
+  /// The values that have been added
   final List<dynamic> added = [];
+
+  /// The frames that have been deleted
   final Map<dynamic, Frame> deleted = HashMap();
 
+  /// Not part of public API
   @visibleForTesting
   KeyTransaction();
 }
 
+/// Not part of public API
 class Keystore<E> {
   final BoxBase<E> _box;
 
@@ -26,15 +32,18 @@ class Keystore<E> {
 
   final IndexableSkipList<dynamic, Frame> _store;
 
+  /// Not part of public API
   @visibleForTesting
   final ListQueue<KeyTransaction<E>> transactions = ListQueue();
 
   var _deletedEntries = 0;
   var _autoIncrement = -1;
 
+  /// Not part of public API
   Keystore(this._box, this._notifier, KeyComparator keyComparator)
       : _store = IndexableSkipList(keyComparator ?? defaultKeyComparator);
 
+  /// Not part of public API
   factory Keystore.debug({
     Iterable<Frame> frames = const [],
     BoxBase<E> box,
@@ -49,58 +58,71 @@ class Keystore<E> {
     return keystore;
   }
 
+  /// Not part of public API
   int get deletedEntries => _deletedEntries;
 
+  /// Not part of public API
   int get length => _store.length;
 
+  /// Not part of public API
   Iterable<Frame> get frames => _store.values;
 
+  /// Not part of public API
   void resetDeletedEntries() {
     _deletedEntries = 0;
   }
 
+  /// Not part of public API
   int autoIncrement() {
     return ++_autoIncrement;
   }
 
+  /// Not part of public API
   void updateAutoIncrement(int key) {
     if (key > _autoIncrement) {
       _autoIncrement = key;
     }
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   bool containsKey(dynamic key) {
     return _store.get(key) != null;
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   dynamic keyAt(int index) {
     return _store.getKeyAt(index);
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   Frame get(dynamic key) {
     return _store.get(key);
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   Frame getAt(int index) {
     return _store.getAt(index);
   }
 
+  /// Not part of public API
   Iterable<dynamic> getKeys() {
     return _store.keys;
   }
 
+  /// Not part of public API
   Iterable<E> getValues() {
     return _store.values.map((e) => e.value as E);
   }
 
+  /// Not part of public API
   Iterable<E> getValuesBetween([dynamic startKey, dynamic endKey]) sync* {
     Iterable<Frame> iterable;
     if (startKey != null) {
@@ -116,10 +138,12 @@ class Keystore<E> {
     }
   }
 
+  /// Not part of public API
   Stream<BoxEvent> watch({dynamic key}) {
     return _notifier.watch(key: key);
   }
 
+  /// Not part of public API
   Frame insert(Frame frame, {bool notify = true}) {
     var value = frame.value;
     Frame deletedFrame;
@@ -154,6 +178,7 @@ class Keystore<E> {
     return deletedFrame;
   }
 
+  /// Not part of public API
   bool beginTransaction(List<Frame> newFrames) {
     var transaction = KeyTransaction<E>();
     for (var frame in newFrames) {
@@ -175,10 +200,12 @@ class Keystore<E> {
     }
   }
 
+  /// Not part of public API
   void commitTransaction() {
     transactions.removeFirst();
   }
 
+  /// Not part of public API
   void cancelTransaction() {
     var canceled = transactions.removeFirst();
 
@@ -221,6 +248,7 @@ class Keystore<E> {
     }
   }
 
+  /// Not part of public API
   int clear() {
     var frameList = frames.toList();
 
@@ -239,6 +267,7 @@ class Keystore<E> {
     return frameList.length;
   }
 
+  /// Not part of public API
   Future close() {
     return _notifier.close();
   }

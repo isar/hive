@@ -1,6 +1,8 @@
 part of hive_object_internal;
 
+/// Not part of public API
 extension HiveObjectInternal on HiveObject {
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   void init(dynamic key, BoxBase box) {
@@ -17,6 +19,7 @@ extension HiveObjectInternal on HiveObject {
     _key = key;
   }
 
+  /// Not part of public API
   void dispose() {
     for (var list in _hiveLists.keys) {
       (list as HiveListImpl).invalidate();
@@ -28,21 +31,25 @@ extension HiveObjectInternal on HiveObject {
     _key = null;
   }
 
+  /// Not part of public API
   void linkHiveList(HiveList list) {
     _requireInitialized();
     _hiveLists[list] = (_hiveLists[list] ?? 0) + 1;
   }
 
+  /// Not part of public API
   void unlinkHiveList(HiveList list) {
     if (--_hiveLists[list] <= 0) {
       _hiveLists.remove(list);
     }
   }
 
+  /// Not part of public API
   bool isInHiveList(HiveList list) {
     return _hiveLists.containsKey(list);
   }
 
+  /// Not part of public API
   @visibleForTesting
   Map<HiveList, int> get debugHiveLists => _hiveLists;
 }

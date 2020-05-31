@@ -8,7 +8,7 @@ part of hive;
 /// available. The returned `Future` finishes when the change is written to
 /// the backend. If this operation fails, the changes are being reverted.
 ///
-/// Read operations for normal boxes are asynchronous (the entries are in
+/// Read operations for normal boxes are synchronous (the entries are in
 /// memory). Lazy boxes have asynchronous read operations.
 abstract class Box<E> implements BoxBase<E> {
   /// All the values in the box.

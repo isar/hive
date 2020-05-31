@@ -9,10 +9,11 @@ import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:hive/src/util/extensions.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
 class BinaryWriterImpl extends BinaryWriter {
   static const _initBufferSize = 256;
 
-  final TypeRegistryImpl typeRegistry;
+  final TypeRegistryImpl _typeRegistry;
   Uint8List _buffer = Uint8List(_initBufferSize);
 
   ByteData _byteDataInstance;
@@ -26,11 +27,13 @@ class BinaryWriterImpl extends BinaryWriter {
     return _byteDataInstance;
   }
 
+  /// Not part of public API
   BinaryWriterImpl(TypeRegistry typeRegistry)
-      : typeRegistry = typeRegistry as TypeRegistryImpl;
+      : _typeRegistry = typeRegistry as TypeRegistryImpl;
 
+  /// Not part of public API
   @visibleForTesting
-  BinaryWriterImpl.withBuffer(this._buffer, this.typeRegistry);
+  BinaryWriterImpl.withBuffer(this._buffer, this._typeRegistry);
 
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
@@ -213,6 +216,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
+  /// Not part of public API
   void writeKey(dynamic key) {
     if (key is String) {
       writeByte(FrameKeyType.asciiStringT);
@@ -237,6 +241,7 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
+  /// Not part of public API
   int writeFrame(Frame frame, {HiveCipher cipher}) {
     var startOffset = _offset;
     _reserveBytes(4);
@@ -300,7 +305,7 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeMap(value);
     } else {
-      var resolved = typeRegistry.findAdapterForValue(value);
+      var resolved = _typeRegistry.findAdapterForValue(value);
       if (resolved == null) {
         throw HiveError('Cannot write, unknown type: ${value.runtimeType}. '
             'Did you forget to register an adapter?');
@@ -358,11 +363,12 @@ class BinaryWriterImpl extends BinaryWriter {
     }
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   void writeEncrypted(dynamic value, HiveCipher cipher,
       {bool writeTypeId = true}) {
-    var valueWriter = BinaryWriterImpl(typeRegistry)
+    var valueWriter = BinaryWriterImpl(_typeRegistry)
       ..write(value, writeTypeId: writeTypeId);
     var inp = valueWriter._buffer;
     var inpLength = valueWriter._offset;
@@ -374,6 +380,7 @@ class BinaryWriterImpl extends BinaryWriter {
     _offset += len;
   }
 
+  /// Not part of public API
   Uint8List toBytes() {
     return Uint8List.view(_buffer.buffer, 0, _offset);
   }

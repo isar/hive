@@ -6,14 +6,17 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
 
+/// In-memory Storage backend
 class StorageBackendMemory extends StorageBackend {
-  final HiveCipher cipher;
+  final HiveCipher _cipher;
 
-  final FrameHelper frameHelper;
+  final FrameHelper _frameHelper;
 
   Uint8List _bytes;
 
-  StorageBackendMemory(this._bytes, this.cipher) : frameHelper = FrameHelper();
+  /// Not part of public API
+  StorageBackendMemory(this._bytes, this._cipher)
+      : _frameHelper = FrameHelper();
 
   @override
   String get path => null;
@@ -24,7 +27,7 @@ class StorageBackendMemory extends StorageBackend {
   @override
   Future<void> initialize(TypeRegistry registry, Keystore keystore, bool lazy) {
     var recoveryOffset =
-        frameHelper.framesFromBytes(_bytes, keystore, registry, cipher);
+        _frameHelper.framesFromBytes(_bytes, keystore, registry, _cipher);
 
     if (recoveryOffset != -1) {
       throw HiveError('Wrong checksum in bytes. Box may be corrupted.');

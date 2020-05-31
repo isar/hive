@@ -8,20 +8,22 @@ import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:hive/src/util/extensions.dart';
 
+/// Not part of public API
 class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
   final ByteData _byteData;
   final int _bufferLength;
-  final TypeRegistryImpl typeRegistry;
+  final TypeRegistryImpl _typeRegistry;
 
   int _bufferLimit;
   int _offset = 0;
 
+  /// Not part of public API
   BinaryReaderImpl(this._buffer, TypeRegistry typeRegistry, [int bufferLength])
       : _byteData = ByteData.view(_buffer.buffer, _buffer.offsetInBytes),
         _bufferLength = bufferLength ?? _buffer.length,
         _bufferLimit = bufferLength ?? _buffer.length,
-        typeRegistry = typeRegistry as TypeRegistryImpl;
+        _typeRegistry = typeRegistry as TypeRegistryImpl;
 
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
@@ -101,6 +103,7 @@ class BinaryReaderImpl extends BinaryReader {
     return _buffer.readUint32(_offset - 4);
   }
 
+  /// Not part of public API
   int peekUint32() {
     _requireBytes(4);
     return _buffer.readUint32(_offset);
@@ -211,6 +214,7 @@ class BinaryReaderImpl extends BinaryReader {
     return map;
   }
 
+  /// Not part of public API
   dynamic readKey() {
     var keyType = readByte();
     if (keyType == FrameKeyType.uintT) {
@@ -236,6 +240,7 @@ class BinaryReaderImpl extends BinaryReader {
     return HiveListImpl.lazy(boxName, keys);
   }
 
+  /// Not part of public API
   Frame readFrame({HiveCipher cipher, bool lazy = false, int frameOffset}) {
     if (availableBytes < 4) return null;
 
@@ -312,7 +317,7 @@ class BinaryReaderImpl extends BinaryReader {
       case FrameValueType.hiveListT:
         return readHiveList();
       default:
-        var resolved = typeRegistry.findAdapterForTypeId(typeId);
+        var resolved = _typeRegistry.findAdapterForTypeId(typeId);
         if (resolved == null) {
           throw HiveError('Cannot read, unknown typeId: $typeId. '
               'Did you forget to register an adapter?');
@@ -321,6 +326,7 @@ class BinaryReaderImpl extends BinaryReader {
     }
   }
 
+  /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   dynamic readEncrypted(HiveCipher cipher) {
@@ -329,7 +335,7 @@ class BinaryReaderImpl extends BinaryReader {
     var outLength = cipher.decrypt(_buffer, _offset, inpLength, out, 0);
     _offset += inpLength;
 
-    var valueReader = BinaryReaderImpl(out, typeRegistry, outLength);
+    var valueReader = BinaryReaderImpl(out, _typeRegistry, outLength);
     return valueReader.read();
   }
 }

@@ -10,12 +10,15 @@ class _ResolvedAdapter<T> {
   bool matches(dynamic value) => value is T;
 }
 
+/// Not part of public API
 class TypeRegistryImpl implements TypeRegistry {
+  /// Not part of public API
   @visibleForTesting
   static const reservedTypeIds = 32;
 
   final _typeAdapters = <int, _ResolvedAdapter>{};
 
+  /// Not part of public API
   _ResolvedAdapter findAdapterForValue(dynamic value) {
     for (var adapter in _typeAdapters.values) {
       if (adapter.matches(value)) return adapter;
@@ -23,6 +26,7 @@ class TypeRegistryImpl implements TypeRegistry {
     return null;
   }
 
+  /// Not part of public API
   _ResolvedAdapter findAdapterForTypeId(int typeId) {
     return _typeAdapters[typeId];
   }
@@ -37,7 +41,8 @@ class TypeRegistryImpl implements TypeRegistry {
       typeId = typeId + reservedTypeIds;
 
       if (findAdapterForTypeId(typeId) != null) {
-        throw HiveError('There is already a TypeAdapter for typeId ${typeId - reservedTypeIds}.');
+        throw HiveError('There is already a TypeAdapter for '
+            'typeId ${typeId - reservedTypeIds}.');
       }
     }
 
@@ -45,6 +50,7 @@ class TypeRegistryImpl implements TypeRegistry {
     _typeAdapters[typeId] = resolved;
   }
 
+  /// Not part of public API
   void resetAdapters() {
     _typeAdapters.clear();
   }
