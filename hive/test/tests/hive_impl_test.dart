@@ -249,5 +249,28 @@ void main() {
 
       await hive.close();
     });
+
+    group('.boxExists()', () {
+      test('returns true if a box was created', () async {
+        var hive = await initHive();
+        await hive.openBox('testBox1');
+        expect(await hive.boxExists('testBox1'), true);
+        await hive.close();
+      });
+
+      test('returns false if no box was created', () async {
+        var hive = await initHive();
+        expect(await hive.boxExists('testBox1'), false);
+        await hive.close();
+      });
+
+      test('returns false if box was created and then deleted', () async {
+        var hive = await initHive();
+        await hive.openBox('testBox1');
+        await hive.deleteBoxFromDisk('testBox1');
+        expect(await hive.boxExists('testBox1'), false);
+        await hive.close();
+      });
+    });
   });
 }

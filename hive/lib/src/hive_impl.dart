@@ -203,4 +203,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   List<int> generateSecureKey() {
     return _secureRandom.nextBytes(32);
   }
+
+  @override
+  Future<bool> boxExists(String name, {String path}) async {
+    var lowerCaseName = name.toLowerCase();
+    return await _manager.boxExists(lowerCaseName, path ?? homePath);
+  }
 }
