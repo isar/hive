@@ -10,11 +10,7 @@ environment:
 dependencies:
   build: ^1.1.6
   source_gen: ^0.9.4+4
-  hive:
-    git:
-      url: https://github.com/yringler/hive
-      path: hive
-      ref: update-dartx
+  hive: ">=1.3.0 <2.0.0"
   analyzer: ">=0.36.0 <0.40.0"
   dartx: ^0.2.0
 
