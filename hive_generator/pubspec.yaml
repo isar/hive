@@ -16,10 +16,7 @@ dependencies:
       path: hive
       ref: update-dartx
   analyzer: ">=0.36.0 <0.40.0"
-  dartx:
-    git:
-      url: https://github.com/yringler/dartx
-      ref: update-path 
+  dartx: ^0.2.0
 
 dev_dependencies:
   test: ^1.6.4
