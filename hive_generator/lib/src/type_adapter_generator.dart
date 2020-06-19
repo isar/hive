@@ -31,7 +31,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     return '''
     class $adapterName extends TypeAdapter<${cls.name}> {
       @override
-      final typeId = $typeId;
+      final int typeId = $typeId;
 
       @override
       ${cls.name} read(BinaryReader reader) {
