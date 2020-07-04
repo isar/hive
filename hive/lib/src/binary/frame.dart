@@ -53,8 +53,7 @@ class Frame {
       }
     } else if (key is String) {
       if (key.length > 0xFF || !key.isAscii) {
-        throw HiveError(
-            'String keys need to be ASCII Strings with a max length of 255');
+        throw HiveError('String keys need to be ASCII Strings with a max length of 255');
       }
     } else {
       throw HiveError('Keys need to be Strings or integers');
@@ -76,10 +75,7 @@ class Frame {
   @override
   bool operator ==(dynamic other) {
     if (other is Frame) {
-      return key == other.key &&
-          value == other.value &&
-          length == other.length &&
-          deleted == other.deleted;
+      return key == other.key && value == other.value && length == other.length && deleted == other.deleted;
     } else {
       return false;
     }
@@ -147,4 +143,16 @@ class FrameValueType {
 
   /// List<HiveObject>
   static const hiveListT = 12;
+
+  /// Set<dynamic>
+  static const intSetT = 13;
+
+  /// Set<dynamic>
+  static const doubleSetT = 14;
+
+  /// Set<dynamic>
+  static const stringSetT = 15;
+
+  /// Set<dynamic>
+  static const setT = 16;
 }

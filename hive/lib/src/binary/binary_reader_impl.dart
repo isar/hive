@@ -128,9 +128,7 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
-  String readString(
-      [int byteCount,
-      Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
+  String readString([int byteCount, Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
     byteCount ??= readUint32();
     var view = viewBytes(byteCount);
     return decoder.convert(view);
@@ -183,9 +181,7 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
-  List<String> readStringList(
-      [int length,
-      Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
+  List<String> readStringList([int length, Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
     length ??= readUint32();
     var list = <String>[]..length = length;
     for (var i = 0; i < length; i++) {
@@ -202,6 +198,52 @@ class BinaryReaderImpl extends BinaryReader {
       list[i] = read();
     }
     return list;
+  }
+
+  @override
+  Set<int> readIntSet([int length]) {
+    length ??= readUint32();
+    _requireBytes(length * 8);
+    var byteData = _byteData;
+    var lhset = Set<int>();
+    for (var i = 0; i < length; i++) {
+      lhset.add(byteData.getFloat64(_offset, Endian.little).toInt());
+      _offset += 8;
+    }
+    return lhset;
+  }
+
+  @override
+  Set<double> readDoubleSet([int length]) {
+    length ??= readUint32();
+    _requireBytes(length * 8);
+    var byteData = _byteData;
+    var lhset = Set<double>();
+    for (var i = 0; i < length; i++) {
+      lhset.add(byteData.getFloat64(_offset, Endian.little));
+      _offset += 8;
+    }
+    return lhset;
+  }
+
+  @override
+  Set<String> readStringSet([int length, Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
+    length ??= readUint32();
+    var lhset = Set<String>();
+    for (var i = 0; i < length; i++) {
+      lhset.add(readString(null, decoder));
+    }
+    return lhset;
+  }
+
+  @override
+  Set readSet([int length]) {
+    length ??= readUint32();
+    var set = Set<dynamic>();
+    for (var i = 0; i < length; i++) {
+      set.add(read());
+    }
+    return set;
   }
 
   @override
@@ -246,8 +288,7 @@ class BinaryReaderImpl extends BinaryReader {
 
     var frameLength = readUint32();
     if (frameLength < 8) {
-      throw HiveError(
-          'This should not happen. Please open an issue on GitHub.');
+      throw HiveError('This should not happen. Please open an issue on GitHub.');
     }
     if (availableBytes < frameLength - 4) return null;
 
@@ -312,6 +353,14 @@ class BinaryReaderImpl extends BinaryReader {
         return readStringList();
       case FrameValueType.listT:
         return readList();
+      case FrameValueType.intSetT:
+        return readIntSet();
+      case FrameValueType.doubleSetT:
+        return readDoubleSet();
+      case FrameValueType.stringSetT:
+        return readStringSet();
+      case FrameValueType.setT:
+        return readSet();
       case FrameValueType.mapT:
         return readMap();
       case FrameValueType.hiveListT:

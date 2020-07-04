@@ -38,6 +38,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     _registerDefaultAdapters();
   }
 
+  List<String> get boxList {
+    return _boxes.keys.toList();
+  }
+
   void _registerDefaultAdapters() {
     registerAdapter(DateTimeAdapter(), internal: true);
     registerAdapter(BigIntAdapter(), internal: true);
@@ -63,8 +67,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     assert(comparator != null);
     assert(compaction != null);
     assert(path == null || bytes == null);
-    assert(name.length <= 255 && name.isAscii,
-        'Box names need to be ASCII Strings with a max length of 255.');
+    assert(name.length <= 255 && name.isAscii, 'Box names need to be ASCII Strings with a max length of 255.');
     name = name.toLowerCase();
     if (isBoxOpen(name)) {
       if (lazy) {
@@ -108,8 +111,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
     }
-    return await _openBox<E>(name, false, encryptionCipher, keyComparator,
-        compactionStrategy, crashRecovery, path, bytes) as Box<E>;
+    return await _openBox<E>(
+        name, false, encryptionCipher, keyComparator, compactionStrategy, crashRecovery, path, bytes) as Box<E>;
   }
 
   @override
@@ -125,8 +128,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
     }
-    return await _openBox<E>(name, true, encryptionCipher, keyComparator,
-        compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
+    return await _openBox<E>(name, true, encryptionCipher, keyComparator, compactionStrategy, crashRecovery, path, null)
+        as LazyBox<E>;
   }
 
   BoxBase<E> _getBoxInternal<E>(String name, [bool lazy]) {
@@ -136,9 +139,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       if ((lazy == null || box.lazy == lazy) && box.valueType == E) {
         return box as BoxBase<E>;
       } else {
-        var typeName = box is LazyBox
-            ? 'LazyBox<${box.valueType}>'
-            : 'Box<${box.valueType}>';
+        var typeName = box is LazyBox ? 'LazyBox<${box.valueType}>' : 'Box<${box.valueType}>';
         throw HiveError('The box "$lowerCaseName" is already open '
             'and of type $typeName.');
       }
@@ -157,8 +158,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Box<E> box<E>(String name) => _getBoxInternal<E>(name, false) as Box<E>;
 
   @override
-  LazyBox<E> lazyBox<E>(String name) =>
-      _getBoxInternal<E>(name, true) as LazyBox<E>;
+  LazyBox<E> lazyBox<E>(String name) => _getBoxInternal<E>(name, true) as LazyBox<E>;
 
   @override
   bool isBoxOpen(String name) {

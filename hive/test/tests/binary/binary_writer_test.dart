@@ -267,13 +267,11 @@ void main() {
 
       bw = getWriter();
       bw.writeIntList([1, 2]);
-      expect(bw.toBytes(),
-          [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
+      expect(bw.toBytes(), [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
 
       bw = getWriter();
       bw.writeIntList([1, 2], writeLength: false);
-      expect(
-          bw.toBytes(), [0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
+      expect(bw.toBytes(), [0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
 
       expect(() => bw.writeIntList(null), throwsA(anything));
     });
@@ -358,6 +356,23 @@ void main() {
       ]);
     });
 
+    test('.writeSet()', () {
+      var bw = getWriter();
+      bw.writeSet({'h', true});
+      expect(bw.toBytes(), [
+        2, 0, 0, 0, //
+        FrameValueType.stringT, 1, 0, 0, 0, 0x68, //
+        FrameValueType.boolT, 1 //
+      ]);
+
+      bw = getWriter();
+      bw.writeSet({'h', true}, writeLength: false);
+      expect(bw.toBytes(), [
+        FrameValueType.stringT, 1, 0, 0, 0, 0x68, //
+        FrameValueType.boolT, 1 //
+      ]);
+    });
+
     test('.writeMap()', () {
       var bw = getWriter();
       bw.writeMap({true: 'h', 'hi': true});
@@ -420,8 +435,7 @@ void main() {
       test('encrypted', () {
         testFrames.forEachIndexed((frame, i) {
           var writer = BinaryWriterImpl(testRegistry);
-          expect(writer.writeFrame(frame, cipher: testCipher),
-              frameBytesEncrypted[i].length);
+          expect(writer.writeFrame(frame, cipher: testCipher), frameBytesEncrypted[i].length);
           expect(writer.toBytes(), frameBytesEncrypted[i]);
         });
       });
@@ -505,8 +519,7 @@ void main() {
 
         bw = getWriter();
         bw.write(Uint8List.fromList([1, 2, 3, 4]), writeTypeId: true);
-        expect(
-            bw.toBytes(), [FrameValueType.byteListT, 4, 0, 0, 0, 1, 2, 3, 4]);
+        expect(bw.toBytes(), [FrameValueType.byteListT, 4, 0, 0, 0, 1, 2, 3, 4]);
       });
 
       test('int list', () {

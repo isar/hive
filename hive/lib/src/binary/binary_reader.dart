@@ -84,6 +84,29 @@ abstract class BinaryReader {
   /// If [length] is not provided, it is read first.
   List readList([int length]);
 
+  /// Read a set of integers with [length].
+  ///
+  /// If [length] is not provided, it is read first.
+  Set<int> readIntSet([int length]);
+
+  /// Read a set of doubles with [length].
+  ///
+  /// If [length] is not provided, it is read first.
+  Set<double> readDoubleSet([int length]);
+
+  /// Read a set of Strings with [length].
+  ///
+  /// If [length] is not provided, it is read first.
+  Set<String> readStringSet([
+    int length,
+    Converter<List<int>, String> decoder = utf8Decoder,
+  ]);
+
+  /// Read a set with [length].
+  ///
+  /// If [length] is not provided, it is read first.
+  Set readSet([int length]);
+
   /// Read a map with [length] entries.
   ///
   /// If [length] is not provided, it is read first.

@@ -61,8 +61,11 @@ abstract class HiveInterface implements TypeRegistry {
   /// Generates a secure encryption key using the fortuna random algorithm.
   List<int> generateSecureKey();
 
-  /// Checks if a box exists
+  /// Checks if a box exists.
   Future<bool> boxExists(String name);
+
+  /// List all boxes.
+  List<String> get boxList;
 }
 
 ///

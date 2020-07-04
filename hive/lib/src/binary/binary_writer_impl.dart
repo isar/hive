@@ -28,8 +28,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   /// Not part of public API
-  BinaryWriterImpl(TypeRegistry typeRegistry)
-      : _typeRegistry = typeRegistry as TypeRegistryImpl;
+  BinaryWriterImpl(TypeRegistry typeRegistry) : _typeRegistry = typeRegistry as TypeRegistryImpl;
 
   /// Not part of public API
   @visibleForTesting
@@ -206,6 +205,60 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
+  void writeIntSet(Set<int> lhset, {bool writeLength = true}) {
+    var length = lhset.length;
+    if (writeLength) {
+      writeUint32(length);
+    }
+    _reserveBytes(length * 8);
+    var byteData = _byteData;
+    for (var i = 0; i < length; i++) {
+      byteData.setFloat64(_offset, lhset.elementAt(i).toDouble(), Endian.little);
+      _offset += 8;
+    }
+  }
+
+  @override
+  void writeDoubleSet(Set<double> lhset, {bool writeLength = true}) {
+    var length = lhset.length;
+    if (writeLength) {
+      writeUint32(length);
+    }
+    _reserveBytes(length * 8);
+    var byteData = _byteData;
+    for (var i = 0; i < length; i++) {
+      byteData.setFloat64(_offset, lhset.elementAt(i), Endian.little);
+      _offset += 8;
+    }
+  }
+
+  @override
+  void writeStringSet(
+    Set<String> lhset, {
+    bool writeLength = true,
+    Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
+  }) {
+    if (writeLength) {
+      writeUint32(lhset.length);
+    }
+    for (var str in lhset) {
+      var strBytes = encoder.convert(str);
+      writeUint32(strBytes.length);
+      _addBytes(strBytes);
+    }
+  }
+
+  @override
+  void writeSet(Set lhset, {bool writeLength = true}) {
+    if (writeLength) {
+      writeUint32(lhset.length);
+    }
+    for (var value in lhset) {
+      write(value);
+    }
+  }
+
+  @override
   void writeMap(Map<dynamic, dynamic> map, {bool writeLength = true}) {
     if (writeLength) {
       writeUint32(map.length);
@@ -299,6 +352,8 @@ class BinaryWriterImpl extends BinaryWriter {
       writeString(value);
     } else if (value is List) {
       _writeList(value, writeTypeId: writeTypeId);
+    } else if (value is Set) {
+      _writeSet(value, writeTypeId: writeTypeId);
     } else if (value is Map) {
       if (writeTypeId) {
         writeByte(FrameValueType.mapT);
@@ -314,6 +369,32 @@ class BinaryWriterImpl extends BinaryWriter {
         writeByte(resolved.typeId);
       }
       resolved.adapter.write(this, value);
+    }
+  }
+
+  @pragma('vm:prefer-inline')
+  @pragma('dart2js:tryInline')
+  void _writeSet(Set value, {bool writeTypeId = true}) {
+    if (value is Set<int>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.intSetT);
+      }
+      writeIntSet(value);
+    } else if (value is Set<double>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.doubleSetT);
+      }
+      writeDoubleSet(value);
+    } else if (value is Set<String>) {
+      if (writeTypeId) {
+        writeByte(FrameValueType.stringSetT);
+      }
+      writeStringSet(value);
+    } else {
+      if (writeTypeId) {
+        writeByte(FrameValueType.setT);
+      }
+      writeSet(value);
     }
   }
 
@@ -366,10 +447,8 @@ class BinaryWriterImpl extends BinaryWriter {
   /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  void writeEncrypted(dynamic value, HiveCipher cipher,
-      {bool writeTypeId = true}) {
-    var valueWriter = BinaryWriterImpl(_typeRegistry)
-      ..write(value, writeTypeId: writeTypeId);
+  void writeEncrypted(dynamic value, HiveCipher cipher, {bool writeTypeId = true}) {
+    var valueWriter = BinaryWriterImpl(_typeRegistry)..write(value, writeTypeId: writeTypeId);
     var inp = valueWriter._buffer;
     var inpLength = valueWriter._offset;
 

@@ -55,6 +55,18 @@ abstract class BinaryWriter {
   /// Write a [list].
   void writeList(List list, {bool writeLength = true});
 
+  /// Write a set of integers.
+  void writeIntSet(Set<int> lhset, {bool writeLength = true});
+
+  /// Write a set of doubles.
+  void writeDoubleSet(Set<double> lhset, {bool writeLength = true});
+
+  /// Write a set of Strings.
+  void writeStringSet(Set<String> lhset, {bool writeLength = true});
+
+  /// Write a set.
+  void writeSet(Set lhset, {bool writeLength = true});
+
   /// Write a [map].
   void writeMap(Map map, {bool writeLength = true});
 

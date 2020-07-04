@@ -44,10 +44,7 @@ void main() {
     });
 
     test('.readByte()', () {
-      var byteData = ByteData(3)
-        ..setUint8(0, 0)
-        ..setUint8(1, 17)
-        ..setUint8(2, 255);
+      var byteData = ByteData(3)..setUint8(0, 0)..setUint8(1, 17)..setUint8(2, 255);
       var br = fromByteData(byteData);
 
       expect(br.readByte(), 0);
@@ -57,10 +54,7 @@ void main() {
     });
 
     test('.viewBytes()', () {
-      var byteData = ByteData(3)
-        ..setUint8(0, 0)
-        ..setUint8(1, 17)
-        ..setUint8(2, 255);
+      var byteData = ByteData(3)..setUint8(0, 0)..setUint8(1, 17)..setUint8(2, 255);
       var br = fromByteData(byteData);
 
       var bytes = br.viewBytes(3);
@@ -73,10 +67,7 @@ void main() {
     });
 
     test('.peekBytes()', () {
-      var byteData = ByteData(3)
-        ..setUint8(0, 0)
-        ..setUint8(1, 17)
-        ..setUint8(2, 255);
+      var byteData = ByteData(3)..setUint8(0, 0)..setUint8(1, 17)..setUint8(2, 255);
       var br = fromByteData(byteData);
 
       expect(br.peekBytes(3), [0, 17, 255]);
@@ -84,9 +75,7 @@ void main() {
     });
 
     test('.readWord()', () {
-      var byteData = ByteData(4)
-        ..setUint16(0, 0, Endian.little)
-        ..setUint16(2, 65535, Endian.little);
+      var byteData = ByteData(4)..setUint16(0, 0, Endian.little)..setUint16(2, 65535, Endian.little);
       var br = fromByteData(byteData);
 
       expect(br.readWord(), 0);
@@ -108,9 +97,7 @@ void main() {
     });
 
     test('.readUint32()', () {
-      var byteData = ByteData(8)
-        ..setUint32(0, 0, Endian.little)
-        ..setUint32(4, 4294967295, Endian.little);
+      var byteData = ByteData(8)..setUint32(0, 0, Endian.little)..setUint32(4, 4294967295, Endian.little);
       var br = fromByteData(byteData);
 
       expect(br.readUint32(), 0);
@@ -151,10 +138,7 @@ void main() {
     });
 
     test('.readBool()', () {
-      var byteData = ByteData(3)
-        ..setUint8(0, 1)
-        ..setUint8(1, 0)
-        ..setUint8(2, 2);
+      var byteData = ByteData(3)..setUint8(0, 1)..setUint8(1, 0)..setUint8(2, 2);
       var br = fromByteData(byteData);
 
       expect(br.readBool(), true);
@@ -286,6 +270,22 @@ void main() {
       expect(br.readList(2), [true, 'hi']);
 
       expect(() => br.readList(), throwsRangeError);
+    });
+
+    test('.readSet()', () {
+      var br = fromBytes([
+        2, 0, 0, 0, FrameValueType.boolT, 1, //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105 //
+      ]);
+      expect(br.readSet(), {true, 'hi'});
+
+      br = fromBytes([
+        FrameValueType.boolT, 1, //
+        FrameValueType.stringT, 2, 0, 0, 0, 104, 105 //
+      ]);
+      expect(br.readSet(2), {true, 'hi'});
+
+      expect(() => br.readSet(), throwsRangeError);
     });
 
     test('.readMap()', () {
