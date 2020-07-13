@@ -21,10 +21,9 @@ jobs:
         sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_${{ matrix.dart-channel }}.list > /etc/apt/sources.list.d/dart_${{ matrix.dart-channel }}.list'
         sudo apt-get update
         sudo apt-get install dart
-        echo 'export PATH="$PATH:/usr/lib/dart/bin"' >> ~/.profile
     - name: Run tests
-      shell: bash -l {0}
       run: |
+        export PATH="$PATH:/usr/lib/dart/bin"
         pub get
         pub run test -p ${{ matrix.test-platform }}
       working-directory: hive
