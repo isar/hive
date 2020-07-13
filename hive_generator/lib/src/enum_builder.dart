@@ -8,7 +8,7 @@ class EnumBuilder extends Builder {
   @override
   String buildRead() {
     var code = StringBuffer();
-    code.writeln('switch(reader.readByte()) {');
+    code.writeln('switch (reader.readByte()) {');
 
     for (var field in getters) {
       code.writeln('''
@@ -27,7 +27,7 @@ class EnumBuilder extends Builder {
   @override
   String buildWrite() {
     var code = StringBuffer();
-    code.writeln('switch(obj) {');
+    code.writeln('switch (obj) {');
 
     for (var field in getters) {
       code.writeln('''

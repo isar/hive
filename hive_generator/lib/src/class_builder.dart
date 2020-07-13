@@ -24,9 +24,10 @@ class ClassBuilder extends Builder {
   String buildRead() {
     var code = StringBuffer();
     code.writeln('''
-    var numOfFields = reader.readByte();
-    var fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final int numOfFields = reader.readByte();
+    final Map<int, dynamic> fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++)
+        reader.readByte(): reader.read(),
     };
     return ${cls.name}(
     ''');
