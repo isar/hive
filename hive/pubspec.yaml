@@ -15,6 +15,6 @@ dev_dependencies:
   test: ^1.9.4
   mockito: ^4.1.1
   pedantic: ^1.9.0
-  dartx: ">=0.2.0 <1.0.0"
+  dartx: ">=0.3.0 <1.0.0"
   path: ^1.6.4
   pointycastle: ^1.0.2
