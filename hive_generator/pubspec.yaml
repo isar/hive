@@ -15,7 +15,7 @@ dependencies:
       url: git://github.com/idaliopessoa/hive.git
       path: hive
   analyzer: ">=0.36.0 <0.40.0"
-  dartx: ">=0.3.0 <1.0.0"
+  dartx: ">=0.2.0 <1.0.0"
 
 dev_dependencies:
   test: ^1.6.4
