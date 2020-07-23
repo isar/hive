@@ -35,6 +35,9 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
       }
       return value as E;
     } else {
+      if (defaultValue != null && defaultValue is HiveObject) {
+        defaultValue.init(key, this);
+      }
       return defaultValue;
     }
   }
