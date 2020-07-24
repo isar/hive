@@ -1,3 +1,6 @@
+## 0.3.1
+- Added Time and Color adapters
+
 ## 0.3.0+2
 - Fixed GitHub homepage path
 
