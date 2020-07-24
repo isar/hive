@@ -63,7 +63,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
 
   @override
   int indexOf(Object element, [int start = 0]) =>
-      delegate.indexOf(element, start); // ignore: argument_type_not_assignable
+      delegate.indexOf(element as E, start);
 
   @override
   int indexWhere(bool Function(E element) test, [int start = 0]) =>
@@ -82,8 +82,8 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   String join([String separator = '']) => delegate.join(separator);
 
   @override
-  int lastIndexOf(Object element, [int start]) => delegate.lastIndexOf(
-      element, start); // ignore: argument_type_not_assignable
+  int lastIndexOf(Object element, [int start]) =>
+      delegate.lastIndexOf(element as E, start);
 
   @override
   int lastIndexWhere(bool Function(E element) test, [int start]) =>
