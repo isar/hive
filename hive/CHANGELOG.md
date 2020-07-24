@@ -1,4 +1,8 @@
-## 1.4.1+1
+# 1.4.2
+
+- Fixed dependency issues and minor improvements
+
+# 1.4.1+1
 
 ### Other
 - Added docs to all public members
