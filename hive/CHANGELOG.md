@@ -1,5 +1,6 @@
 # 1.4.2
 
+### Other
 - Fixed dependency issues and minor improvements
 
 # 1.4.1+1
