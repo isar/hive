@@ -1,3 +1,6 @@
+## 0.7.1
+- Fixed dependency issues
+
 ## 0.7.0+2
 - Fixed Changelog
 
