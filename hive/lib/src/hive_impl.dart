@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
@@ -20,6 +21,7 @@ import 'backend/storage_backend.dart';
 /// Not part of public API
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, BoxBaseImpl>();
+  final _openingBoxes = HashMap<String, Future>();
   final BackendManager _manager;
   final Random _secureRandom = Random.secure();
 
@@ -73,6 +75,18 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         return box(name);
       }
     } else {
+      if (_openingBoxes.containsKey(name)) {
+        await _openingBoxes[name];
+        if (lazy) {
+          return lazyBox(name);
+        } else {
+          return box(name);
+        }
+      }
+
+      var completer = Completer<BoxBaseImpl>();
+      _openingBoxes[name] = completer.future;
+
       StorageBackend backend;
       if (bytes != null) {
         backend = StorageBackendMemory(bytes, cipher);
@@ -80,17 +94,18 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         backend = await _manager.open(name, path ?? homePath, recovery, cipher);
       }
 
-      BoxBaseImpl<E> box;
+      BoxBaseImpl<E> newBox;
       if (lazy) {
-        box = LazyBoxImpl<E>(this, name, comparator, compaction, backend);
+        newBox = LazyBoxImpl<E>(this, name, comparator, compaction, backend);
       } else {
-        box = BoxImpl<E>(this, name, comparator, compaction, backend);
+        newBox = BoxImpl<E>(this, name, comparator, compaction, backend);
       }
 
-      await box.initialize();
-      _boxes[name] = box;
+      await newBox.initialize();
+      _boxes[name] = newBox;
 
-      return box;
+      completer.complete(newBox);
+      return newBox;
     }
   }
 
