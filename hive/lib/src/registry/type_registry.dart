@@ -6,4 +6,7 @@ part of hive;
 abstract class TypeRegistry {
   /// Register a [TypeAdapter] to announce it to Hive.
   void registerAdapter<T>(TypeAdapter<T> adapter);
+
+  /// Returns true if a [TypeAdapter] is registered
+  bool isAdapterRegistered(int typeId);
 }

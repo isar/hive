@@ -103,5 +103,29 @@ void main() {
       registry.resetAdapters();
       expect(registry.findAdapterForValue(123), null);
     });
+
+    group('.isAdapterRegistered()', () {
+      test('returns false if adapter is not found', () {
+        var registry = TypeRegistryImpl();
+
+        expect(registry.isAdapterRegistered(0), false);
+      });
+
+      test('returns true if adapter is found', () {
+        var registry = TypeRegistryImpl();
+        var adapter = TestAdapter();
+        registry.registerAdapter(adapter);
+
+        expect(registry.isAdapterRegistered(0), true);
+      });
+
+      test('unsupported typeId', () {
+        var registry = TypeRegistryImpl();
+        expect(() => registry.isAdapterRegistered(-1),
+            throwsHiveError('not allowed'));
+        expect(() => registry.isAdapterRegistered(224),
+            throwsHiveError('not allowed'));
+      });
+    });
   });
 }

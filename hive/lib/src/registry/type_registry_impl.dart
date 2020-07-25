@@ -50,6 +50,19 @@ class TypeRegistryImpl implements TypeRegistry {
     _typeAdapters[typeId] = resolved;
   }
 
+  @override
+  bool isAdapterRegistered(int typeId, {bool internal = false}) {
+    if (!internal) {
+      if (typeId < 0 || typeId > 223) {
+        throw HiveError('TypeId $typeId not allowed.');
+      }
+
+      typeId = typeId + reservedTypeIds;
+    }
+
+    return findAdapterForTypeId(typeId) != null;
+  }
+
   /// Not part of public API
   void resetAdapters() {
     _typeAdapters.clear();
