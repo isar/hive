@@ -60,25 +60,23 @@ void main() {
 
         test('throw HiveError if already opening box is lazy', () async {
           var hive = await initHive();
-          var future1 = hive.openLazyBox('TESTBOX');
-          var future2 = hive.openBox('testbox');
 
           await Future.wait([
-            future1,
-            expectLater(future2,
+            hive.openLazyBox('TESTBOX'),
+            expectLater(hive.openBox('testbox'),
                 throwsHiveError('is already open and of type LazyBox<dynamic>'))
           ]);
         });
 
         test('same box returned if it is already opening', () async {
+          var hive = await initHive();
+
           Box box1;
           Box box2;
-
-          var hive = await initHive();
-          var future1 = hive.openBox('TESTBOX').then((value) => box1 = value);
-          var future2 = hive.openBox('testbox').then((value) => box2 = value);
-
-          await Future.wait([future1, future2]);
+          await Future.wait([
+            hive.openBox('TESTBOX').then((value) => box1 = value),
+            hive.openBox('testbox').then((value) => box2 = value)
+          ]);
 
           expect(box1 == box2, true);
         });
@@ -97,6 +95,19 @@ void main() {
           await hive.close();
         });
 
+        test('same box returned if it is already opening', () async {
+          LazyBox box1;
+          LazyBox box2;
+
+          var hive = await initHive();
+          await Future.wait([
+            hive.openLazyBox('LAZYBOX').then((value) => box1 = value),
+            hive.openLazyBox('lazyBox').then((value) => box2 = value)
+          ]);
+
+          expect(box1 == box2, true);
+        });
+
         test('throw HiveError if opened box is not lazy', () async {
           var hive = await initHive();
 
@@ -107,6 +118,16 @@ void main() {
           );
 
           await hive.close();
+        });
+
+        test('throw HiveError if already opening box is not lazy', () async {
+          var hive = await initHive();
+
+          await Future.wait([
+            hive.openBox('LAZYBOX'),
+            expectLater(hive.openLazyBox('lazyBox'),
+                throwsHiveError('is already open and of type Box<dynamic>'))
+          ]);
         });
       });
     });
