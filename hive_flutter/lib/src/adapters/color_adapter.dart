@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:hive/hive.dart';
 
 class ColorAdapter extends TypeAdapter<Color> {
