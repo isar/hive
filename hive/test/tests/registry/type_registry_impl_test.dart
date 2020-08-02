@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/registry/ignored_type_adapter.dart';
+import 'package:hive/src/adapters/ignored_type_adapter.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 

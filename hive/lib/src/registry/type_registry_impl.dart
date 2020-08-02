@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/registry/ignored_type_adapter.dart';
+import 'package:hive/src/adapters/ignored_type_adapter.dart';
 import 'package:meta/meta.dart';
 
 class _ResolvedAdapter<T> {
