@@ -87,25 +87,34 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       var completer = Completer();
       _openingBoxes[name] = completer.future;
 
-      StorageBackend backend;
-      if (bytes != null) {
-        backend = StorageBackendMemory(bytes, cipher);
-      } else {
-        backend = await _manager.open(name, path ?? homePath, recovery, cipher);
+      try {
+        StorageBackend backend;
+        if (bytes != null) {
+          backend = StorageBackendMemory(bytes, cipher);
+        } else {
+          backend =
+              await _manager.open(name, path ?? homePath, recovery, cipher);
+        }
+
+        BoxBaseImpl<E> newBox;
+        if (lazy) {
+          newBox = LazyBoxImpl<E>(this, name, comparator, compaction, backend);
+        } else {
+          newBox = BoxImpl<E>(this, name, comparator, compaction, backend);
+        }
+
+        await newBox.initialize();
+        _boxes[name] = newBox;
+
+        completer.complete();
+        return newBox;
+      } catch (error, stackTrace) {
+        completer.completeError(error, stackTrace);
+        rethrow;
+      } finally {
+        // ignore: unawaited_futures
+        _openingBoxes.remove(name);
       }
-
-      BoxBaseImpl<E> newBox;
-      if (lazy) {
-        newBox = LazyBoxImpl<E>(this, name, comparator, compaction, backend);
-      } else {
-        newBox = BoxImpl<E>(this, name, comparator, compaction, backend);
-      }
-
-      await newBox.initialize();
-      _boxes[name] = newBox;
-
-      completer.complete();
-      return newBox;
     }
   }
 

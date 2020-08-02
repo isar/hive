@@ -5,15 +5,16 @@ import 'package:hive/hive.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
-Matcher throwsHiveError([String contains]) {
-  return throwsA(
-    allOf(
+Matcher isAHiveError([String contains]) {
+  return allOf(
       isA<HiveError>(),
       predicate((HiveError e) =>
           contains == null ||
-          e.toString().toLowerCase().contains(contains.toLowerCase())),
-    ),
-  );
+          e.toString().toLowerCase().contains(contains.toLowerCase())));
+}
+
+Matcher throwsHiveError([String contains]) {
+  return throwsA(isAHiveError(contains));
 }
 
 final random = Random();

@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:hive/src/registry/ignored_type_adapter.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
@@ -125,6 +126,22 @@ void main() {
             throwsHiveError('not allowed'));
         expect(() => registry.isAdapterRegistered(224),
             throwsHiveError('not allowed'));
+      });
+    });
+
+    group('.ignoreTypeId()', () {
+      test('registers IgnoredTypeAdapter', () {
+        var registry = TypeRegistryImpl();
+        registry.ignoreTypeId(0);
+        var resolved = registry.findAdapterForTypeId(32);
+        expect(resolved.adapter is IgnoredTypeAdapter, true);
+      });
+
+      test('duplicte typeId', () {
+        var registry = TypeRegistryImpl();
+        registry.registerAdapter(TestAdapter());
+        expect(() => registry.ignoreTypeId(0),
+            throwsHiveError('already a TypeAdapter for typeId'));
       });
     });
   });

@@ -9,6 +9,15 @@ import 'package:test/test.dart';
 import '../tests/common.dart';
 import '../util/is_browser.dart';
 
+Future<HiveImpl> createHive() async {
+  final hive = HiveImpl();
+  if (!isBrowser) {
+    var dir = await getTempDir();
+    hive.init(dir.path);
+  }
+  return hive;
+}
+
 Future<BoxBase<T>> openBox<T>(bool lazy,
     {HiveInterface hive, List<int> encryptionKey}) async {
   hive ??= HiveImpl();

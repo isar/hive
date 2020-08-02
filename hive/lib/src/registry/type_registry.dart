@@ -9,4 +9,7 @@ abstract class TypeRegistry {
 
   /// Returns true if a [TypeAdapter] is registered
   bool isAdapterRegistered(int typeId);
+
+  /// Ignore type
+  void ignoreTypeId<T>(int typeId);
 }
