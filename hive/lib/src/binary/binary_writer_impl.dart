@@ -173,7 +173,7 @@ class BinaryWriterImpl extends BinaryWriter {
     if (writeLength) {
       writeUint32(length);
     }
-    _reserveBytes(length * 8);
+    _reserveBytes(length);
     for (var i = 0; i < length; i++) {
       _buffer[_offset++] = list[i] ? 1 : 0;
     }
