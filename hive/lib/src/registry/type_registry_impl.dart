@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:hive/src/adapters/ignored_type_adapter.dart';
 import 'package:meta/meta.dart';
 
 class _ResolvedAdapter<T> {
@@ -66,5 +67,10 @@ class TypeRegistryImpl implements TypeRegistry {
   /// Not part of public API
   void resetAdapters() {
     _typeAdapters.clear();
+  }
+
+  @override
+  void ignoreTypeId<T>(int typeId) {
+    registerAdapter(IgnoredTypeAdapter<T>(typeId));
   }
 }
