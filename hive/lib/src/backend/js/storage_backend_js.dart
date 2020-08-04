@@ -100,31 +100,43 @@ class StorageBackendJs extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  Future<List<dynamic>> getKeys() {
-    var completer = Completer<List<dynamic>>();
-    var request = getStore(false).getAllKeys(null);
-    request.onSuccess.listen((_) {
-      completer.complete(request.result as List<dynamic>);
-    });
-    request.onError.listen((_) {
-      completer.completeError(request.error);
-    });
-    return completer.future;
+  Future<List<dynamic>> getKeys({bool cursor = false}) {
+    var store = getStore(false);
+
+    if (store.getAllKeys is Function && !cursor) {
+      var completer = Completer<List<dynamic>>();
+      var request = getStore(false).getAllKeys(null);
+      request.onSuccess.listen((_) {
+        completer.complete(request.result as List<dynamic>);
+      });
+      request.onError.listen((_) {
+        completer.completeError(request.error);
+      });
+      return completer.future;
+    } else {
+      return store.openCursor().map((item) => item.key).toList();
+    }
   }
 
   /// Not part of public API
   @visibleForTesting
-  Future<Iterable<dynamic>> getValues() {
-    var completer = Completer<Iterable<dynamic>>();
-    var request = getStore(false).getAll(null);
-    request.onSuccess.listen((_) {
-      var values = (request.result as List).map(decodeValue);
-      completer.complete(values);
-    });
-    request.onError.listen((_) {
-      completer.completeError(request.error);
-    });
-    return completer.future;
+  Future<Iterable<dynamic>> getValues({bool cursor = false}) {
+    var store = getStore(false);
+
+    if (store.getAll is Function && !cursor) {
+      var completer = Completer<Iterable<dynamic>>();
+      var request = store.getAll(null);
+      request.onSuccess.listen((_) {
+        var values = (request.result as List).map(decodeValue);
+        completer.complete(values);
+      });
+      request.onError.listen((_) {
+        completer.completeError(request.error);
+      });
+      return completer.future;
+    } else {
+      return store.openCursor().map((e) => e.value).toList();
+    }
   }
 
   @override

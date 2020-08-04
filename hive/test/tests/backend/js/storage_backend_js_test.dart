@@ -142,18 +142,36 @@ void main() {
       });
     });
 
-    test('.getKeys()', () async {
-      var db = await _getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
-      var backend = _getBackend(db: db);
+    group('.getKeys()', () {
+      test('with cursor', () async {
+        var db = await _getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+        var backend = _getBackend(db: db);
 
-      expect(await backend.getKeys(), ['key1', 'key2', 'key3']);
+        expect(await backend.getKeys(cursor: true), ['key1', 'key2', 'key3']);
+      });
+
+      test('without cursor', () async {
+        var db = await _getDbWith({'key1': 1, 'key2': 2, 'key3': 3});
+        var backend = _getBackend(db: db);
+
+        expect(await backend.getKeys(), ['key1', 'key2', 'key3']);
+      });
     });
 
-    test('.getValues()', () async {
-      var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
-      var backend = _getBackend(db: db);
+    group('.getValues()', () {
+      test('with cursor', () async {
+        var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
+        var backend = _getBackend(db: db);
 
-      expect(await backend.getValues(), [1, null, 3]);
+        expect(await backend.getValues(cursor: true), [1, null, 3]);
+      });
+
+      test('without cursor', () async {
+        var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
+        var backend = _getBackend(db: db);
+
+        expect(await backend.getValues(), [1, null, 3]);
+      });
     });
 
     group('.initialize()', () {
