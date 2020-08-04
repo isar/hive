@@ -114,7 +114,7 @@ class StorageBackendJs extends StorageBackend {
       });
       return completer.future;
     } else {
-      return store.openCursor().map((item) => item.key).toList();
+      return store.openCursor(autoAdvance: true).map((e) => e.key).toList();
     }
   }
 
@@ -135,7 +135,7 @@ class StorageBackendJs extends StorageBackend {
       });
       return completer.future;
     } else {
-      return store.openCursor().map((e) => e.value).toList();
+      return store.openCursor(autoAdvance: true).map((e) => e.value).toList();
     }
   }
 
