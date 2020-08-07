@@ -401,37 +401,6 @@ void main() {
       expect(() => br.peekBool(), throwsA(anything));
     });
 
-    test('.readBigInt()', () {
-      var byteData = ByteData(45)
-            ..setUint8(0, 0) // +1 sign = false
-            ..setUint32(1, 0, Endian.little) // +4 bitLength = 0
-            ..setUint8(5, 1) // +1 sign = true
-            ..setUint32(6, 1, Endian.little) // +4 bitLength = 1
-            ..setUint8(10, 1) // +1
-            ..setUint8(11, 1) // +1 sign = true
-            ..setUint32(12, 7, Endian.little) // +4 bitLength = 3
-            ..setUint8(16, 250) // +1
-            ..setUint8(17, 0) // +1 sign = true
-            ..setUint32(18, 67, Endian.little) // +4 bitLength = 3
-            ..setUint32(22, 0, Endian.little) // +4
-            ..setUint32(26, 0, Endian.little) // +4
-            ..setUint8(30, 4) // +1
-            ..setUint8(31, 1) // +1 sign = true
-            ..setUint32(32, 67, Endian.little) // +4 bitLength = 3
-            ..setUint32(36, 0, Endian.little) // +4
-            ..setUint32(40, 0, Endian.little) // +4
-            ..setUint8(44, 4) // +1
-          ;
-      var br = fromByteData(byteData);
-
-      expect(br.readBigInt(), BigInt.zero);
-      expect(br.readBigInt(), -BigInt.one);
-      expect(br.readBigInt(), BigInt.from(-250));
-      expect(br.readBigInt(), BigInt.one << 66);
-      expect(br.readBigInt(), -(BigInt.one << 66));
-      expect(() => br.readBigInt(), throwsA(anything));
-    });
-
     test('.readString()', () {
       var br = fromBytes([0, 0, 0, 0]);
       expect(br.readString(), '');

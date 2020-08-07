@@ -202,21 +202,6 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
-  BigInt readBigInt() {
-    var sign = readBool();
-    var bitLength = readUint32();
-    _requireBytes((bitLength / 8).ceil());
-    var value = BigInt.zero;
-    for (var i = 0; i < bitLength; i += 8) {
-      value |= BigInt.from(_buffer[_offset++]) << i;
-    }
-    if (sign) {
-      value = -value;
-    }
-    return value;
-  }
-
-  @override
   String readString(
       [int byteCount,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {

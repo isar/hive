@@ -88,9 +88,6 @@ abstract class BinaryReader {
   /// Read a boolean.
   bool peekBool();
 
-  /// Read a [BigInt].
-  BigInt readBigInt();
-
   /// Read [byteCount] bytes and decode an UTF-8 String.
   ///
   /// If [byteCount] is not provided, it is read first.

@@ -301,34 +301,6 @@ void main() {
       expect(() => bw.writeBool(null), throwsA(anything));
     });
 
-    test('.writeBigInt()', () {
-      var bw = getWriter();
-      bw.writeBigInt(BigInt.zero);
-      expect(bw.toBytes(), [0, 0, 0, 0, 0]);
-
-      bw = getWriter();
-      bw.writeBigInt(BigInt.one);
-      expect(bw.toBytes(), [0, 1, 0, 0, 0, 1]);
-
-      bw = getWriter();
-      bw.writeBigInt(-BigInt.one);
-      expect(bw.toBytes(), [1, 1, 0, 0, 0, 1]);
-
-      bw = getWriter();
-      bw.writeBigInt(-BigInt.two);
-      expect(bw.toBytes(), [1, 2, 0, 0, 0, 2]);
-
-      bw = getWriter();
-      bw.writeBigInt(BigInt.one << 66);
-      expect(bw.toBytes(), [0, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]);
-
-      bw = getWriter();
-      bw.writeBigInt(-(BigInt.one << 66));
-      expect(bw.toBytes(), [1, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]);
-
-      expect(() => bw.writeBigInt(null), throwsA(anything));
-    });
-
     test('.writeString()', () {
       var bw = getWriter();
       bw.writeString('');

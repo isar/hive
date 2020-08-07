@@ -38,9 +38,6 @@ abstract class BinaryWriter {
   /// Write a boolean.
   void writeBool(bool value);
 
-  /// Write a [BigInt]
-  void writeBigInt(BigInt value);
-
   /// Encode the UTF-8 String [value] and write its bytes.
   void writeString(
     String value, {

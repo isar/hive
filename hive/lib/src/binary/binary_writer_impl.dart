@@ -139,25 +139,6 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeBigInt(BigInt value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
-    var sign = value.sign < 0;
-    writeBool(sign);
-    if (sign) {
-      value = -value;
-    }
-    var bitLength = value.bitLength;
-    writeUint32(bitLength);
-    _reserveBytes((bitLength / 8).ceil());
-    for (var i = 0; i < bitLength; i += 8) {
-      _buffer[_offset++] = value.toUnsigned(8).toInt();
-      value >>= 8;
-    }
-  }
-
-  @override
   void writeString(
     String value, {
     bool writeByteCount = true,
