@@ -66,6 +66,12 @@ class BinaryReaderImpl extends BinaryReader {
     return _buffer[_offset++];
   }
 
+  @override
+  int peekByte() {
+    _requireBytes(1);
+    return _buffer[_offset];
+  }
+
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   @override
@@ -88,10 +94,62 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
+  int peekWord() {
+    _requireBytes(2);
+    return _buffer[_offset] | _buffer[_offset + 1] << 8;
+  }
+
+  @override
+  int readUint8() {
+    return readByte();
+  }
+
+  @override
+  int peekUint8() {
+    return peekByte();
+  }
+
+  @override
+  int readInt8() {
+    return readUint8().toSigned(8);
+  }
+
+  @override
+  int peekInt8() {
+    return peekUint8().toSigned(8);
+  }
+
+  @override
+  int readUint16() {
+    return readWord();
+  }
+
+  @override
+  int peekUint16() {
+    return peekWord();
+  }
+
+  @override
+  int readInt16() {
+    return readUint16().toSigned(16);
+  }
+
+  @override
+  int peekInt16() {
+    return peekUint16().toSigned(16);
+  }
+
+  @override
   int readInt32() {
     _requireBytes(4);
     _offset += 4;
     return _byteData.getInt32(_offset - 4, Endian.little);
+  }
+
+  @override
+  int peekInt32() {
+    _requireBytes(4);
+    return _byteData.getInt32(_offset, Endian.little);
   }
 
   @pragma('vm:prefer-inline')
@@ -103,7 +161,7 @@ class BinaryReaderImpl extends BinaryReader {
     return _buffer.readUint32(_offset - 4);
   }
 
-  /// Not part of public API
+  @override
   int peekUint32() {
     _requireBytes(4);
     return _buffer.readUint32(_offset);
@@ -115,6 +173,11 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
+  int peekInt() {
+    return peekDouble().toInt();
+  }
+
+  @override
   double readDouble() {
     _requireBytes(8);
     var value = _byteData.getFloat64(_offset, Endian.little);
@@ -123,8 +186,34 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
+  double peekDouble() {
+    _requireBytes(8);
+    return _byteData.getFloat64(_offset, Endian.little);
+  }
+
+  @override
   bool readBool() {
     return readByte() > 0;
+  }
+
+  @override
+  bool peekBool() {
+    return peekByte() > 0;
+  }
+
+  @override
+  BigInt readBigInt() {
+    var sign = readBool();
+    var bitLength = readUint32();
+    _requireBytes((bitLength / 8).ceil());
+    var value = BigInt.zero;
+    for (var i = 0; i < bitLength; i += 8) {
+      value |= BigInt.from(_buffer[_offset++]) << i;
+    }
+    if (sign) {
+      value = -value;
+    }
+    return value;
   }
 
   @override

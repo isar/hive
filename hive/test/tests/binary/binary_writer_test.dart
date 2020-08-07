@@ -58,6 +58,98 @@ void main() {
       expect(() => bw.writeWord(null), throwsA(anything));
     });
 
+    test('.writeUint8()', () {
+      var bw = getWriter();
+      bw.writeUint8(0);
+      expect(bw.toBytes(), [0]);
+
+      bw = getWriter();
+      bw.writeUint8(17);
+      expect(bw.toBytes(), [17]);
+
+      bw = getWriter();
+      bw.writeUint8(255);
+      expect(bw.toBytes(), [255]);
+
+      bw = getWriter();
+      bw.writeUint8(257);
+      expect(bw.toBytes(), [1]);
+
+      expect(() => bw.writeUint8(null), throwsA(anything));
+    });
+
+    test('.writeInt8()', () {
+      var bw = getWriter();
+      bw.writeInt8(0);
+      expect(bw.toBytes(), [0]);
+
+      bw = getWriter();
+      bw.writeInt8(17);
+      expect(bw.toBytes(), [17]);
+
+      bw = getWriter();
+      bw.writeInt8(-1);
+      expect(bw.toBytes(), [255]);
+
+      bw = getWriter();
+      bw.writeInt8(257);
+      expect(bw.toBytes(), [1]);
+
+      bw = getWriter();
+      bw.writeInt8(-257);
+      expect(bw.toBytes(), [255]);
+
+      expect(() => bw.writeInt8(null), throwsA(anything));
+    });
+
+    test('.writeUint16()', () {
+      var bw = getWriter();
+      bw.writeUint16(0);
+      expect(bw.toBytes(), [0, 0]);
+
+      bw = getWriter();
+      bw.writeUint16(256);
+      expect(bw.toBytes(), [0, 1]);
+
+      bw = getWriter();
+      bw.writeUint16(65535);
+      expect(bw.toBytes(), [255, 255]);
+
+      bw = getWriter();
+      bw.writeUint16(65536);
+      expect(bw.toBytes(), [0, 0]);
+
+      expect(() => bw.writeUint16(null), throwsA(anything));
+    });
+
+    test('.writeInt16()', () {
+      var bw = getWriter();
+      bw.writeInt16(0);
+      expect(bw.toBytes(), [0, 0]);
+
+      bw = getWriter();
+      bw.writeInt16(256);
+      expect(bw.toBytes(), [0, 1]);
+
+      bw = getWriter();
+      bw.writeInt16(-1);
+      expect(bw.toBytes(), [255, 255]);
+
+      bw = getWriter();
+      bw.writeInt16(65536);
+      expect(bw.toBytes(), [0, 0]);
+
+      bw = getWriter();
+      bw.writeInt16(-65536);
+      expect(bw.toBytes(), [0, 0]);
+
+      bw = getWriter();
+      bw.writeInt16(-65535);
+      expect(bw.toBytes(), [1, 0]);
+
+      expect(() => bw.writeInt16(null), throwsA(anything));
+    });
+
     test('.writeInt32()', () {
       var bd = ByteData(4);
 
@@ -207,6 +299,34 @@ void main() {
       expect(bw.toBytes(), [0]);
 
       expect(() => bw.writeBool(null), throwsA(anything));
+    });
+
+    test('.writeBigInt()', () {
+      var bw = getWriter();
+      bw.writeBigInt(BigInt.zero);
+      expect(bw.toBytes(), [0, 0, 0, 0, 0]);
+
+      bw = getWriter();
+      bw.writeBigInt(BigInt.one);
+      expect(bw.toBytes(), [0, 1, 0, 0, 0, 1]);
+
+      bw = getWriter();
+      bw.writeBigInt(-BigInt.one);
+      expect(bw.toBytes(), [1, 1, 0, 0, 0, 1]);
+
+      bw = getWriter();
+      bw.writeBigInt(-BigInt.two);
+      expect(bw.toBytes(), [1, 2, 0, 0, 0, 2]);
+
+      bw = getWriter();
+      bw.writeBigInt(BigInt.one << 66);
+      expect(bw.toBytes(), [0, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]);
+
+      bw = getWriter();
+      bw.writeBigInt(-(BigInt.one << 66));
+      expect(bw.toBytes(), [1, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]);
+
+      expect(() => bw.writeBigInt(null), throwsA(anything));
     });
 
     test('.writeString()', () {

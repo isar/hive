@@ -18,6 +18,9 @@ abstract class BinaryReader {
   /// Read a single byte.
   int readByte();
 
+  /// Read a single byte.
+  int peekByte();
+
   /// Get a [Uint8List] view which contains the next [bytes] bytes.
   Uint8List viewBytes(int bytes);
 
@@ -28,20 +31,65 @@ abstract class BinaryReader {
   /// Read two bytes as 16-bit unsigned integer.
   int readWord();
 
+  /// Peek two bytes as 16-bit unsigned integer.
+  int peekWord();
+
+  /// Read four bytes as 8-bit unsigned integer.
+  int readUint8();
+
+  /// Peek four bytes as 8-bit unsigned integer.
+  int peekUint8();
+
+  /// Read four bytes as 8-bit signed integer.
+  int readInt8();
+
+  /// Peek four bytes as 8-bit signed integer.
+  int peekInt8();
+
+  /// Read four bytes as 16-bit unsigned integer.
+  int readUint16();
+
+  /// Peek four bytes as 16-bit unsigned integer.
+  int peekUint16();
+
+  /// Read four bytes as 16-bit signed integer.
+  int readInt16();
+
+  /// Peek four bytes as 16-bit signed integer.
+  int peekInt16();
+
   /// Read four bytes as 32-bit signed integer.
   int readInt32();
+
+  /// Peek four bytes as 32-bit signed integer.
+  int peekInt32();
 
   /// Read four bytes as 32-bit unsigned integer.
   int readUint32();
 
+  /// Peek four bytes as 32-bit unsigned integer.
+  int peekUint32();
+
   /// Read eight bytes as 64-bit signed integer.
   int readInt();
+
+  /// Peek eight bytes as 64-bit signed integer.
+  int peekInt();
 
   /// Read eight bytes as 64-bit double.
   double readDouble();
 
+  /// Peek eight bytes as 64-bit double.
+  double peekDouble();
+
   /// Read a boolean.
   bool readBool();
+
+  /// Read a boolean.
+  bool peekBool();
+
+  /// Read a [BigInt].
+  BigInt readBigInt();
 
   /// Read [byteCount] bytes and decode an UTF-8 String.
   ///

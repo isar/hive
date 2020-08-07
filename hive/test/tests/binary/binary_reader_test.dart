@@ -56,6 +56,23 @@ void main() {
       expect(() => br.readByte(), throwsA(anything));
     });
 
+    test('.peekByte()', () {
+      var byteData = ByteData(3)
+        ..setUint8(1, 0)
+        ..setUint8(1, 17)
+        ..setUint8(2, 255);
+      var br = fromByteData(byteData);
+
+      expect(br.peekByte(), 0);
+      br.readByte();
+      expect(br.peekByte(), 17);
+      expect(br.peekByte(), 17);
+      br.readByte();
+      expect(br.peekByte(), 255);
+      br.readByte();
+      expect(() => br.peekByte(), throwsA(anything));
+    });
+
     test('.viewBytes()', () {
       var byteData = ByteData(3)
         ..setUint8(0, 0)
@@ -94,6 +111,135 @@ void main() {
       expect(() => br.readWord(), throwsA(anything));
     });
 
+    test('.peekWord()', () {
+      var byteData = ByteData(4)
+        ..setUint16(0, 0, Endian.little)
+        ..setUint16(2, 65535, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekWord(), 0);
+      br.readWord();
+      expect(br.peekWord(), 65535);
+      expect(br.peekWord(), 65535);
+      br.readWord();
+      expect(() => br.peekWord(), throwsA(anything));
+    });
+
+    test('.readUint8()', () {
+      var byteData = ByteData(3)
+        ..setUint8(0, 0)
+        ..setUint8(1, 17)
+        ..setUint8(2, 255);
+      var br = fromByteData(byteData);
+
+      expect(br.readUint8(), 0);
+      expect(br.readUint8(), 17);
+      expect(br.readUint8(), 255);
+      expect(() => br.readUint8(), throwsA(anything));
+    });
+
+    test('.peekUint8()', () {
+      var byteData = ByteData(3)
+        ..setUint8(1, 0)
+        ..setUint8(1, 17)
+        ..setUint8(2, 255);
+      var br = fromByteData(byteData);
+
+      expect(br.peekUint8(), 0);
+      br.readUint8();
+      expect(br.peekUint8(), 17);
+      expect(br.peekUint8(), 17);
+      br.readUint8();
+      expect(br.peekUint8(), 255);
+      br.readUint8();
+      expect(() => br.peekUint8(), throwsA(anything));
+    });
+
+    test('.readInt8()', () {
+      var byteData = ByteData(3)
+        ..setUint8(0, 0)
+        ..setUint8(1, 17)
+        ..setUint8(2, 255);
+      var br = fromByteData(byteData);
+
+      expect(br.readInt8(), 0);
+      expect(br.readInt8(), 17);
+      expect(br.readInt8(), -1);
+      expect(() => br.readInt8(), throwsA(anything));
+    });
+
+    test('.peekInt8()', () {
+      var byteData = ByteData(3)
+        ..setUint8(1, 0)
+        ..setUint8(1, 17)
+        ..setUint8(2, 255);
+      var br = fromByteData(byteData);
+
+      expect(br.peekInt8(), 0);
+      br.readInt8();
+      expect(br.peekInt8(), 17);
+      expect(br.peekInt8(), 17);
+      br.readInt8();
+      expect(br.peekInt8(), -1);
+      br.readInt8();
+      expect(() => br.peekInt8(), throwsA(anything));
+    });
+
+    test('.readUint16()', () {
+      var byteData = ByteData(4)
+        ..setUint16(0, 0, Endian.little)
+        ..setUint16(2, 65535, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.readUint16(), 0);
+      expect(br.readUint16(), 65535);
+      expect(() => br.readUint16(), throwsA(anything));
+    });
+
+    test('.peekUint16()', () {
+      var byteData = ByteData(4)
+        ..setUint16(0, 0, Endian.little)
+        ..setUint16(2, 65535, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekUint16(), 0);
+      br.readUint16();
+      expect(br.peekUint16(), 65535);
+      expect(br.peekUint16(), 65535);
+      br.readUint16();
+      expect(() => br.peekUint16(), throwsA(anything));
+    });
+
+    test('.readInt16()', () {
+      var byteData = ByteData(6)
+        ..setInt16(0, 0, Endian.little)
+        ..setInt16(2, 32767, Endian.little)
+        ..setInt16(4, -32767, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.readInt16(), 0);
+      expect(br.readInt16(), 32767);
+      expect(br.readInt16(), -32767);
+      expect(() => br.readInt16(), throwsA(anything));
+    });
+
+    test('.peekInt16()', () {
+      var byteData = ByteData(6)
+        ..setInt16(0, 0, Endian.little)
+        ..setInt16(2, 32767, Endian.little)
+        ..setInt16(4, -32767, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekInt16(), 0);
+      br.readInt16();
+      expect(br.peekInt16(), 32767);
+      expect(br.peekInt16(), 32767);
+      br.readInt16();
+      expect(br.peekInt16(), -32767);
+      br.readInt16();
+      expect(() => br.peekInt16(), throwsA(anything));
+    });
+
     test('.readInt32()', () {
       var byteData = ByteData(12)
         ..setInt32(0, 0, Endian.little)
@@ -107,6 +253,23 @@ void main() {
       expect(() => br.readInt32(), throwsA(anything));
     });
 
+    test('.peekInt32()', () {
+      var byteData = ByteData(12)
+        ..setInt32(0, 0, Endian.little)
+        ..setInt32(4, 65535, Endian.little)
+        ..setInt32(8, -65536, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekInt32(), 0);
+      br.readInt32();
+      expect(br.peekInt32(), 65535);
+      expect(br.peekInt32(), 65535);
+      br.readInt32();
+      expect(br.peekInt32(), -65536);
+      br.readInt32();
+      expect(() => br.peekInt32(), throwsA(anything));
+    });
+
     test('.readUint32()', () {
       var byteData = ByteData(8)
         ..setUint32(0, 0, Endian.little)
@@ -116,6 +279,20 @@ void main() {
       expect(br.readUint32(), 0);
       expect(br.readUint32(), 4294967295);
       expect(() => br.readUint32(), throwsA(anything));
+    });
+
+    test('.peekUint32()', () {
+      var byteData = ByteData(8)
+        ..setUint32(0, 0, Endian.little)
+        ..setUint32(4, 4294967295, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekUint32(), 0);
+      br.readUint32();
+      expect(br.peekUint32(), 4294967295);
+      expect(br.peekUint32(), 4294967295);
+      br.readUint32();
+      expect(() => br.peekUint32(), throwsA(anything));
     });
 
     test('.readInt()', () {
@@ -129,6 +306,23 @@ void main() {
       expect(br.readInt(), 2 ^ 53);
       expect(br.readInt(), -2 ^ 53);
       expect(() => br.readInt(), throwsA(anything));
+    });
+
+    test('.peekInt()', () {
+      var byteData = ByteData(24)
+        ..setFloat64(0, 0, Endian.little)
+        ..setFloat64(8, (2 ^ 53).toDouble(), Endian.little)
+        ..setFloat64(16, (-2 ^ 53).toDouble(), Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekInt(), 0);
+      br.readInt();
+      expect(br.peekInt(), 2 ^ 53);
+      br.readInt();
+      expect(br.peekInt(), -2 ^ 53);
+      expect(br.peekInt(), -2 ^ 53);
+      br.readInt();
+      expect(() => br.peekInt(), throwsA(anything));
     });
 
     test('.readDouble()', () {
@@ -150,6 +344,33 @@ void main() {
       expect(() => br.readDouble(), throwsA(anything));
     });
 
+    test('.peekDouble()', () {
+      var byteData = ByteData(48)
+        ..setFloat64(0, 0, Endian.little)
+        ..setFloat64(8, double.nan, Endian.little)
+        ..setFloat64(16, double.infinity, Endian.little)
+        ..setFloat64(24, double.negativeInfinity, Endian.little)
+        ..setFloat64(32, double.maxFinite, Endian.little)
+        ..setFloat64(40, double.minPositive, Endian.little);
+      var br = fromByteData(byteData);
+
+      expect(br.peekDouble(), 0);
+      br.readDouble();
+      expect(br.peekDouble().isNaN, true);
+      expect(br.peekDouble().isNaN, true);
+      br.readDouble();
+      expect(br.peekDouble(), double.infinity);
+      br.readDouble();
+      expect(br.peekDouble(), double.negativeInfinity);
+      br.readDouble();
+      expect(br.peekDouble(), double.maxFinite);
+      expect(br.peekDouble(), double.maxFinite);
+      br.readDouble();
+      expect(br.peekDouble(), double.minPositive);
+      br.readDouble();
+      expect(() => br.peekDouble(), throwsA(anything));
+    });
+
     test('.readBool()', () {
       var byteData = ByteData(3)
         ..setUint8(0, 1)
@@ -161,6 +382,54 @@ void main() {
       expect(br.readBool(), false);
       expect(br.readBool(), true);
       expect(() => br.readBool(), throwsA(anything));
+    });
+
+    test('.peekBool()', () {
+      var byteData = ByteData(3)
+        ..setUint8(0, 1)
+        ..setUint8(1, 0)
+        ..setUint8(2, 2);
+      var br = fromByteData(byteData);
+
+      expect(br.peekBool(), true);
+      br.readBool();
+      expect(br.peekBool(), false);
+      br.readBool();
+      expect(br.peekBool(), true);
+      expect(br.peekBool(), true);
+      br.readBool();
+      expect(() => br.peekBool(), throwsA(anything));
+    });
+
+    test('.readBigInt()', () {
+      var byteData = ByteData(45)
+            ..setUint8(0, 0) // +1 sign = false
+            ..setUint32(1, 0, Endian.little) // +4 bitLength = 0
+            ..setUint8(5, 1) // +1 sign = true
+            ..setUint32(6, 1, Endian.little) // +4 bitLength = 1
+            ..setUint8(10, 1) // +1
+            ..setUint8(11, 1) // +1 sign = true
+            ..setUint32(12, 7, Endian.little) // +4 bitLength = 3
+            ..setUint8(16, 250) // +1
+            ..setUint8(17, 0) // +1 sign = true
+            ..setUint32(18, 67, Endian.little) // +4 bitLength = 3
+            ..setUint32(22, 0, Endian.little) // +4
+            ..setUint32(26, 0, Endian.little) // +4
+            ..setUint8(30, 4) // +1
+            ..setUint8(31, 1) // +1 sign = true
+            ..setUint32(32, 67, Endian.little) // +4 bitLength = 3
+            ..setUint32(36, 0, Endian.little) // +4
+            ..setUint32(40, 0, Endian.little) // +4
+            ..setUint8(44, 4) // +1
+          ;
+      var br = fromByteData(byteData);
+
+      expect(br.readBigInt(), BigInt.zero);
+      expect(br.readBigInt(), -BigInt.one);
+      expect(br.readBigInt(), BigInt.from(-250));
+      expect(br.readBigInt(), BigInt.one << 66);
+      expect(br.readBigInt(), -(BigInt.one << 66));
+      expect(() => br.readBigInt(), throwsA(anything));
     });
 
     test('.readString()', () {

@@ -11,6 +11,18 @@ abstract class BinaryWriter {
   /// Write a 16-bit unsigned integer as two bytes.
   void writeWord(int value);
 
+  /// Write a 8-bit unsigned integer as two bytes.
+  void writeUint8(int value);
+
+  /// Write a 8-bit signed integer as two bytes.
+  void writeInt8(int value);
+
+  /// Write a 16-bit unsigned integer as two bytes.
+  void writeUint16(int value);
+
+  /// Write a 16-bit signed integer as two bytes.
+  void writeInt16(int value);
+
   /// Write a 32-bit signed integer as four bytes.
   void writeInt32(int value);
 
@@ -25,6 +37,9 @@ abstract class BinaryWriter {
 
   /// Write a boolean.
   void writeBool(bool value);
+
+  /// Write a [BigInt]
+  void writeBigInt(BigInt value);
 
   /// Encode the UTF-8 String [value] and write its bytes.
   void writeString(
