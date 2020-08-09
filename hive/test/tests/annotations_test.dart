@@ -9,6 +9,7 @@ void main() {
   });
 
   test('HiveField', () {
-    expect(HiveField(1), 1);
+    var field = HiveField(1);
+    expect(field.index, 1);
   });
 }
