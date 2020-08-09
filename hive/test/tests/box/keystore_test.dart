@@ -1,4 +1,3 @@
-import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:mockito/mockito.dart';
@@ -18,16 +17,6 @@ void main() {
   }
 
   group('Keystore', () {
-    test('.watch()', () async {
-      var keystore = Keystore.debug(frames: [Frame('a', 1), Frame(1, 'a')]);
-      BoxEvent lastEvent;
-      keystore.watch().listen((event) => lastEvent = event);
-      keystore.insert(Frame.deleted('a'));
-      await Future.delayed(Duration.zero);
-      expect(lastEvent.key, 'a');
-      expect(lastEvent.deleted, true);
-    });
-
     test('.length returns the number of frames in the store', () {
       var keystore = Keystore.debug(frames: [Frame('a', 1), Frame(1, 'a')]);
       expect(keystore.length, 2);

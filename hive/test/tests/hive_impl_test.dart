@@ -1,8 +1,9 @@
+@TestOn('vm')
+
 import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
-import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 
@@ -16,13 +17,6 @@ void main() {
       hive.init(tempDir.path);
       return hive;
     }
-
-    test('.debug()', () {
-      var hive = HiveImpl.debug(BackendManager());
-
-      hive.init('MYPATH');
-      expect(hive.homePath, 'MYPATH');
-    });
 
     test('.init()', () {
       var hive = HiveImpl();
