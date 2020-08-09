@@ -1,6 +1,17 @@
+# 1.4.3
+
+### Enhancements
+
+- Added `Hive.ignoreTypeId(typeId)` - [#397](https://github.com/hivedb/hive/pull/397)
+
+### Fixes
+
+- `open(Lazy)Box` can potentially open a box twice - [#345](https://github.com/hivedb/hive/issues/345)
+- Remove extra byte reservation in writeBoolLis - [#398](https://github.com/hivedb/hive/pull/398)
+
 # 1.4.2
 
-### Other
+### Fixes
 - Fixed dependency issues and minor improvements
 
 # 1.4.1+1
