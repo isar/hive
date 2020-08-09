@@ -31,13 +31,25 @@ LazyBoxImpl _getBox({
 void main() {
   group('LazyBoxImpl', () {
     group('.get()', () {
-      test('returns defaultValue if key does not exist', () async {
-        var backend = BackendMock();
-        var box = _getBox(backend: backend);
+      group('returns defaultValue if key does not exist', () {
+        test('returns defaultValue', () async {
+          var backend = BackendMock();
+          var box = _getBox(backend: backend);
 
-        expect(await box.get('someKey'), null);
-        expect(await box.get('otherKey', defaultValue: -12), -12);
-        verifyZeroInteractions(backend);
+          expect(await box.get('someKey'), null);
+          expect(await box.get('otherKey', defaultValue: -12), -12);
+          verifyZeroInteractions(backend);
+        });
+
+        test('returns and initializes defaultValue', () async {
+          var backend = BackendMock();
+          var box = _getBox(backend: backend);
+          var object = TestHiveObject();
+
+          expect(await box.get('otherKey', defaultValue: object), object);
+          expect(object.box, box);
+          verifyZeroInteractions(backend);
+        });
       });
 
       test('reads value from backend', () async {

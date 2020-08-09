@@ -10,14 +10,14 @@ import 'package:test/test.dart';
 
 import '../mocks.dart';
 
-BoxImpl _getBox({
+BoxImpl _getBox<E>({
   String name,
   HiveImpl hive,
-  Keystore keystore,
+  Keystore<E> keystore,
   CompactionStrategy cStrategy,
   StorageBackend backend,
 }) {
-  var box = BoxImpl(
+  var box = BoxImpl<E>(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     null,
@@ -54,13 +54,25 @@ void main() {
     });
 
     group('.get()', () {
-      test('returns defaultValue if key does not exist', () {
-        var backend = BackendMock();
-        var box = _getBox(backend: backend);
+      group('returns defaultValue if key does not exist', () {
+        test('returns defaultValue', () {
+          var backend = BackendMock();
+          var box = _getBox(backend: backend);
 
-        expect(box.get('someKey'), null);
-        expect(box.get('otherKey', defaultValue: -12), -12);
-        verifyZeroInteractions(backend);
+          expect(box.get('someKey'), null);
+          expect(box.get('otherKey', defaultValue: -12), -12);
+          verifyZeroInteractions(backend);
+        });
+
+        test('returns and initializes defaultValue', () {
+          var backend = BackendMock();
+          var box = _getBox(backend: backend);
+          var object = TestHiveObject();
+
+          expect(box.get('otherKey', defaultValue: object), object);
+          expect(object.box, box);
+          verifyZeroInteractions(backend);
+        });
       });
 
       test('returns cached value if it exists', () {
