@@ -11,7 +11,7 @@ void main() {
       });
 
       test('throws ArgumentError if key is invalid', () {
-        expect(HiveAesCipher([1, 2, 3, -1, 256]), throwsArgumentError);
+        expect(() => HiveAesCipher([1, 2, 3, -1, 256]), throwsArgumentError);
       });
     });
   });
