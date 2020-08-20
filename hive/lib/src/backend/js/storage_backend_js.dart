@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:indexed_db';
 import 'dart:typed_data';
+import 'dart:js_util';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
@@ -100,31 +101,43 @@ class StorageBackendJs extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  Future<List<dynamic>> getKeys() {
-    var completer = Completer<List<dynamic>>();
-    var request = getStore(false).getAllKeys(null);
-    request.onSuccess.listen((_) {
-      completer.complete(request.result as List<dynamic>);
-    });
-    request.onError.listen((_) {
-      completer.completeError(request.error);
-    });
-    return completer.future;
+  Future<List<dynamic>> getKeys({bool cursor = false}) {
+    var store = getStore(false);
+
+    if (hasProperty(store, 'getAllKeys') && !cursor) {
+      var completer = Completer<List<dynamic>>();
+      var request = getStore(false).getAllKeys(null);
+      request.onSuccess.listen((_) {
+        completer.complete(request.result as List<dynamic>);
+      });
+      request.onError.listen((_) {
+        completer.completeError(request.error);
+      });
+      return completer.future;
+    } else {
+      return store.openCursor(autoAdvance: true).map((e) => e.key).toList();
+    }
   }
 
   /// Not part of public API
   @visibleForTesting
-  Future<Iterable<dynamic>> getValues() {
-    var completer = Completer<Iterable<dynamic>>();
-    var request = getStore(false).getAll(null);
-    request.onSuccess.listen((_) {
-      var values = (request.result as List).map(decodeValue);
-      completer.complete(values);
-    });
-    request.onError.listen((_) {
-      completer.completeError(request.error);
-    });
-    return completer.future;
+  Future<Iterable<dynamic>> getValues({bool cursor = false}) {
+    var store = getStore(false);
+
+    if (hasProperty(store, 'getAll') && !cursor) {
+      var completer = Completer<Iterable<dynamic>>();
+      var request = store.getAll(null);
+      request.onSuccess.listen((_) {
+        var values = (request.result as List).map(decodeValue);
+        completer.complete(values);
+      });
+      request.onError.listen((_) {
+        completer.completeError(request.error);
+      });
+      return completer.future;
+    } else {
+      return store.openCursor(autoAdvance: true).map((e) => e.value).toList();
+    }
   }
 
   @override
