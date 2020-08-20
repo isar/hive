@@ -1,3 +1,8 @@
+# 1.4.4
+
+### Fixes
+- Edge browser support - [#357](https://github.com/hivedb/hive/issues/357)
+
 # 1.4.3
 
 ### Enhancements
