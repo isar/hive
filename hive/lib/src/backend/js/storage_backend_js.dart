@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:indexed_db';
 import 'dart:typed_data';
+import 'dart:js_util';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
@@ -103,7 +104,7 @@ class StorageBackendJs extends StorageBackend {
   Future<List<dynamic>> getKeys({bool cursor = false}) {
     var store = getStore(false);
 
-    if (store.getAllKeys is Function && !cursor) {
+    if (hasProperty(store, 'getAllKeys') && !cursor) {
       var completer = Completer<List<dynamic>>();
       var request = getStore(false).getAllKeys(null);
       request.onSuccess.listen((_) {
@@ -123,7 +124,7 @@ class StorageBackendJs extends StorageBackend {
   Future<Iterable<dynamic>> getValues({bool cursor = false}) {
     var store = getStore(false);
 
-    if (store.getAll is Function && !cursor) {
+    if (hasProperty(store, 'getAll') && !cursor) {
       var completer = Completer<Iterable<dynamic>>();
       var request = store.getAll(null);
       request.onSuccess.listen((_) {
