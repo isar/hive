@@ -1,3 +1,6 @@
+## 0.7.2
+- Fixed [#225](https://github.com/hivedb/hive/issues/225)
+
 ## 0.7.1
 - Fixed dependency issues
 
