@@ -4,8 +4,9 @@ import 'package:test/test.dart';
 void main() {
   group('generateName', () {
     test('.generateName()', () {
-      var name = r'_$User';
-      expect(TypeAdapterGenerator.generateName(name), equals('UserAdapter'));
+      expect(TypeAdapterGenerator.generateName(r'_$User'), 'UserAdapter');
+      expect(TypeAdapterGenerator.generateName(r'_$_SomeClass'),
+          'SomeClassAdapter');
     });
   });
 }
