@@ -8,6 +8,17 @@ import 'package:source_gen/source_gen.dart';
 import 'package:hive/hive.dart';
 
 class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
+  static String generateName(String typeName) {
+    var adapterName = '${typeName}Adapter';
+    if (adapterName.startsWith('_')) {
+      adapterName = adapterName.substring(1);
+    }
+    if (adapterName.startsWith(r'$')) {
+      adapterName = adapterName.substring(1);
+    }
+    return adapterName;
+  }
+
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
@@ -132,7 +143,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   String getAdapterName(String typeName, ConstantReader annotation) {
     var annAdapterName = annotation.read('adapterName');
     if (annAdapterName.isNull) {
-      return '${typeName}Adapter';
+      return generateName(typeName);
     } else {
       return annAdapterName.stringValue;
     }
