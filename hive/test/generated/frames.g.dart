@@ -1192,7 +1192,7 @@ final frameBytes = [
   ]),
 // DateTime test
   Uint8List.fromList([
-    46,
+    48,
     0,
     0,
     0,
@@ -1216,7 +1216,7 @@ final frameBytes = [
     0,
     0,
     0,
-    16,
+    18,
     0,
     0,
     0,
@@ -1225,7 +1225,8 @@ final frameBytes = [
     0,
     0,
     0,
-    16,
+    0,
+    18,
     0,
     192,
     26,
@@ -1234,10 +1235,11 @@ final frameBytes = [
     204,
     118,
     66,
-    92,
-    55,
-    96,
-    194
+    0,
+    228,
+    145,
+    206,
+    218
   ]),
 // BigInt Test
   Uint8List.fromList([
