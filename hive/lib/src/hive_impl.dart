@@ -41,6 +41,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   void _registerDefaultAdapters() {
+    registerAdapter(DateTimeWithTimezoneAdapter(), internal: true);
     registerAdapter(DateTimeAdapter(), internal: true);
     registerAdapter(BigIntAdapter(), internal: true);
   }
