@@ -2,33 +2,34 @@ import 'dart:typed_data';
 
 final frameValuesBytes = [
 // 0
-  Uint8List.fromList([]),
-// 555
-  Uint8List.fromList([]),
-// 123
-  Uint8List.fromList([]),
-// 0
-  Uint8List.fromList([8, 0, 0, 0, 73, 110, 116, 32, 107, 101, 121, 49]),
-// 1
-  Uint8List.fromList([8, 0, 0, 0, 73, 110, 116, 32, 107, 101, 121, 50]),
-// 29
-  Uint8List.fromList([8, 0, 0, 0, 73, 110, 116, 32, 107, 101, 121, 51]),
-// Tombstone frame
-  Uint8List.fromList([]),
-// Null frame
-  Uint8List.fromList([]),
-// Int
-  Uint8List.fromList([0, 0, 0, 204, 214, 90, 157, 65]),
-// Large int
-  Uint8List.fromList([0, 0, 0, 0, 0, 0, 65, 64]),
-// Bool true
-  Uint8List.fromList([1]),
-// Bool false
   Uint8List.fromList([0]),
+// 555
+  Uint8List.fromList([0]),
+// 123
+  Uint8List.fromList([0]),
+// 0
+  Uint8List.fromList([4, 8, 0, 0, 0, 73, 110, 116, 32, 107, 101, 121, 49]),
+// 1
+  Uint8List.fromList([4, 8, 0, 0, 0, 73, 110, 116, 32, 107, 101, 121, 50]),
+// 29
+  Uint8List.fromList([4, 8, 0, 0, 0, 73, 110, 116, 32, 107, 101, 121, 51]),
+// Tombstone frame
+  Uint8List.fromList([0]),
+// Null frame
+  Uint8List.fromList([0]),
+// Int
+  Uint8List.fromList([1, 0, 0, 0, 204, 214, 90, 157, 65]),
+// Large int
+  Uint8List.fromList([1, 0, 0, 0, 0, 0, 0, 65, 64]),
+// Bool true
+  Uint8List.fromList([3, 1]),
+// Bool false
+  Uint8List.fromList([3, 0]),
 // Float
-  Uint8List.fromList([10, 129, 92, 226, 126, 12, 200, 64]),
+  Uint8List.fromList([2, 10, 129, 92, 226, 126, 12, 200, 64]),
 // Unicode string
   Uint8List.fromList([
+    4,
     80,
     0,
     0,
@@ -115,13 +116,14 @@ final frameValuesBytes = [
     128
   ]),
 // Empty list
-  Uint8List.fromList([0, 0, 0, 0]),
+  Uint8List.fromList([10, 0, 0, 0, 0]),
 // Byte list
-  Uint8List.fromList([4, 0, 0, 0, 1, 12, 123, 210]),
+  Uint8List.fromList([5, 4, 0, 0, 0, 1, 12, 123, 210]),
 // Byte list with mask
-  Uint8List.fromList([5, 0, 0, 0, 144, 169, 1, 2, 3]),
+  Uint8List.fromList([5, 5, 0, 0, 0, 144, 169, 1, 2, 3]),
 // Int list
   Uint8List.fromList([
+    6,
     3,
     0,
     0,
@@ -152,9 +154,10 @@ final frameValuesBytes = [
     65
   ]),
 // Bool list
-  Uint8List.fromList([4, 0, 0, 0, 1, 0, 0, 1]),
+  Uint8List.fromList([8, 4, 0, 0, 0, 1, 0, 0, 1]),
 // Double list
   Uint8List.fromList([
+    7,
     5,
     0,
     0,
@@ -202,6 +205,7 @@ final frameValuesBytes = [
   ]),
 // String list
   Uint8List.fromList([
+    9,
     6,
     0,
     0,
@@ -363,6 +367,7 @@ final frameValuesBytes = [
   ]),
 // List with null
   Uint8List.fromList([
+    10,
     5,
     0,
     0,
@@ -402,6 +407,7 @@ final frameValuesBytes = [
   ]),
 // List with different types
   Uint8List.fromList([
+    10,
     6,
     0,
     0,
@@ -488,6 +494,7 @@ final frameValuesBytes = [
   ]),
 // Map
   Uint8List.fromList([
+    11,
     7,
     0,
     0,
@@ -654,11 +661,12 @@ final frameValuesBytes = [
   ]),
 // DateTime test
   Uint8List.fromList([
+    10,
     2,
     0,
     0,
     0,
-    18,
+    16,
     0,
     0,
     0,
@@ -667,8 +675,7 @@ final frameValuesBytes = [
     0,
     0,
     0,
-    0,
-    18,
+    16,
     0,
     192,
     26,
@@ -676,11 +683,11 @@ final frameValuesBytes = [
     64,
     204,
     118,
-    66,
-    0
+    66
   ]),
 // BigInt Test
   Uint8List.fromList([
+    17,
     40,
     49,
     50,
