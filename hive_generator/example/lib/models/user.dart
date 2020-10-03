@@ -16,7 +16,12 @@ class User {
 
 @HiveType(typeId: 2)
 enum UserRole {
+  @HiveField(0)
   customer,
+
+  @HiveField(1)
   contentEditor,
+
+  @HiveField(2)
   admin,
 }
