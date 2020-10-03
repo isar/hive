@@ -1,3 +1,8 @@
+# 1.4.4+1
+
+### Fixes
+- Browser support for `BackendManager.boxExists(boxName, path)` - [#451](https://github.com/hivedb/hive/issues/451)
+
 # 1.4.4
 
 ### Fixes
