@@ -12,7 +12,7 @@ export '../generated/frame_values_encrypted.g.dart';
 export '../generated/frames.g.dart';
 export '../generated/frames_encrypted.g.dart';
 
-TypeRegistry get testRegistry => HiveImpl();
+TypeRegistry get testRegistry => HiveImpl.test();
 
 class _HiveAesCipherStaticIV extends HiveAesCipher {
   _HiveAesCipherStaticIV() : super(Uint8List.fromList(List.filled(32, 1)));

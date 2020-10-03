@@ -1,14 +1,14 @@
 import 'package:hive/hive.dart';
 
 /// Adapter for DateTime
-class DateTimeAdapter extends TypeAdapter<_DateTimeWithoutTZ> {
+class DateTimeAdapter<T extends DateTime> extends TypeAdapter<T> {
   @override
   final typeId = 16;
 
   @override
-  _DateTimeWithoutTZ read(BinaryReader reader) {
+  T read(BinaryReader reader) {
     var micros = reader.readInt();
-    return _DateTimeWithoutTZ.fromMillisecondsSinceEpoch(micros);
+    return DateTimeWithoutTZ.fromMillisecondsSinceEpoch(micros) as T;
   }
 
   @override
@@ -17,8 +17,8 @@ class DateTimeAdapter extends TypeAdapter<_DateTimeWithoutTZ> {
   }
 }
 
-class _DateTimeWithoutTZ extends DateTime {
-  _DateTimeWithoutTZ.fromMillisecondsSinceEpoch(int millisecondsSinceEpoch)
+class DateTimeWithoutTZ extends DateTime {
+  DateTimeWithoutTZ.fromMillisecondsSinceEpoch(int millisecondsSinceEpoch)
       : super.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
 }
 
