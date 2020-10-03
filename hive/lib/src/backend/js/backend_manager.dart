@@ -29,11 +29,15 @@ class BackendManager implements BackendManagerInterface {
   @override
   Future<bool> boxExists(String name, String path) async {
     // https://stackoverflow.com/a/17473952
-    var _exists = true;
-    await window.indexedDB.open(name, onUpgradeNeeded: (e) {
-      e.target.transaction.abort();
-      _exists = false;
-    });
-    return _exists;
+    try {
+      var _exists = true;
+      await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
+        e.target.transaction.abort();
+        _exists = false;
+      });
+      return _exists;
+    } catch (error) {
+      return false;
+    }
   }
 }
