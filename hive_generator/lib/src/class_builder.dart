@@ -76,7 +76,7 @@ class ClassBuilder extends Builder {
     } else if (mapChecker.isExactlyType(type)) {
       return '($variable as Map)${_castMap(type)}';
     } else {
-      return '$variable as ${type.getDisplayString()}';
+      return '$variable as ${type.getDisplayString(withNullability: false)}';
     }
   }
 
