@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user.dart';
+part of 'person.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
@@ -50,32 +50,38 @@ class UserRoleAdapter extends TypeAdapter<UserRole> {
           typeId == other.typeId;
 }
 
-class UserAdapter extends TypeAdapter<User> {
+class PersonAdapter extends TypeAdapter<Person> {
   @override
   final int typeId = 1;
 
   @override
-  User read(BinaryReader reader) {
+  Person read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return User()
+    return Person()
       ..firstName = fields[0] as String
       ..lastName = fields[1] as String
-      ..birthday = fields[2] as DateTime;
+      ..birthday = fields[2] as DateTime
+      ..roles = (fields[3] as List)?.cast<UserRole>()
+      ..friends = (fields[4] as HiveList)?.castHiveList();
   }
 
   @override
-  void write(BinaryWriter writer, User obj) {
+  void write(BinaryWriter writer, Person obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.firstName)
       ..writeByte(1)
       ..write(obj.lastName)
       ..writeByte(2)
-      ..write(obj.birthday);
+      ..write(obj.birthday)
+      ..writeByte(3)
+      ..write(obj.roles)
+      ..writeByte(4)
+      ..write(obj.friends);
   }
 
   @override
@@ -84,7 +90,7 @@ class UserAdapter extends TypeAdapter<User> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is UserAdapter &&
+      other is PersonAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

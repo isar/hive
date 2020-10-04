@@ -1,9 +1,9 @@
 import 'package:hive/hive.dart';
 
-part 'user.g.dart';
+part 'person.g.dart';
 
 @HiveType(typeId: 1)
-class User {
+class Person extends HiveObject {
   @HiveField(0)
   String firstName;
 
@@ -12,6 +12,12 @@ class User {
 
   @HiveField(2)
   DateTime birthday;
+
+  @HiveField(3)
+  List<UserRole> roles;
+
+  @HiveField(4)
+  HiveList<Person> friends;
 }
 
 @HiveType(typeId: 2)

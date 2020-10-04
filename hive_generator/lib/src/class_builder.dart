@@ -103,7 +103,7 @@ class ClassBuilder extends Builder {
       }
       return '?.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
     } else {
-      return '?.cast<${arg.getDisplayString()}>()';
+      return '?.cast<${arg.getDisplayString(withNullability: false)}>()';
     }
   }
 
@@ -115,7 +115,8 @@ class ClassBuilder extends Builder {
       return '?.map((dynamic k, dynamic v)=>'
           'MapEntry(${_cast(arg1, 'k')},${_cast(arg2, 'v')}))';
     } else {
-      return '?.cast<${arg1.getDisplayString()}, ${arg2.getDisplayString()}>()';
+      return '?.cast<${arg1.getDisplayString(withNullability: false)}, '
+          '${arg2.getDisplayString(withNullability: false)}>()';
     }
   }
 

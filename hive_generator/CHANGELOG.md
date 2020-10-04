@@ -1,3 +1,6 @@
+## 0.8.1
+- Fixes [#455](https://github.com/hivedb/hive/issues/455)
+
 ## 0.8.0
 - `analyzer: ^0.40.0` version support - [#455](https://github.com/hivedb/hive/issues/455)
 
