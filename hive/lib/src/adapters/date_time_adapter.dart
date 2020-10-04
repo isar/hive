@@ -7,8 +7,8 @@ class DateTimeAdapter<T extends DateTime> extends TypeAdapter<T> {
 
   @override
   T read(BinaryReader reader) {
-    var micros = reader.readInt();
-    return DateTimeWithoutTZ.fromMillisecondsSinceEpoch(micros) as T;
+    var millis = reader.readInt();
+    return DateTimeWithoutTZ.fromMillisecondsSinceEpoch(millis) as T;
   }
 
   @override
@@ -29,9 +29,9 @@ class DateTimeWithTimezoneAdapter extends TypeAdapter<DateTime> {
 
   @override
   DateTime read(BinaryReader reader) {
-    var micros = reader.readInt();
+    var millis = reader.readInt();
     var isUtc = reader.readBool();
-    return DateTime.fromMillisecondsSinceEpoch(micros, isUtc: isUtc);
+    return DateTime.fromMillisecondsSinceEpoch(millis, isUtc: isUtc);
   }
 
   @override
