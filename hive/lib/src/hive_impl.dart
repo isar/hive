@@ -40,8 +40,16 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     _registerDefaultAdapters();
   }
 
+  /// Not part of public API
+  @visibleForTesting
+  HiveImpl.test() : _manager = BackendManager() {
+    registerAdapter(DateTimeAdapter<DateTime>(), internal: true);
+    registerAdapter(BigIntAdapter(), internal: true);
+  }
+
   void _registerDefaultAdapters() {
-    registerAdapter(DateTimeAdapter(), internal: true);
+    registerAdapter(DateTimeWithTimezoneAdapter(), internal: true);
+    registerAdapter(DateTimeAdapter<DateTimeWithoutTZ>(), internal: true);
     registerAdapter(BigIntAdapter(), internal: true);
   }
 

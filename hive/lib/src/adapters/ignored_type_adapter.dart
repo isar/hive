@@ -2,17 +2,13 @@ import 'package:hive/hive.dart';
 
 /// Not part of public API
 class IgnoredTypeAdapter<T> implements TypeAdapter<T> {
-  IgnoredTypeAdapter([this._typeId = 0]);
-
-  final int _typeId;
+  const IgnoredTypeAdapter([this.typeId = 0]);
 
   @override
-  T read(BinaryReader reader) {
-    return null;
-  }
+  final int typeId;
 
   @override
-  int get typeId => _typeId;
+  T read(BinaryReader reader) => null;
 
   @override
   void write(BinaryWriter writer, obj) {}

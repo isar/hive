@@ -24,4 +24,55 @@ void main() {
       verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
     });
   });
+
+  group('DateTimeWithTimezoneAdapter', () {
+    group('.read()', () {
+      test('local', () {
+        var now = DateTime.now();
+        var binaryReader = BinaryReaderMock();
+        when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
+        when(binaryReader.readBool()).thenReturn(false);
+
+        var date = DateTimeWithTimezoneAdapter().read(binaryReader);
+        verifyInOrder([binaryReader.readInt(), binaryReader.readBool()]);
+        expect(date, now.subtract(Duration(microseconds: now.microsecond)));
+      });
+
+      test('UTC', () {
+        var now = DateTime.now().toUtc();
+        var binaryReader = BinaryReaderMock();
+        when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
+        when(binaryReader.readBool()).thenReturn(true);
+
+        var date = DateTimeWithTimezoneAdapter().read(binaryReader);
+        verifyInOrder([binaryReader.readInt(), binaryReader.readBool()]);
+        expect(date, now.subtract(Duration(microseconds: now.microsecond)));
+        expect(date.isUtc, true);
+      });
+    });
+
+    group('.write()', () {
+      test('local', () {
+        var now = DateTime.now();
+        var binaryWriter = BinaryWriterMock();
+
+        DateTimeWithTimezoneAdapter().write(binaryWriter, now);
+        verifyInOrder([
+          binaryWriter.writeInt(now.millisecondsSinceEpoch),
+          binaryWriter.writeBool(false),
+        ]);
+      });
+
+      test('UTC', () {
+        var now = DateTime.now().toUtc();
+        var binaryWriter = BinaryWriterMock();
+
+        DateTimeWithTimezoneAdapter().write(binaryWriter, now);
+        verifyInOrder([
+          binaryWriter.writeInt(now.millisecondsSinceEpoch),
+          binaryWriter.writeBool(true),
+        ]);
+      });
+    });
+  });
 }

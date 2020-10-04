@@ -29,7 +29,7 @@ void main() {
 
       expect(
         hive.findAdapterForValue(DateTime.now()).adapter,
-        isA<DateTimeAdapter>(),
+        isA<DateTimeWithTimezoneAdapter>(),
       );
       expect(hive.findAdapterForTypeId(16).adapter, isA<DateTimeAdapter>());
     });
