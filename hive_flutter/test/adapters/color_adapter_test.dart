@@ -15,7 +15,7 @@ void main() {
 
       final readColor = ColorAdapter().read(binaryReader);
       verify(binaryReader.readInt());
-      expect(readColor, readColor);
+      expect(readColor, color);
     });
 
     test('.write()', () {
