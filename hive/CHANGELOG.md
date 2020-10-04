@@ -1,3 +1,8 @@
+# 1.5.0-pre
+
+### Enhancements
+- Timezone support for DateTime - [#419](https://github.com/hivedb/hive/issues/419)
+
 # 1.4.4+1
 
 ### Fixes
