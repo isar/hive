@@ -38,9 +38,7 @@ class ClassBuilder extends Builder {
     // The remaining fields to initialize.
     var fields = setters.toList();
 
-    var initializingParams =
-        constr.parameters.where((param) => param.isInitializingFormal);
-    for (var param in initializingParams) {
+    for (var param in constr.parameters) {
       var field = fields.firstOrNullWhere((it) => it.name == param.name);
       // Final fields
       field ??= getters.firstOrNullWhere((it) => it.name == param.name);
@@ -76,7 +74,7 @@ class ClassBuilder extends Builder {
     } else if (mapChecker.isExactlyType(type)) {
       return '($variable as Map)${_castMap(type)}';
     } else {
-      return '$variable as ${type.getDisplayString(withNullability: false)}';
+      return '$variable as ${_displayString(type)}';
     }
   }
 
@@ -103,7 +101,7 @@ class ClassBuilder extends Builder {
       }
       return '?.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
     } else {
-      return '?.cast<${arg.getDisplayString(withNullability: false)}>()';
+      return '?.cast<${_displayString(arg)}>()';
     }
   }
 
@@ -115,8 +113,8 @@ class ClassBuilder extends Builder {
       return '?.map((dynamic k, dynamic v)=>'
           'MapEntry(${_cast(arg1, 'k')},${_cast(arg2, 'v')}))';
     } else {
-      return '?.cast<${arg1.getDisplayString(withNullability: false)}, '
-          '${arg2.getDisplayString(withNullability: false)}>()';
+      return '?.cast<${_displayString(arg1)}, '
+          '${_displayString(arg2)}>()';
     }
   }
 
@@ -141,6 +139,18 @@ class ClassBuilder extends Builder {
       return '$accessor?.toList()';
     } else {
       return accessor;
+    }
+  }
+}
+
+String _displayString(dynamic e) {
+  try {
+    return e.getDisplayString(withNullability: false) as String;
+  } catch (error) {
+    if (error is TypeError) {
+      return e.getDisplayString() as String;
+    } else {
+      rethrow;
     }
   }
 }
