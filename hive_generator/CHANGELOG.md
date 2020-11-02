@@ -1,3 +1,7 @@
+## 0.8.2
+- Inheritance support. Fixes [#442](https://github.com/hivedb/hive/issues/442)
+- Support for both older and newer analyzer versions
+
 ## 0.8.1
 - Fixes [#455](https://github.com/hivedb/hive/issues/455)
 
