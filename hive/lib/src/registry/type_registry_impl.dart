@@ -33,7 +33,11 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   @override
-  void registerAdapter<T>(TypeAdapter<T> adapter, {bool internal = false}) {
+  void registerAdapter<T>(
+    TypeAdapter<T> adapter, {
+    bool internal = false,
+    bool override = false,
+  }) {
     var typeId = adapter.typeId;
     if (!internal) {
       if (typeId < 0 || typeId > 223) {
@@ -41,9 +45,20 @@ class TypeRegistryImpl implements TypeRegistry {
       }
       typeId = typeId + reservedTypeIds;
 
-      if (findAdapterForTypeId(typeId) != null) {
-        throw HiveError('There is already a TypeAdapter for '
-            'typeId ${typeId - reservedTypeIds}.');
+      var oldAdapter = findAdapterForTypeId(typeId);
+      if (oldAdapter != null) {
+        if (override) {
+          print(
+            'You are trying to override ${oldAdapter.runtimeType.toString()}'
+            'with ${adapter.runtimeType.toString()} for typeId: '
+            '${adapter.typeId}. Please note that overriding adapters might '
+            'cause weird errors. Try to avoid overriding adapters unless not '
+            'required.',
+          );
+        } else {
+          throw HiveError('There is already a TypeAdapter for '
+              'typeId ${typeId - reservedTypeIds}.');
+        }
       }
     }
 
