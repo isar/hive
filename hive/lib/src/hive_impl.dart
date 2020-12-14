@@ -55,9 +55,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   void init(String path) {
+    if (homePath != null) {
+      throw HiveError('Instance has already been initialized.');
+    }
     homePath = path;
-
-    _boxes.clear();
   }
 
   Future<BoxBase<E>> _openBox<E>(
