@@ -1,6 +1,6 @@
 name: hive
 description: Lightweight and blazing fast key-value database written in pure Dart. Strongly encrypted using AES-256.
-version: 1.5.0-pre
+version: 2.0.0-nullsafety.0
 homepage: https://github.com/hivedb/hive/tree/master/hive
 documentation: https://docs.hivedb.dev/
 
@@ -18,3 +18,7 @@ dev_dependencies:
   dartx: ">=0.2.0 <1.0.0"
   path: ^1.7.0
   pointycastle: ^2.0.0
+
+dependency_overrides: 
+  crypto:
+    git: https://github.com/dart-lang/crypto.git
