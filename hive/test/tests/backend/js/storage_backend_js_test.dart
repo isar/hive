@@ -16,18 +16,18 @@ import 'package:test/test.dart';
 import '../../frames.dart';
 
 StorageBackendJs _getBackend({
-  Database db,
-  HiveCipher cipher,
-  TypeRegistry registry,
+  required Database db,
+  HiveCipher? cipher,
+  required TypeRegistry registry,
 }) {
   return StorageBackendJs(db, cipher, registry);
 }
 
 Future<Database> _openDb() async {
-  return await window.indexedDB.open('testBox', version: 1,
+  return await window.indexedDB!.open('testBox', version: 1,
       onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
-    if (!db.objectStoreNames.contains('box')) {
+    if (!db.objectStoreNames!.contains('box')) {
       db.createObjectStore('box');
     }
   });

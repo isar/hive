@@ -9,11 +9,11 @@ import 'package:hive/src/backend/storage_backend.dart';
 class BackendManager implements BackendManagerInterface {
   @override
   Future<StorageBackend> open(
-      String name, String/*?*/ path, bool crashRecovery, HiveCipher/*?*/ cipher) async {
+      String name, String? path, bool crashRecovery, HiveCipher? cipher) async {
     var db =
-        await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
+        await window.indexedDB!.open(name, version: 1, onUpgradeNeeded: (e) {
       var db = e.target.result as Database;
-      if (!db.objectStoreNames.contains('box')) {
+      if (!db.objectStoreNames!.contains('box')) {
         db.createObjectStore('box');
       }
     });
@@ -23,16 +23,16 @@ class BackendManager implements BackendManagerInterface {
 
   @override
   Future<void> deleteBox(String name, String path) {
-    return window.indexedDB.deleteDatabase(name);
+    return window.indexedDB!.deleteDatabase(name);
   }
 
   @override
-  Future<bool> boxExists(String name, String path) async {
+  Future<bool> boxExists(String name, String? path) async {
     // https://stackoverflow.com/a/17473952
     try {
       var _exists = true;
-      await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
-        e.target.transaction.abort();
+      await window.indexedDB!.open(name, version: 1, onUpgradeNeeded: (e) {
+        e.target.transaction!.abort();
         _exists = false;
       });
       return _exists;

@@ -6,7 +6,7 @@ abstract class HiveCollection<E extends HiveObject> implements List<E> {
   BoxBase get box;
 
   /// The keys of all the objects in this collection.
-  Iterable<dynamic>/*!*/ get keys;
+  Iterable<dynamic> get keys;
 
   /// Delete all objects in this collection from Hive.
   Future<void> deleteAllFromHive();

@@ -20,7 +20,7 @@ class TypeRegistryImpl implements TypeRegistry {
   final _typeAdapters = <int, _ResolvedAdapter>{};
 
   /// Not part of public API
-  _ResolvedAdapter findAdapterForValue(dynamic value) {
+  _ResolvedAdapter? findAdapterForValue(dynamic value) {
     for (var adapter in _typeAdapters.values) {
       if (adapter.matches(value)) return adapter;
     }
@@ -28,7 +28,7 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   /// Not part of public API
-  _ResolvedAdapter findAdapterForTypeId(int typeId) {
+  _ResolvedAdapter? findAdapterForTypeId(int typeId) {
     return _typeAdapters[typeId];
   }
 

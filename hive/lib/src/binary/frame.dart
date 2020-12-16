@@ -16,7 +16,7 @@ class Frame {
   final bool lazy;
 
   /// Not part of public API
-  int length;
+  int? length;
 
   /// Not part of public API
   int offset = -1;

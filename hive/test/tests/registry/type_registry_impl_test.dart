@@ -41,7 +41,7 @@ void main() {
         var adapter = TestAdapter();
         registry.registerAdapter(adapter);
 
-        var resolved = registry.findAdapterForValue(123);
+        var resolved = registry.findAdapterForValue(123)!;
         expect(resolved.typeId, 32);
         expect(resolved.adapter, adapter);
       });
@@ -67,7 +67,7 @@ void main() {
       var adapter = TestAdapter();
       registry.registerAdapter(adapter);
 
-      var resolvedAdapter = registry.findAdapterForTypeId(32);
+      var resolvedAdapter = registry.findAdapterForTypeId(32)!;
       expect(resolvedAdapter.typeId, 32);
       expect(resolvedAdapter.adapter, adapter);
     });
@@ -78,7 +78,7 @@ void main() {
         var adapter = TestAdapter();
         registry.registerAdapter(adapter);
 
-        var resolvedAdapter = registry.findAdapterForValue(123);
+        var resolvedAdapter = registry.findAdapterForValue(123)!;
         expect(resolvedAdapter.typeId, 32);
         expect(resolvedAdapter.adapter, adapter);
       });
@@ -90,7 +90,7 @@ void main() {
         registry.registerAdapter(adapter1);
         registry.registerAdapter(adapter2);
 
-        var resolvedAdapter = registry.findAdapterForValue(123);
+        var resolvedAdapter = registry.findAdapterForValue(123)!;
         expect(resolvedAdapter.typeId, 32);
         expect(resolvedAdapter.adapter, adapter1);
       });
@@ -133,7 +133,7 @@ void main() {
       test('registers IgnoredTypeAdapter', () {
         var registry = TypeRegistryImpl();
         registry.ignoreTypeId(0);
-        var resolved = registry.findAdapterForTypeId(32);
+        var resolved = registry.findAdapterForTypeId(32)!;
         expect(resolved.adapter is IgnoredTypeAdapter, true);
       });
 

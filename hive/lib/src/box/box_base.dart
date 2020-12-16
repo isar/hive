@@ -43,7 +43,7 @@ abstract class BoxBase<E> {
   bool get isOpen;
 
   /// The location of the box in the file system. In the browser, this is null.
-  String get path;
+  String? get path;
 
   /// Whether this box is lazy or not.
   ///
@@ -105,7 +105,7 @@ abstract class BoxBase<E> {
   /// Deletes all the given [keys] from the box.
   ///
   /// If a key does not exist, it is skipped.
-  Future<void> deleteAll(Iterable<dynamic>/*!*/ keys);
+  Future<void> deleteAll(Iterable<dynamic> keys);
 
   /// Induces compaction manually. This is rarely needed. You should consider
   /// providing a custom compaction strategy instead.

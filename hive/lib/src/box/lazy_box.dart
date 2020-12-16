@@ -8,8 +8,8 @@ abstract class LazyBox<E> extends BoxBase<E> {
   ///
   /// If [defaultValue] is specified, it is returned in case the key does not
   /// exist.
-  Future<E/*?*/> get(dynamic key, {E defaultValue});
+  Future<E?> get(dynamic key, {E? defaultValue});
 
   /// Returns the value associated with the n-th key.
-  Future<E/*?*/> getAt(int index);
+  Future<E?> getAt(int index);
 }

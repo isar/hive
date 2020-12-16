@@ -17,7 +17,7 @@ class KeyTransaction<E> {
   final List<dynamic> added = [];
 
   /// The frames that have been deleted
-  final Map<dynamic, Frame/*!*/> deleted = HashMap();
+  final Map<dynamic, Frame> deleted = HashMap();
 
   /// Not part of public API
   @visibleForTesting
@@ -26,11 +26,11 @@ class KeyTransaction<E> {
 
 /// Not part of public API
 class Keystore<E> {
-  final BoxBase<E>/*!*/ _box;
+  final BoxBase<E> _box;
 
   final ChangeNotifier _notifier;
 
-  final IndexableSkipList<dynamic, Frame/*!*/> _store;
+  final IndexableSkipList<dynamic, Frame> _store;
 
   /// Not part of public API
   @visibleForTesting
@@ -40,14 +40,14 @@ class Keystore<E> {
   var _autoIncrement = -1;
 
   /// Not part of public API
-  Keystore(this._box, this._notifier, KeyComparator keyComparator)
+  Keystore(this._box, this._notifier, KeyComparator? keyComparator)
       : _store = IndexableSkipList(keyComparator ?? defaultKeyComparator);
 
   /// Not part of public API
   factory Keystore.debug({
     Iterable<Frame> frames = const [],
-    BoxBase<E> box,
-    ChangeNotifier notifier,
+    required BoxBase<E> box,
+    ChangeNotifier? notifier,
     KeyComparator keyComparator = defaultKeyComparator,
   }) {
     var keystore =
@@ -101,14 +101,14 @@ class Keystore<E> {
   /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  Frame get(dynamic key) {
+  Frame? get(dynamic key) {
     return _store.get(key);
   }
 
   /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  Frame/*?*/ getAt(int index) {
+  Frame? getAt(int index) {
     return _store.getAt(index);
   }
 
@@ -118,8 +118,8 @@ class Keystore<E> {
   }
 
   /// Not part of public API
-  Iterable<E/*!*/> getValues() {
-    return _store.values.map((e) => e.value as E);
+  Iterable<E> getValues() {
+    return _store.values.map(((e) => (e.value as E?)!) as E Function(Frame));
   }
 
   /// Not part of public API
@@ -132,7 +132,7 @@ class Keystore<E> {
     }
 
     for (var frame in iterable) {
-      yield frame.value as E;
+      yield (frame.value as E?)!;
 
       if (frame.key == endKey) break;
     }
@@ -144,9 +144,9 @@ class Keystore<E> {
   }
 
   /// Not part of public API
-  Frame insert(Frame frame, {bool notify = true}) {
+  Frame? insert(Frame frame, {bool notify = true}) {
     var value = frame.value;
-    Frame deletedFrame;
+    Frame? deletedFrame;
 
     if (!frame.deleted) {
       var key = frame.key;
@@ -214,17 +214,17 @@ class Keystore<E> {
       var deletedFrame = canceled.deleted[key];
       for (var t in transactions) {
         if (t.deleted.containsKey(key)) {
-          t.deleted[key] = deletedFrame;
+          t.deleted[key] = deletedFrame!;
           continue deleted_loop;
         }
         if (t.added.contains(key)) {
-          t.deleted[key] = deletedFrame;
+          t.deleted[key] = deletedFrame!;
           continue deleted_loop;
         }
       }
 
       _store.insert(key, deletedFrame);
-      _notifier.notify(deletedFrame);
+      _notifier.notify(deletedFrame!);
     }
 
     added_loop:
@@ -257,7 +257,7 @@ class Keystore<E> {
     for (var frame in frameList) {
       if (frame.value is HiveObject) {
         // ignore: invalid_use_of_protected_member
-        (frame.value as HiveObject/*!*/).dispose();
+        (frame.value as HiveObject).dispose();
       }
       _notifier.notify(Frame.deleted(frame.key));
     }

@@ -8,24 +8,24 @@ import 'package:hive/src/box/keystore.dart';
 
 /// In-memory Storage backend
 class StorageBackendMemory extends StorageBackend {
-  final HiveCipher _cipher;
+  final HiveCipher? _cipher;
 
   final FrameHelper _frameHelper;
 
-  Uint8List/*!*/ _bytes;
+  Uint8List _bytes;
 
   /// Not part of public API
   StorageBackendMemory(this._bytes, this._cipher)
       : _frameHelper = FrameHelper();
 
   @override
-  String get path => null;
+  String? get path => null;
 
   @override
   bool supportsCompaction = false;
 
   @override
-  Future<void> initialize(TypeRegistry registry, Keystore keystore, bool lazy) {
+  Future<void> initialize(TypeRegistry registry, Keystore? keystore, bool lazy) {
     var recoveryOffset =
         _frameHelper.framesFromBytes(_bytes, keystore, registry, _cipher);
 

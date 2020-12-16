@@ -358,7 +358,7 @@ void main() {
         frames.forEachIndexed((frame, i) {
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
           expectFrame(
-            reader.readFrame(lazy: false, frameOffset: offset),
+            reader.readFrame(lazy: false, frameOffset: offset)!,
             frame,
           );
           offset += frameBytes[i].length;
@@ -371,7 +371,7 @@ void main() {
         frames.forEachIndexed((frame, i) {
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
           expectFrame(
-            reader.readFrame(lazy: true, frameOffset: offset),
+            reader.readFrame(lazy: true, frameOffset: offset)!,
             frame.toLazy(),
           );
           offset += frameBytes[i].length;
@@ -388,7 +388,7 @@ void main() {
               lazy: false,
               frameOffset: offset,
               cipher: testCipher,
-            ),
+            )!,
             frame,
           );
           offset += frameBytesEncrypted[i].length;
@@ -405,7 +405,7 @@ void main() {
               lazy: true,
               frameOffset: offset,
               cipher: testCipher,
-            ),
+            )!,
             frame.toLazy(),
           );
           offset += frameBytesEncrypted[i].length;

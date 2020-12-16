@@ -19,14 +19,14 @@ Future<HiveImpl> createHive() async {
 }
 
 Future<BoxBase<T>> openBox<T>(bool lazy,
-    {HiveInterface hive, List<int> encryptionKey}) async {
+    {HiveInterface? hive, List<int>? encryptionKey}) async {
   hive ??= HiveImpl();
   if (!isBrowser) {
     var dir = await getTempDir();
     hive.init(dir.path);
   }
   var id = Random().nextInt(99999999);
-  HiveCipher cipher;
+  HiveCipher? cipher;
   if (encryptionKey != null) {
     cipher = HiveAesCipher(encryptionKey);
   }
@@ -39,11 +39,11 @@ Future<BoxBase<T>> openBox<T>(bool lazy,
   }
 }
 
-extension BoxBaseX<T> on BoxBase<T> {
-  Future<BoxBase<T>> reopen({List<int> encryptionKey}) async {
+extension BoxBaseX<T> on BoxBase<T?> {
+  Future<BoxBase<T>> reopen({List<int>? encryptionKey}) async {
     await close();
     var hive = (this as BoxBaseImpl).hive;
-    HiveCipher cipher;
+    HiveCipher? cipher;
     if (encryptionKey != null) {
       cipher = HiveAesCipher(encryptionKey);
     }

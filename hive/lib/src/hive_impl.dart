@@ -27,7 +27,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   /// Not part of public API
   @visibleForTesting
-  String homePath;
+  String? homePath;
 
   /// Not part of public API
   HiveImpl() : _manager = BackendManager() {
@@ -64,12 +64,12 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<BoxBase<E>> _openBox<E>(
     String name,
     bool lazy,
-    HiveCipher cipher,
+    HiveCipher? cipher,
     KeyComparator comparator,
     CompactionStrategy compaction,
     bool recovery,
-    String path,
-    Uint8List bytes,
+    String? path,
+    Uint8List? bytes,
   ) async {
     assert(comparator != null);
     assert(compaction != null);
@@ -130,13 +130,13 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @override
   Future<Box<E>> openBox<E>(
     String name, {
-    HiveCipher encryptionCipher,
+    HiveCipher? encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
-    String path,
-    Uint8List bytes,
-    @deprecated List<int> encryptionKey,
+    String? path,
+    Uint8List? bytes,
+    @deprecated List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
@@ -148,12 +148,12 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @override
   Future<LazyBox<E>> openLazyBox<E>(
     String name, {
-    HiveCipher encryptionCipher,
+    HiveCipher? encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
-    String path,
-    @deprecated List<int> encryptionKey,
+    String? path,
+    @deprecated List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
@@ -162,7 +162,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
   }
 
-  BoxBase<E> _getBoxInternal<E>(String name, [bool lazy]) {
+  BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy]) {
     var lowerCaseName = name.toLowerCase();
     var box = _boxes[lowerCaseName];
     if (box != null) {
@@ -181,7 +181,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   /// Not part of public API
-  BoxBase getBoxWithoutCheckInternal(String name) {
+  BoxBase? getBoxWithoutCheckInternal(String name) {
     var lowerCaseName = name.toLowerCase();
     return _boxes[lowerCaseName];
   }
@@ -215,7 +215,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<void> deleteBoxFromDisk(String name, {String path}) async {
+  Future<void> deleteBoxFromDisk(String name, {String? path}) async {
     var lowerCaseName = name.toLowerCase();
     var box = _boxes[lowerCaseName];
     if (box != null) {
@@ -240,7 +240,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<bool> boxExists(String name, {String path}) async {
+  Future<bool> boxExists(String name, {String? path}) async {
     var lowerCaseName = name.toLowerCase();
     return await _manager.boxExists(lowerCaseName, path ?? homePath);
   }

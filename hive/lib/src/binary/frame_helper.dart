@@ -7,8 +7,8 @@ import 'package:hive/src/box/keystore.dart';
 /// Not part of public API
 class FrameHelper {
   /// Not part of public API
-  int framesFromBytes(Uint8List bytes, Keystore keystore, TypeRegistry registry,
-      HiveCipher cipher) {
+  int framesFromBytes(Uint8List bytes, Keystore? keystore, TypeRegistry registry,
+      HiveCipher? cipher) {
     var reader = BinaryReaderImpl(bytes, registry);
 
     while (reader.availableBytes != 0) {
@@ -21,7 +21,7 @@ class FrameHelper {
       );
       if (frame == null) return frameOffset;
 
-      keystore.insert(frame, notify: false);
+      keystore!.insert(frame, notify: false);
     }
 
     return -1;

@@ -13,13 +13,13 @@ abstract class HiveInterface implements TypeRegistry {
   /// parameters are being ignored.
   Future<Box<E>> openBox<E>(
     String name, {
-    HiveCipher encryptionCipher,
+    HiveCipher? encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
-    String path,
-    Uint8List bytes,
-    @deprecated List<int> encryptionKey,
+    String? path,
+    Uint8List? bytes,
+    @deprecated List<int>? encryptionKey,
   });
 
   /// Opens a lazy box.
@@ -28,12 +28,12 @@ abstract class HiveInterface implements TypeRegistry {
   /// parameters are being ignored.
   Future<LazyBox<E>> openLazyBox<E>(
     String name, {
-    HiveCipher encryptionCipher,
+    HiveCipher? encryptionCipher,
     KeyComparator keyComparator = defaultKeyComparator,
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
-    String path,
-    @deprecated List<int> encryptionKey,
+    String? path,
+    @deprecated List<int>? encryptionKey,
   });
 
   /// Returns a previously opened box.

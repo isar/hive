@@ -30,7 +30,7 @@ abstract class BinaryWriter {
   void writeString(
     String value, {
     bool writeByteCount = true,
-    Converter<String/*!*/, List<int>> encoder = utf8Encoder,
+    Converter<String, List<int>> encoder = utf8Encoder,
   });
 
   /// Write a list of [bytes].

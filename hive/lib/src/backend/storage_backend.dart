@@ -9,7 +9,7 @@ export 'package:hive/src/backend/stub/backend_manager.dart'
 /// Abstract storage backend
 abstract class StorageBackend {
   /// The path where the database is stored
-  String get path;
+  String? get path;
 
   /// Whether the database can be compacted
   bool get supportsCompaction;
@@ -24,7 +24,7 @@ abstract class StorageBackend {
   Future<void> writeFrames(List<Frame> frames);
 
   /// Compact database
-  Future<void> compact(Iterable<Frame/*!*/> frames);
+  Future<void> compact(Iterable<Frame> frames);
 
   /// Clear database
   Future<void> clear();

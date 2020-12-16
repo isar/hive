@@ -12,7 +12,7 @@ class BufferedFileReader {
 
   /// Not part of public API
   @visibleForTesting
-  final RandomAccessFile/*!*/ file;
+  final RandomAccessFile file;
 
   /// Not part of public API
   @visibleForTesting

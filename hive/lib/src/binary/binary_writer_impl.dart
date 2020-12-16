@@ -13,22 +13,22 @@ import 'package:meta/meta.dart';
 class BinaryWriterImpl extends BinaryWriter {
   static const _initBufferSize = 256;
 
-  final TypeRegistryImpl/*!*/ _typeRegistry;
+  final TypeRegistryImpl _typeRegistry;
   Uint8List _buffer = Uint8List(_initBufferSize);
 
-  ByteData _byteDataInstance;
+  ByteData? _byteDataInstance;
 
   int _offset = 0;
 
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  ByteData/*!*/ get _byteData {
+  ByteData get _byteData {
     _byteDataInstance ??= ByteData.view(_buffer.buffer);
-    return _byteDataInstance;
+    return _byteDataInstance!;
   }
 
   /// Not part of public API
-  BinaryWriterImpl(TypeRegistry/*!*/ typeRegistry)
+  BinaryWriterImpl(TypeRegistry typeRegistry)
       : _typeRegistry = typeRegistry as TypeRegistryImpl;
 
   /// Not part of public API
@@ -64,7 +64,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   @override
-  void writeByte(int/*!*/ byte) {
+  void writeByte(int byte) {
     if (byte == null) {
       throw ArgumentError.notNull();
     }
@@ -80,7 +80,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeInt32(int/*!*/ value) {
+  void writeInt32(int value) {
     if (value == null) {
       throw ArgumentError.notNull();
     }
@@ -104,7 +104,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void writeDouble(double/*!*/ value) {
+  void writeDouble(double value) {
     if (value == null) {
       throw ArgumentError.notNull();
     }
@@ -120,9 +120,9 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeString(
-    String/*!*/ value, {
+    String value, {
     bool writeByteCount = true,
-    Converter<String/*!*/, List<int>> encoder = BinaryWriter.utf8Encoder,
+    Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
   }) {
     var bytes = encoder.convert(value);
     if (writeByteCount) {
@@ -242,7 +242,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   /// Not part of public API
-  int writeFrame(Frame frame, {HiveCipher cipher}) {
+  int writeFrame(Frame frame, {HiveCipher? cipher}) {
     var startOffset = _offset;
     _reserveBytes(4);
     _offset += 4; // reserve bytes for length
@@ -272,7 +272,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void write<T>(T/*?*/ value, {bool writeTypeId = true}) {
+  void write<T>(T? value, {bool writeTypeId = true}) {
     if (value == null) {
       if (writeTypeId) {
         writeByte(FrameValueType.nullT);

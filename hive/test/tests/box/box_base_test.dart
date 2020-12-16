@@ -14,10 +14,10 @@ import '../mocks.dart';
 
 class _BoxBaseMock extends BoxBaseImpl with Mock {
   _BoxBaseMock(
-    HiveImpl hive,
-    String name,
-    CompactionStrategy cStrategy,
-    StorageBackend backend,
+    HiveImpl? hive,
+    String? name,
+    CompactionStrategy? cStrategy,
+    StorageBackend? backend,
   ) : super(
           hive ?? HiveImpl(),
           name ?? 'testBox',
@@ -28,11 +28,11 @@ class _BoxBaseMock extends BoxBaseImpl with Mock {
 }
 
 _BoxBaseMock _openBoxBaseMock({
-  HiveImpl hive,
-  String name,
-  Keystore keystore,
-  CompactionStrategy cStrategy,
-  StorageBackend backend,
+  HiveImpl? hive,
+  String? name,
+  Keystore? keystore,
+  CompactionStrategy? cStrategy,
+  StorageBackend? backend,
 }) {
   var mock = _BoxBaseMock(hive, name, cStrategy, backend);
   mock.keystore = keystore ?? Keystore(mock, ChangeNotifier(), null);
@@ -133,7 +133,7 @@ void main() {
       var backend = BackendMock();
       var box = _openBoxBaseMock(backend: backend);
 
-      when(backend.initialize(any, any, any)).thenAnswer((i) async {
+      when(backend.initialize(any!, any!, any!)).thenAnswer((i) async {
         i.positionalArguments[1].insert(Frame('key1', 1));
       });
 

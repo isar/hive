@@ -23,7 +23,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   /// Not part of public API
   @protected
   @visibleForTesting
-  Keystore<E>/*!*/ keystore;
+  Keystore<E> keystore;
 
   bool _open = true;
 
@@ -31,7 +31,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   BoxBaseImpl(
     this.hive,
     this.name,
-    KeyComparator keyComparator,
+    KeyComparator? keyComparator,
     this._compactionStrategy,
     this.backend,
   ) {
@@ -45,7 +45,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   bool get isOpen => _open;
 
   @override
-  String get path => backend.path;
+  String? get path => backend.path;
 
   @override
   Iterable<dynamic> get keys {
@@ -82,7 +82,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   @override
   dynamic keyAt(int index) {
     checkOpen();
-    return keystore.getAt(index).key;
+    return keystore.getAt(index)!.key;
   }
 
   /// Not part of public API
@@ -121,12 +121,12 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
 
   @override
   Future<void> putAt(int index, E value) {
-    return putAll({keystore.getAt(index).key: value});
+    return putAll({keystore.getAt(index)!.key: value});
   }
 
   @override
   Future<void> deleteAt(int index) {
-    return deleteAll([keystore.getAt(index).key]);
+    return deleteAll([keystore.getAt(index)!.key]);
   }
 
   @override

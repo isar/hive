@@ -36,15 +36,15 @@ Uint8List getFrameBytes(Iterable<Frame> frames) {
 }
 
 StorageBackendVm _getBackend({
-  File file,
-  File lockFile,
+  File? file,
+  File? lockFile,
   bool crashRecovery = false,
-  HiveCipher cipher,
-  FrameIoHelper ioHelper,
-  TypeRegistry registry,
-  ReadWriteSync sync,
-  RandomAccessFile readRaf,
-  RandomAccessFile writeRaf,
+  HiveCipher? cipher,
+  FrameIoHelper? ioHelper,
+  TypeRegistry? registry,
+  ReadWriteSync? sync,
+  required RandomAccessFile readRaf,
+  required RandomAccessFile writeRaf,
 }) {
   return StorageBackendVm.debug(
     file ?? FileMock(),
@@ -109,10 +109,10 @@ void main() {
 
       FrameIoHelper getFrameIoHelper(int recoveryOffset) {
         var helper = FrameIoHelperMock();
-        when(helper.framesFromFile(any, any, any, any)).thenAnswer((i) {
+        when(helper.framesFromFile(any!, any!, any!, any)).thenAnswer((i) {
           return Future.value(recoveryOffset);
         });
-        when(helper.keysFromFile(any, any, any)).thenAnswer((i) {
+        when(helper.keysFromFile(any!, any!, any)).thenAnswer((i) {
           return Future.value(recoveryOffset);
         });
         return helper;
@@ -224,7 +224,7 @@ void main() {
 
       test('resets writeOffset on error', () async {
         var writeRaf = RAFMock();
-        when(writeRaf.writeFrom(any)).thenThrow('error');
+        when(writeRaf.writeFrom(any!)).thenThrow('error');
         var backend = _getBackend(writeRaf: writeRaf);
         backend.writeOffset = 123;
 
