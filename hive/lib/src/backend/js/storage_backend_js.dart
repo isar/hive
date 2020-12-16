@@ -10,6 +10,7 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Handles all IndexedDB related tasks
@@ -21,7 +22,8 @@ class StorageBackendJs extends StorageBackend {
   TypeRegistry _registry;
 
   /// Not part of public API
-  StorageBackendJs(this._db, this._cipher, [this._registry]);
+  StorageBackendJs(this._db, this._cipher,
+      [this._registry = TypeRegistryImpl.nullImpl]);
 
   @override
   String? get path => null;

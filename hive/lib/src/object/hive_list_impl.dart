@@ -128,7 +128,7 @@ class HiveListImpl<E extends HiveObject>
     List<E> delegate = this.delegate;
     if (newLength < delegate.length) {
       for (var i = newLength; i < delegate.length; i++) {
-        delegate[i]?.unlinkHiveList(this);
+        delegate[i].unlinkHiveList(this);
       }
     }
     delegate.length = newLength;
@@ -142,7 +142,7 @@ class HiveListImpl<E extends HiveObject>
     var oldValue = delegate[index];
     delegate[index] = value;
 
-    oldValue?.unlinkHiveList(this);
+    oldValue.unlinkHiveList(this);
   }
 
   @override

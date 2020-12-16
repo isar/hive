@@ -62,7 +62,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   Iterable<E> getRange(int start, int end) => delegate.getRange(start, end);
 
   @override
-  int indexOf(Object element, [int start = 0]) =>
+  int indexOf(Object? element, [int start = 0]) =>
       delegate.indexOf(element as E, start);
 
   @override
@@ -82,7 +82,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   String join([String separator = '']) => delegate.join(separator);
 
   @override
-  int lastIndexOf(Object element, [int? start]) =>
+  int lastIndexOf(Object? element, [int? start]) =>
       delegate.lastIndexOf(element as E, start);
 
   @override

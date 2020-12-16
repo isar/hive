@@ -6,6 +6,7 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Not part of public API
@@ -87,7 +88,7 @@ class _KeyReader {
   Future<int> _load(int bytes) async {
     var loadedBytes = await fileReader.loadBytes(bytes);
     var buffer = fileReader.peekBytes(loadedBytes);
-    _reader = BinaryReaderImpl(buffer, null);
+    _reader = BinaryReaderImpl(buffer, TypeRegistryImpl.nullImpl);
 
     return loadedBytes;
   }

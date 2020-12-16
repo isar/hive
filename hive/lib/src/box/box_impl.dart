@@ -22,7 +22,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   final bool lazy = false;
 
   @override
-  Iterable<E?> get values {
+  Iterable<E> get values {
     checkOpen();
 
     return keystore.getValues();
@@ -96,11 +96,10 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
-  // TODO(KalilDev): manually migrate
-  Map<dynamic, E?> toMap() {
-    var map = <dynamic, E?>{};
+  Map<dynamic, E> toMap() {
+    var map = <dynamic, E>{};
     for (var frame in keystore.frames) {
-      map[frame.key] = frame.value as E?;
+      map[frame.key] = frame.value as E;
     }
     return map;
   }

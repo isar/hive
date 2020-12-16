@@ -232,16 +232,17 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     var boxNameLength = readByte();
     var boxName = String.fromCharCodes(viewBytes(boxNameLength));
-    var keys = List<dynamic>(length);
+    var keys = [];
     for (var i = 0; i < length; i++) {
-      keys[i] = readKey();
+      keys.add(readKey());
     }
 
     return HiveListImpl.lazy(boxName, keys);
   }
 
   /// Not part of public API
-  Frame? readFrame({HiveCipher? cipher, bool lazy = false, required int frameOffset}) {
+  Frame? readFrame(
+      {HiveCipher? cipher, bool lazy = false, int frameOffset = 0}) {
     if (availableBytes < 4) return null;
 
     var frameLength = readUint32();
