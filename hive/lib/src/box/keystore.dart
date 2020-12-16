@@ -17,7 +17,7 @@ class KeyTransaction<E> {
   final List<dynamic> added = [];
 
   /// The frames that have been deleted
-  final Map<dynamic, Frame> deleted = HashMap();
+  final Map<dynamic, Frame/*!*/> deleted = HashMap();
 
   /// Not part of public API
   @visibleForTesting
@@ -26,11 +26,11 @@ class KeyTransaction<E> {
 
 /// Not part of public API
 class Keystore<E> {
-  final BoxBase<E> _box;
+  final BoxBase<E>/*!*/ _box;
 
   final ChangeNotifier _notifier;
 
-  final IndexableSkipList<dynamic, Frame> _store;
+  final IndexableSkipList<dynamic, Frame/*!*/> _store;
 
   /// Not part of public API
   @visibleForTesting
@@ -108,7 +108,7 @@ class Keystore<E> {
   /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  Frame getAt(int index) {
+  Frame/*?*/ getAt(int index) {
     return _store.getAt(index);
   }
 
@@ -118,7 +118,7 @@ class Keystore<E> {
   }
 
   /// Not part of public API
-  Iterable<E> getValues() {
+  Iterable<E/*!*/> getValues() {
     return _store.values.map((e) => e.value as E);
   }
 
@@ -257,7 +257,7 @@ class Keystore<E> {
     for (var frame in frameList) {
       if (frame.value is HiveObject) {
         // ignore: invalid_use_of_protected_member
-        (frame.value as HiveObject).dispose();
+        (frame.value as HiveObject/*!*/).dispose();
       }
       _notifier.notify(Frame.deleted(frame.key));
     }

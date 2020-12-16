@@ -9,7 +9,7 @@ import 'package:meta/meta.dart';
 
 /// Not part of public API
 class HiveListImpl<E extends HiveObject>
-    with HiveCollectionMixin<E>, ListMixin<E>, DelegatingListViewMixin<E>
+    with HiveCollectionMixin<E>, ListMixin<E>, DelegatingListViewMixin<E/*!*/>
     implements HiveList<E> {
   /// Not part of public API
   final String boxName;
@@ -50,7 +50,7 @@ class HiveListImpl<E extends HiveObject>
   }
 
   @override
-  Box get box {
+  Box/*!*/ get box {
     if (_box == null) {
       var box = (_hive as HiveImpl).getBoxWithoutCheckInternal(boxName);
       if (box == null) {
@@ -67,7 +67,7 @@ class HiveListImpl<E extends HiveObject>
   }
 
   @override
-  List<E> get delegate {
+  List<E/*!*/> get delegate {
     if (_disposed) {
       throw HiveError('HiveList has already been disposed.');
     }

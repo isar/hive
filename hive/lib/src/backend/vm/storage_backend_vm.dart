@@ -25,11 +25,11 @@ class StorageBackendVm extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  RandomAccessFile readRaf;
+  RandomAccessFile/*!*/ readRaf;
 
   /// Not part of public API
   @visibleForTesting
-  RandomAccessFile writeRaf;
+  RandomAccessFile/*!*/ writeRaf;
 
   /// Not part of public API
   @visibleForTesting
@@ -41,7 +41,7 @@ class StorageBackendVm extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  TypeRegistry registry;
+  TypeRegistry/*!*/ registry;
 
   bool _compactionScheduled = false;
 

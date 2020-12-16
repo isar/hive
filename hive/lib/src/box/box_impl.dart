@@ -8,7 +8,7 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_object.dart';
 
 /// Not part of public API
-class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
+class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E/*!*/> {
   /// Not part of public API
   BoxImpl(
     HiveImpl hive,
@@ -22,7 +22,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   final bool lazy = false;
 
   @override
-  Iterable<E> get values {
+  Iterable<E/*?*/> get values {
     checkOpen();
 
     return keystore.getValues();
@@ -54,7 +54,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   E getAt(int index) {
     checkOpen();
 
-    return keystore.getAt(index).value as E;
+    return keystore.getAt(index)?.value as E;
   }
 
   @override
@@ -96,6 +96,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
+  // TODO(KalilDev): manually migrate
   Map<dynamic, E> toMap() {
     var map = <dynamic, E>{};
     for (var frame in keystore.frames) {

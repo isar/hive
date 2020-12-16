@@ -12,7 +12,7 @@ class StorageBackendMemory extends StorageBackend {
 
   final FrameHelper _frameHelper;
 
-  Uint8List _bytes;
+  Uint8List/*!*/ _bytes;
 
   /// Not part of public API
   StorageBackendMemory(this._bytes, this._cipher)

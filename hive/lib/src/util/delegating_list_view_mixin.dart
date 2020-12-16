@@ -1,11 +1,11 @@
 import 'package:meta/meta.dart';
 
 /// Not part of public API
-abstract class DelegatingListViewMixin<E> implements List<E> {
+abstract class DelegatingListViewMixin<E> implements List<E/*!*/> {
   /// Not part of public API
   @protected
   @visibleForTesting
-  List<E> get delegate;
+  List<E/*!*/>/*!*/ get delegate;
 
   @override
   E get first => delegate.first;

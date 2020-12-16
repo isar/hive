@@ -14,7 +14,7 @@ abstract class Box<E> implements BoxBase<E> {
   /// All the values in the box.
   ///
   /// The values are in the same order as their keys.
-  Iterable<E> get values;
+  Iterable<E/*!*/> get values;
 
   /// Returns an iterable which contains all values starting with the value
   /// associated with [startKey] (inclusive) to the value associated with
@@ -31,11 +31,11 @@ abstract class Box<E> implements BoxBase<E> {
   ///
   /// If [defaultValue] is specified, it is returned in case the key does not
   /// exist.
-  E get(dynamic key, {E defaultValue});
+  E/*?*/ get(dynamic key, {E defaultValue});
 
   /// Returns the value associated with the n-th key.
-  E getAt(int index);
+  E/*?*/ getAt(int index);
 
   /// Returns a map which contains all key - value pairs of the box.
-  Map<dynamic, E> toMap();
+  Map<dynamic, E/*!*/> toMap();
 }

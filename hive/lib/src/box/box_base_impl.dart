@@ -23,7 +23,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   /// Not part of public API
   @protected
   @visibleForTesting
-  Keystore<E> keystore;
+  Keystore<E>/*!*/ keystore;
 
   bool _open = true;
 

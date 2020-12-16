@@ -13,7 +13,7 @@ class BinaryReaderImpl extends BinaryReader {
   final Uint8List _buffer;
   final ByteData _byteData;
   final int _bufferLength;
-  final TypeRegistryImpl _typeRegistry;
+  final TypeRegistryImpl/*!*/ _typeRegistry;
 
   int _bufferLimit;
   int _offset = 0;
@@ -241,7 +241,7 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   /// Not part of public API
-  Frame readFrame({HiveCipher cipher, bool lazy = false, int frameOffset}) {
+  Frame readFrame({HiveCipher cipher, bool lazy = false, int/*!*/ frameOffset}) {
     if (availableBytes < 4) return null;
 
     var frameLength = readUint32();

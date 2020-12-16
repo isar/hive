@@ -15,10 +15,10 @@ import 'package:meta/meta.dart';
 /// Handles all IndexedDB related tasks
 class StorageBackendJs extends StorageBackend {
   static const _bytePrefix = [0x90, 0xA9];
-  final Database _db;
+  final Database/*!*/ _db;
   final HiveCipher _cipher;
 
-  TypeRegistry _registry;
+  TypeRegistry/*!*/ _registry;
 
   /// Not part of public API
   StorageBackendJs(this._db, this._cipher, [this._registry]);

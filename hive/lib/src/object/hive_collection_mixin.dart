@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 abstract class HiveCollectionMixin<E extends HiveObject>
     implements HiveCollection<E> {
   @override
-  Iterable<dynamic> get keys sync* {
+  Iterable<dynamic>/*!*/ get keys sync* {
     for (var value in this) {
       yield value.key;
     }

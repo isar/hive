@@ -8,8 +8,8 @@ class AesCbcPkcs7 {
 
   final Uint8List _keyBytes;
 
-  List<Uint32List> _encryptionKey;
-  List<Uint32List> _decryptionKey;
+  /*late final*/ List<Uint32List>/*!*/ _encryptionKey /*= AesEngine.generateWorkingKey(_keyBytes, true)*/;
+  /*late final*/ List<Uint32List>/*!*/ _decryptionKey /*= AesEngine.generateWorkingKey(_keyBytes, false)*/;
 
   /// Not part of public API
   AesCbcPkcs7(this._keyBytes);

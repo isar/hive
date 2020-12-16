@@ -24,7 +24,7 @@ abstract class StorageBackend {
   Future<void> writeFrames(List<Frame> frames);
 
   /// Compact database
-  Future<void> compact(Iterable<Frame> frames);
+  Future<void> compact(Iterable<Frame/*!*/> frames);
 
   /// Clear database
   Future<void> clear();

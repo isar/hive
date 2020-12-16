@@ -14,7 +14,7 @@ class IndexableSkipList<K, V> {
 
   final Random _random;
 
-  final Comparator<K> _comparator;
+  final Comparator<K/*!*/> _comparator;
 
   int _height = 1;
 
@@ -28,10 +28,10 @@ class IndexableSkipList<K, V> {
   int get length => _length;
 
   /// Not part of public API
-  Iterable<K> get keys => _KeyIterable(_head);
+  Iterable<K/*!*/> get keys => _KeyIterable(_head);
 
   /// Not part of public API
-  Iterable<V> get values => _ValueIterable(_head);
+  Iterable<V/*!*/> get values => _ValueIterable(_head);
 
   /// Not part of public API
   V insert(K key, V value) {
@@ -192,7 +192,7 @@ class IndexableSkipList<K, V> {
   @pragma('dart2js:tryInline')
   K getKeyAt(int index) => _getNodeAt(index).key;
 
-  _Node<K, V> _getNodeAt(int index) {
+  _Node<K, V>/*!*/ _getNodeAt(int index) {
     RangeError.checkValidIndex(index, this);
 
     var prev = _head;
@@ -222,11 +222,11 @@ class IndexableSkipList<K, V> {
 }
 
 class _Node<K, V> {
-  final K key;
+  final K/*?*/ key;
 
-  V value;
+  V/*?*/ value;
 
-  final List<_Node<K, V>> next;
+  final List<_Node<K, V>/*?*/> next;
 
   final List<int> width;
 
@@ -248,7 +248,7 @@ class _KeyIterator<K, V> extends _Iterator<K, V, K> {
   _KeyIterator(_Node<K, V> node) : super(node);
 
   @override
-  K get current => node.key;
+  K/*!*/ get current => node.key;
 }
 
 class _KeyIterable<K, V> extends IterableBase<K> {
@@ -257,14 +257,14 @@ class _KeyIterable<K, V> extends IterableBase<K> {
   _KeyIterable(this.head);
 
   @override
-  Iterator<K> get iterator => _KeyIterator(head);
+  Iterator<K/*!*/> get iterator => _KeyIterator(head);
 }
 
 class _ValueIterator<K, V> extends _Iterator<K, V, V> {
   _ValueIterator(_Node<K, V> node) : super(node);
 
   @override
-  V get current => node.value;
+  V/*!*/ get current => node.value;
 }
 
 class _ValueIterable<K, V> extends IterableBase<V> {

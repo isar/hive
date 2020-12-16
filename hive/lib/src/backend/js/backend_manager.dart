@@ -9,7 +9,7 @@ import 'package:hive/src/backend/storage_backend.dart';
 class BackendManager implements BackendManagerInterface {
   @override
   Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, HiveCipher cipher) async {
+      String name, String/*?*/ path, bool crashRecovery, HiveCipher/*?*/ cipher) async {
     var db =
         await window.indexedDB.open(name, version: 1, onUpgradeNeeded: (e) {
       var db = e.target.result as Database;

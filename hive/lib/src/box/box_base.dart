@@ -105,7 +105,7 @@ abstract class BoxBase<E> {
   /// Deletes all the given [keys] from the box.
   ///
   /// If a key does not exist, it is skipped.
-  Future<void> deleteAll(Iterable<dynamic> keys);
+  Future<void> deleteAll(Iterable<dynamic>/*!*/ keys);
 
   /// Induces compaction manually. This is rarely needed. You should consider
   /// providing a custom compaction strategy instead.
