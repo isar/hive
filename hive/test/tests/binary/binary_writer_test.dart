@@ -34,8 +34,6 @@ void main() {
       bw = getWriter();
       bw.writeByte(257);
       expect(bw.toBytes(), [1]);
-
-      expect(() => bw.writeByte(null), throwsA(anything));
     });
 
     test('.writeWord()', () {
@@ -54,8 +52,6 @@ void main() {
       bw = getWriter();
       bw.writeWord(65536);
       expect(bw.toBytes(), [0, 0]);
-
-      expect(() => bw.writeWord(null), throwsA(anything));
     });
 
     test('.writeInt32()', () {
@@ -95,8 +91,6 @@ void main() {
       bw.writeInt32(-65537);
       bd.setInt32(0, -65537, Endian.little);
       expect(bw.toBytes(), bytes(bd));
-
-      expect(() => bw.writeInt32(null), throwsA(anything));
     });
 
     test('.writeUint32()', () {
@@ -121,8 +115,6 @@ void main() {
       bw.writeUint32(-2147483648);
       bd.setUint32(0, -2147483648, Endian.little);
       expect(bw.toBytes(), bytes(bd));
-
-      expect(() => bw.writeUint32(null), throwsA(anything));
     });
 
     test('.writeInt()', () {
@@ -152,8 +144,6 @@ void main() {
       bw.writeInt(-2 ^ 53);
       bd.setFloat64(0, (-2 ^ 53).toDouble(), Endian.little);
       expect(bw.toBytes(), bytes(bd));
-
-      expect(() => bw.writeInt(null), throwsA(anything));
     });
 
     test('.writeDouble()', () {
@@ -193,8 +183,6 @@ void main() {
       bw.writeDouble(double.minPositive);
       bd.setFloat64(0, double.minPositive, Endian.little);
       expect(bw.toBytes(), bytes(bd));
-
-      expect(() => bw.writeDouble(null), throwsA(anything));
     });
 
     test('.writeBool()', () {
@@ -205,8 +193,6 @@ void main() {
       bw = getWriter();
       bw.writeBool(false);
       expect(bw.toBytes(), [0]);
-
-      expect(() => bw.writeBool(null), throwsA(anything));
     });
 
     test('.writeString()', () {
@@ -232,8 +218,6 @@ void main() {
         0xe2, 0x80, 0x8d, 0xf0, 0x9f, 0x91, 0xa7, 0xe2, 0x80, 0x8d, 0xf0, //
         0x9f, 0x91, 0xa6 //
       ]);
-
-      expect(() => bw.writeString(null), throwsA(anything));
     });
 
     test('.writeByteList()', () {
@@ -252,8 +236,6 @@ void main() {
       bw = getWriter();
       bw.writeByteList([1, 2, 3, 4], writeLength: false);
       expect(bw.toBytes(), [1, 2, 3, 4]);
-
-      expect(() => bw.writeByteList(null), throwsA(anything));
     });
 
     test('.writeIntList()', () {
@@ -274,8 +256,6 @@ void main() {
       bw.writeIntList([1, 2], writeLength: false);
       expect(
           bw.toBytes(), [0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64]);
-
-      expect(() => bw.writeIntList(null), throwsA(anything));
     });
 
     test('.writeDoubleList()', () {
@@ -294,8 +274,6 @@ void main() {
       bw = getWriter();
       bw.writeDoubleList([1.0], writeLength: false);
       expect(bw.toBytes(), [0, 0, 0, 0, 0, 0, 240, 63]);
-
-      expect(() => bw.writeDoubleList(null), throwsA(anything));
     });
 
     test('.writeBoolList()', () {
@@ -314,8 +292,6 @@ void main() {
       bw = getWriter();
       bw.writeBoolList([true, false, true], writeLength: false);
       expect(bw.toBytes(), [1, 0, 1]);
-
-      expect(() => bw.writeBoolList(null), throwsA(anything));
     });
 
     test('.writeStringList()', () {
@@ -337,8 +313,6 @@ void main() {
       bw = getWriter();
       bw.writeStringList(['a', 'ab'], writeLength: false);
       expect(bw.toBytes(), [1, 0, 0, 0, 97, 2, 0, 0, 0, 97, 98]);
-
-      expect(() => bw.writeBoolList(null), throwsA(anything));
     });
 
     test('.writeList()', () {

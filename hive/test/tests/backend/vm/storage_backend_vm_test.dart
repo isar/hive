@@ -9,6 +9,7 @@ import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
@@ -41,21 +42,25 @@ StorageBackendVm _getBackend({
   bool crashRecovery = false,
   HiveCipher? cipher,
   FrameIoHelper? ioHelper,
-  TypeRegistry? registry,
   ReadWriteSync? sync,
-  required RandomAccessFile readRaf,
-  required RandomAccessFile writeRaf,
+  RandomAccessFile? readRaf,
+  RandomAccessFile? writeRaf,
 }) {
-  return StorageBackendVm.debug(
+  final backend = StorageBackendVm.debug(
     file ?? FileMock(),
     lockFile ?? FileMock(),
     crashRecovery,
     cipher,
     ioHelper ?? FrameIoHelperMock(),
     sync ?? ReadWriteSync(),
-  )
-    ..readRaf = readRaf
-    ..writeRaf = writeRaf;
+  );
+  if (readRaf != null) {
+    backend.readRaf = readRaf;
+  }
+  if (writeRaf != null) {
+    backend.writeRaf = writeRaf;
+  }
+  return backend;
 }
 
 void main() {
@@ -130,7 +135,8 @@ void main() {
             ioHelper: getFrameIoHelper(-1),
           );
 
-          await backend.initialize(null, KeystoreMock(), lazy);
+          await backend.initialize(
+              TypeRegistryImpl.nullImpl, KeystoreMock(), lazy);
           verify(lockRaf.lock());
         });
 
@@ -143,7 +149,8 @@ void main() {
             writeRaf: writeRaf,
           );
 
-          await backend.initialize(null, KeystoreMock(), lazy);
+          await backend.initialize(
+              TypeRegistryImpl.nullImpl, KeystoreMock(), lazy);
           verify(writeRaf.truncate(20));
         });
 
@@ -155,7 +162,8 @@ void main() {
           );
 
           await expectLater(
-              () => backend.initialize(null, KeystoreMock(), lazy),
+              () => backend.initialize(
+                  TypeRegistryImpl.nullImpl, KeystoreMock(), lazy),
               throwsHiveError('corrupted'));
         });
       }
