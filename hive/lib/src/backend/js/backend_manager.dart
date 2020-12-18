@@ -22,7 +22,7 @@ class BackendManager implements BackendManagerInterface {
   }
 
   @override
-  Future<void> deleteBox(String name, String path) {
+  Future<void> deleteBox(String name, String? path) {
     return window.indexedDB!.deleteDatabase(name);
   }
 

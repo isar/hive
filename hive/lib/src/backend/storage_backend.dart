@@ -43,8 +43,8 @@ abstract class BackendManagerInterface {
       String name, String path, bool crashRecovery, HiveCipher cipher);
 
   /// Deletes database
-  Future<void> deleteBox(String name, String path);
+  Future<void> deleteBox(String name, String? path);
 
   /// Checks if box exists
-  Future<bool> boxExists(String name, String path);
+  Future<bool> boxExists(String name, String? path);
 }
