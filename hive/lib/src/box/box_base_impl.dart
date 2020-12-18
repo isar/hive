@@ -7,6 +7,8 @@ import 'package:meta/meta.dart';
 
 /// Not part of public API
 abstract class BoxBaseImpl<E> implements BoxBase<E> {
+  static BoxBase<E> nullImpl<E>() => _NullBoxBase<E>();
+
   @override
   final String name;
 
@@ -179,4 +181,75 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
 
     await backend.deleteFromDisk();
   }
+}
+
+class _NullBoxBase<E> implements BoxBase<E> {
+  @override
+  Never add(E value) => throw UnimplementedError();
+
+  @override
+  Never addAll(Iterable<E> values) => throw UnimplementedError();
+
+  @override
+  Never clear() => throw UnimplementedError();
+
+  @override
+  Never close() => throw UnimplementedError();
+
+  @override
+  Never compact() => throw UnimplementedError();
+
+  @override
+  Never containsKey(key) => throw UnimplementedError();
+
+  @override
+  Never delete(key) => throw UnimplementedError();
+
+  @override
+  Never deleteAll(Iterable keys) => throw UnimplementedError();
+
+  @override
+  Never deleteAt(int index) => throw UnimplementedError();
+
+  @override
+  Never deleteFromDisk() => throw UnimplementedError();
+
+  @override
+  Never get isEmpty => throw UnimplementedError();
+
+  @override
+  Never get isNotEmpty => throw UnimplementedError();
+
+  @override
+  Never get isOpen => throw UnimplementedError();
+
+  @override
+  Never keyAt(int index) => throw UnimplementedError();
+
+  @override
+  Never get keys => throw UnimplementedError();
+
+  @override
+  Never get lazy => throw UnimplementedError();
+
+  @override
+  Never get length => throw UnimplementedError();
+
+  @override
+  Never get name => throw UnimplementedError();
+
+  @override
+  Never get path => throw UnimplementedError();
+
+  @override
+  Never put(key, E value) => throw UnimplementedError();
+
+  @override
+  Never putAll(Map<dynamic, E> entries) => throw UnimplementedError();
+
+  @override
+  Never putAt(int index, E value) => throw UnimplementedError();
+
+  @override
+  Never watch({key}) => throw UnimplementedError();
 }

@@ -11,6 +11,8 @@ import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/util/indexable_skip_list.dart';
 import 'package:meta/meta.dart';
 
+import 'box_base_impl.dart';
+
 /// Not part of public API
 class KeyTransaction<E> {
   /// The values that have been added
@@ -46,12 +48,12 @@ class Keystore<E> {
   /// Not part of public API
   factory Keystore.debug({
     Iterable<Frame> frames = const [],
-    required BoxBase<E> box,
+    BoxBase<E>? box,
     ChangeNotifier? notifier,
     KeyComparator keyComparator = defaultKeyComparator,
   }) {
-    var keystore =
-        Keystore<E>(box, notifier ?? ChangeNotifier(), keyComparator);
+    var keystore = Keystore<E>(box ?? BoxBaseImpl.nullImpl<E>(),
+        notifier ?? ChangeNotifier(), keyComparator);
     for (var frame in frames) {
       keystore.insert(frame);
     }
