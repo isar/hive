@@ -6,13 +6,8 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
-import 'hive_object_test.mocks.dart';
+import '../mocks.dart';
 
-@GenerateMocks([
-  HiveObject,
-  Box,
-  HiveListImpl,
-])
 void main() {
   group('HiveObject', () {
     group('.init()', () {

@@ -18,7 +18,7 @@ import 'package:test/test.dart';
 import '../../common.dart';
 import '../../frames.dart';
 
-import 'storage_backend_vm_test.mocks.dart';
+import '../../mocks.dart';
 
 const testMap = {
   'SomeKey': 123,
@@ -64,12 +64,6 @@ StorageBackendVm _getBackend({
   return backend;
 }
 
-@GenerateMocks([
-  FrameIoHelper,
-  RandomAccessFile,
-  File,
-  Keystore,
-])
 void main() {
   group('StorageBackendVm', () {
     test('.path returns path for of open box file', () {

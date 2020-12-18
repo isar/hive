@@ -10,17 +10,12 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:dartx/dartx.dart';
 
+import '../mocks.dart';
 import '../frames.dart';
-import 'binary_writer_test.mocks.dart';
 
 List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 
 BinaryWriterImpl getWriter() => BinaryWriterImpl(TypeRegistryImpl());
-@GenerateMocks([
-  Box,
-  HiveList,
-  HiveObject,
-])
 void main() {
   group('BinaryWriter', () {
     test('.writeByte()', () {

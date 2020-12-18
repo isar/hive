@@ -4,12 +4,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'ignored_type_adapter_test.mocks.dart';
+import '../mocks.dart';
 
-@GenerateMocks([
-  BinaryReader,
-  BinaryWriter,
-])
 void main() {
   group('IgnoredTypeAdapter', () {
     test('.read()', () {

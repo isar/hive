@@ -6,13 +6,9 @@ import 'package:hive/src/object/hive_object.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'keystore_test.mocks.dart';
 
-@GenerateMocks([
-  HiveObject,
-  Box,
-  ChangeNotifier,
-])
+import '../mocks.dart';
+
 void main() {
   void expectTrx(Iterable<KeyTransaction> i1, Iterable<KeyTransaction> i2) {
     expect(i1.length, i2.length);

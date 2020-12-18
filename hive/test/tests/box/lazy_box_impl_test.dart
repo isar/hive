@@ -9,7 +9,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import 'lazy_box_impl_test.mocks.dart';
+import '../mocks.dart';
 
 LazyBoxImpl _getBox({
   String? name,
@@ -29,10 +29,6 @@ LazyBoxImpl _getBox({
   return box;
 }
 
-@GenerateMocks([
-  StorageBackend,
-  Keystore,
-])
 void main() {
   group('LazyBoxImpl', () {
     group('.get()', () {

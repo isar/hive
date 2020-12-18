@@ -3,7 +3,7 @@ import 'package:hive/src/object/hive_object.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'hive_collection_mixin_test.mocks.dart';
+import '../mocks.dart';
 
 HiveList _getTestList(Box box) {
   var obj1 = MockHiveObject();
@@ -16,10 +16,6 @@ HiveList _getTestList(Box box) {
   return HiveList(box, objects: [obj1, obj2, obj3]);
 }
 
-@GenerateMocks([
-  HiveObject,
-  Box,
-])
 void main() {
   group('HiveCollectionMixin', () {
     test('.keys', () {

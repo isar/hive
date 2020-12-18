@@ -8,7 +8,7 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'box_impl_test.mocks.dart';
+import '../mocks.dart';
 
 BoxImpl _getBox({
   String? name,
@@ -28,10 +28,6 @@ BoxImpl _getBox({
   return box;
 }
 
-@GenerateMocks([
-  Keystore,
-  StorageBackend,
-])
 void main() {
   group('BoxImpl', () {
     test('.values', () {

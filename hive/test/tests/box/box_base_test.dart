@@ -9,8 +9,9 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'box_base_test.mocks.dart';
 import '../common.dart';
+
+import '../mocks.dart';
 
 class _BoxBaseMock extends BoxBaseImpl with Mock {
   _BoxBaseMock(
@@ -39,11 +40,6 @@ _BoxBaseMock _openBoxBaseMock({
   return mock;
 }
 
-@GenerateMocks([
-  StorageBackend,
-  Keystore,
-  HiveImpl,
-])
 void main() {
   group('BoxBase', () {
     test('.name', () {

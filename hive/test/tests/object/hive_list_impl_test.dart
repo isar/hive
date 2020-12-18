@@ -9,7 +9,7 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
-import 'hive_list_impl_test.mocks.dart';
+import '../mocks.dart';
 
 HiveObject _getHiveObject(String key, MockBox box) {
   var hiveObject = MockHiveObject();
@@ -20,11 +20,6 @@ HiveObject _getHiveObject(String key, MockBox box) {
   return hiveObject;
 }
 
-@GenerateMocks([
-  HiveObject,
-  Box,
-  HiveImpl,
-])
 void main() {
   group('HiveListImpl', () {
     test('HiveListImpl()', () {
