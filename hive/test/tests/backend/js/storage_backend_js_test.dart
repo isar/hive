@@ -46,9 +46,9 @@ Future<Database> _getDbWith(Map<String, dynamic> content) async {
   return db;
 }
 
-void main() {
-  group('StorageBackendJs', () async {
-    _nullDatabase = await _openDb('nullTestBox');
+void main() async {
+  _nullDatabase = await _openDb('nullTestBox');
+  group('StorageBackendJs', () {
     test('.path', () {
       expect(_getBackend().path, null);
     });
@@ -255,7 +255,5 @@ void main() {
 
       await expectLater(() async => await backend.getKeys(), throwsA(anything));
     });
-
-    _nullDatabase.close();
   });
 }
