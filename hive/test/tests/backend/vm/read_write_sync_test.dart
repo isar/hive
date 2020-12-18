@@ -37,8 +37,12 @@ Future _asyncReadWrite(ReadWriteSync rw, int id, List<String> history,
   });
 }
 
-typedef _Operation = Future
-    Function(ReadWriteSync rw, int id, List<String> history, {bool? throwError});
+typedef _Operation = Future Function(
+  ReadWriteSync rw,
+  int id,
+  List<String> history, {
+  bool? throwError,
+});
 
 Future _asyncOperation(
     ReadWriteSync rw, _Operation operation, int id, List<String> history,

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:html';
 import 'dart:indexed_db';
-import 'dart:typed_data';
 import 'dart:js_util';
+import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';

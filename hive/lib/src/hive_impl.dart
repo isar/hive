@@ -71,8 +71,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String? path,
     Uint8List? bytes,
   ) async {
-    assert(comparator != null);
-    assert(compaction != null);
     assert(path == null || bytes == null);
     assert(name.length <= 255 && name.isAscii,
         'Box names need to be ASCII Strings with a max length of 255.');

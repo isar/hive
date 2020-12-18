@@ -65,9 +65,6 @@ class BinaryWriterImpl extends BinaryWriter {
   @pragma('dart2js:tryInline')
   @override
   void writeByte(int byte) {
-    if (byte == null) {
-      throw ArgumentError.notNull();
-    }
     _reserveBytes(1);
     _buffer[_offset++] = byte;
   }
@@ -81,9 +78,6 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeInt32(int value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
     _reserveBytes(4);
     _byteData.setInt32(_offset, value, Endian.little);
     _offset += 4;
@@ -105,9 +99,6 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeDouble(double value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
     _reserveBytes(8);
     _byteData.setFloat64(_offset, value, Endian.little);
     _offset += 8;

@@ -96,7 +96,7 @@ void main() {
     });
 
     test('.forEach()', () {
-      final Iterator<String> it = testList.iterator;
+      final it = testList.iterator;
       expect(it.current, isNull);
       expect(it.moveNext(), isTrue);
       expect(it.current, 'a');

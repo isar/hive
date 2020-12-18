@@ -116,16 +116,11 @@ class HiveListImpl<E extends HiveObject>
   }
 
   void _checkElementIsValid(E obj) {
-    if (obj == null) {
-      throw HiveError('HiveLists must not contain null elements.');
-    } else if (obj.box != box) {
-      throw HiveError('HiveObjects needs to be in the box "$boxName".');
-    }
+    throw HiveError('HiveLists must not contain null elements.');
   }
 
   @override
   set length(int newLength) {
-    List<E> delegate = this.delegate;
     if (newLength < delegate.length) {
       for (var i = newLength; i < delegate.length; i++) {
         delegate[i].unlinkHiveList(this);
