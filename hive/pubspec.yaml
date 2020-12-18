@@ -18,7 +18,14 @@ dev_dependencies:
   dartx: ">=0.2.0 <1.0.0"
   path: ^1.7.0
   pointycastle: ^2.0.0
+  build_runner: ^1.10.0
 
 dependency_overrides: 
   crypto:
-    git: https://github.com/dart-lang/crypto.git
+    git:
+      url: https://github.com/dart-lang/crypto.git
+      ref: c89a5be0375875fe7ff71625fa2b79f5a421f06d
+  mockito:
+    git:
+      url: https://github.com/dart-lang/mockito.git
+      ref: CB038376F98978355FED934D6FCDB0F4
