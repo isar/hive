@@ -1,13 +1,16 @@
+import 'dart:io';
+
 import 'package:hive/src/io/buffered_file_writer.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import 'buffered_file_writer_test.mocks.dart';
 
-import '../mocks.dart';
-
+@GenerateMocks([RandomAccessFile])
 void main() {
   group('BufferedFileWriter', () {
     test('.write()', () async {
-      var file = RAFMock();
+      var file = MockRandomAccessFile();
       var writer = BufferedFileWriter(file, 10);
 
       await writer.write([1, 2, 3, 4, 5, 6]);
@@ -26,7 +29,7 @@ void main() {
     });
 
     test('flush()', () async {
-      var file = RAFMock();
+      var file = MockRandomAccessFile();
       var writer = BufferedFileWriter(file, 10);
 
       await writer.flush();

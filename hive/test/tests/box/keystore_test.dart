@@ -1,10 +1,18 @@
+import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/object/hive_object.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import 'keystore_test.mocks.dart';
 
-import '../mocks.dart';
-
+@GenerateMocks([
+  HiveObject,
+  Box,
+  ChangeNotifier,
+])
 void main() {
   void expectTrx(Iterable<KeyTransaction> i1, Iterable<KeyTransaction> i2) {
     expect(i1.length, i2.length);
@@ -185,10 +193,10 @@ void main() {
         });
 
         test('initializes HiveObject', () {
-          var box = BoxMock();
+          var box = MockBox();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = TestHiveObject();
+          var hiveObject = MockHiveObject();
           keystore.insert(Frame('key', hiveObject));
 
           expect(hiveObject.key, 'key');
@@ -213,22 +221,22 @@ void main() {
         });
 
         test('unloads previous HiveObject', () {
-          var box = BoxMock();
+          var box = MockBox();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = TestHiveObject();
+          var hiveObject = MockHiveObject();
           keystore.insert(Frame('key', hiveObject));
-          keystore.insert(Frame('key', TestHiveObject()));
+          keystore.insert(Frame('key', MockHiveObject()));
 
           expect(hiveObject.key, null);
           expect(hiveObject.box, null);
         });
 
         test('does not unload HiveObject if it is the same instance', () {
-          var box = BoxMock();
+          var box = MockBox();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = TestHiveObject();
+          var hiveObject = MockHiveObject();
           keystore.insert(Frame('key', hiveObject));
           keystore.insert(Frame('key', hiveObject));
 
@@ -248,7 +256,7 @@ void main() {
         });
 
         test('broadcasts change event', () {
-          var notifier = ChangeNotifierMock();
+          var notifier = MockChangeNotifier();
           var keystore = Keystore.debug(notifier: notifier);
 
           keystore.insert(Frame('key1', 'val1'));
@@ -279,8 +287,8 @@ void main() {
         });
 
         test('unloads deleted HiveObject', () {
-          var box = BoxMock();
-          var hiveObject = TestHiveObject();
+          var box = MockBox();
+          var hiveObject = MockHiveObject();
           var keystore =
               Keystore.debug(frames: [Frame('key', hiveObject)], box: box);
 
@@ -298,7 +306,7 @@ void main() {
         });
 
         test('broadcasts change event', () {
-          var notifier = ChangeNotifierMock();
+          var notifier = MockChangeNotifier();
           var keystore = Keystore.debug(
             frames: [Frame('key1', 'val1')],
             notifier: notifier,
@@ -317,7 +325,7 @@ void main() {
 
     group('.beginTransaction()', () {
       test('adding new frames', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(notifier: notifier);
 
         var created = keystore.beginTransaction([
@@ -333,7 +341,7 @@ void main() {
       });
 
       test('overriding existing keys', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key1', 'val1')],
           notifier: notifier,
@@ -355,7 +363,7 @@ void main() {
       });
 
       test('empty transaction', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key1', 'val1')],
           notifier: notifier,
@@ -370,7 +378,7 @@ void main() {
       });
 
       test('deleting frames', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [
             Frame('key1', 'val1'),
@@ -417,7 +425,7 @@ void main() {
 
     group('.cancelTransaction()', () {
       test('add', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(notifier: notifier);
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('otherKey', 'otherVal')]);
@@ -433,7 +441,7 @@ void main() {
       });
 
       test('add then override', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(notifier: notifier);
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
@@ -446,7 +454,7 @@ void main() {
       });
 
       test('add then delete', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(notifier: notifier);
         keystore.beginTransaction([Frame('key', 'val1')]);
         keystore.beginTransaction([
@@ -471,7 +479,7 @@ void main() {
       });
 
       test('override', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key', 'val1')],
           notifier: notifier,
@@ -486,7 +494,7 @@ void main() {
       });
 
       test('override then add', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key', 'val1')],
           notifier: notifier,
@@ -506,7 +514,7 @@ void main() {
       });
 
       test('override then delete', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key', 'val1')],
           notifier: notifier,
@@ -524,7 +532,7 @@ void main() {
       });
 
       test('delete', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key', 'val1')],
           notifier: notifier,
@@ -539,7 +547,7 @@ void main() {
       });
 
       test('delete then add', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(frames: [Frame('key', 'val1')]);
         keystore.beginTransaction([Frame.deleted('key')]);
         keystore.beginTransaction([Frame('key', 'val2')]);
@@ -567,8 +575,8 @@ void main() {
       });
 
       test('unloads HiveObjects', () {
-        var hiveObject = TestHiveObject();
-        var box = BoxMock();
+        var hiveObject = MockHiveObject();
+        var box = MockBox();
         var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
           Frame('key2', hiveObject),
@@ -604,7 +612,7 @@ void main() {
       });
 
       test('broadcasts change event', () {
-        var notifier = ChangeNotifierMock();
+        var notifier = MockChangeNotifier();
         var keystore = Keystore.debug(
           frames: [Frame('key1', 'val1'), Frame('key2', 'val2')],
           notifier: notifier,

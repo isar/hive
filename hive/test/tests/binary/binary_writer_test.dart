@@ -5,17 +5,22 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import 'package:dartx/dartx.dart';
 
 import '../frames.dart';
-import '../mocks.dart';
+import 'binary_writer_test.mocks.dart';
 
 List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 
 BinaryWriterImpl getWriter() => BinaryWriterImpl(TypeRegistryImpl());
-
+@GenerateMocks([
+  Box,
+  HiveList,
+  HiveObject,
+])
 void main() {
   group('BinaryWriter', () {
     test('.writeByte()', () {
@@ -354,10 +359,10 @@ void main() {
     });
 
     group('.writeHiveList()', () {
-      var box = BoxMock();
+      var box = MockBox();
       when(box.name).thenReturn('Box');
 
-      var obj = TestHiveObject()..init('key', box);
+      var obj = MockHiveObject()..init('key', box);
 
       test('write length', () {
         var list = HiveList(box, objects: [obj]);
@@ -457,10 +462,10 @@ void main() {
       });
 
       test('HiveList', () {
-        var box = BoxMock();
+        var box = MockBox();
         when(box.name).thenReturn('Box');
 
-        var obj = TestHiveObject()..init('key', box);
+        var obj = MockHiveObject()..init('key', box);
         var list = HiveList(box, objects: [obj]);
         var bw = getWriter();
         bw.write(list);

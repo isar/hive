@@ -1,16 +1,24 @@
+import 'package:hive/hive.dart';
+import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/object/hive_object.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
-import '../mocks.dart';
+import 'hive_object_test.mocks.dart';
 
+@GenerateMocks([
+  HiveObject,
+  Box,
+  HiveListImpl,
+])
 void main() {
   group('HiveObject', () {
     group('.init()', () {
       test('adds key and box to HiveObject', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
 
         obj.init('someKey', box);
 
@@ -19,8 +27,8 @@ void main() {
       });
 
       test('does nothing if old key and box are equal to new key and box', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
 
         obj.init('someKey', box);
         obj.init('someKey', box);
@@ -30,9 +38,9 @@ void main() {
       });
 
       test('throws exception if object is already in a different box', () {
-        var obj = TestHiveObject();
-        var box1 = BoxMock();
-        var box2 = BoxMock();
+        var obj = MockHiveObject();
+        var box1 = MockBox();
+        var box2 = MockBox();
 
         obj.init('someKey', box1);
         expect(() => obj.init('someKey', box2),
@@ -40,8 +48,8 @@ void main() {
       });
 
       test('throws exception if object has already different key', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
 
         obj.init('key1', box);
         expect(
@@ -51,8 +59,8 @@ void main() {
 
     group('.dispose()', () {
       test('removes key and box', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
 
         obj.init('key', box);
         obj.dispose();
@@ -62,11 +70,11 @@ void main() {
       });
 
       test('notifies remote HiveLists', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
         obj.init('key', box);
 
-        var list = HiveListMock();
+        var list = MockHiveListImpl();
         obj.linkHiveList(list);
         obj.dispose();
 
@@ -75,10 +83,10 @@ void main() {
     });
 
     test('.linkHiveList()', () {
-      var box = BoxMock();
-      var obj = TestHiveObject();
+      var box = MockBox();
+      var obj = MockHiveObject();
       obj.init('key', box);
-      var hiveList = HiveListMock();
+      var hiveList = MockHiveListImpl();
 
       obj.linkHiveList(hiveList);
       expect(obj.debugHiveLists, {hiveList: 1});
@@ -87,10 +95,10 @@ void main() {
     });
 
     test('.unlinkHiveList()', () {
-      var box = BoxMock();
-      var obj = TestHiveObject();
+      var box = MockBox();
+      var obj = MockHiveObject();
       obj.init('key', box);
-      var hiveList = HiveListMock();
+      var hiveList = MockHiveListImpl();
 
       obj.linkHiveList(hiveList);
       obj.linkHiveList(hiveList);
@@ -104,8 +112,8 @@ void main() {
 
     group('.save()', () {
       test('updates object in box', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
         obj.init('key', box);
         verifyZeroInteractions(box);
 
@@ -114,15 +122,15 @@ void main() {
       });
 
       test('throws HiveError if object is not in a box', () async {
-        var obj = TestHiveObject();
+        var obj = MockHiveObject();
         await expectLater(() => obj.save(), throwsHiveError('not in a box'));
       });
     });
 
     group('.delete()', () {
       test('removes object from box', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
         obj.init('key', box);
         verifyZeroInteractions(box);
 
@@ -131,20 +139,20 @@ void main() {
       });
 
       test('throws HiveError if object is not in a box', () async {
-        var obj = TestHiveObject();
+        var obj = MockHiveObject();
         await expectLater(() => obj.delete(), throwsHiveError('not in a box'));
       });
     });
 
     group('.isInBox', () {
       test('returns false if box is not set', () {
-        var obj = TestHiveObject();
+        var obj = MockHiveObject();
         expect(obj.isInBox, false);
       });
 
       test('returns true if object is in normal box', () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
         when(box.lazy).thenReturn(false);
         obj.init('key', box);
 
@@ -153,8 +161,8 @@ void main() {
 
       test('returns the result ob box.containsKey() if object is in lazy box',
           () {
-        var obj = TestHiveObject();
-        var box = BoxMock();
+        var obj = MockHiveObject();
+        var box = MockBox();
         when(box.lazy).thenReturn(true);
         obj.init('key', box);
 

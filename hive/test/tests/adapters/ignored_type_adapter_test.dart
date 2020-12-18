@@ -1,20 +1,26 @@
+import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/ignored_type_adapter.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-import '../mocks.dart';
+import 'ignored_type_adapter_test.mocks.dart';
 
+@GenerateMocks([
+  BinaryReader,
+  BinaryWriter,
+])
 void main() {
   group('IgnoredTypeAdapter', () {
     test('.read()', () {
-      var binaryReader = BinaryReaderMock();
+      var binaryReader = MockBinaryReader();
       var value = IgnoredTypeAdapter().read(binaryReader);
       verifyNever(binaryReader.read());
       expect(value, null);
     });
 
     test('.write()', () {
-      var binaryWriter = BinaryWriterMock();
+      var binaryWriter = MockBinaryWriter();
       IgnoredTypeAdapter().write(binaryWriter, 42);
       verifyNever(binaryWriter.writeInt(42));
     });

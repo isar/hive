@@ -1,14 +1,19 @@
+import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import 'date_time_adapter_test.mocks.dart';
 
-import '../mocks.dart';
-
+@GenerateMocks([
+  BinaryReader,
+  BinaryWriter,
+])
 void main() {
   group('DateTimeAdapter', () {
     test('.read()', () {
       var now = DateTime.now();
-      var binaryReader = BinaryReaderMock();
+      var binaryReader = MockBinaryReader();
       when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
 
       var date = DateTimeAdapter().read(binaryReader);
@@ -18,7 +23,7 @@ void main() {
 
     test('.write()', () {
       var now = DateTime.now();
-      var binaryWriter = BinaryWriterMock();
+      var binaryWriter = MockBinaryWriter();
 
       DateTimeAdapter().write(binaryWriter, now);
       verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
@@ -29,7 +34,7 @@ void main() {
     group('.read()', () {
       test('local', () {
         var now = DateTime.now();
-        var binaryReader = BinaryReaderMock();
+        var binaryReader = MockBinaryReader();
         when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
         when(binaryReader.readBool()).thenReturn(false);
 
@@ -40,7 +45,7 @@ void main() {
 
       test('UTC', () {
         var now = DateTime.now().toUtc();
-        var binaryReader = BinaryReaderMock();
+        var binaryReader = MockBinaryReader();
         when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
         when(binaryReader.readBool()).thenReturn(true);
 
@@ -54,7 +59,7 @@ void main() {
     group('.write()', () {
       test('local', () {
         var now = DateTime.now();
-        var binaryWriter = BinaryWriterMock();
+        var binaryWriter = MockBinaryWriter();
 
         DateTimeWithTimezoneAdapter().write(binaryWriter, now);
         verifyInOrder([
@@ -65,7 +70,7 @@ void main() {
 
       test('UTC', () {
         var now = DateTime.now().toUtc();
-        var binaryWriter = BinaryWriterMock();
+        var binaryWriter = MockBinaryWriter();
 
         DateTimeWithTimezoneAdapter().write(binaryWriter, now);
         verifyInOrder([

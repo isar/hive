@@ -5,10 +5,10 @@ import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-
-import '../mocks.dart';
+import 'box_impl_test.mocks.dart';
 
 BoxImpl _getBox({
   String? name,
@@ -22,12 +22,16 @@ BoxImpl _getBox({
     name ?? 'testBox',
     null,
     cStrategy ?? (total, deleted) => false,
-    backend ?? BackendMock(),
+    backend ?? MockStorageBackend(),
   );
   box.keystore = keystore ?? Keystore(box, ChangeNotifier(), null);
   return box;
 }
 
+@GenerateMocks([
+  Keystore,
+  StorageBackend,
+])
 void main() {
   group('BoxImpl', () {
     test('.values', () {
@@ -55,7 +59,7 @@ void main() {
 
     group('.get()', () {
       test('returns defaultValue if key does not exist', () {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _getBox(backend: backend);
 
         expect(box.get('someKey'), null);
@@ -64,7 +68,7 @@ void main() {
       });
 
       test('returns cached value if it exists', () {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _getBox(
           backend: backend,
           keystore: Keystore.debug(frames: [
@@ -90,8 +94,8 @@ void main() {
 
     group('.putAll()', () {
       test('values', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.frames).thenReturn([Frame('keystoreFrames', 123)]);
         when(keystore.beginTransaction(any!)).thenReturn(true);
         when(backend.supportsCompaction).thenReturn(true);
@@ -113,8 +117,8 @@ void main() {
       });
 
       test('does nothing if no frames are provided', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.beginTransaction([])).thenReturn(false);
 
         var box = _getBox(backend: backend, keystore: keystore);
@@ -125,8 +129,8 @@ void main() {
       });
 
       test('handles exceptions', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
 
         when(backend.writeFrames(any!)).thenThrow('Some error');
         when(keystore.beginTransaction(any!)).thenReturn(true);
@@ -148,7 +152,7 @@ void main() {
 
     group('.deleteAll()', () {
       test('do nothing when deleting non existing keys', () async {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _getBox(backend: backend);
 
         await box.deleteAll(['key1', 'key2', 'key3']);
@@ -156,8 +160,8 @@ void main() {
       });
 
       test('delete keys', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(backend.supportsCompaction).thenReturn(true);
         when(keystore.beginTransaction(any!)).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(true);

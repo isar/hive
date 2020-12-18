@@ -1,32 +1,36 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/object/hive_object.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-
-import '../mocks.dart';
+import 'hive_collection_mixin_test.mocks.dart';
 
 HiveList _getTestList(Box box) {
-  var obj1 = TestHiveObject();
+  var obj1 = MockHiveObject();
   obj1.init('key1', box);
-  var obj2 = TestHiveObject();
+  var obj2 = MockHiveObject();
   obj2.init('key2', box);
-  var obj3 = TestHiveObject();
+  var obj3 = MockHiveObject();
   obj3.init('key3', box);
 
   return HiveList(box, objects: [obj1, obj2, obj3]);
 }
 
+@GenerateMocks([
+  HiveObject,
+  Box,
+])
 void main() {
   group('HiveCollectionMixin', () {
     test('.keys', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
 
       expect(hiveList.keys, ['key1', 'key2', 'key3']);
     });
 
     test('.deleteAllFromHive()', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
 
       hiveList.deleteAllFromHive();
@@ -34,7 +38,7 @@ void main() {
     });
 
     test('.deleteFirstFromHive()', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
 
       hiveList.deleteFirstFromHive();
@@ -42,7 +46,7 @@ void main() {
     });
 
     test('.deleteLastFromHive()', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
 
       hiveList.deleteLastFromHive();
@@ -50,7 +54,7 @@ void main() {
     });
 
     test('.deleteFromFromHive()', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
 
       hiveList.deleteFromHive(1);
@@ -58,10 +62,10 @@ void main() {
     });
 
     test('.toMap()', () {
-      var box = BoxMock();
-      var obj1 = TestHiveObject();
+      var box = MockBox();
+      var obj1 = MockHiveObject();
       obj1.init('key1', box);
-      var obj2 = TestHiveObject();
+      var obj2 = MockHiveObject();
       obj2.init('key2', box);
 
       var hiveList = HiveList(box, objects: [obj1, obj2]);

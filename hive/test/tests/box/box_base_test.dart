@@ -6,11 +6,11 @@ import 'package:hive/src/box/box_base_impl.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-
+import 'box_base_test.mocks.dart';
 import '../common.dart';
-import '../mocks.dart';
 
 class _BoxBaseMock extends BoxBaseImpl with Mock {
   _BoxBaseMock(
@@ -23,7 +23,7 @@ class _BoxBaseMock extends BoxBaseImpl with Mock {
           name ?? 'testBox',
           null,
           cStrategy ?? (total, deleted) => false,
-          backend ?? BackendMock(),
+          backend ?? MockStorageBackend(),
         );
 }
 
@@ -39,6 +39,11 @@ _BoxBaseMock _openBoxBaseMock({
   return mock;
 }
 
+@GenerateMocks([
+  StorageBackend,
+  Keystore,
+  HiveImpl,
+])
 void main() {
   group('BoxBase', () {
     test('.name', () {
@@ -47,7 +52,7 @@ void main() {
     });
 
     test('.path', () {
-      var backend = BackendMock();
+      var backend = MockStorageBackend();
       when(backend.path).thenReturn('some/path');
 
       var box = _openBoxBaseMock(backend: backend);
@@ -101,7 +106,7 @@ void main() {
 
     group('.watch()', () {
       test('calls keystore.watch()', () {
-        var keystore = KeystoreMock();
+        var keystore = MockKeystore();
         var box = _openBoxBaseMock(keystore: keystore);
 
         box.watch(key: 123);
@@ -130,7 +135,7 @@ void main() {
     });
 
     test('.initialize()', () async {
-      var backend = BackendMock();
+      var backend = MockStorageBackend();
       var box = _openBoxBaseMock(backend: backend);
 
       when(backend.initialize(any!, any!, any!)).thenAnswer((i) async {
@@ -155,7 +160,7 @@ void main() {
       });
 
       test('does not use backend', () {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _openBoxBaseMock(backend: backend);
         box.keystore.insert(Frame.lazy('existingKey'));
 
@@ -248,8 +253,8 @@ void main() {
 
     group('.clear()', () {
       test('clears keystore and backend', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.clear()).thenReturn(2);
         var box = _openBoxBaseMock(backend: backend, keystore: keystore);
 
@@ -269,7 +274,7 @@ void main() {
 
     group('.compact()', () {
       test('does nothing if backend does not support compaction', () async {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         when(backend.supportsCompaction).thenReturn(false);
         var box = _openBoxBaseMock(backend: backend);
 
@@ -279,7 +284,7 @@ void main() {
       });
 
       test('does nothing if there are no deleted entries', () async {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         when(backend.supportsCompaction).thenReturn(true);
         var box = _openBoxBaseMock(backend: backend);
         box.keystore.insert(Frame.lazy('key1'));
@@ -290,8 +295,8 @@ void main() {
       });
 
       test('compact', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
 
         when(keystore.frames)
             .thenReturn([Frame('key', 1, length: 22, offset: 33)]);
@@ -312,9 +317,9 @@ void main() {
     });
 
     test('.close()', () async {
-      var hive = HiveMock();
-      var keystore = KeystoreMock();
-      var backend = BackendMock();
+      var hive = MockHiveImpl();
+      var keystore = MockKeystore();
+      var backend = MockStorageBackend();
       var box = _openBoxBaseMock(
         name: 'myBox',
         hive: hive,
@@ -333,7 +338,7 @@ void main() {
 
     group('.deleteFromDisk()', () {
       test('only deleted file if box is closed', () async {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _openBoxBaseMock(backend: backend);
         await box.close();
 
@@ -342,9 +347,9 @@ void main() {
       });
 
       test('closes and deletes box', () async {
-        var hive = HiveMock();
-        var keystore = KeystoreMock();
-        var backend = BackendMock();
+        var hive = MockHiveImpl();
+        var keystore = MockKeystore();
+        var backend = MockStorageBackend();
         var box = _openBoxBaseMock(
           name: 'myBox',
           hive: hive,
