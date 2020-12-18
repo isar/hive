@@ -26,6 +26,7 @@ dependency_overrides:
       url: https://github.com/dart-lang/crypto.git
       ref: c89a5be0375875fe7ff71625fa2b79f5a421f06d
   mockito:
-    git:
-      url: https://github.com/dart-lang/mockito.git
-      ref: CB038376F98978355FED934D6FCDB0F4
+    path: ../mockito
+    #git:
+     # url: https://github.com/dart-lang/mockito.git
+      #ref: CB038376F98978355FED934D6FCDB0F4
