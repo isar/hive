@@ -357,7 +357,7 @@ void main() {
       var box = MockBox();
       when(box.name).thenReturn('Box');
 
-      var obj = MockHiveObject()..init('key', box);
+      var obj = TestHiveObject()..init('key', box);
 
       test('write length', () {
         var list = HiveList(box, objects: [obj]);
@@ -460,7 +460,7 @@ void main() {
         var box = MockBox();
         when(box.name).thenReturn('Box');
 
-        var obj = MockHiveObject()..init('key', box);
+        var obj = TestHiveObject()..init('key', box);
         var list = HiveList(box, objects: [obj]);
         var bw = getWriter();
         bw.write(list);

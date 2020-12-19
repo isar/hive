@@ -15,7 +15,6 @@ import 'package:mockito/annotations.dart';
 export 'mocks.mocks.dart';
 
 @GenerateMocks([], customMocks: [
-  MockSpec<HiveObject>(returnNullOnMissingStub: true),
   MockSpec<Box>(returnNullOnMissingStub: true),
   MockSpec<ChangeNotifier>(returnNullOnMissingStub: true),
   MockSpec<StorageBackend>(returnNullOnMissingStub: true),
@@ -30,3 +29,5 @@ export 'mocks.mocks.dart';
   MockSpec<FrameIoHelper>(returnNullOnMissingStub: true),
 ])
 var _mocks;
+
+class TestHiveObject extends HiveObject {}

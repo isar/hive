@@ -12,7 +12,7 @@ import '../common.dart';
 import '../mocks.dart';
 
 HiveObject _getHiveObject(String key, MockBox box) {
-  var hiveObject = MockHiveObject();
+  var hiveObject = TestHiveObject();
   hiveObject.init(key, box);
   when(box.get(key, defaultValue: argThat(isNotNull, named: 'defaultValue')))
       .thenReturn(hiveObject);

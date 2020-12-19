@@ -192,7 +192,7 @@ void main() {
           var box = MockBox();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = MockHiveObject();
+          var hiveObject = TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
 
           expect(hiveObject.key, 'key');
@@ -220,9 +220,9 @@ void main() {
           var box = MockBox();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = MockHiveObject();
+          var hiveObject = TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
-          keystore.insert(Frame('key', MockHiveObject()));
+          keystore.insert(Frame('key', TestHiveObject()));
 
           expect(hiveObject.key, null);
           expect(hiveObject.box, null);
@@ -232,7 +232,7 @@ void main() {
           var box = MockBox();
           var keystore = Keystore.debug(box: box);
 
-          var hiveObject = MockHiveObject();
+          var hiveObject = TestHiveObject();
           keystore.insert(Frame('key', hiveObject));
           keystore.insert(Frame('key', hiveObject));
 
@@ -284,7 +284,7 @@ void main() {
 
         test('unloads deleted HiveObject', () {
           var box = MockBox();
-          var hiveObject = MockHiveObject();
+          var hiveObject = TestHiveObject();
           var keystore =
               Keystore.debug(frames: [Frame('key', hiveObject)], box: box);
 
@@ -571,7 +571,7 @@ void main() {
       });
 
       test('unloads HiveObjects', () {
-        var hiveObject = MockHiveObject();
+        var hiveObject = TestHiveObject();
         var box = MockBox();
         var keystore = Keystore.debug(frames: [
           Frame('key1', 'val1'),
