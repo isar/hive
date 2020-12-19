@@ -32,6 +32,8 @@ class _FakeHiveList<E extends _i4.HiveObject> extends _i1.Fake
 
 class _FakeIterator<E> extends _i1.Fake implements Iterator<E> {}
 
+class _FakeHiveObject extends _i1.Fake implements _i4.HiveObject {}
+
 class _FakeUint8List extends _i1.Fake implements _i5.Uint8List {}
 
 class _FakeRandomAccessFile extends _i1.Fake implements _i6.RandomAccessFile {}
@@ -46,10 +48,6 @@ class _FakeIOSink extends _i1.Fake implements _i6.IOSink {}
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockHiveObject extends _i1.Mock implements _i4.HiveObject {
-  MockHiveObject() {
-    _i1.throwOnMissingStub(this);
-  }
-
   bool get isInBox =>
       (super.noSuchMethod(Invocation.getter(#isInBox), false) as bool);
   int get hashCode =>
@@ -73,10 +71,6 @@ class MockHiveObject extends _i1.Mock implements _i4.HiveObject {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
-  MockBox() {
-    _i1.throwOnMissingStub(this);
-  }
-
   Iterable<E> get values =>
       (super.noSuchMethod(Invocation.getter(#values), []) as Iterable<E>);
   int get hashCode =>
@@ -104,10 +98,6 @@ class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockChangeNotifier extends _i1.Mock implements _i8.ChangeNotifier {
-  MockChangeNotifier() {
-    _i1.throwOnMissingStub(this);
-  }
-
   int get hashCode =>
       (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
@@ -131,10 +121,6 @@ class MockChangeNotifier extends _i1.Mock implements _i8.ChangeNotifier {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockStorageBackend extends _i1.Mock implements _i10.StorageBackend {
-  MockStorageBackend() {
-    _i1.throwOnMissingStub(this);
-  }
-
   bool get supportsCompaction =>
       (super.noSuchMethod(Invocation.getter(#supportsCompaction), false)
           as bool);
@@ -176,10 +162,6 @@ class MockStorageBackend extends _i1.Mock implements _i10.StorageBackend {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
-  MockKeystore() {
-    _i1.throwOnMissingStub(this);
-  }
-
   _i2.ListQueue<_i11.KeyTransaction<E>> get transactions => (super.noSuchMethod(
           Invocation.getter(#transactions),
           _FakeListQueue<_i11.KeyTransaction<E>>())
@@ -238,10 +220,6 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockHiveImpl extends _i1.Mock implements _i12.HiveImpl {
-  MockHiveImpl() {
-    _i1.throwOnMissingStub(this);
-  }
-
   int get hashCode =>
       (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
@@ -346,10 +324,6 @@ class MockHiveImpl extends _i1.Mock implements _i12.HiveImpl {
 /// See the documentation for Mockito's code generation for more information.
 class MockHiveList<E extends _i4.HiveObject> extends _i1.Mock
     implements _i3.HiveList<E> {
-  MockHiveList() {
-    _i1.throwOnMissingStub(this);
-  }
-
   _i3.BoxBase<dynamic> get box =>
       (super.noSuchMethod(Invocation.getter(#box), _FakeBoxBase<dynamic>())
           as _i3.BoxBase<dynamic>);
@@ -390,10 +364,6 @@ class MockHiveList<E extends _i4.HiveObject> extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
     implements _i14.HiveListImpl<E> {
-  MockHiveListImpl() {
-    _i1.throwOnMissingStub(this);
-  }
-
   String get boxName =>
       (super.noSuchMethod(Invocation.getter(#boxName), '') as String);
   Iterable<dynamic> get keys =>
@@ -455,8 +425,8 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
       (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
   String toString() =>
       (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
-  E elementAt(int? index) =>
-      (super.noSuchMethod(Invocation.method(#elementAt, [index]), null) as E);
+  E elementAt(int? index) => (super.noSuchMethod(
+      Invocation.method(#elementAt, [index]), _FakeHiveObject()) as E);
   Iterable<E> followedBy(Iterable<E>? other) =>
       (super.noSuchMethod(Invocation.method(#followedBy, [other]), [])
           as Iterable<E>);
@@ -471,15 +441,16 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
       (super.noSuchMethod(Invocation.method(#any, [test]), false) as bool);
   E firstWhere(bool Function(E)? test, {E Function()? orElse}) =>
       (super.noSuchMethod(
-              Invocation.method(#firstWhere, [test], {#orElse: orElse}), null)
-          as E);
+          Invocation.method(#firstWhere, [test], {#orElse: orElse}),
+          _FakeHiveObject()) as E);
   E lastWhere(bool Function(E)? test, {E Function()? orElse}) =>
       (super.noSuchMethod(
-          Invocation.method(#lastWhere, [test], {#orElse: orElse}), null) as E);
+          Invocation.method(#lastWhere, [test], {#orElse: orElse}),
+          _FakeHiveObject()) as E);
   E singleWhere(bool Function(E)? test, {E Function()? orElse}) =>
       (super.noSuchMethod(
-              Invocation.method(#singleWhere, [test], {#orElse: orElse}), null)
-          as E);
+          Invocation.method(#singleWhere, [test], {#orElse: orElse}),
+          _FakeHiveObject()) as E);
   String join([String? separator]) =>
       (super.noSuchMethod(Invocation.method(#join, [separator]), '') as String);
   Iterable<E> where(bool Function(E)? test) =>
@@ -492,8 +463,8 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
       (super.noSuchMethod(Invocation.method(#map, [f]), []) as Iterable<T>);
   Iterable<T> expand<T>(Iterable<T> Function(E)? f) =>
       (super.noSuchMethod(Invocation.method(#expand, [f]), []) as Iterable<T>);
-  E reduce(E Function(E, E)? combine) =>
-      (super.noSuchMethod(Invocation.method(#reduce, [combine]), null) as E);
+  E reduce(E Function(E, E)? combine) => (super.noSuchMethod(
+      Invocation.method(#reduce, [combine]), _FakeHiveObject()) as E);
   T fold<T>(T? initialValue, T Function(T, E)? combine) => (super.noSuchMethod(
       Invocation.method(#fold, [initialValue, combine]), null) as T);
   Iterable<E> skip(int? count) =>
@@ -522,7 +493,8 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
   List<R> cast<R>() =>
       (super.noSuchMethod(Invocation.method(#cast, []), <R>[]) as List<R>);
   E removeLast() =>
-      (super.noSuchMethod(Invocation.method(#removeLast, []), null) as E);
+      (super.noSuchMethod(Invocation.method(#removeLast, []), _FakeHiveObject())
+          as E);
   Map<int, E> asMap() =>
       (super.noSuchMethod(Invocation.method(#asMap, []), <int, E>{})
           as Map<int, E>);
@@ -559,8 +531,8 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
           as int);
   void insert(int? index, E? element) =>
       super.noSuchMethod(Invocation.method(#insert, [index, element]));
-  E removeAt(int? index) =>
-      (super.noSuchMethod(Invocation.method(#removeAt, [index]), null) as E);
+  E removeAt(int? index) => (super.noSuchMethod(
+      Invocation.method(#removeAt, [index]), _FakeHiveObject()) as E);
   void insertAll(int? index, Iterable<E>? iterable) =>
       super.noSuchMethod(Invocation.method(#insertAll, [index, iterable]));
   void setAll(int? index, Iterable<E>? iterable) =>
@@ -571,10 +543,6 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockRandomAccessFile extends _i1.Mock implements _i6.RandomAccessFile {
-  MockRandomAccessFile() {
-    _i1.throwOnMissingStub(this);
-  }
-
   String get path =>
       (super.noSuchMethod(Invocation.getter(#path), '') as String);
   int get hashCode =>
@@ -673,10 +641,6 @@ class MockRandomAccessFile extends _i1.Mock implements _i6.RandomAccessFile {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockBinaryReader extends _i1.Mock implements _i3.BinaryReader {
-  MockBinaryReader() {
-    _i1.throwOnMissingStub(this);
-  }
-
   int get availableBytes =>
       (super.noSuchMethod(Invocation.getter(#availableBytes), 0) as int);
   int get usedBytes =>
@@ -752,10 +716,6 @@ class MockBinaryReader extends _i1.Mock implements _i3.BinaryReader {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockBinaryWriter extends _i1.Mock implements _i3.BinaryWriter {
-  MockBinaryWriter() {
-    _i1.throwOnMissingStub(this);
-  }
-
   int get hashCode =>
       (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
@@ -821,10 +781,6 @@ class MockBinaryWriter extends _i1.Mock implements _i3.BinaryWriter {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFile extends _i1.Mock implements _i6.File {
-  MockFile() {
-    _i1.throwOnMissingStub(this);
-  }
-
   _i6.File get absolute =>
       (super.noSuchMethod(Invocation.getter(#absolute), _FakeFile())
           as _i6.File);
@@ -940,10 +896,6 @@ class MockFile extends _i1.Mock implements _i6.File {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFrameIoHelper extends _i1.Mock implements _i16.FrameIoHelper {
-  MockFrameIoHelper() {
-    _i1.throwOnMissingStub(this);
-  }
-
   int get hashCode =>
       (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>

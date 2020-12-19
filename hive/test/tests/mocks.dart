@@ -14,19 +14,19 @@ import 'package:mockito/annotations.dart';
 
 export 'mocks.mocks.dart';
 
-@GenerateMocks([
-  HiveObject,
-  Box,
-  ChangeNotifier,
-  StorageBackend,
-  Keystore,
-  HiveImpl,
-  HiveList,
-  HiveListImpl,
-  RandomAccessFile,
-  BinaryReader,
-  BinaryWriter,
-  File,
-  FrameIoHelper,
+@GenerateMocks([], customMocks: [
+  MockSpec<HiveObject>(returnNullOnMissingStub: true),
+  MockSpec<Box>(returnNullOnMissingStub: true),
+  MockSpec<ChangeNotifier>(returnNullOnMissingStub: true),
+  MockSpec<StorageBackend>(returnNullOnMissingStub: true),
+  MockSpec<Keystore>(returnNullOnMissingStub: true),
+  MockSpec<HiveImpl>(returnNullOnMissingStub: true),
+  MockSpec<HiveList>(returnNullOnMissingStub: true),
+  MockSpec<HiveListImpl>(returnNullOnMissingStub: true),
+  MockSpec<RandomAccessFile>(returnNullOnMissingStub: true),
+  MockSpec<BinaryReader>(returnNullOnMissingStub: true),
+  MockSpec<BinaryWriter>(returnNullOnMissingStub: true),
+  MockSpec<File>(returnNullOnMissingStub: true),
+  MockSpec<FrameIoHelper>(returnNullOnMissingStub: true),
 ])
 var _mocks;
