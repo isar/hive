@@ -25,7 +25,7 @@ jobs:
       run: |
         export PATH="$PATH:/usr/lib/dart/bin"
         pub get
-        pub run test -p ${{ matrix.test-platform }}
+        pub run --no-sound-null-safety test -p ${{ matrix.test-platform }}
       working-directory: hive
         
   check-score:
