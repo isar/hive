@@ -134,7 +134,7 @@ class Keystore<E> {
     }
 
     for (var frame in iterable) {
-      yield (frame.value as E?)!;
+      yield frame.value as E;
 
       if (frame.key == endKey) break;
     }
