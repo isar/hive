@@ -21,11 +21,13 @@ void main() {
     test('.init()', () {
       var hive = HiveImpl();
 
-      hive.init('MYPATH');
+      expect(() => hive.init('MYPATH'), returnsNormally);
       expect(hive.homePath, 'MYPATH');
 
-      hive.init('OTHERPATH');
-      expect(hive.homePath, 'OTHERPATH');
+      expect(
+        () => hive.init('OTHERPATH'),
+        throwsHiveError('Instance has already been initialized.'),
+      );
 
       expect(
         hive.findAdapterForValue(DateTime.now())!.adapter,
