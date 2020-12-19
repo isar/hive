@@ -121,7 +121,7 @@ class Keystore<E> {
 
   /// Not part of public API
   Iterable<E> getValues() {
-    return _store.values.map(((e) => (e.value as E?)!));
+    return _store.values.map((e) => e.value as E);
   }
 
   /// Not part of public API
