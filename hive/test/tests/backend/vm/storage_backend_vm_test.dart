@@ -115,10 +115,10 @@ void main() {
 
       FrameIoHelper getFrameIoHelper(int recoveryOffset) {
         var helper = MockFrameIoHelper();
-        when(helper.framesFromFile(any!, any!, any!, any)).thenAnswer((i) {
+        when(helper.framesFromFile(any, any, any, any)).thenAnswer((i) {
           return Future.value(recoveryOffset);
         });
-        when(helper.keysFromFile(any!, any!, any)).thenAnswer((i) {
+        when(helper.keysFromFile(any, any, any)).thenAnswer((i) {
           return Future.value(recoveryOffset);
         });
         return helper;
@@ -233,7 +233,7 @@ void main() {
 
       test('resets writeOffset on error', () async {
         var writeRaf = MockRandomAccessFile();
-        when(writeRaf.writeFrom(any!)).thenThrow('error');
+        when(writeRaf.writeFrom(any)).thenThrow('error');
         var backend = _getBackend(writeRaf: writeRaf);
         backend.writeOffset = 123;
 
