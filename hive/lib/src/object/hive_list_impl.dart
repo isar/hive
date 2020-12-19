@@ -115,6 +115,12 @@ class HiveListImpl<E extends HiveObject>
     }
   }
 
+  void _checkElementIsValid(E obj) {
+    if (obj.box != box) {
+      throw HiveError('HiveObjects needs to be in the box "$boxName".');
+    }
+  }
+
   @override
   set length(int newLength) {
     if (newLength < delegate.length) {
@@ -127,6 +133,7 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   void operator []=(int index, E value) {
+    _checkElementIsValid(value);
     value.linkHiveList(this);
 
     var oldValue = delegate[index];
@@ -137,6 +144,7 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   void add(E element) {
+    _checkElementIsValid(element);
     element.linkHiveList(this);
     delegate.add(element);
   }
@@ -144,6 +152,7 @@ class HiveListImpl<E extends HiveObject>
   @override
   void addAll(Iterable<E> iterable) {
     for (var element in iterable) {
+      _checkElementIsValid(element);
       element.linkHiveList(this);
     }
     delegate.addAll(iterable);
