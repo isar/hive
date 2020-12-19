@@ -129,7 +129,7 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
       (super.noSuchMethod(Invocation.getter(#deletedEntries), 0) as int);
   int get length => (super.noSuchMethod(Invocation.getter(#length), 0) as int);
   Iterable<_i9.Frame> get frames =>
-      (super.noSuchMethod(Invocation.getter(#frames), [])
+      (super.noSuchMethod(Invocation.getter(#frames), <_i9.Frame>[])
           as Iterable<_i9.Frame>);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
