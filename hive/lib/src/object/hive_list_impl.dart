@@ -115,10 +115,6 @@ class HiveListImpl<E extends HiveObject>
     }
   }
 
-  void _checkElementIsValid(E obj) {
-    throw HiveError('HiveLists must not contain null elements.');
-  }
-
   @override
   set length(int newLength) {
     if (newLength < delegate.length) {
@@ -131,7 +127,6 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   void operator []=(int index, E value) {
-    _checkElementIsValid(value);
     value.linkHiveList(this);
 
     var oldValue = delegate[index];
@@ -142,16 +137,12 @@ class HiveListImpl<E extends HiveObject>
 
   @override
   void add(E element) {
-    _checkElementIsValid(element);
     element.linkHiveList(this);
     delegate.add(element);
   }
 
   @override
   void addAll(Iterable<E> iterable) {
-    for (var element in iterable) {
-      _checkElementIsValid(element);
-    }
     for (var element in iterable) {
       element.linkHiveList(this);
     }
