@@ -44,29 +44,6 @@ class _FakeDateTime extends _i1.Fake implements DateTime {}
 
 class _FakeIOSink extends _i1.Fake implements _i6.IOSink {}
 
-/// A class which mocks [HiveObject].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockHiveObject extends _i1.Mock implements _i4.HiveObject {
-  bool get isInBox =>
-      (super.noSuchMethod(Invocation.getter(#isInBox), false) as bool);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
-  _i7.Future<void> save() =>
-      (super.noSuchMethod(Invocation.method(#save, []), Future.value(null))
-          as _i7.Future<void>);
-  _i7.Future<void> delete() =>
-      (super.noSuchMethod(Invocation.method(#delete, []), Future.value(null))
-          as _i7.Future<void>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
-}
-
 /// A class which mocks [Box].
 ///
 /// See the documentation for Mockito's code generation for more information.
