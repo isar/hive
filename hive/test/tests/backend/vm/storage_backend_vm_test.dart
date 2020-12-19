@@ -183,7 +183,11 @@ void main() {
         var frameBytes = getFrameBytes([Frame('test', 123)]);
         var readRaf = await getTempRaf([1, 2, 3, 4, 5, ...frameBytes]);
 
-        var backend = _getBackend(readRaf: readRaf);
+        var backend = _getBackend(readRaf: readRaf)
+          // The registry needs to be initialized before reading values, and
+          // because we do not call StorageBackendVM.initialize(), we set it
+          // manually.
+          ..registry = TypeRegistryImpl.nullImpl;
         var value = await backend.readValue(
           Frame('test', 123, length: frameBytes.length, offset: 5),
         );
@@ -194,7 +198,11 @@ void main() {
 
       test('throws exception when frame cannot be read', () async {
         var readRaf = await getTempRaf([1, 2, 3, 4, 5]);
-        var backend = _getBackend(readRaf: readRaf);
+        var backend = _getBackend(readRaf: readRaf)
+          // The registry needs to be initialized before reading values, and
+          // because we do not call StorageBackendVM.initialize(), we set it
+          // manually.
+          ..registry = TypeRegistryImpl.nullImpl;
 
         var frame = Frame('test', 123, length: frameBytes.length, offset: 0);
         await expectLater(
@@ -210,7 +218,11 @@ void main() {
         var bytes = getFrameBytes(frames);
 
         var writeRaf = MockRandomAccessFile();
-        var backend = _getBackend(writeRaf: writeRaf);
+        var backend = _getBackend(writeRaf: writeRaf)
+          // The registry needs to be initialized before writing values, and
+          // because we do not call StorageBackendVM.initialize(), we set it
+          // manually.
+          ..registry = TypeRegistryImpl.nullImpl;
 
         await backend.writeFrames(frames);
         verify(writeRaf.writeFrom(bytes));
@@ -220,7 +232,11 @@ void main() {
         var frames = [Frame('key1', 'value'), Frame('key2', null)];
 
         var writeRaf = MockRandomAccessFile();
-        var backend = _getBackend(writeRaf: writeRaf);
+        var backend = _getBackend(writeRaf: writeRaf)
+          // The registry needs to be initialized before writing values, and
+          // because we do not call StorageBackendVM.initialize(), we set it
+          // manually.
+          ..registry = TypeRegistryImpl.nullImpl;
         backend.writeOffset = 5;
 
         await backend.writeFrames(frames);
@@ -234,7 +250,11 @@ void main() {
       test('resets writeOffset on error', () async {
         var writeRaf = MockRandomAccessFile();
         when(writeRaf.writeFrom(any)).thenThrow('error');
-        var backend = _getBackend(writeRaf: writeRaf);
+        var backend = _getBackend(writeRaf: writeRaf)
+          // The registry needs to be initialized before writing values, and
+          // because we do not call StorageBackendVM.initialize(), we set it
+          // manually.
+          ..registry = TypeRegistryImpl.nullImpl;
         backend.writeOffset = 123;
 
         await expectLater(() => backend.writeFrames([Frame('key1', 'value')]),
