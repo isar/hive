@@ -28,6 +28,7 @@ export 'mocks.mocks.dart';
   MockSpec<File>(returnNullOnMissingStub: true),
   MockSpec<FrameIoHelper>(returnNullOnMissingStub: true),
 ])
+// ignore: prefer_typing_uninitialized_variables, unused_element
 var _mocks;
 
 class TestHiveObject extends HiveObject {}

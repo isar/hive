@@ -1,17 +1,16 @@
 import 'dart:typed_data';
 
+import 'package:dartx/dartx.dart';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-import 'package:dartx/dartx.dart';
 
-import '../mocks.dart';
 import '../frames.dart';
+import '../mocks.dart';
 
 List<int> bytes(ByteData byteData) => byteData.buffer.asUint8List();
 

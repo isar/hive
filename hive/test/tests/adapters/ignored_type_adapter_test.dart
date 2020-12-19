@@ -1,6 +1,4 @@
-import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/ignored_type_adapter.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
