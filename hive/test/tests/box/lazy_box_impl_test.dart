@@ -43,7 +43,7 @@ void main() {
 
       test('reads value from backend', () async {
         var backend = MockStorageBackend();
-        when(backend.readValue(any!)).thenAnswer((i) async => 'testVal');
+        when(backend.readValue(any)).thenAnswer((i) async => 'testVal');
 
         var box = _getBox(backend: backend);
         var frame = Frame.lazy('testKey', length: 123, offset: 456);
@@ -60,7 +60,7 @@ void main() {
         Frame.lazy('a'),
       ]);
       var backend = MockStorageBackend();
-      when(backend.readValue(any!)).thenAnswer((i) {
+      when(backend.readValue(any)).thenAnswer((i) {
         return Future.value('A');
       });
       var box = _getBox(keystore: keystore, backend: backend);
@@ -94,7 +94,7 @@ void main() {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
 
-        when(backend.writeFrames(any!)).thenThrow('Some error');
+        when(backend.writeFrames(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = _getBox(

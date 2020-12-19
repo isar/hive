@@ -134,7 +134,7 @@ void main() {
       var backend = MockStorageBackend();
       var box = _openBoxBaseMock(backend: backend);
 
-      when(backend.initialize(any!, any!, any!)).thenAnswer((i) async {
+      when(backend.initialize(any, any, any)).thenAnswer((i) async {
         i.positionalArguments[1].insert(Frame('key1', 1));
       });
 

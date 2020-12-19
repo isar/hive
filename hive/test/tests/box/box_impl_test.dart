@@ -93,7 +93,7 @@ void main() {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
         when(keystore.frames).thenReturn([Frame('keystoreFrames', 123)]);
-        when(keystore.beginTransaction(any!)).thenReturn(true);
+        when(keystore.beginTransaction(any)).thenReturn(true);
         when(backend.supportsCompaction).thenReturn(true);
 
         var box = _getBox(
@@ -128,8 +128,8 @@ void main() {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
 
-        when(backend.writeFrames(any!)).thenThrow('Some error');
-        when(keystore.beginTransaction(any!)).thenReturn(true);
+        when(backend.writeFrames(any)).thenThrow('Some error');
+        when(keystore.beginTransaction(any)).thenReturn(true);
 
         var box = _getBox(backend: backend, keystore: keystore);
 
@@ -159,7 +159,7 @@ void main() {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
         when(backend.supportsCompaction).thenReturn(true);
-        when(keystore.beginTransaction(any!)).thenReturn(true);
+        when(keystore.beginTransaction(any)).thenReturn(true);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = _getBox(
@@ -176,7 +176,7 @@ void main() {
           keystore.beginTransaction(frames),
           backend.writeFrames(frames),
           keystore.commitTransaction(),
-          backend.compact(any!),
+          backend.compact(any),
         ]);
       });
     });
