@@ -50,8 +50,6 @@ class _FakeIOSink extends _i1.Fake implements _i6.IOSink {}
 class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
   Iterable<E> get values =>
       (super.noSuchMethod(Invocation.getter(#values), []) as Iterable<E>);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -65,18 +63,12 @@ class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
   Map<dynamic, E> toMap() =>
       (super.noSuchMethod(Invocation.method(#toMap, []), <dynamic, E>{})
           as Map<dynamic, E>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [ChangeNotifier].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockChangeNotifier extends _i1.Mock implements _i8.ChangeNotifier {
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -88,10 +80,6 @@ class MockChangeNotifier extends _i1.Mock implements _i8.ChangeNotifier {
   _i7.Future<void> close() =>
       (super.noSuchMethod(Invocation.method(#close, []), Future.value(null))
           as _i7.Future<void>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [StorageBackend].
@@ -101,8 +89,6 @@ class MockStorageBackend extends _i1.Mock implements _i10.StorageBackend {
   bool get supportsCompaction =>
       (super.noSuchMethod(Invocation.getter(#supportsCompaction), false)
           as bool);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -129,10 +115,6 @@ class MockStorageBackend extends _i1.Mock implements _i10.StorageBackend {
   _i7.Future<void> deleteFromDisk() => (super.noSuchMethod(
           Invocation.method(#deleteFromDisk, []), Future.value(null))
       as _i7.Future<void>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [Keystore].
@@ -149,8 +131,6 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
   Iterable<_i9.Frame> get frames =>
       (super.noSuchMethod(Invocation.getter(#frames), [])
           as Iterable<_i9.Frame>);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -187,18 +167,12 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
   _i7.Future<dynamic> close() =>
       (super.noSuchMethod(Invocation.method(#close, []), Future.value(null))
           as _i7.Future<dynamic>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [HiveImpl].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockHiveImpl extends _i1.Mock implements _i12.HiveImpl {
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -290,10 +264,6 @@ class MockHiveImpl extends _i1.Mock implements _i12.HiveImpl {
           false) as bool);
   void ignoreTypeId<T>(int? typeId) =>
       super.noSuchMethod(Invocation.method(#ignoreTypeId, [typeId]));
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [HiveList].
@@ -306,8 +276,6 @@ class MockHiveList<E extends _i4.HiveObject> extends _i1.Mock
           as _i3.BoxBase<dynamic>);
   Iterable<dynamic> get keys =>
       (super.noSuchMethod(Invocation.getter(#keys), []) as Iterable<dynamic>);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -330,10 +298,6 @@ class MockHiveList<E extends _i4.HiveObject> extends _i1.Mock
   Map<dynamic, E> toMap() =>
       (super.noSuchMethod(Invocation.method(#toMap, []), <dynamic, E>{})
           as Map<dynamic, E>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [HiveListImpl].
@@ -354,8 +318,6 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
       super.noSuchMethod(Invocation.setter(#length, [newLength]));
   set debugHive(_i3.HiveInterface? hive) =>
       super.noSuchMethod(Invocation.setter(#debugHive, [hive]));
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -398,10 +360,6 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
   Map<dynamic, E> toMap() =>
       (super.noSuchMethod(Invocation.method(#toMap, []), <dynamic, E>{})
           as Map<dynamic, E>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
   E elementAt(int? index) => (super.noSuchMethod(
       Invocation.method(#elementAt, [index]), _FakeHiveObject()) as E);
   Iterable<E> followedBy(Iterable<E>? other) =>
@@ -522,8 +480,6 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
 class MockRandomAccessFile extends _i1.Mock implements _i6.RandomAccessFile {
   String get path =>
       (super.noSuchMethod(Invocation.getter(#path), '') as String);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -608,10 +564,6 @@ class MockRandomAccessFile extends _i1.Mock implements _i6.RandomAccessFile {
           as _i7.Future<_i6.RandomAccessFile>);
   void unlockSync([int? start, int? end]) =>
       super.noSuchMethod(Invocation.method(#unlockSync, [start, end]));
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
 }
 
 /// A class which mocks [BinaryReader].
@@ -622,8 +574,6 @@ class MockBinaryReader extends _i1.Mock implements _i3.BinaryReader {
       (super.noSuchMethod(Invocation.getter(#availableBytes), 0) as int);
   int get usedBytes =>
       (super.noSuchMethod(Invocation.getter(#usedBytes), 0) as int);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -683,18 +633,12 @@ class MockBinaryReader extends _i1.Mock implements _i3.BinaryReader {
   _i3.HiveList<_i4.HiveObject> readHiveList([int? length]) =>
       (super.noSuchMethod(Invocation.method(#readHiveList, [length]),
           _FakeHiveList<_i4.HiveObject>()) as _i3.HiveList<_i4.HiveObject>);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [BinaryWriter].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockBinaryWriter extends _i1.Mock implements _i3.BinaryWriter {
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -748,10 +692,6 @@ class MockBinaryWriter extends _i1.Mock implements _i3.BinaryWriter {
           #writeHiveList, [list], {#writeLength: writeLength}));
   void write<T>(T? value, {bool? writeTypeId = true}) => super.noSuchMethod(
       Invocation.method(#write, [value], {#writeTypeId: writeTypeId}));
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [File].
@@ -763,8 +703,6 @@ class MockFile extends _i1.Mock implements _i6.File {
           as _i6.File);
   String get path =>
       (super.noSuchMethod(Invocation.getter(#path), '') as String);
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -863,18 +801,12 @@ class MockFile extends _i1.Mock implements _i6.File {
           {_i6.FileMode? mode, _i15.Encoding? encoding, bool? flush}) =>
       super.noSuchMethod(Invocation.method(#writeAsStringSync, [contents],
           {#mode: mode, #encoding: encoding, #flush: flush}));
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
 
 /// A class which mocks [FrameIoHelper].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFrameIoHelper extends _i1.Mock implements _i16.FrameIoHelper {
-  int get hashCode =>
-      (super.noSuchMethod(Invocation.getter(#hashCode), 0) as int);
   Type get runtimeType =>
       (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
           as Type);
@@ -902,8 +834,4 @@ class MockFrameIoHelper extends _i1.Mock implements _i16.FrameIoHelper {
           Invocation.method(
               #framesFromBytes, [bytes, keystore, registry, cipher]),
           0) as int);
-  bool operator ==(Object? other) =>
-      (super.noSuchMethod(Invocation.method(#==, [other]), false) as bool);
-  String toString() =>
-      (super.noSuchMethod(Invocation.method(#toString, []), '') as String);
 }
