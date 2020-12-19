@@ -24,12 +24,16 @@ class StorageBackendVm extends StorageBackend {
   final ReadWriteSync _sync;
 
   /// Not part of public API
+  ///
+  /// Not `late final` for testing
   @visibleForTesting
-  late final RandomAccessFile readRaf;
+  late RandomAccessFile readRaf;
 
   /// Not part of public API
+  ///
+  /// Not `late final` for testing
   @visibleForTesting
-  late final RandomAccessFile writeRaf;
+  late RandomAccessFile writeRaf;
 
   /// Not part of public API
   @visibleForTesting

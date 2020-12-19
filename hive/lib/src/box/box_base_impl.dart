@@ -23,9 +23,11 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   final StorageBackend backend;
 
   /// Not part of public API
+  ///
+  /// Not `late final` for testing
   @protected
   @visibleForTesting
-  late final Keystore<E> keystore;
+  late Keystore<E> keystore;
 
   bool _open = true;
 
