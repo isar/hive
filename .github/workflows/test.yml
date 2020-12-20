@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         test-platform: [vm, chrome]
-        dart-channel: [stable, unstable]
+        dart-channel: [unstable]
     
     steps:
     - uses: actions/checkout@v1
