@@ -150,7 +150,7 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     _requireBytes(length * 8);
     var byteData = _byteData;
-    var list = <int>[]..length = length;
+    var list = List<int>.filled(length, 0);
     for (var i = 0; i < length; i++) {
       list[i] = byteData.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
@@ -163,7 +163,7 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     _requireBytes(length * 8);
     var byteData = _byteData;
-    var list = <double>[]..length = length;
+    var list = List<double>.filled(length, 0.0);
     for (var i = 0; i < length; i++) {
       list[i] = byteData.getFloat64(_offset, Endian.little);
       _offset += 8;
@@ -175,7 +175,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<bool> readBoolList([int? length]) {
     length ??= readUint32();
     _requireBytes(length);
-    var list = <bool>[]..length = length;
+    var list = List<bool>.filled(length, false);
     for (var i = 0; i < length; i++) {
       list[i] = _buffer[_offset++] > 0;
     }
@@ -187,7 +187,7 @@ class BinaryReaderImpl extends BinaryReader {
       [int? length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
     length ??= readUint32();
-    var list = <String>[]..length = length;
+    var list = List<String>.filled(length, '');
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
     }
@@ -197,7 +197,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   List readList([int? length]) {
     length ??= readUint32();
-    var list = <dynamic>[]..length = length;
+    var list = List<dynamic>.filled(length, null);
     for (var i = 0; i < length; i++) {
       list[i] = read();
     }
