@@ -50,9 +50,6 @@ class _FakeIOSink extends _i1.Fake implements _i6.IOSink {}
 class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
   Iterable<E> get values =>
       (super.noSuchMethod(Invocation.getter(#values), []) as Iterable<E>);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   Iterable<E> valuesBetween({dynamic startKey, dynamic endKey}) =>
       (super.noSuchMethod(
           Invocation.method(
@@ -63,15 +60,14 @@ class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
   Map<dynamic, E> toMap() =>
       (super.noSuchMethod(Invocation.method(#toMap, []), <dynamic, E>{})
           as Map<dynamic, E>);
+  String get name =>
+      (super.noSuchMethod(Invocation.getter(#name), '') as String);
 }
 
 /// A class which mocks [ChangeNotifier].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockChangeNotifier extends _i1.Mock implements _i8.ChangeNotifier {
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   void notify(_i9.Frame? frame) =>
       super.noSuchMethod(Invocation.method(#notify, [frame]));
   _i7.Stream<_i3.BoxEvent> watch({dynamic key}) => (super.noSuchMethod(
@@ -89,9 +85,6 @@ class MockStorageBackend extends _i1.Mock implements _i10.StorageBackend {
   bool get supportsCompaction =>
       (super.noSuchMethod(Invocation.getter(#supportsCompaction), false)
           as bool);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   _i7.Future<void> initialize(_i3.TypeRegistry? registry,
           _i11.Keystore<dynamic>? keystore, bool? lazy) =>
       (super.noSuchMethod(
@@ -131,9 +124,6 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
   Iterable<_i9.Frame> get frames =>
       (super.noSuchMethod(Invocation.getter(#frames), <_i9.Frame>[])
           as Iterable<_i9.Frame>);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   int autoIncrement() =>
       (super.noSuchMethod(Invocation.method(#autoIncrement, []), 0) as int);
   void updateAutoIncrement(int? key) =>
@@ -173,9 +163,6 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockHiveImpl extends _i1.Mock implements _i12.HiveImpl {
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   void init(String? path) =>
       super.noSuchMethod(Invocation.method(#init, [path]));
   _i7.Future<_i3.Box<E>> openBox<E>(String? name,
@@ -276,9 +263,6 @@ class MockHiveList<E extends _i4.HiveObject> extends _i1.Mock
           as _i3.BoxBase<dynamic>);
   Iterable<dynamic> get keys =>
       (super.noSuchMethod(Invocation.getter(#keys), []) as Iterable<dynamic>);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   _i3.HiveList<T> castHiveList<T extends _i4.HiveObject>() =>
       (super.noSuchMethod(
               Invocation.method(#castHiveList, []), _FakeHiveList<T>())
@@ -318,9 +302,6 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
       super.noSuchMethod(Invocation.setter(#length, [newLength]));
   set debugHive(_i3.HiveInterface? hive) =>
       super.noSuchMethod(Invocation.setter(#debugHive, [hive]));
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   Iterator<E> get iterator =>
       (super.noSuchMethod(Invocation.getter(#iterator), _FakeIterator<E>())
           as Iterator<E>);
@@ -480,9 +461,6 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
 class MockRandomAccessFile extends _i1.Mock implements _i6.RandomAccessFile {
   String get path =>
       (super.noSuchMethod(Invocation.getter(#path), '') as String);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   _i7.Future<void> close() =>
       (super.noSuchMethod(Invocation.method(#close, []), Future.value(null))
           as _i7.Future<void>);
@@ -574,9 +552,6 @@ class MockBinaryReader extends _i1.Mock implements _i3.BinaryReader {
       (super.noSuchMethod(Invocation.getter(#availableBytes), 0) as int);
   int get usedBytes =>
       (super.noSuchMethod(Invocation.getter(#usedBytes), 0) as int);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   void skip(int? bytes) =>
       super.noSuchMethod(Invocation.method(#skip, [bytes]));
   int readByte() =>
@@ -639,9 +614,6 @@ class MockBinaryReader extends _i1.Mock implements _i3.BinaryReader {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockBinaryWriter extends _i1.Mock implements _i3.BinaryWriter {
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   void writeByte(int? byte) =>
       super.noSuchMethod(Invocation.method(#writeByte, [byte]));
   void writeWord(int? value) =>
@@ -703,9 +675,6 @@ class MockFile extends _i1.Mock implements _i6.File {
           as _i6.File);
   String get path =>
       (super.noSuchMethod(Invocation.getter(#path), '') as String);
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   _i7.Future<_i6.File> create({bool? recursive}) => (super.noSuchMethod(
       Invocation.method(#create, [], {#recursive: recursive}),
       Future.value(_FakeFile())) as _i7.Future<_i6.File>);
@@ -807,9 +776,6 @@ class MockFile extends _i1.Mock implements _i6.File {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFrameIoHelper extends _i1.Mock implements _i16.FrameIoHelper {
-  Type get runtimeType =>
-      (super.noSuchMethod(Invocation.getter(#runtimeType), _FakeType())
-          as Type);
   _i7.Future<_i6.RandomAccessFile> openFile(String? path) =>
       (super.noSuchMethod(Invocation.method(#openFile, [path]),
               Future.value(_FakeRandomAccessFile()))
