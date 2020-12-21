@@ -62,6 +62,20 @@ class MockBox<E> extends _i1.Mock implements _i3.Box<E> {
           as Map<dynamic, E>);
   String get name =>
       (super.noSuchMethod(Invocation.getter(#name), '') as String);
+  bool get lazy =>
+      (super.noSuchMethod(Invocation.getter(#lazy), false) as bool);
+  Future<void> put(dynamic key, E value) =>
+      (super.noSuchMethod(Invocation.method(#put, [key, value]), Future.value())
+          as Future<void>);
+  _i7.Future<void> delete(key) =>
+      (super.noSuchMethod(Invocation.method(#delete, [key]), Future.value())
+          as Future<void>);
+  _i7.Future<void> deleteAll(Iterable keys) =>
+      (super.noSuchMethod(Invocation.method(#deleteAll, [keys]), Future.value())
+          as Future<void>);
+  bool containsKey(key) =>
+      (super.noSuchMethod(Invocation.method(#containsKey, [key]), false)
+          as bool);
 }
 
 /// A class which mocks [ChangeNotifier].
