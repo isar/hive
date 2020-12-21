@@ -1,3 +1,4 @@
+@Skip('Cannot run with sound null safety')
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
