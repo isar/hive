@@ -15,6 +15,7 @@ void main() {
       await writer.write([7, 8, 9]);
       verifyZeroInteractions(file);
 
+      when(file.writeFrom(any)).thenAnswer((i) => Future.value(file));
       await writer.write([10]);
       verify(file.writeFrom([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
 
@@ -22,12 +23,14 @@ void main() {
       await writer.flush();
       verifyZeroInteractions(file);
 
+      when(file.writeFrom(any)).thenAnswer((i) => Future.value(file));
       await writer.write([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
       verify(file.writeFrom([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]));
     });
 
     test('flush()', () async {
       var file = MockRandomAccessFile();
+      when(file.writeFrom(any)).thenAnswer((i) => Future.value(file));
       var writer = BufferedFileWriter(file, 10);
 
       await writer.flush();

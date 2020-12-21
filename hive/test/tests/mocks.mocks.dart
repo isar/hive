@@ -784,6 +784,10 @@ class MockFile extends _i1.Mock implements _i6.File {
           {_i6.FileMode? mode, _i15.Encoding? encoding, bool? flush}) =>
       super.noSuchMethod(Invocation.method(#writeAsStringSync, [contents],
           {#mode: mode, #encoding: encoding, #flush: flush}));
+  _i7.Future<_i6.FileSystemEntity> delete({bool recursive = false}) =>
+      (super.noSuchMethod(
+          Invocation.method(#delete, [], {#recursive: recursive}),
+          Future.value(_FakeFile())) as _i7.Future<_i6.FileSystemEntity>);
 }
 
 /// A class which mocks [FrameIoHelper].
