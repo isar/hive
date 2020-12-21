@@ -91,14 +91,17 @@ void main() {
     group('.putAll()', () {
       test('values', () async {
         var frames = [Frame('key1', 'value1'), Frame('key2', 'value2')];
+        var keystoreFrames = [Frame('keystoreFrames', 123)];
 
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
-        when(keystore.frames).thenReturn([Frame('keystoreFrames', 123)]);
-        when(keystore.length).thenReturn(1);
+        when(keystore.frames).thenReturn(keystoreFrames);
         when(keystore.beginTransaction(any)).thenReturn(true);
         returnFutureVoid(when(backend.writeFrames(frames)));
+        returnFutureVoid(when(backend.compact(keystoreFrames)));
         when(backend.supportsCompaction).thenReturn(true);
+        when(keystore.length).thenReturn(-1);
+        when(keystore.deletedEntries).thenReturn(-1);
 
         var box = _getBox(
           keystore: keystore,
@@ -151,8 +154,15 @@ void main() {
 
     group('.deleteAll()', () {
       test('do nothing when deleting non existing keys', () async {
+        var frames = <Frame>[];
+
         var backend = MockStorageBackend();
-        var box = _getBox(backend: backend);
+        var keystore = MockKeystore();
+        var box = _getBox(backend: backend, keystore: keystore);
+        when(keystore.frames).thenReturn(frames);
+        when(keystore.containsKey(any)).thenReturn(false);
+        returnFutureVoid(when(backend.compact(frames)));
+        when(keystore.beginTransaction(frames)).thenReturn(false);
 
         await box.deleteAll(['key1', 'key2', 'key3']);
         verifyZeroInteractions(backend);
@@ -167,7 +177,10 @@ void main() {
         when(keystore.beginTransaction(any)).thenReturn(true);
         returnFutureVoid(when(backend.writeFrames(frames)));
         when(keystore.containsKey(any)).thenReturn(true);
-        when(keystore.length).thenReturn(2);
+        when(keystore.length).thenReturn(-1);
+        when(keystore.deletedEntries).thenReturn(-1);
+        when(keystore.frames).thenReturn(frames);
+        returnFutureVoid(when(backend.compact(frames)));
 
         var box = _getBox(
           backend: backend,

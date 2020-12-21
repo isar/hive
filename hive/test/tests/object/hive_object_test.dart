@@ -106,6 +106,8 @@ void main() {
       test('updates object in box', () {
         var obj = TestHiveObject();
         var box = MockBox();
+        returnFutureVoid(when(box.put('key', obj)));
+
         obj.init('key', box);
         verifyZeroInteractions(box);
 
@@ -123,6 +125,8 @@ void main() {
       test('removes object from box', () {
         var obj = TestHiveObject();
         var box = MockBox();
+        returnFutureVoid(when(box.delete('key')));
+
         obj.init('key', box);
         verifyZeroInteractions(box);
 

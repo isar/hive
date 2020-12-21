@@ -3,10 +3,17 @@ import 'dart:async';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
-class StreamControllerMock<T> extends Mock implements StreamController<T> {}
+import '../common.dart';
+
+class StreamControllerMock<T> extends Mock implements StreamController<T> {
+  Future<dynamic> close() =>
+      (super.noSuchMethod(Invocation.method(#close, []), Future.value())
+          as Future<dynamic>);
+}
 
 void main() {
   group('ChangeNotifier', () {
@@ -43,7 +50,7 @@ void main() {
 
     test('close', () async {
       var controller = StreamControllerMock<BoxEvent>();
-      when(controller.close()).thenAnswer((i) => Future.value());
+      returnFutureVoid(when(controller.close()));
       var notifier = ChangeNotifier.debug(controller);
 
       await notifier.close();
