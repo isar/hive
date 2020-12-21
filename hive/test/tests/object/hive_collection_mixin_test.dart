@@ -4,7 +4,8 @@ import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 import '../mocks.dart';
 
-HiveList _getTestList(Box box) {
+HiveList _getTestList(MockBox box) {
+  when(box.name).thenReturn('testBox');
   var obj1 = TestHiveObject();
   obj1.init('key1', box);
   var obj2 = TestHiveObject();

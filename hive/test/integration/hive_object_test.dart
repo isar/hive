@@ -52,10 +52,10 @@ Future _performTest(bool lazy) async {
   await obj2.delete();
 
   box = await box.reopen();
-  obj1 = await box.get(0) as _TestObject;
-  obj2 = await box.get('someKey') as _TestObject;
-  expect(obj1.name, 'test1 updated');
-  expect(obj2, null);
+  final newObj1 = await box.get(0) as _TestObject;
+  final newObj2 = await box.get('someKey') as _TestObject?;
+  expect(newObj1.name, 'test1 updated');
+  expect(newObj2, null);
 
   await box.close();
 }

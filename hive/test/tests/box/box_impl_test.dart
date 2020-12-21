@@ -7,6 +7,7 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
+import '../common.dart';
 import '../mocks.dart';
 
 BoxImpl _getBox({
@@ -89,10 +90,14 @@ void main() {
 
     group('.putAll()', () {
       test('values', () async {
+        var frames = [Frame('key1', 'value1'), Frame('key2', 'value2')];
+
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
         when(keystore.frames).thenReturn([Frame('keystoreFrames', 123)]);
+        when(keystore.length).thenReturn(1);
         when(keystore.beginTransaction(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(frames)));
         when(backend.supportsCompaction).thenReturn(true);
 
         var box = _getBox(
@@ -102,7 +107,6 @@ void main() {
         );
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
-        var frames = [Frame('key1', 'value1'), Frame('key2', 'value2')];
         verifyInOrder([
           keystore.beginTransaction(frames),
           backend.writeFrames(frames),
@@ -155,11 +159,15 @@ void main() {
       });
 
       test('delete keys', () async {
+        var frames = [Frame.deleted('key1'), Frame.deleted('key2')];
+
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
         when(backend.supportsCompaction).thenReturn(true);
         when(keystore.beginTransaction(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(frames)));
         when(keystore.containsKey(any)).thenReturn(true);
+        when(keystore.length).thenReturn(2);
 
         var box = _getBox(
           backend: backend,
@@ -168,7 +176,6 @@ void main() {
         );
 
         await box.deleteAll(['key1', 'key2']);
-        var frames = [Frame.deleted('key1'), Frame.deleted('key2')];
         verifyInOrder([
           keystore.containsKey('key1'),
           keystore.containsKey('key2'),

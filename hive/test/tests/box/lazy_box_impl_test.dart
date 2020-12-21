@@ -8,6 +8,7 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
+import '../common.dart';
 import '../mocks.dart';
 
 LazyBoxImpl _getBox({
@@ -72,6 +73,8 @@ void main() {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
         when(keystore.containsKey(any)).thenReturn(false);
+        returnFutureVoid(when(backend.writeFrames(any)));
+        when(keystore.length).thenReturn(2);
 
         var box = _getBox(
           backend: backend,
@@ -95,6 +98,7 @@ void main() {
 
         when(backend.writeFrames(any)).thenThrow('Some error');
         when(keystore.containsKey(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(any)));
 
         var box = _getBox(
           backend: backend,
@@ -135,6 +139,8 @@ void main() {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
         when(keystore.containsKey(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(any)));
+        when(keystore.length).thenReturn(2);
 
         var box = _getBox(
           backend: backend,
