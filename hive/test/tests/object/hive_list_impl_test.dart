@@ -83,7 +83,9 @@ void main() {
       test('creates delegate and links HiveList if delegate == null', () {
         var hive = MockHiveImpl();
         var box = _mockBox();
-        when(box.containsKey).thenReturn((d) => d == 'item1' || d == 'item2');
+        when(box.containsKey('item1')).thenReturn(true);
+        when(box.containsKey('item2')).thenReturn(true);
+        when(box.containsKey('none')).thenReturn(false);
         when(hive.getBoxWithoutCheckInternal('box')).thenReturn(box);
 
         var item1 = _getHiveObject('item1', box);
