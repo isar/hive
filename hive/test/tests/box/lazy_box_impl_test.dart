@@ -105,7 +105,6 @@ void main() {
 
         when(backend.writeFrames(any)).thenThrow(theError);
         when(keystore.containsKey(any)).thenReturn(true);
-        returnFutureVoid(when(backend.writeFrames(any)));
 
         var box = _getBox(
           backend: backend,
@@ -125,11 +124,7 @@ void main() {
           ]),
         ]);
         verifyNoMoreInteractions(keystore);
-      },
-          skip: 'when(backend.writeFrames(any)) is not catching the '
-              'LazyBoxImpl.putAll invocation of the method on '
-              '`await backend.writeFrames(frames)`, therefore it does not '
-              'throw and the test is broken.');
+      });
     });
 
     group('.deleteAll()', () {
