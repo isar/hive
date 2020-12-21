@@ -130,7 +130,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
 
   @override
   Future<void> deleteAt(int index) {
-    return deleteAll([keystore.getAt(index)!.key]);
+    return delete(keystore.getAt(index)!.key);
   }
 
   @override
