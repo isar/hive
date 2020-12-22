@@ -26,18 +26,17 @@ void main() {
       expect(hiveList.keys, ['key1', 'key2', 'key3']);
     });
 
-    /// This test fails on sound null safety because [HiveCollectionMixin.keys]
-    /// is an generator function, therefore every call results in an unique
-    /// iterable, so without either the [all] matcher or allowing to return
-    /// [Null] instead of [Future<void>] on [MockBox.deleteAll], this test is
-    /// unfixable with the current implementation.
     test('.deleteAllFromHive()', () {
+      final keys = ['key1', 'key2', 'key3'];
       var box = MockBox();
       var hiveList = _getTestList(box);
+      returnFutureVoid(when(box.deleteAll(
+        keys.map((e) => e), // Turn the List into an regular Iterable
+      )));
 
       hiveList.deleteAllFromHive();
-      verify(box.deleteAll(['key1', 'key2', 'key3']));
-    }, skip: soundNullSafety ? "Can't pass with sound null safety" : false);
+      verify(box.deleteAll(keys));
+    });
 
     test('.deleteFirstFromHive()', () {
       var box = MockBox();

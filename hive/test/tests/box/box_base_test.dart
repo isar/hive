@@ -221,19 +221,13 @@ void main() {
         verify(box.put(0, 123));
       });
 
-      /// This test fails on sound null safety because [BoxBase.add] uses
-      /// [BoxBase.put] which creates an new map and calls [BoxBase.putAll],
-      /// therefore every call results in an unique map, so without either the
-      /// [all] matcher or allowing to return [Null] instead of [Future<void>]
-      /// on [BoxBase.putAll], this test is unfixable with the current
-      /// implementation.
       test('updates auto increment', () async {
         var box = _openBoxBaseMock();
-        returnFutureVoid(when(box.putAll({123: 5})));
+        returnFutureVoid(when(box.putAll({5: 123})));
 
         box.keystore.updateAutoIncrement(4);
         expect(await box.add(123), 5);
-      }, skip: soundNullSafety ? "Can't pass with sound null safety" : false);
+      });
     });
 
     test('.addAll()', () async {
@@ -248,19 +242,16 @@ void main() {
     });
 
     group('.putAt()', () {
-      /// This test fails on sound null safety because [BoxBase.putAt] creates
-      /// an new map and calls [BoxBase.putAll], therefore every call results in
-      /// an unique map, so without either the [all] matcher or allowing to
-      /// return [Null] instead of [Future<void>] on [BoxBase.putAll], this test
-      /// is unfixable with the current implementation.
       test('override existing', () async {
         var box = _openBoxBaseMock();
+        returnFutureVoid(when(box.putAll({'b': 'test'})));
+
         box.keystore.insert(Frame.lazy('a'));
         box.keystore.insert(Frame.lazy('b'));
 
         await box.putAt(1, 'test');
         verify(box.put('b', 'test'));
-      }, skip: soundNullSafety ? "Can't pass with sound null safety" : false);
+      });
 
       test('throws RangeError for negative index', () async {
         var box = _openBoxBaseMock();
