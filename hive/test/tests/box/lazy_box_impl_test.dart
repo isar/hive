@@ -93,11 +93,6 @@ void main() {
         ]);
       });
 
-      /// Cannot pass because mockito is not catching the
-      /// `await backend.writeFrames(frames)` invocation on [LazyBoxImpl.putAll]
-      /// with `when(backend.writeFrames(any))`, therefore, [theError] is never
-      /// thrown and the execution continues as normal, calling
-      /// [Keystore.insert] and violating `verifyNoMoreInteractions(keystore)`
       test('handles exceptions', () async {
         var backend = MockStorageBackend();
         var keystore = MockKeystore();
