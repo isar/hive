@@ -28,4 +28,4 @@ dependency_overrides:
   mockito:
     git:
       url: https://github.com/dart-lang/mockito.git
-      ref: CB038376F98978355FED934D6FCDB0F4
+      ref: 3075af2f6f2ac425cffce116db18df1e994f8abb
