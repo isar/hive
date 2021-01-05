@@ -16,29 +16,30 @@ class ClassBuilder extends Builder {
   var iterableChecker = const TypeChecker.fromRuntime(Iterable);
   var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
 
+  /// The built type checkers. They aren't from runtime because otherwise we
+  /// would have to depend on both packages. Altough [TypeChecker.fromUrl] is
+  /// not reccomended because of it's brittleness, this should not be a problem,
+  /// as these classes are in the same url since the packages got published
+  /// 6 years ago.
+  var builtChecker =
+      const TypeChecker.fromUrl('package:built_value/built_value.dart#Built');
+  var builtListChecker = const TypeChecker.fromUrl(
+      'package:built_collection/src/list.dart#BuiltList');
+  var builtSetChecker = const TypeChecker.fromUrl(
+      'package:built_collection/src/set.dart#BuiltSet');
+  var builtMapChecker = const TypeChecker.fromUrl(
+      'package:built_collection/src/map.dart#BuiltMap');
+
   ClassBuilder(
       ClassElement cls, List<AdapterField> getters, List<AdapterField> setters)
       : super(cls, getters, setters);
 
-  @override
-  String buildRead() {
-    var code = StringBuffer();
-    code.writeln('''
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++)
-        reader.readByte(): reader.read(),
-    };
-    return ${cls.name}(
-    ''');
-
-    var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
-    check(constr != null, 'Provide an unnamed constructor.');
-
-    // The remaining fields to initialize.
-    var fields = setters.toList();
-
-    for (var param in constr.parameters) {
+  void _buildReadParams(
+      StringBuffer code, ConstructorElement constr, List<AdapterField> fields) {
+    // The constructor is null only on Built classes, and because of that, this
+    // loop gets skipped, so every field still needs to be initialized, and they
+    // are via the builder setters.
+    for (var param in constr?.parameters ?? <ParameterElement>[]) {
       var field = fields.firstOrNullWhere((it) => it.name == param.name);
       // Final fields
       field ??= getters.firstOrNullWhere((it) => it.name == param.name);
@@ -59,14 +60,80 @@ class ClassBuilder extends Builder {
       code.writeln(
           '..${field.name} = ${_cast(field.type, 'fields[${field.index}]')}');
     }
+  }
+
+  @override
+  String buildRead() {
+    var code = StringBuffer();
+    code.writeln('''
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++)
+        reader.readByte(): reader.read(),
+    };
+    ''');
+
+    final builtType = cls.interfaces.singleWhere(isBuilt, orElse: () => null);
+    if (builtType == null) {
+      code.writeln('    return ${cls.name}(');
+
+      var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
+      check(constr != null, 'Provide an unnamed constructor.');
+
+      _buildReadParams(code, constr, setters.toList());
+    } else {
+      // Find the builder
+      final builderType = builtType.typeArguments[1];
+
+      var builderName = builderType?.element?.name ?? builderType?.name;
+      // In case the builder is being generated, we assume it has the default
+      // name
+      if (builderName == null || builderType.isDynamic) {
+        builderName = '${cls.name}Builder';
+      }
+
+      // Instantiate the builder
+      code.writeln('    return ($builderName(');
+
+      // Initialize the parameters
+      _buildReadParams(
+        code,
+        null,
+        // We are assuming every getter in the built class has an corresponding
+        // setter on the Builder class. An reasonable assumption.
+        getters.toList(),
+      );
+
+      // Build the class
+      code.write(').build()');
+    }
 
     code.writeln(';');
 
     return code.toString();
   }
 
+  String _typeParamsString(DartType type) {
+    var paramType = type as ParameterizedType;
+    var typeParams = paramType.typeArguments.map(_displayString);
+    return typeParams.join(', ');
+  }
+
+  String _builtCast(DartType type, String variable) {
+    if (builtListChecker.isExactlyType(type)) {
+      return 'ListBuilder<${_typeParamsString(type)}>($variable as List)';
+    } else if (builtSetChecker.isExactlyType(type)) {
+      return 'SetBuilder<${_typeParamsString(type)}>($variable as List)';
+    } else if (builtMapChecker.isExactlyType(type)) {
+      return 'MapBuilder<${_typeParamsString(type)}>($variable as Map)';
+    }
+    return '($variable as ${_displayString(type)}).toBuilder()';
+  }
+
   String _cast(DartType type, String variable) {
-    if (hiveListChecker.isExactlyType(type)) {
+    if (isBuiltOrBuiltCollection(type)) {
+      return _builtCast(type, variable);
+    } else if (hiveListChecker.isExactlyType(type)) {
       return '($variable as HiveList)?.castHiveList()';
     } else if (iterableChecker.isAssignableFromType(type) &&
         !isUint8List(type)) {
@@ -87,6 +154,20 @@ class ClassBuilder extends Builder {
 
   bool isUint8List(DartType type) {
     return uint8ListChecker.isExactlyType(type);
+  }
+
+  bool isBuilt(DartType type) {
+    return builtChecker.isAssignableFromType(type);
+  }
+
+  bool isBuiltCollection(DartType type) {
+    return builtListChecker.isExactlyType(type) ||
+        builtSetChecker.isExactlyType(type) ||
+        builtMapChecker.isExactlyType(type);
+  }
+
+  bool isBuiltOrBuiltCollection(DartType type) {
+    return isBuilt(type) || isBuiltCollection(type);
   }
 
   String _castIterable(DartType type) {
@@ -124,7 +205,7 @@ class ClassBuilder extends Builder {
     code.writeln('writer');
     code.writeln('..writeByte(${getters.length})');
     for (var field in getters) {
-      var value = _convertIterable(field.type, 'obj.${field.name}');
+      var value = _convertWritableValue(field.type, 'obj.${field.name}');
       code.writeln('''
       ..writeByte(${field.index})
       ..write($value)''');
@@ -134,8 +215,13 @@ class ClassBuilder extends Builder {
     return code.toString();
   }
 
-  String _convertIterable(DartType type, String accessor) {
-    if (setChecker.isExactlyType(type) || iterableChecker.isExactlyType(type)) {
+  String _convertWritableValue(DartType type, String accessor) {
+    if (isBuiltCollection(type)) {
+      return builtMapChecker.isExactlyType(type)
+          ? '$accessor?.toMap()'
+          : '$accessor?.toList()';
+    } else if (setChecker.isExactlyType(type) ||
+        iterableChecker.isExactlyType(type)) {
       return '$accessor?.toList()';
     } else {
       return accessor;
