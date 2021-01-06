@@ -127,7 +127,7 @@ class ClassBuilder extends Builder {
     } else if (builtMapChecker.isExactlyType(type)) {
       return 'MapBuilder<${_typeParamsString(type)}>($variable as Map)';
     }
-    return '($variable as ${_displayString(type)}).toBuilder()';
+    return '($variable as ${_displayString(type)})?.toBuilder()';
   }
 
   String _cast(DartType type, String variable) {
