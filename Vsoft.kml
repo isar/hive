@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Vsoft</name>
+    <description/>
+    <Style id="icon-1899-DB4436-normal">
+      <IconStyle>
+        <color>ff3644db</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+    <Style id="icon-1899-DB4436-highlight">
+      <IconStyle>
+        <color>ff3644db</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+    </Style>
+    <StyleMap id="icon-1899-DB4436">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1899-DB4436-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1899-DB4436-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="icon-1899-DB4436-nodesc-normal">
+      <IconStyle>
+        <color>ff3644db</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <Style id="icon-1899-DB4436-nodesc-highlight">
+      <IconStyle>
+        <color>ff3644db</color>
+        <scale>1</scale>
+        <Icon>
+          <href>https://www.gstatic.com/mapspro/images/stock/503-wht-blank_maps.png</href>
+        </Icon>
+        <hotSpot x="32" xunits="pixels" y="64" yunits="insetPixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <scale>1</scale>
+      </LabelStyle>
+      <BalloonStyle>
+        <text><![CDATA[<h3>$[name]</h3>]]></text>
+      </BalloonStyle>
+    </Style>
+    <StyleMap id="icon-1899-DB4436-nodesc">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#icon-1899-DB4436-nodesc-normal</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#icon-1899-DB4436-nodesc-highlight</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Folder>
+      <name>Vsoft</name>
+      <Placemark>
+        <name>Escritório Bahia</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -38.4554314,-12.9801388,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Sede Vsoft</name>
+        <description><![CDATA[<img src="https://doc-14-a0-mymaps.googleusercontent.com/untrusted/hostedimage/igmeokjd28h3cadprr29miva7k/epb7ma6pff69r1901mfdmu1lco/1609953839000/NvidJiB3bPb4qAqnAB7LQEkBWN61jdx9/11857549249439949960/5AF2TALpae1Gv6rcC2wpkdD8_J9QWdLenIhKlcgqxC1iTO5Bb04QSZcuKZytx4-qtddu59v9C_ufiTMSYPBHdthsUnUhvSo5chYOuxchRVS05RSTAz5_SVnNjG1_pF-LTA5VCVrmZdvN-Hu56_F-vEmGyPfO1hIOULLtJRpiPQBaKT3y-XM7bjEWY2IJpOK66nS6-S3ZjFQwu5l2dZPib5QjqnE1r-lvxrXEA-Nsk_Ptyx2fm6VQHpiwuFbL6XPH9-bGCV6ou2gC5e21IjrbR-__XaS2C7ggsNQ?session=0&fife" height="200" width="auto" /><br><br>]]></description>
+        <styleUrl>#icon-1899-DB4436</styleUrl>
+        <ExtendedData>
+          <Data name="gx_media_links">
+            <value><![CDATA[https://doc-14-a0-mymaps.googleusercontent.com/untrusted/hostedimage/igmeokjd28h3cadprr29miva7k/epb7ma6pff69r1901mfdmu1lco/1609953839000/NvidJiB3bPb4qAqnAB7LQEkBWN61jdx9/11857549249439949960/5AF2TALpae1Gv6rcC2wpkdD8_J9QWdLenIhKlcgqxC1iTO5Bb04QSZcuKZytx4-qtddu59v9C_ufiTMSYPBHdthsUnUhvSo5chYOuxchRVS05RSTAz5_SVnNjG1_pF-LTA5VCVrmZdvN-Hu56_F-vEmGyPfO1hIOULLtJRpiPQBaKT3y-XM7bjEWY2IJpOK66nS6-S3ZjFQwu5l2dZPib5QjqnE1r-lvxrXEA-Nsk_Ptyx2fm6VQHpiwuFbL6XPH9-bGCV6ou2gC5e21IjrbR-__XaS2C7ggsNQ?session=0&fife]]></value>
+          </Data>
+        </ExtendedData>
+        <Point>
+          <coordinates>
+            -34.855327,-7.122827,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Laboratório de pesquisa</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -34.8172081,-7.1622872,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Ceará</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -38.5711721,-3.8015105,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Rio Grande do Norte</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -35.212839,-5.8230197,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Pernambuco</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -34.9351166,-8.0365751,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Alagoas</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -35.7435753,-9.5671553,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Sergipe</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -37.0787475,-10.9403637,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Goiás</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -49.3037418,-16.688904,0
+          </coordinates>
+        </Point>
+      </Placemark>
+      <Placemark>
+        <name>Escritório Minas Gerais</name>
+        <styleUrl>#icon-1899-DB4436-nodesc</styleUrl>
+        <Point>
+          <coordinates>
+            -43.9633619,-19.9112667,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>
