@@ -120,12 +120,13 @@ class ClassBuilder extends Builder {
   }
 
   String _builtCast(DartType type, String variable) {
+    final pfx = '$variable == null ? null : ';
     if (builtListChecker.isExactlyType(type)) {
-      return 'ListBuilder<${_typeParamsString(type)}>($variable as List)';
+      return '${pfx}ListBuilder<${_typeParamsString(type)}>($variable as List)';
     } else if (builtSetChecker.isExactlyType(type)) {
-      return 'SetBuilder<${_typeParamsString(type)}>($variable as List)';
+      return '${pfx}SetBuilder<${_typeParamsString(type)}>($variable as List)';
     } else if (builtMapChecker.isExactlyType(type)) {
-      return 'MapBuilder<${_typeParamsString(type)}>($variable as Map)';
+      return '${pfx}MapBuilder<${_typeParamsString(type)}>($variable as Map)';
     }
     return '($variable as ${_displayString(type)})?.toBuilder()';
   }
