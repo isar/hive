@@ -130,7 +130,6 @@ class ClassBuilder extends _ClassBuilderBase {
         field.type,
         'fields[${field.index}]',
         nestedBuilders: field.nestedBuilders,
-        nullable: field.isNullable,
       )}');
     }
 
@@ -142,11 +141,10 @@ class ClassBuilder extends _ClassBuilderBase {
     DartType type,
     String variable, {
     bool nestedBuilders,
-    bool nullable = true,
   }) {
     String builderConstructor;
     String typeToBeCasted;
-    String castExpr = '';
+    var castExpr = '';
     // Wether or not we should call build() on the end.
     //
     // This when the user annotated with nestedBuilders = false, so the Builder
@@ -160,10 +158,10 @@ class ClassBuilder extends _ClassBuilderBase {
         mapBuilderChecker.isExactlyType(type)) {
       builderConstructor = 'MapBuilder';
       typeToBeCasted = 'Map';
-      castExpr = castMap(type, nullable: false);
+      castExpr = castMap(type);
     } else {
       typeToBeCasted = 'Iterable';
-      castExpr = castIterable(type, nullable: false);
+      castExpr = castIterable(type);
       if (builtSetChecker.isExactlyType(type) ||
           setBuilderChecker.isExactlyType(type)) {
         builderConstructor = 'SetBuilder';
@@ -184,10 +182,6 @@ class ClassBuilder extends _ClassBuilderBase {
         '($castedVariable)'
         '${shouldBeBuilt ? '.build()' : ''}';
 
-    if (!nullable) {
-      return buildExpression;
-    }
-
     return '$variable == null ? null : $buildExpression';
   }
 
@@ -195,8 +189,7 @@ class ClassBuilder extends _ClassBuilderBase {
   String cast(
     DartType type,
     String variable, {
-    bool nestedBuilders,
-    bool nullable = true,
+    bool nestedBuilders = false,
   }) {
     if (!isBuiltOrBuiltCollection(type) &&
         !isBuilderOrCollectionBuilder(type)) {
@@ -204,11 +197,10 @@ class ClassBuilder extends _ClassBuilderBase {
       return super.cast(type, variable);
     }
 
-    if ((isBuilt(type) && nestedBuilders == true) || isBuilder(type)) {
+    if ((isBuilt(type) && nestedBuilders) || isBuilder(type)) {
       // We need to call .toBuilder(), because variable is always an Built
       // value, but we need an Builder value.
-      final toBuilder = '${nullable ? '?' : ''}.toBuilder()';
-      return '($variable as ${_displayString(type)})$toBuilder';
+      return '($variable as ${_displayString(type)})?.toBuilder()';
     }
 
     if (isBuiltCollection(type) || isCollectionBuilder(type)) {
@@ -216,7 +208,6 @@ class ClassBuilder extends _ClassBuilderBase {
         type,
         variable,
         nestedBuilders: nestedBuilders,
-        nullable: nullable ?? true,
       );
     }
 
@@ -227,13 +218,12 @@ class ClassBuilder extends _ClassBuilderBase {
   }
 
   @override
-  String castIterable(DartType type, {bool nullable = true}) {
+  String castIterable(DartType type) {
     var paramType = type as ParameterizedType;
     var arg = paramType.typeArguments.first;
     if (isBuiltCollection(arg) || isCollectionBuilder(arg)) {
-      return '${nullable ? '?' : ''}'
-          '.map((dynamic e)=> '
-          '${cast(arg, 'e', nullable: nullable)})';
+      return '?.map((dynamic e)=> '
+          '${cast(arg, 'e')})';
     } else if (isBuiltCollection(type) || isCollectionBuilder(type)) {
       // Built collections use List<T>.from and Map<K, V>.from, so casting
       // manually is not needed.
@@ -244,7 +234,7 @@ class ClassBuilder extends _ClassBuilderBase {
   }
 
   @override
-  String castMap(DartType type, {bool nullable = true}) {
+  String castMap(DartType type) {
     var paramType = type as ParameterizedType;
     var arg1 = paramType.typeArguments[0];
     var arg2 = paramType.typeArguments[1];
@@ -252,10 +242,9 @@ class ClassBuilder extends _ClassBuilderBase {
         isCollectionBuilder(arg1) ||
         isBuiltCollection(arg2) ||
         isCollectionBuilder(arg2)) {
-      return '${nullable ? '?' : ''}'
-          '.map((dynamic k, dynamic v)=>'
-          'MapEntry(${cast(arg1, 'k', nullable: nullable)},'
-          '${cast(arg2, 'v', nullable: nullable)}))';
+      return '?.map((dynamic k, dynamic v)=>'
+          'MapEntry(${cast(arg1, 'k')},'
+          '${cast(arg2, 'v')}))';
     }
     return super.castMap(type);
   }
