@@ -129,7 +129,7 @@ class ClassBuilder extends _ClassBuilderBase {
       code.writeln('..${field.name} = ${cast(
         field.type,
         'fields[${field.index}]',
-        field.builtValueNestedBuilders,
+        nestedBuilders: field.nestedBuilders,
       )}');
     }
 
