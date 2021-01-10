@@ -144,6 +144,7 @@ class ClassBuilder extends _ClassBuilderBase {
   ]) {
     String builderConstructor;
     String typeToBeCasted;
+    String castExpr = '';
     // Wether or not we should call build() on the end.
     //
     // This when the user annotated with nestedBuilders = false, so the Builder
@@ -157,8 +158,10 @@ class ClassBuilder extends _ClassBuilderBase {
         mapBuilderChecker.isExactlyType(type)) {
       builderConstructor = 'MapBuilder';
       typeToBeCasted = 'Map';
+      castExpr = castMap(type, nullable: false);
     } else {
       typeToBeCasted = 'Iterable';
+      castExpr = castIterable(type, nullable: false);
       if (builtSetChecker.isExactlyType(type) ||
           setBuilderChecker.isExactlyType(type)) {
         builderConstructor = 'SetBuilder';
@@ -171,8 +174,12 @@ class ClassBuilder extends _ClassBuilderBase {
     check(builderConstructor != null && typeToBeCasted != null,
         'Unrecognized built_collection type ${_displayString(type)}');
 
+    final castedVariable = castExpr.isEmpty
+        ? '$variable as $typeToBeCasted'
+        : '($variable as $typeToBeCasted)$castExpr';
+
     final buildExpression = '$builderConstructor<${_typeParamsString(type)}>'
-        '($variable as $typeToBeCasted)'
+        '($castedVariable)'
         '${shouldBeBuilt ? '.build()' : ''}';
 
     return '$variable == null ? null : $buildExpression';
@@ -204,6 +211,40 @@ class ClassBuilder extends _ClassBuilderBase {
     // value in a custom Builder which accepts the plain Built value instead of
     // a builder, for example.
     return '$variable as ${_displayString(type)}';
+  }
+
+  @override
+  String castIterable(DartType type, {bool nullable = true}) {
+    var paramType = type as ParameterizedType;
+    var arg = paramType.typeArguments.first;
+    if (isBuiltCollection(arg) || isCollectionBuilder(arg)) {
+      return '${nullable ? '?' : ''}'
+          '.map((dynamic e)=> '
+          '${cast(arg, 'e', nullable: nullable)})';
+    } else if (isBuiltCollection(type) || isCollectionBuilder(type)) {
+      // Built collections use List<T>.from and Map<K, V>.from, so casting
+      // manually is not needed.
+      return '';
+    } else {
+      return super.castIterable(type);
+    }
+  }
+
+  @override
+  String castMap(DartType type, {bool nullable = true}) {
+    var paramType = type as ParameterizedType;
+    var arg1 = paramType.typeArguments[0];
+    var arg2 = paramType.typeArguments[1];
+    if (isBuiltCollection(arg1) ||
+        isCollectionBuilder(arg1) ||
+        isBuiltCollection(arg2) ||
+        isCollectionBuilder(arg2)) {
+      return '${nullable ? '?' : ''}'
+          '.map((dynamic k, dynamic v)=>'
+          'MapEntry(${cast(arg1, 'k', nullable: nullable)},'
+          '${cast(arg2, 'v', nullable: nullable)}))';
+    }
+    return super.castMap(type);
   }
 
   bool isBuilt(DartType type) {
