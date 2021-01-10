@@ -319,9 +319,9 @@ class _ClassBuilderBase extends Builder {
       return '($variable as HiveList)?.castHiveList()';
     } else if (iterableChecker.isAssignableFromType(type) &&
         !isUint8List(type)) {
-      return '($variable as List)${_castIterable(type)}';
+      return '($variable as List)${castIterable(type)}';
     } else if (mapChecker.isExactlyType(type)) {
-      return '($variable as Map)${_castMap(type)}';
+      return '($variable as Map)${castMap(type)}';
     } else {
       return '$variable as ${_displayString(type)}';
     }
@@ -338,7 +338,7 @@ class _ClassBuilderBase extends Builder {
     return uint8ListChecker.isExactlyType(type);
   }
 
-  String _castIterable(DartType type) {
+  String castIterable(DartType type) {
     var paramType = type as ParameterizedType;
     var arg = paramType.typeArguments.first;
     if (isMapOrIterable(arg) && !isUint8List(arg)) {
@@ -354,7 +354,7 @@ class _ClassBuilderBase extends Builder {
     }
   }
 
-  String _castMap(DartType type) {
+  String castMap(DartType type) {
     var paramType = type as ParameterizedType;
     var arg1 = paramType.typeArguments[0];
     var arg2 = paramType.typeArguments[1];
