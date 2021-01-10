@@ -10,6 +10,8 @@ import 'package:dartx/dartx.dart';
 import 'package:built_value/built_value.dart' as bv;
 import 'package:built_collection/built_collection.dart';
 
+import 'type_adapter_generator.dart';
+
 class ClassBuilder extends _ClassBuilderBase {
   ClassBuilder(
     ClassElement cls,
@@ -45,11 +47,18 @@ class ClassBuilder extends _ClassBuilderBase {
       builderName = '${cls.name}Builder';
       fields = getters;
     } else {
-      // The builder type was manually created, therefore we look it up.
+      // The builder type was manually created, therefore we look it up for
+      // @HiveField annotations
       final builderCls = builderType.element as ClassElement;
       builderName = builderCls.name;
-      throw StateError(
-          'We do not support custom builders yet. They would generate invalid code');
+      var gettersAndSetters = getAccessors(builderCls, builderCls.library);
+
+      var setters = gettersAndSetters[1];
+      verifyFieldIndices(setters);
+
+      // The fields that need to be set on the cascade are the setters in the
+      // builder class.
+      fields = setters;
     }
 
     // Instantiate the builder
