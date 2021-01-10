@@ -22,24 +22,32 @@ class ClassBuilder extends _ClassBuilderBase {
   var builtSetChecker = const TypeChecker.fromRuntime(BuiltSet);
   var builtMapChecker = const TypeChecker.fromRuntime(BuiltMap);
 
+  bool get isThisBuilt => cls.interfaces.any(builtChecker.isExactlyType);
+  DartType get builderType => isThisBuilt
+      ? cls.interfaces
+          .singleWhere(builtChecker.isExactlyType)
+          .typeArguments
+          .last
+      : throw StateError(
+          'Tried to find the builderType on ${cls.name}, which is not Built.');
+
   void buildReadConstructor(StringBuffer code) {
-    final builtType = cls.interfaces
-        .singleWhere(builtChecker.isExactlyType, orElse: () => null);
-    if (builtType == null) {
+    if (!isThisBuilt) {
       return super.buildReadConstructor(code);
     }
 
-    // Find the builder
-    final builderType = builtType.typeArguments[1];
-
+    String builderName;
     List<AdapterField> fields;
-    var builderName = builderType?.element?.name ?? builderType?.name;
+
     // In case the builder is being generated, we assume it has the default
     // name and fields
-    if (builderName == null || builderType.isDynamic) {
+    if (builderType?.isDynamic ?? true) {
       builderName = '${cls.name}Builder';
       fields = getters;
     } else {
+      // The builder type was manually created, therefore we look it up.
+      final builderCls = builderType.element as ClassElement;
+      builderName = builderCls.name;
       throw StateError(
           'We do not support custom builders yet. They would generate invalid code');
     }
