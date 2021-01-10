@@ -7,6 +7,8 @@ import 'package:hive_generator/src/builder.dart';
 import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:dartx/dartx.dart';
+import 'package:built_value/built_value.dart' as bv;
+import 'package:built_collection/built_collection.dart';
 
 class ClassBuilder extends _ClassBuilderBase {
   ClassBuilder(
@@ -15,19 +17,10 @@ class ClassBuilder extends _ClassBuilderBase {
     List<AdapterField> setters,
   ) : super(cls, getters, setters);
 
-  /// The built type checkers. They aren't from runtime because otherwise we
-  /// would have to depend on both packages. Altough [TypeChecker.fromUrl] is
-  /// not reccomended because of it's brittleness, this should not be a problem,
-  /// as these classes are in the same url since the packages got published
-  /// 6 years ago.
-  var builtChecker =
-      const TypeChecker.fromUrl('package:built_value/built_value.dart#Built');
-  var builtListChecker = const TypeChecker.fromUrl(
-      'package:built_collection/src/list.dart#BuiltList');
-  var builtSetChecker = const TypeChecker.fromUrl(
-      'package:built_collection/src/set.dart#BuiltSet');
-  var builtMapChecker = const TypeChecker.fromUrl(
-      'package:built_collection/src/map.dart#BuiltMap');
+  var builtChecker = const TypeChecker.fromRuntime(bv.Built);
+  var builtListChecker = const TypeChecker.fromRuntime(BuiltList);
+  var builtSetChecker = const TypeChecker.fromRuntime(BuiltSet);
+  var builtMapChecker = const TypeChecker.fromRuntime(BuiltMap);
 
   void buildReadConstructor(StringBuffer code) {
     final builtType = cls.interfaces
