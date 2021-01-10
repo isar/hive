@@ -19,10 +19,17 @@ class ClassBuilder extends _ClassBuilderBase {
     List<AdapterField> setters,
   ) : super(cls, getters, setters);
 
+  var builtValueChecker = const TypeChecker.fromRuntime(bv.BuiltValue);
+
   var builtChecker = const TypeChecker.fromRuntime(bv.Built);
   var builtListChecker = const TypeChecker.fromRuntime(BuiltList);
   var builtSetChecker = const TypeChecker.fromRuntime(BuiltSet);
   var builtMapChecker = const TypeChecker.fromRuntime(BuiltMap);
+
+  var builderChecker = const TypeChecker.fromRuntime(bv.Builder);
+  var listBuilderChecker = const TypeChecker.fromRuntime(ListBuilder);
+  var setBuilderChecker = const TypeChecker.fromRuntime(SetBuilder);
+  var mapBuilderChecker = const TypeChecker.fromRuntime(MapBuilder);
 
   bool get isThisBuilt => cls.interfaces.any(builtChecker.isExactlyType);
   DartType get builderType => isThisBuilt
@@ -33,6 +40,26 @@ class ClassBuilder extends _ClassBuilderBase {
       : throw StateError(
           'Tried to find the builderType on ${cls.name}, which is not Built.');
 
+  bool _nestedBuildersFromAnnotation() {
+    final annotation =
+        cls.metadata.map((e) => e.computeConstantValue()).singleWhere(
+              (e) => builtValueChecker.isExactlyType(e.type),
+              orElse: () => null,
+            );
+    if (annotation == null) {
+      print('no annotation on ${cls.displayName}');
+      return true;
+    }
+    final reader = ConstantReader(annotation);
+    final nestedBuilders = reader.read('nestedBuilders');
+    if (nestedBuilders.isNull) {
+      return true;
+    }
+    print('annotation on ${cls.displayName}: ${nestedBuilders.boolValue}');
+    return nestedBuilders.boolValue;
+  }
+
+  @override
   void buildReadConstructor(StringBuffer code) {
     if (!isThisBuilt) {
       return super.buildReadConstructor(code);
@@ -40,12 +67,21 @@ class ClassBuilder extends _ClassBuilderBase {
 
     String builderName;
     List<AdapterField> fields;
+    bool nestedBuilders;
 
     // In case the builder is being generated, we assume it has the default
     // name and fields
     if (builderType?.isDynamic ?? true) {
       builderName = '${cls.name}Builder';
+
+      // The fields that need to be set on the cascade are the getters in the
+      // built class, because they have an corresponding setter in the builder.
       fields = getters;
+
+      // We want to set an builder instead of the built class depending on the
+      // @BuiltValue annotation, but we cant express this easily with DartType,
+      // so we pass this info to cast()
+      nestedBuilders = _nestedBuildersFromAnnotation();
     } else {
       // The builder type was manually created, therefore we look it up for
       // @HiveField annotations
@@ -59,6 +95,10 @@ class ClassBuilder extends _ClassBuilderBase {
       // The fields that need to be set on the cascade are the setters in the
       // builder class.
       fields = setters;
+
+      // We do not need to look it up in the annotation, as this information is
+      // contained in each setter's DartType, allowing for correct casting.
+      nestedBuilders = false;
     }
 
     // Instantiate the builder
@@ -66,29 +106,84 @@ class ClassBuilder extends _ClassBuilderBase {
 
     // Initialize the parameters using setters with cascades on the builder.
     for (var field in fields) {
-      code.writeln(
-          '..${field.name} = ${cast(field.type, 'fields[${field.index}]')}');
+      code.writeln('..${field.name} = ${cast(
+        field.type,
+        'fields[${field.index}]',
+        nestedBuilders,
+      )}');
     }
 
     // Build the class
     code.write(').build()');
   }
 
+  String _castBuiltCollection(
+    DartType type,
+    String variable, [
+    bool nestedBuilders = false,
+  ]) {
+    String builderConstructor;
+    String typeToBeCasted;
+    // Wether or not we should call build() on the end.
+    //
+    // This when the user annotated with nestedBuilders = false, so the Builder
+    // for that class expects an Built value, instead of a builder.
+    //
+    // This is not the case when either nestedBuilders is true or ommited, or
+    // when an custom builder was specified with an ListBuilder for example.
+    var shouldBeBuilt = !nestedBuilders || isBuilderOrCollectionBuilder(type);
+
+    if (builtMapChecker.isExactlyType(type) ||
+        mapBuilderChecker.isExactlyType(type)) {
+      builderConstructor = 'MapBuilder';
+      typeToBeCasted = 'Map';
+    } else {
+      typeToBeCasted = 'Iterable';
+      if (builtSetChecker.isExactlyType(type) ||
+          setBuilderChecker.isExactlyType(type)) {
+        builderConstructor = 'SetBuilder';
+      }
+      if (builtListChecker.isExactlyType(type) ||
+          listBuilderChecker.isExactlyType(type)) {
+        builderConstructor = 'ListBuilder';
+      }
+    }
+    check(builderConstructor != null && typeToBeCasted != null,
+        'Unrecognized built_collection type ${_displayString(type)}');
+
+    final buildExpression = '$builderConstructor<${_typeParamsString(type)}>'
+        '($variable as $typeToBeCasted)'
+        '${shouldBeBuilt ? '.build()' : ''}';
+
+    return '$variable == null ? null : $buildExpression';
+  }
+
   @override
-  String cast(DartType type, String variable) {
-    if (!isBuiltOrBuiltCollection(type)) {
+  String cast(
+    DartType type,
+    String variable, [
+    bool nestedBuilders = false,
+  ]) {
+    if (!isBuiltOrBuiltCollection(type) &&
+        !isBuilderOrCollectionBuilder(type)) {
+      // This value needs no special treatment.
       return super.cast(type, variable);
     }
 
-    final pfx = '$variable == null ? null : ';
-    if (builtListChecker.isExactlyType(type)) {
-      return '${pfx}ListBuilder<${_typeParamsString(type)}>($variable as List)';
-    } else if (builtSetChecker.isExactlyType(type)) {
-      return '${pfx}SetBuilder<${_typeParamsString(type)}>($variable as List)';
-    } else if (builtMapChecker.isExactlyType(type)) {
-      return '${pfx}MapBuilder<${_typeParamsString(type)}>($variable as Map)';
+    if ((isBuilt(type) && nestedBuilders) || isBuilder(type)) {
+      // We need to call .toBuilder(), because variable is always an Built
+      // value, but we need an Builder value.
+      return '($variable as ${_displayString(type)})?.toBuilder()';
     }
-    return '($variable as ${_displayString(type)})?.toBuilder()';
+
+    if (isBuiltCollection(type) || isCollectionBuilder(type)) {
+      return _castBuiltCollection(type, variable, nestedBuilders ?? false);
+    }
+
+    // We just need to cast the value. This happens when the type is of a Built
+    // value in a custom Builder which accepts the plain Built value instead of
+    // a builder, for example.
+    return '$variable as ${_displayString(type)}';
   }
 
   bool isBuilt(DartType type) {
@@ -103,6 +198,20 @@ class ClassBuilder extends _ClassBuilderBase {
 
   bool isBuiltOrBuiltCollection(DartType type) {
     return isBuilt(type) || isBuiltCollection(type);
+  }
+
+  bool isBuilder(DartType type) {
+    return builderChecker.isAssignableFromType(type);
+  }
+
+  bool isCollectionBuilder(DartType type) {
+    return listBuilderChecker.isExactlyType(type) ||
+        setBuilderChecker.isExactlyType(type) ||
+        mapBuilderChecker.isExactlyType(type);
+  }
+
+  bool isBuilderOrCollectionBuilder(DartType type) {
+    return isBuilder(type) || isCollectionBuilder(type);
   }
 
   String _typeParamsString(DartType type) {
