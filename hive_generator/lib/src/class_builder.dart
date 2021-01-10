@@ -8,13 +8,12 @@ import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:dartx/dartx.dart';
 
-class ClassBuilder extends Builder {
-  var hiveListChecker = const TypeChecker.fromRuntime(HiveList);
-  var listChecker = const TypeChecker.fromRuntime(List);
-  var mapChecker = const TypeChecker.fromRuntime(Map);
-  var setChecker = const TypeChecker.fromRuntime(Set);
-  var iterableChecker = const TypeChecker.fromRuntime(Iterable);
-  var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
+class ClassBuilder extends _ClassBuilderBase {
+  ClassBuilder(
+    ClassElement cls,
+    List<AdapterField> getters,
+    List<AdapterField> setters,
+  ) : super(cls, getters, setters);
 
   /// The built type checkers. They aren't from runtime because otherwise we
   /// would have to depend on both packages. Altough [TypeChecker.fromUrl] is
@@ -30,11 +29,103 @@ class ClassBuilder extends Builder {
   var builtMapChecker = const TypeChecker.fromUrl(
       'package:built_collection/src/map.dart#BuiltMap');
 
-  ClassBuilder(
+  void buildReadConstructor(StringBuffer code) {
+    final builtType = cls.interfaces
+        .singleWhere(builtChecker.isExactlyType, orElse: () => null);
+    if (builtType == null) {
+      return super.buildReadConstructor(code);
+    }
+
+    // Find the builder
+    final builderType = builtType.typeArguments[1];
+
+    List<AdapterField> fields;
+    var builderName = builderType?.element?.name ?? builderType?.name;
+    // In case the builder is being generated, we assume it has the default
+    // name and fields
+    if (builderName == null || builderType.isDynamic) {
+      builderName = '${cls.name}Builder';
+      fields = getters;
+    } else {
+      throw StateError(
+          'We do not support custom builders yet. They would generate invalid code');
+    }
+
+    // Instantiate the builder
+    code.writeln('    return ($builderName()');
+
+    // Initialize the parameters using setters with cascades on the builder.
+    for (var field in fields) {
+      code.writeln(
+          '..${field.name} = ${cast(field.type, 'fields[${field.index}]')}');
+    }
+
+    // Build the class
+    code.write(').build()');
+  }
+
+  @override
+  String cast(DartType type, String variable) {
+    if (!isBuiltOrBuiltCollection(type)) {
+      return super.cast(type, variable);
+    }
+
+    final pfx = '$variable == null ? null : ';
+    if (builtListChecker.isExactlyType(type)) {
+      return '${pfx}ListBuilder<${_typeParamsString(type)}>($variable as List)';
+    } else if (builtSetChecker.isExactlyType(type)) {
+      return '${pfx}SetBuilder<${_typeParamsString(type)}>($variable as List)';
+    } else if (builtMapChecker.isExactlyType(type)) {
+      return '${pfx}MapBuilder<${_typeParamsString(type)}>($variable as Map)';
+    }
+    return '($variable as ${_displayString(type)})?.toBuilder()';
+  }
+
+  bool isBuilt(DartType type) {
+    return builtChecker.isAssignableFromType(type);
+  }
+
+  bool isBuiltCollection(DartType type) {
+    return builtListChecker.isExactlyType(type) ||
+        builtSetChecker.isExactlyType(type) ||
+        builtMapChecker.isExactlyType(type);
+  }
+
+  bool isBuiltOrBuiltCollection(DartType type) {
+    return isBuilt(type) || isBuiltCollection(type);
+  }
+
+  String _typeParamsString(DartType type) {
+    var paramType = type as ParameterizedType;
+    var typeParams = paramType.typeArguments.map(_displayString);
+    return typeParams.join(', ');
+  }
+
+  @override
+  String convertWritableValue(DartType type, String accessor) {
+    if (isBuiltCollection(type)) {
+      return builtMapChecker.isExactlyType(type)
+          ? '$accessor?.toMap()'
+          : '$accessor?.toList()';
+    } else {
+      return super.convertWritableValue(type, accessor);
+    }
+  }
+}
+
+class _ClassBuilderBase extends Builder {
+  var hiveListChecker = const TypeChecker.fromRuntime(HiveList);
+  var listChecker = const TypeChecker.fromRuntime(List);
+  var mapChecker = const TypeChecker.fromRuntime(Map);
+  var setChecker = const TypeChecker.fromRuntime(Set);
+  var iterableChecker = const TypeChecker.fromRuntime(Iterable);
+  var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
+
+  _ClassBuilderBase(
       ClassElement cls, List<AdapterField> getters, List<AdapterField> setters)
       : super(cls, getters, setters);
 
-  void _buildBaseReadConstructor(StringBuffer code) {
+  void buildReadConstructor(StringBuffer code) {
     code.writeln('    return ${cls.name}(');
 
     var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
@@ -66,44 +157,6 @@ class ClassBuilder extends Builder {
     }
   }
 
-  void _buildBuiltReadConstructor(StringBuffer code, InterfaceType builtType) {
-    // Find the builder
-    final builderType = builtType.typeArguments[1];
-
-    List<AdapterField> fields;
-    var builderName = builderType?.element?.name ?? builderType?.name;
-    // In case the builder is being generated, we assume it has the default
-    // name and fields
-    if (builderName == null || builderType.isDynamic) {
-      builderName = '${cls.name}Builder';
-      fields = getters;
-    } else {
-      throw StateError(
-          'We do not support custom builders yet. They would generate invalid code');
-    }
-
-    // Instantiate the builder
-    code.writeln('    return ($builderName()');
-
-    // Initialize the parameters using setters with cascades on the builder.
-    for (var field in fields) {
-      code.writeln(
-          '..${field.name} = ${cast(field.type, 'fields[${field.index}]')}');
-    }
-
-    // Build the class
-    code.write(').build()');
-  }
-
-  void buildReadConstructor(StringBuffer code) {
-    final builtType = cls.interfaces
-        .singleWhere(builtChecker.isExactlyType, orElse: () => null);
-    if (builtType == null) {
-      return _buildBaseReadConstructor(code);
-    }
-    return _buildBuiltReadConstructor(code, builtType);
-  }
-
   @override
   String buildRead() {
     var code = StringBuffer();
@@ -122,32 +175,7 @@ class ClassBuilder extends Builder {
     return code.toString();
   }
 
-  String _typeParamsString(DartType type) {
-    var paramType = type as ParameterizedType;
-    var typeParams = paramType.typeArguments.map(_displayString);
-    return typeParams.join(', ');
-  }
-
-  String _castBuilt(DartType type, String variable) {
-    final pfx = '$variable == null ? null : ';
-    if (builtListChecker.isExactlyType(type)) {
-      return '${pfx}ListBuilder<${_typeParamsString(type)}>($variable as List)';
-    } else if (builtSetChecker.isExactlyType(type)) {
-      return '${pfx}SetBuilder<${_typeParamsString(type)}>($variable as List)';
-    } else if (builtMapChecker.isExactlyType(type)) {
-      return '${pfx}MapBuilder<${_typeParamsString(type)}>($variable as Map)';
-    }
-    return '($variable as ${_displayString(type)})?.toBuilder()';
-  }
-
   String cast(DartType type, String variable) {
-    if (isBuiltOrBuiltCollection(type)) {
-      return _castBuilt(type, variable);
-    }
-    return _castBase(type, variable);
-  }
-
-  String _castBase(DartType type, String variable) {
     if (hiveListChecker.isExactlyType(type)) {
       return '($variable as HiveList)?.castHiveList()';
     } else if (iterableChecker.isAssignableFromType(type) &&
@@ -169,20 +197,6 @@ class ClassBuilder extends Builder {
 
   bool isUint8List(DartType type) {
     return uint8ListChecker.isExactlyType(type);
-  }
-
-  bool isBuilt(DartType type) {
-    return builtChecker.isAssignableFromType(type);
-  }
-
-  bool isBuiltCollection(DartType type) {
-    return builtListChecker.isExactlyType(type) ||
-        builtSetChecker.isExactlyType(type) ||
-        builtMapChecker.isExactlyType(type);
-  }
-
-  bool isBuiltOrBuiltCollection(DartType type) {
-    return isBuilt(type) || isBuiltCollection(type);
   }
 
   String _castIterable(DartType type) {
@@ -231,12 +245,7 @@ class ClassBuilder extends Builder {
   }
 
   String convertWritableValue(DartType type, String accessor) {
-    if (isBuiltCollection(type)) {
-      return builtMapChecker.isExactlyType(type)
-          ? '$accessor?.toMap()'
-          : '$accessor?.toList()';
-    } else if (setChecker.isExactlyType(type) ||
-        iterableChecker.isExactlyType(type)) {
+    if (setChecker.isExactlyType(type) || iterableChecker.isExactlyType(type)) {
       return '$accessor?.toList()';
     } else {
       return accessor;
