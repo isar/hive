@@ -137,7 +137,10 @@ List<List<AdapterField>> getAccessors(
           getHiveFieldAnn(getter.variable) ?? getHiveFieldAnn(getter);
       if (getterAnn != null) {
         var field = getter.variable;
-        getters.add(AdapterField(getterAnn.index, field.name, field.type));
+        getters.add(AdapterField(
+          getterAnn.index,
+          getter,
+        ));
       }
     }
 
@@ -147,7 +150,10 @@ List<List<AdapterField>> getAccessors(
           getHiveFieldAnn(setter.variable) ?? getHiveFieldAnn(setter);
       if (setterAnn != null) {
         var field = setter.variable;
-        setters.add(AdapterField(setterAnn.index, field.name, field.type));
+        setters.add(AdapterField(
+          setterAnn.index,
+          setter,
+        ));
       }
     }
   }

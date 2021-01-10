@@ -64,24 +64,21 @@ class ClassBuilder extends _ClassBuilderBase {
     }
 
     String builderName;
-    List<AdapterField> fields;
+    List<BuiltAdapterField> fields;
 
     // In case the builder is being generated, we assume it has the default
     // name and fields
     if (builderType?.isDynamic ?? true) {
       builderName = '${cls.name}Builder';
 
-      // The fields that need to be set on the cascade are the getters in the
-      // built class, because they have an corresponding setter in the builder.
-      fields = getters;
-
       // We want to set an builder instead of the built class depending on the
       // @BuiltValue annotation, but we cant express this easily with DartType,
       // so we pass this info to cast()
       final nestedBuilders = _nestedBuildersFromAnnotation();
-      for (final adapterField in fields) {
-        adapterField.builtValueNestedBuilders = nestedBuilders;
-      }
+
+      // The fields that need to be set on the cascade are the getters in the
+      // built class, because they have an corresponding setter in the builder.
+      fields = getters.map((field) => field.toBuilt(nestedBuilders)).toList();
     } else {
       // The builder type was manually created, therefore we look it up for
       // @HiveField annotations
@@ -94,20 +91,17 @@ class ClassBuilder extends _ClassBuilderBase {
 
       // The fields that need to be set on the cascade are the setters in the
       // builder class.
-      fields = setters;
+      //
+      // We do not need to look for nested fieldss in the annotation, as this
+      // information is contained in each setter's DartType in most cases,
+      // allowing for correct casting.
+      fields = setters.map((field) => field.toBuilt(false)).toList();
 
-      // We do not need to look it up in the annotation, as this information is
-      // contained in each setter's DartType in most cases, allowing for correct
-      // casting.
-      for (final field in fields) {
-        field.builtValueNestedBuilders = false;
-      }
       // The edge case is when the type is an Builder which is being generated.
       // In this case we set nestedBuilders = true and the type to the Built
       // type as a workaround.
       final clsFieldMap = {for (final field in getters) field.index: field};
-      for (var i = 0; i < fields.length; i++) {
-        final builderField = fields[i];
+      for (final builderField in fields) {
         final builtField = clsFieldMap[builderField.index];
         if (builtField == null) {
           continue;
@@ -121,12 +115,9 @@ class ClassBuilder extends _ClassBuilderBase {
         if (!isBuilt(builtField.type)) {
           continue;
         }
-        fields[i] = AdapterField(
-          builderField.index,
-          builderField.name,
-          builtField.type,
-          builtValueNestedBuilders: true,
-        );
+        builderField
+          ..type = builtField.type
+          ..nestedBuilders = true;
       }
     }
 
