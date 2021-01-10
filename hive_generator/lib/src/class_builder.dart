@@ -34,11 +34,15 @@ class ClassBuilder extends Builder {
       ClassElement cls, List<AdapterField> getters, List<AdapterField> setters)
       : super(cls, getters, setters);
 
-  void _buildReadParams(
-      StringBuffer code, ConstructorElement constr, List<AdapterField> fields) {
-    // The constructor is null only on Built classes, and because of that, this
-    // loop gets skipped, so every field still needs to be initialized, and they
-    // are via the builder setters.
+  void _buildBaseReadConstructor(StringBuffer code) {
+    code.writeln('    return ${cls.name}(');
+
+    var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
+    check(constr != null, 'Provide an unnamed constructor.');
+
+    // The remaining fields to be set later
+    var fields = setters.toList();
+
     for (var param in constr?.parameters ?? <ParameterElement>[]) {
       var field = fields.firstOrNullWhere((it) => it.name == param.name);
       // Final fields
@@ -47,7 +51,7 @@ class ClassBuilder extends Builder {
         if (param.isNamed) {
           code.write('${param.name}: ');
         }
-        code.writeln('${_cast(param.type, 'fields[${field.index}]')},');
+        code.writeln('${cast(param.type, 'fields[${field.index}]')},');
         fields.remove(field);
       }
     }
@@ -58,8 +62,46 @@ class ClassBuilder extends Builder {
     // as initializing formals. We do so using cascades.
     for (var field in fields) {
       code.writeln(
-          '..${field.name} = ${_cast(field.type, 'fields[${field.index}]')}');
+          '..${field.name} = ${cast(field.type, 'fields[${field.index}]')}');
     }
+  }
+
+  void _buildBuiltReadConstructor(StringBuffer code, InterfaceType builtType) {
+    // Find the builder
+    final builderType = builtType.typeArguments[1];
+
+    List<AdapterField> fields;
+    var builderName = builderType?.element?.name ?? builderType?.name;
+    // In case the builder is being generated, we assume it has the default
+    // name and fields
+    if (builderName == null || builderType.isDynamic) {
+      builderName = '${cls.name}Builder';
+      fields = getters;
+    } else {
+      throw StateError(
+          'We do not support custom builders yet. They would generate invalid code');
+    }
+
+    // Instantiate the builder
+    code.writeln('    return ($builderName()');
+
+    // Initialize the parameters using setters with cascades on the builder.
+    for (var field in fields) {
+      code.writeln(
+          '..${field.name} = ${cast(field.type, 'fields[${field.index}]')}');
+    }
+
+    // Build the class
+    code.write(').build()');
+  }
+
+  void buildReadConstructor(StringBuffer code) {
+    final builtType = cls.interfaces
+        .singleWhere(builtChecker.isExactlyType, orElse: () => null);
+    if (builtType == null) {
+      return _buildBaseReadConstructor(code);
+    }
+    return _buildBuiltReadConstructor(code, builtType);
   }
 
   @override
@@ -73,40 +115,7 @@ class ClassBuilder extends Builder {
     };
     ''');
 
-    final builtType = cls.interfaces.singleWhere(isBuilt, orElse: () => null);
-    if (builtType == null) {
-      code.writeln('    return ${cls.name}(');
-
-      var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
-      check(constr != null, 'Provide an unnamed constructor.');
-
-      _buildReadParams(code, constr, setters.toList());
-    } else {
-      // Find the builder
-      final builderType = builtType.typeArguments[1];
-
-      var builderName = builderType?.element?.name ?? builderType?.name;
-      // In case the builder is being generated, we assume it has the default
-      // name
-      if (builderName == null || builderType.isDynamic) {
-        builderName = '${cls.name}Builder';
-      }
-
-      // Instantiate the builder
-      code.writeln('    return ($builderName(');
-
-      // Initialize the parameters
-      _buildReadParams(
-        code,
-        null,
-        // We are assuming every getter in the built class has an corresponding
-        // setter on the Builder class. An reasonable assumption.
-        getters.toList(),
-      );
-
-      // Build the class
-      code.write(').build()');
-    }
+    buildReadConstructor(code);
 
     code.writeln(';');
 
@@ -119,7 +128,7 @@ class ClassBuilder extends Builder {
     return typeParams.join(', ');
   }
 
-  String _builtCast(DartType type, String variable) {
+  String _castBuilt(DartType type, String variable) {
     final pfx = '$variable == null ? null : ';
     if (builtListChecker.isExactlyType(type)) {
       return '${pfx}ListBuilder<${_typeParamsString(type)}>($variable as List)';
@@ -131,10 +140,15 @@ class ClassBuilder extends Builder {
     return '($variable as ${_displayString(type)})?.toBuilder()';
   }
 
-  String _cast(DartType type, String variable) {
+  String cast(DartType type, String variable) {
     if (isBuiltOrBuiltCollection(type)) {
-      return _builtCast(type, variable);
-    } else if (hiveListChecker.isExactlyType(type)) {
+      return _castBuilt(type, variable);
+    }
+    return _castBase(type, variable);
+  }
+
+  String _castBase(DartType type, String variable) {
+    if (hiveListChecker.isExactlyType(type)) {
       return '($variable as HiveList)?.castHiveList()';
     } else if (iterableChecker.isAssignableFromType(type) &&
         !isUint8List(type)) {
@@ -175,13 +189,13 @@ class ClassBuilder extends Builder {
     var paramType = type as ParameterizedType;
     var arg = paramType.typeArguments.first;
     if (isMapOrIterable(arg) && !isUint8List(arg)) {
-      var cast = '';
+      var castSuffix = '';
       if (listChecker.isExactlyType(type)) {
-        cast = '?.toList()';
+        castSuffix = '?.toList()';
       } else if (setChecker.isExactlyType(type)) {
-        cast = '?.toSet()';
+        castSuffix = '?.toSet()';
       }
-      return '?.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
+      return '?.map((dynamic e)=> ${cast(arg, 'e')})$castSuffix';
     } else {
       return '?.cast<${_displayString(arg)}>()';
     }
@@ -193,7 +207,7 @@ class ClassBuilder extends Builder {
     var arg2 = paramType.typeArguments[1];
     if (isMapOrIterable(arg1) || isMapOrIterable(arg2)) {
       return '?.map((dynamic k, dynamic v)=>'
-          'MapEntry(${_cast(arg1, 'k')},${_cast(arg2, 'v')}))';
+          'MapEntry(${cast(arg1, 'k')},${cast(arg2, 'v')}))';
     } else {
       return '?.cast<${_displayString(arg1)}, '
           '${_displayString(arg2)}>()';
@@ -206,7 +220,7 @@ class ClassBuilder extends Builder {
     code.writeln('writer');
     code.writeln('..writeByte(${getters.length})');
     for (var field in getters) {
-      var value = _convertWritableValue(field.type, 'obj.${field.name}');
+      var value = convertWritableValue(field.type, 'obj.${field.name}');
       code.writeln('''
       ..writeByte(${field.index})
       ..write($value)''');
@@ -216,7 +230,7 @@ class ClassBuilder extends Builder {
     return code.toString();
   }
 
-  String _convertWritableValue(DartType type, String accessor) {
+  String convertWritableValue(DartType type, String accessor) {
     if (isBuiltCollection(type)) {
       return builtMapChecker.isExactlyType(type)
           ? '$accessor?.toMap()'
