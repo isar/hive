@@ -281,15 +281,39 @@ class ClassBuilder extends _ClassBuilderBase {
     return typeParams.join(', ');
   }
 
+  String _convertWritableBuiltMap(DartType type, String accessor) {
+    var paramType = type as ParameterizedType;
+    var arg1 = paramType.typeArguments[0];
+    var arg2 = paramType.typeArguments[1];
+    if (isBuiltCollection(arg1) || isBuiltCollection(arg2)) {
+      return '$accessor?.toMap()?.map'
+          '((k, v) => MapEntry('
+          '${convertWritableValue(arg1, 'k')}, '
+          '${convertWritableValue(arg2, 'v')}))';
+    }
+    return '$accessor?.toMap()';
+  }
+
+  String _convertWritableBuiltIterable(DartType type, String accessor) {
+    var paramType = type as ParameterizedType;
+    var arg = paramType.typeArguments.single;
+    if (isBuiltCollection(arg)) {
+      return '$accessor?.toList()?.map'
+          '((e) => '
+          '${convertWritableValue(arg, 'e')})';
+    }
+    return '$accessor?.toList()';
+  }
+
   @override
   String convertWritableValue(DartType type, String accessor) {
-    if (isBuiltCollection(type)) {
-      return builtMapChecker.isExactlyType(type)
-          ? '$accessor?.toMap()'
-          : '$accessor?.toList()';
-    } else {
+    if (!isBuiltCollection(type)) {
       return super.convertWritableValue(type, accessor);
     }
+    if (builtMapChecker.isExactlyType(type)) {
+      return _convertWritableBuiltMap(type, accessor);
+    }
+    return _convertWritableBuiltIterable(type, accessor);
   }
 }
 
