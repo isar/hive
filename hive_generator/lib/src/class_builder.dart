@@ -139,9 +139,9 @@ class ClassBuilder extends _ClassBuilderBase {
 
   String _castBuiltCollection(
     DartType type,
-    String variable, [
-    bool nestedBuilders = true,
-  ]) {
+    String variable, {
+    bool nestedBuilders,
+  }) {
     String builderConstructor;
     String typeToBeCasted;
     String castExpr = '';
@@ -152,7 +152,7 @@ class ClassBuilder extends _ClassBuilderBase {
     //
     // This is not the case when either nestedBuilders is true or ommited, or
     // when an custom builder was specified with an ListBuilder for example.
-    var shouldBeBuilt = isBuiltCollection(type) && !nestedBuilders;
+    var shouldBeBuilt = isBuiltCollection(type) && (nestedBuilders != true);
 
     if (builtMapChecker.isExactlyType(type) ||
         mapBuilderChecker.isExactlyType(type)) {
