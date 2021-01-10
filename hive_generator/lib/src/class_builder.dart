@@ -47,7 +47,6 @@ class ClassBuilder extends _ClassBuilderBase {
               orElse: () => null,
             );
     if (annotation == null) {
-      print('no annotation on ${cls.displayName}');
       return true;
     }
     final reader = ConstantReader(annotation);
@@ -55,7 +54,6 @@ class ClassBuilder extends _ClassBuilderBase {
     if (nestedBuilders.isNull) {
       return true;
     }
-    print('annotation on ${cls.displayName}: ${nestedBuilders.boolValue}');
     return nestedBuilders.boolValue;
   }
 
@@ -131,7 +129,7 @@ class ClassBuilder extends _ClassBuilderBase {
     //
     // This is not the case when either nestedBuilders is true or ommited, or
     // when an custom builder was specified with an ListBuilder for example.
-    var shouldBeBuilt = !nestedBuilders || isBuilderOrCollectionBuilder(type);
+    var shouldBeBuilt = isBuiltCollection(type) && !nestedBuilders;
 
     if (builtMapChecker.isExactlyType(type) ||
         mapBuilderChecker.isExactlyType(type)) {
