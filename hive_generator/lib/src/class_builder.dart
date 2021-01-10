@@ -121,10 +121,6 @@ class ClassBuilder extends _ClassBuilderBase {
         if (!isBuilt(builtField.type)) {
           continue;
         }
-        if (builderField.name == 'validatedValue') {
-          print(
-              'Gonna override type on validatedValue because type is ${_displayString(builderField.type)}');
-        }
         fields[i] = AdapterField(
           builderField.index,
           builderField.name,
