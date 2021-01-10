@@ -5,8 +5,14 @@ class AdapterField {
   final int index;
   final String name;
   final DartType type;
+  bool builtValueNestedBuilders;
 
-  AdapterField(this.index, this.name, this.type);
+  AdapterField(
+    this.index,
+    this.name,
+    this.type, {
+    this.builtValueNestedBuilders,
+  });
 }
 
 abstract class Builder {

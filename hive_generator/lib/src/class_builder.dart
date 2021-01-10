@@ -65,7 +65,6 @@ class ClassBuilder extends _ClassBuilderBase {
 
     String builderName;
     List<AdapterField> fields;
-    bool nestedBuilders;
 
     // In case the builder is being generated, we assume it has the default
     // name and fields
@@ -79,7 +78,10 @@ class ClassBuilder extends _ClassBuilderBase {
       // We want to set an builder instead of the built class depending on the
       // @BuiltValue annotation, but we cant express this easily with DartType,
       // so we pass this info to cast()
-      nestedBuilders = _nestedBuildersFromAnnotation();
+      final nestedBuilders = _nestedBuildersFromAnnotation();
+      for (final adapterField in fields) {
+        adapterField.builtValueNestedBuilders = nestedBuilders;
+      }
     } else {
       // The builder type was manually created, therefore we look it up for
       // @HiveField annotations
@@ -95,8 +97,41 @@ class ClassBuilder extends _ClassBuilderBase {
       fields = setters;
 
       // We do not need to look it up in the annotation, as this information is
-      // contained in each setter's DartType, allowing for correct casting.
-      nestedBuilders = false;
+      // contained in each setter's DartType in most cases, allowing for correct
+      // casting.
+      for (final field in fields) {
+        field.builtValueNestedBuilders = false;
+      }
+      // The edge case is when the type is an Builder which is being generated.
+      // In this case we set nestedBuilders = true and the type to the Built
+      // type as a workaround.
+      final clsFieldMap = {for (final field in getters) field.index: field};
+      for (var i = 0; i < fields.length; i++) {
+        final builderField = fields[i];
+        final builtField = clsFieldMap[builderField.index];
+        if (builtField == null) {
+          continue;
+        }
+        if (!builderField.type.isDynamic || builtField.type.isDynamic) {
+          continue;
+        }
+        // builderField is dynamic, while builtField isnt. this MAY be the edge
+        // case. To resolve it, we will check if builtField is an Built value.
+        // If so, this is the edge case
+        if (!isBuilt(builtField.type)) {
+          continue;
+        }
+        if (builderField.name == 'validatedValue') {
+          print(
+              'Gonna override type on validatedValue because type is ${_displayString(builderField.type)}');
+        }
+        fields[i] = AdapterField(
+          builderField.index,
+          builderField.name,
+          builtField.type,
+          builtValueNestedBuilders: true,
+        );
+      }
     }
 
     // Instantiate the builder
@@ -107,7 +142,7 @@ class ClassBuilder extends _ClassBuilderBase {
       code.writeln('..${field.name} = ${cast(
         field.type,
         'fields[${field.index}]',
-        nestedBuilders,
+        field.builtValueNestedBuilders,
       )}');
     }
 
@@ -118,7 +153,7 @@ class ClassBuilder extends _ClassBuilderBase {
   String _castBuiltCollection(
     DartType type,
     String variable, [
-    bool nestedBuilders = false,
+    bool nestedBuilders = true,
   ]) {
     String builderConstructor;
     String typeToBeCasted;
