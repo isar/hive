@@ -9,22 +9,12 @@ environment:
 
 dependencies:
   meta: ^1.1.7
-  crypto: ">=2.1.0 <3.0.0"
+  crypto: ^3.0.0-nullsafety.0
 
 dev_dependencies:
   test: ^1.15.7
-  mockito: ^4.1.3
+  mockito: ^5.0.0-nullsafety.5
   pedantic: ^1.9.0
   path: ^1.7.0
   pointycastle: ^2.0.0
   build_runner: ^1.10.0
-
-dependency_overrides: 
-  crypto:
-    git:
-      url: https://github.com/dart-lang/crypto.git
-      ref: c89a5be0375875fe7ff71625fa2b79f5a421f06d
-  mockito:
-    git:
-      url: https://github.com/dart-lang/mockito.git
-      ref: 3075af2f6f2ac425cffce116db18df1e994f8abb
