@@ -1,4 +1,3 @@
-@Skip('Cannot run with sound null safety')
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
@@ -7,7 +6,6 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
-import 'package:dartx/dartx.dart';
 
 import '../common.dart';
 import '../frames.dart';
@@ -356,33 +354,36 @@ void main() {
       test('normal', () {
         var frames = framesSetLengthOffset(testFrames, frameBytes);
         var offset = 0;
-        frames.forEachIndexed((frame, i) {
+        for (var i = 0; i < frames.length; i++) {
+          final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
           expectFrame(
             reader.readFrame(lazy: false, frameOffset: offset)!,
             frame,
           );
           offset += frameBytes[i].length;
-        });
+        }
       });
 
       test('lazy', () {
         var frames = framesSetLengthOffset(testFrames, frameBytes);
         var offset = 0;
-        frames.forEachIndexed((frame, i) {
+        for (var i = 0; i < frames.length; i++) {
+          final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
           expectFrame(
             reader.readFrame(lazy: true, frameOffset: offset)!,
             frame.toLazy(),
           );
           offset += frameBytes[i].length;
-        });
+        }
       });
 
       test('encrypted', () {
         var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
         var offset = 0;
-        frames.forEachIndexed((frame, i) {
+        for (var i = 0; i < frames.length; i++) {
+          final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
           expectFrame(
             reader.readFrame(
@@ -393,13 +394,14 @@ void main() {
             frame,
           );
           offset += frameBytesEncrypted[i].length;
-        });
+        }
       });
 
       test('lazy', () {
         var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
         var offset = 0;
-        frames.forEachIndexed((frame, i) {
+        for (var i = 0; i < frames.length; i++) {
+          final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
           expectFrame(
             reader.readFrame(
@@ -410,7 +412,7 @@ void main() {
             frame.toLazy(),
           );
           offset += frameBytesEncrypted[i].length;
-        });
+        }
       });
     });
 

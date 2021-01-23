@@ -1,7 +1,5 @@
-@Skip('Cannot run with sound null safety')
 import 'dart:typed_data';
 
-import 'package:dartx/dartx.dart';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
@@ -384,20 +382,22 @@ void main() {
 
     group('.writeFrame()', () {
       test('normal', () {
-        testFrames.forEachIndexed((frame, i) {
+        for (var i = 0; i < testFrames.length; i++) {
+          final frame = testFrames[i];
           var writer = BinaryWriterImpl(testRegistry);
           expect(writer.writeFrame(frame), frameBytes[i].length);
           expect(writer.toBytes(), frameBytes[i]);
-        });
+        }
       });
 
       test('encrypted', () {
-        testFrames.forEachIndexed((frame, i) {
+        for (var i = 0; i < testFrames.length; i++) {
+          final frame = testFrames[i];
           var writer = BinaryWriterImpl(testRegistry);
           expect(writer.writeFrame(frame, cipher: testCipher),
               frameBytesEncrypted[i].length);
           expect(writer.toBytes(), frameBytesEncrypted[i]);
-        });
+        }
       });
     });
 
