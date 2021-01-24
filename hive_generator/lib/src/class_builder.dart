@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_generator/src/builder.dart';
 import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:dartx/dartx.dart';
 
 class ClassBuilder extends Builder {
   var hiveListChecker = const TypeChecker.fromRuntime(HiveList);
@@ -66,23 +66,22 @@ class ClassBuilder extends Builder {
   }
 
   String _cast(DartType type, String variable) {
-    if (hiveListChecker.isExactlyType(type)) {
-      return '($variable as HiveList)?.castHiveList()';
+    var suffix = _suffixFromType(type);
+    if (hiveListChecker.isAssignableFromType(type)) {
+      return '($variable as HiveList$suffix)?.castHiveList()';
     } else if (iterableChecker.isAssignableFromType(type) &&
         !isUint8List(type)) {
-      return '($variable as List)${_castIterable(type)}';
-    } else if (mapChecker.isExactlyType(type)) {
-      return '($variable as Map)${_castMap(type)}';
+      return '($variable as List$suffix)${_castIterable(type)}';
+    } else if (mapChecker.isAssignableFromType(type)) {
+      return '($variable as Map$suffix)${_castMap(type)}';
     } else {
       return '$variable as ${_displayString(type)}';
     }
   }
 
   bool isMapOrIterable(DartType type) {
-    return listChecker.isExactlyType(type) ||
-        setChecker.isExactlyType(type) ||
-        iterableChecker.isExactlyType(type) ||
-        mapChecker.isExactlyType(type);
+    return iterableChecker.isAssignableFromType(type) ||
+        mapChecker.isAssignableFromType(type);
   }
 
   bool isUint8List(DartType type) {
@@ -92,16 +91,19 @@ class ClassBuilder extends Builder {
   String _castIterable(DartType type) {
     var paramType = type as ParameterizedType;
     var arg = paramType.typeArguments.first;
+    var suffix = _accessorSuffixFromType(type);
     if (isMapOrIterable(arg) && !isUint8List(arg)) {
       var cast = '';
-      if (listChecker.isExactlyType(type)) {
-        cast = '?.toList()';
-      } else if (setChecker.isExactlyType(type)) {
-        cast = '?.toSet()';
+      // Using assignable because List? is not exactly List
+      if (listChecker.isAssignableFromType(type)) {
+        cast = '$suffix.toList()';
+        // Using assignable because Set? is not exactly Set
+      } else if (setChecker.isAssignableFromType(type)) {
+        cast = '$suffix.toSet()';
       }
-      return '?.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
+      return '$suffix.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
     } else {
-      return '?.cast<${_displayString(arg)}>()';
+      return '$suffix.cast<${_displayString(arg)}>()';
     }
   }
 
@@ -109,11 +111,12 @@ class ClassBuilder extends Builder {
     var paramType = type as ParameterizedType;
     var arg1 = paramType.typeArguments[0];
     var arg2 = paramType.typeArguments[1];
+    var suffix = _accessorSuffixFromType(type);
     if (isMapOrIterable(arg1) || isMapOrIterable(arg2)) {
-      return '?.map((dynamic k, dynamic v)=>'
+      return '$suffix.map((dynamic k, dynamic v)=>'
           'MapEntry(${_cast(arg1, 'k')},${_cast(arg2, 'v')}))';
     } else {
-      return '?.cast<${_displayString(arg1)}, '
+      return '$suffix.cast<${_displayString(arg1)}, '
           '${_displayString(arg2)}>()';
     }
   }
@@ -135,20 +138,58 @@ class ClassBuilder extends Builder {
   }
 
   String _convertIterable(DartType type, String accessor) {
-    if (setChecker.isExactlyType(type) || iterableChecker.isExactlyType(type)) {
-      return '$accessor?.toList()';
+    if (listChecker.isAssignableFromType(type)) {
+      return accessor;
+    } else
+    // Using assignable because Set? and Iterable? are not exactly Set and
+    // Iterable
+    if (setChecker.isAssignableFromType(type) ||
+        iterableChecker.isAssignableFromType(type)) {
+      var suffix = _accessorSuffixFromType(type);
+      return '$accessor$suffix.toList()';
     } else {
       return accessor;
     }
   }
 }
 
-String _displayString(dynamic e) {
+extension _FirstOrNullWhere<T> on Iterable<T> {
+  T /*?*/ firstOrNullWhere(bool Function(T) predicate) =>
+      firstWhere(predicate, orElse: () => null);
+}
+
+/// Suffix to use when accessing a field in [type].
+/// $variable$suffix.field
+String _accessorSuffixFromType(DartType type) {
+  if (type.nullabilitySuffix == NullabilitySuffix.star) {
+    return '?';
+  }
+  if (type.nullabilitySuffix == NullabilitySuffix.question) {
+    return '?';
+  }
+  return '';
+}
+
+/// Suffix to use when casting a value to [type].
+/// $variable as $type$suffix
+String _suffixFromType(DartType type) {
+  if (type.nullabilitySuffix == NullabilitySuffix.star) {
+    return '';
+  }
+  if (type.nullabilitySuffix == NullabilitySuffix.question) {
+    return '?';
+  }
+  return '';
+}
+
+String _displayString(DartType e) {
   try {
-    return e.getDisplayString(withNullability: false) as String;
+    var suffix = _suffixFromType(e);
+    return '${e.getDisplayString(withNullability: false) as String}$suffix';
   } catch (error) {
     if (error is TypeError) {
-      return e.getDisplayString() as String;
+      var suffix = _suffixFromType(e);
+      return '${e.getDisplayString() as String}$suffix';
     } else {
       rethrow;
     }
