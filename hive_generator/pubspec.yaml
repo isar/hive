@@ -12,7 +12,6 @@ dependencies:
   source_gen: ">=0.9.10+1 <2.0.0"
   hive: ">=2.0.0 <3.0.0"
   analyzer: ">=0.40.0 <2.0.0"
-  dartx: ">=0.2.0 <1.0.0"
 
 dev_dependencies:
   test: ^1.16.0-nullsafety.13
