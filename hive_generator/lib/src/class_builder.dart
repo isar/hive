@@ -96,12 +96,15 @@ class ClassBuilder extends Builder {
       var cast = '';
       // Using assignable because List? is not exactly List
       if (listChecker.isAssignableFromType(type)) {
-        cast = '$suffix.toList()';
+        cast = '.toList()';
         // Using assignable because Set? is not exactly Set
       } else if (setChecker.isAssignableFromType(type)) {
-        cast = '$suffix.toSet()';
+        cast = '.toSet()';
       }
-      return '$suffix.map((dynamic e)=> ${_cast(arg, 'e')})$cast';
+      // The suffix is not needed with nnbd on $cast becauuse it short circuits,
+      // otherwise it is needed.
+      var castWithSuffix = isLibraryNNBD(cls) ? '$cast' : '$suffix$cast';
+      return '$suffix.map((dynamic e)=> ${_cast(arg, 'e')})$castWithSuffix';
     } else {
       return '$suffix.cast<${_displayString(arg)}>()';
     }
