@@ -263,7 +263,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   @override
-  void write<T>(T? value, {bool writeTypeId = true}) {
+  void write<T>(T value, {bool writeTypeId = true}) {
     if (value == null) {
       if (writeTypeId) {
         writeByte(FrameValueType.nullT);
