@@ -33,7 +33,7 @@ jobs:
         package: [hive, hive_generator, hive_flutter]
     steps:
       - uses: actions/checkout@v1
-      - uses: axel-op/dart_package_analyzer@master
+      - uses: axel-op/dart-package-analyzer@v3
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           relativePath: ${{ matrix.package }}
