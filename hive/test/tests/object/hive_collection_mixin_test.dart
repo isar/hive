@@ -2,10 +2,11 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-
+import '../common.dart';
 import '../mocks.dart';
 
-HiveList _getTestList(Box box) {
+HiveList _getTestList(MockBox box) {
+  when(box.name).thenReturn('testBox');
   var obj1 = TestHiveObject();
   obj1.init('key1', box);
   var obj2 = TestHiveObject();
@@ -19,46 +20,54 @@ HiveList _getTestList(Box box) {
 void main() {
   group('HiveCollectionMixin', () {
     test('.keys', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
 
       expect(hiveList.keys, ['key1', 'key2', 'key3']);
     });
 
     test('.deleteAllFromHive()', () {
-      var box = BoxMock();
+      final keys = ['key1', 'key2', 'key3'];
+      var box = MockBox();
       var hiveList = _getTestList(box);
+      returnFutureVoid(when(box.deleteAll(
+        keys.map((e) => e), // Turn the List into an regular Iterable
+      )));
 
       hiveList.deleteAllFromHive();
-      verify(box.deleteAll(['key1', 'key2', 'key3']));
+      verify(box.deleteAll(keys));
     });
 
     test('.deleteFirstFromHive()', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
+      returnFutureVoid(when(box.delete('key1')));
 
       hiveList.deleteFirstFromHive();
       verify(box.delete('key1'));
     });
 
     test('.deleteLastFromHive()', () {
-      var box = BoxMock();
+      var box = MockBox();
       var hiveList = _getTestList(box);
+      returnFutureVoid(when(box.delete('key3')));
 
       hiveList.deleteLastFromHive();
       verify(box.delete('key3'));
     });
 
-    test('.deleteFromFromHive()', () {
-      var box = BoxMock();
+    test('.deleteFromHive()', () {
+      var box = MockBox();
       var hiveList = _getTestList(box);
+      returnFutureVoid(when(box.delete('key2')));
 
       hiveList.deleteFromHive(1);
       verify(box.delete('key2'));
     });
 
     test('.toMap()', () {
-      var box = BoxMock();
+      var box = MockBox();
+      when(box.name).thenReturn('testBox');
       var obj1 = TestHiveObject();
       obj1.init('key1', box);
       var obj2 = TestHiveObject();

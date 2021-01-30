@@ -39,7 +39,9 @@ extension HiveObjectInternal on HiveObject {
 
   /// Not part of public API
   void unlinkHiveList(HiveList list) {
-    if (--_hiveLists[list] <= 0) {
+    final currentIndex = _hiveLists[list]!;
+    final newIndex = _hiveLists[list] = currentIndex - 1;
+    if (newIndex <= 0) {
       _hiveLists.remove(list);
     }
   }

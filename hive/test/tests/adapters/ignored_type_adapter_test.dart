@@ -7,14 +7,14 @@ import '../mocks.dart';
 void main() {
   group('IgnoredTypeAdapter', () {
     test('.read()', () {
-      var binaryReader = BinaryReaderMock();
+      var binaryReader = MockBinaryReader();
       var value = IgnoredTypeAdapter().read(binaryReader);
       verifyNever(binaryReader.read());
       expect(value, null);
     });
 
     test('.write()', () {
-      var binaryWriter = BinaryWriterMock();
+      var binaryWriter = MockBinaryWriter();
       IgnoredTypeAdapter().write(binaryWriter, 42);
       verifyNever(binaryWriter.writeInt(42));
     });

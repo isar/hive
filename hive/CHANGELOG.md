@@ -1,3 +1,10 @@
+## 2.0.0-nullsafety.0
+
+### Breaking changes
+- Migrate to null-safety!
+- Update minimum Dart sdk constraint to 2.12.0-0.
+- In order to generate null-safe code use hive_generator >= 0.9.0-nullsafety.0
+
 # 1.5.0-pre
 
 ### Enhancements

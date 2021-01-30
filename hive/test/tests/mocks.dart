@@ -1,38 +1,34 @@
+library hive.test.mocks;
+
 import 'dart:io';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:mockito/mockito.dart';
-import 'package:pointycastle/api.dart';
+import 'package:hive/src/io/frame_io_helper.dart';
+import 'package:hive/src/object/hive_list_impl.dart';
+import 'package:hive/src/object/hive_object.dart';
+import 'package:mockito/annotations.dart';
 
-class HiveMock extends Mock implements HiveImpl {}
+export 'mocks.mocks.dart';
 
-class RAFMock extends Mock implements RandomAccessFile {}
-
-class BinaryReaderMock extends Mock implements BinaryReader {}
-
-class BinaryWriterMock extends Mock implements BinaryWriter {}
-
-class BackendMock extends Mock implements StorageBackend {}
-
-class ChangeNotifierMock extends Mock implements ChangeNotifier {}
-
-class SecureRandomMock extends Mock implements SecureRandom {}
-
-class BoxMock extends Mock implements Box {}
-
-class LazyBoxMock extends Mock implements LazyBox {}
-
-class KeystoreMock extends Mock implements Keystore {}
-
-class FileMock extends Mock implements File {}
-
-class HiveObjectMock extends Mock implements HiveObject {}
-
-class HiveListMock extends Mock implements HiveListImpl {}
+@GenerateMocks([], customMocks: [
+  MockSpec<Box>(returnNullOnMissingStub: true),
+  MockSpec<ChangeNotifier>(returnNullOnMissingStub: true),
+  MockSpec<StorageBackend>(returnNullOnMissingStub: true),
+  MockSpec<Keystore>(returnNullOnMissingStub: true),
+  MockSpec<HiveImpl>(returnNullOnMissingStub: true),
+  MockSpec<HiveList>(returnNullOnMissingStub: true),
+  MockSpec<HiveListImpl>(returnNullOnMissingStub: true),
+  MockSpec<RandomAccessFile>(returnNullOnMissingStub: true),
+  MockSpec<BinaryReader>(returnNullOnMissingStub: true),
+  MockSpec<BinaryWriter>(returnNullOnMissingStub: true),
+  MockSpec<File>(returnNullOnMissingStub: true),
+  MockSpec<FrameIoHelper>(returnNullOnMissingStub: true),
+])
+// ignore: prefer_typing_uninitialized_variables, unused_element
+var _mocks;
 
 class TestHiveObject extends HiveObject {}

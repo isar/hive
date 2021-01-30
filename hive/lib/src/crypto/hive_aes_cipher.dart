@@ -4,9 +4,9 @@ part of hive;
 class HiveAesCipher implements HiveCipher {
   static final _ivRandom = Random.secure();
 
-  AesCbcPkcs7 _cipher;
+  late final AesCbcPkcs7 _cipher;
 
-  int _keyCrc;
+  late final int _keyCrc;
 
   /// Create a cipher with the given [key].
   HiveAesCipher(List<int> key) {

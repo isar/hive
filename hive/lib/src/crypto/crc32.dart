@@ -7,7 +7,7 @@ class Crc32 {
     Uint8List bytes, {
     int crc = 0,
     int offset = 0,
-    int length,
+    int? length,
   }) {
     crc = crc ^ 0xffffffff;
 

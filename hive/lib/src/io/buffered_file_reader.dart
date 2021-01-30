@@ -11,8 +11,11 @@ class BufferedFileReader {
   static const defaultChunkSize = 1000 * 64;
 
   /// Not part of public API
+  ///
+  /// Nullable because of testing. [loadBytes] can throw if the count is not in
+  /// the buffer.
   @visibleForTesting
-  final RandomAccessFile file;
+  final RandomAccessFile? file;
 
   /// Not part of public API
   @visibleForTesting
@@ -75,7 +78,7 @@ class BufferedFileReader {
       }
 
       _bufferOffset = 0;
-      var readBytes = await file.readInto(buffer, remaining);
+      var readBytes = await file!.readInto(buffer, remaining);
       _bufferSize = remaining + readBytes;
       _fileOffset += readBytes;
 

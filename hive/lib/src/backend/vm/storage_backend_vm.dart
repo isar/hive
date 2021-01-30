@@ -18,22 +18,26 @@ class StorageBackendVm extends StorageBackend {
   final File _file;
   final File _lockFile;
   final bool _crashRecovery;
-  final HiveCipher _cipher;
+  final HiveCipher? _cipher;
   final FrameIoHelper _frameHelper;
 
   final ReadWriteSync _sync;
 
   /// Not part of public API
+  ///
+  /// Not `late final` for testing
   @visibleForTesting
-  RandomAccessFile readRaf;
+  late RandomAccessFile readRaf;
+
+  /// Not part of public API
+  ///
+  /// Not `late final` for testing
+  @visibleForTesting
+  late RandomAccessFile writeRaf;
 
   /// Not part of public API
   @visibleForTesting
-  RandomAccessFile writeRaf;
-
-  /// Not part of public API
-  @visibleForTesting
-  RandomAccessFile lockRaf;
+  late RandomAccessFile lockRaf;
 
   /// Not part of public API
   @visibleForTesting
@@ -41,7 +45,7 @@ class StorageBackendVm extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  TypeRegistry registry;
+  late final TypeRegistry registry;
 
   bool _compactionScheduled = false;
 
@@ -100,7 +104,7 @@ class StorageBackendVm extends StorageBackend {
     return _sync.syncRead(() async {
       await readRaf.setPosition(frame.offset);
 
-      var bytes = await readRaf.read(frame.length);
+      var bytes = await readRaf.read(frame.length!);
 
       var reader = BinaryReaderImpl(bytes, registry);
       var readFrame = reader.readFrame(cipher: _cipher, lazy: false);
@@ -132,7 +136,7 @@ class StorageBackendVm extends StorageBackend {
 
       for (var frame in frames) {
         frame.offset = writeOffset;
-        writeOffset += frame.length;
+        writeOffset += frame.length!;
       }
     });
   }
@@ -166,12 +170,12 @@ class StorageBackendVm extends StorageBackend {
             reader.skip(skip);
           }
 
-          if (reader.remainingInBuffer < frame.length) {
-            if (await reader.loadBytes(frame.length) < frame.length) {
+          if (reader.remainingInBuffer < frame.length!) {
+            if (await reader.loadBytes(frame.length!) < frame.length!) {
               throw HiveError('Could not compact box: Unexpected EOF.');
             }
           }
-          await writer.write(reader.viewBytes(frame.length));
+          await writer.write(reader.viewBytes(frame.length!));
         }
         await writer.flush();
       } finally {
@@ -187,7 +191,7 @@ class StorageBackendVm extends StorageBackend {
       for (var frame in sortedFrames) {
         if (frame.offset == -1) continue;
         frame.offset = offset;
-        offset += frame.length;
+        offset += frame.length!;
       }
       _compactionScheduled = false;
     });

@@ -8,8 +8,10 @@ class AesCbcPkcs7 {
 
   final Uint8List _keyBytes;
 
-  List<Uint32List> _encryptionKey;
-  List<Uint32List> _decryptionKey;
+  late final List<Uint32List> _encryptionKey =
+      AesEngine.generateWorkingKey(_keyBytes, true);
+  late final List<Uint32List> _decryptionKey =
+      AesEngine.generateWorkingKey(_keyBytes, false);
 
   /// Not part of public API
   AesCbcPkcs7(this._keyBytes);
@@ -17,8 +19,6 @@ class AesCbcPkcs7 {
   /// Not part of public API
   int encrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
       Uint8List out, int outOff) {
-    _encryptionKey ??= AesEngine.generateWorkingKey(_keyBytes, true);
-
     var cbcV = Uint8List.fromList(iv);
 
     var inputBlocks = (inpLength + aesBlockSize) ~/ aesBlockSize;
@@ -53,8 +53,6 @@ class AesCbcPkcs7 {
   /// Not part of public API
   int decrypt(Uint8List iv, Uint8List inp, int inpOff, int inpLength,
       Uint8List out, int outOff) {
-    _decryptionKey ??= AesEngine.generateWorkingKey(_keyBytes, false);
-
     var inputBlocks = (inpLength + aesBlockSize - 1) ~/ aesBlockSize;
 
     var offset = 0;

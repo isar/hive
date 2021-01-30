@@ -28,7 +28,7 @@ Future _performTest(bool lazy) async {
     var boxFile = File(path.join(dir.path, 'testbox$i.hive'));
     await boxFile.writeAsBytes(subBytes);
 
-    var subFrames = frames.takeWhile((f) => f.offset + f.length <= i + 1);
+    var subFrames = frames.takeWhile((f) => f.offset + f.length! <= i + 1);
     var subKeystore = Keystore.debug(frames: subFrames);
     if (lazy) {
       var box = await hive.openLazyBox('testbox$i');

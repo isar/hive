@@ -5,7 +5,7 @@ part of hive;
 abstract class HiveList<E extends HiveObject> extends HiveCollection<E>
     implements List<E> {
   /// Create a new HiveList which can contain HiveObjects from [box].
-  factory HiveList(Box box, {List<E> objects}) =>
+  factory HiveList(Box box, {List<E>? objects}) =>
       HiveListImpl(box, objects: objects);
 
   /// Disposes this list. It is important to call this method when the list is

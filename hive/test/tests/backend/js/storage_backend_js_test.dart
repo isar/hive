@@ -11,23 +11,24 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
 import '../../frames.dart';
 
+late final Database _nullDatabase;
 StorageBackendJs _getBackend({
-  Database db,
-  HiveCipher cipher,
-  TypeRegistry registry,
+  Database? db,
+  HiveCipher? cipher,
+  TypeRegistry registry = TypeRegistryImpl.nullImpl,
 }) {
-  return StorageBackendJs(db, cipher, registry);
+  return StorageBackendJs(db ?? _nullDatabase, cipher, registry);
 }
 
-Future<Database> _openDb() async {
-  return await window.indexedDB.open('testBox', version: 1,
-      onUpgradeNeeded: (e) {
+Future<Database> _openDb([String name = 'testBox']) async {
+  return await window.indexedDB!.open(name, version: 1, onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
-    if (!db.objectStoreNames.contains('box')) {
+    if (!db.objectStoreNames!.contains('box')) {
       db.createObjectStore('box');
     }
   });
@@ -45,7 +46,8 @@ Future<Database> _getDbWith(Map<String, dynamic> content) async {
   return db;
 }
 
-void main() {
+void main() async {
+  _nullDatabase = await _openDb('nullTestBox');
   group('StorageBackendJs', () {
     test('.path', () {
       expect(_getBackend().path, null);
@@ -68,7 +70,7 @@ void main() {
       });
 
       test('crypto', () {
-        var backend = StorageBackendJs(null, testCipher, testRegistry);
+        var backend = StorageBackendJs(_nullDatabase, testCipher, testRegistry);
         var i = 0;
         for (var frame in testFrames) {
           var buffer = backend.encodeValue(frame) as ByteBuffer;
@@ -85,11 +87,12 @@ void main() {
             'key': Uint8List.fromList([1, 2, 3]),
             'otherKey': null
           });
-          var backend = StorageBackendJs(null, null);
+          var backend = StorageBackendJs(_nullDatabase, null);
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
-          var writer = BinaryWriterImpl(null)..write(frame.value);
+          var writer = BinaryWriterImpl(TypeRegistryImpl.nullImpl)
+            ..write(frame.value);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
 
@@ -99,7 +102,8 @@ void main() {
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 
-          var writer = BinaryWriterImpl(null)..write(frame.value);
+          var writer = BinaryWriterImpl(TypeRegistryImpl.nullImpl)
+            ..write(frame.value);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
       });
@@ -179,8 +183,11 @@ void main() {
         var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = _getBackend(db: db);
 
-        var keystore = Keystore(null, ChangeNotifier(), null);
-        expect(await backend.initialize(null, keystore, false), 0);
+        var keystore = Keystore.debug(notifier: ChangeNotifier());
+        expect(
+            await backend.initialize(
+                TypeRegistryImpl.nullImpl, keystore, false),
+            0);
         expect(keystore.frames, [
           Frame('key1', 1),
           Frame('key2', null),
@@ -192,8 +199,10 @@ void main() {
         var db = await _getDbWith({'key1': 1, 'key2': null, 'key3': 3});
         var backend = _getBackend(db: db);
 
-        var keystore = Keystore(null, ChangeNotifier(), null);
-        expect(await backend.initialize(null, keystore, true), 0);
+        var keystore = Keystore.debug(notifier: ChangeNotifier());
+        expect(
+            await backend.initialize(TypeRegistryImpl.nullImpl, keystore, true),
+            0);
         expect(keystore.frames, [
           Frame.lazy('key1'),
           Frame.lazy('key2'),

@@ -6,10 +6,10 @@ import 'package:hive/src/backend/js/backend_manager.dart';
 import 'package:test/test.dart';
 
 Future<Database> _openDb() async {
-  return await window.indexedDB.open('testBox', version: 1,
+  return await window.indexedDB!.open('testBox', version: 1,
       onUpgradeNeeded: (e) {
     var db = e.target.result as Database;
-    if (!db.objectStoreNames.contains('box')) {
+    if (!db.objectStoreNames!.contains('box')) {
       db.createObjectStore('box');
     }
   });

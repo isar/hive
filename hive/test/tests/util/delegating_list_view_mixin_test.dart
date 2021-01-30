@@ -3,9 +3,11 @@ import 'dart:math';
 import 'package:hive/src/util/delegating_list_view_mixin.dart';
 import 'package:test/test.dart';
 
+import '../common.dart';
+
 void main() {
   group('DelegatingIterable', () {
-    _TestList<String> testList;
+    late _TestList<String> testList;
 
     setUp(() {
       testList = _TestList(['a', 'b', 'cc']);
@@ -57,7 +59,7 @@ void main() {
     });
 
     test('.fold()', () {
-      expect(testList.fold('z', (p, e) => p + e), 'zabcc');
+      expect(testList.fold('z', (dynamic p, e) => p + e), 'zabcc');
     });
 
     test('.forEach()', () {
@@ -97,7 +99,11 @@ void main() {
 
     test('.forEach()', () {
       final it = testList.iterator;
-      expect(it.current, isNull);
+      if (soundNullSafety) {
+        expect(() => it.current, throwsA(anything));
+      } else {
+        expect(it.current, null);
+      }
       expect(it.moveNext(), isTrue);
       expect(it.current, 'a');
       expect(it.moveNext(), isTrue);
@@ -105,7 +111,11 @@ void main() {
       expect(it.moveNext(), isTrue);
       expect(it.current, 'cc');
       expect(it.moveNext(), isFalse);
-      expect(it.current, isNull);
+      if (soundNullSafety) {
+        expect(() => it.current, throwsA(anything));
+      } else {
+        expect(it.current, null);
+      }
     });
 
     test('.join()', () {
@@ -218,7 +228,7 @@ class _TestList<T> with DelegatingListViewMixin<T> {
   void clear() => throw UnimplementedError();
 
   @override
-  void fillRange(int start, int end, [T fillValue]) =>
+  void fillRange(int start, int end, [T? fillValue]) =>
       throw UnimplementedError();
 
   @override
@@ -237,7 +247,7 @@ class _TestList<T> with DelegatingListViewMixin<T> {
   set length(int newLength) => throw UnimplementedError();
 
   @override
-  bool remove(Object value) => throw UnimplementedError();
+  bool remove(Object? value) => throw UnimplementedError();
 
   @override
   T removeAt(int index) => throw UnimplementedError();
@@ -267,8 +277,8 @@ class _TestList<T> with DelegatingListViewMixin<T> {
       throw UnimplementedError();
 
   @override
-  void shuffle([Random random]) => throw UnimplementedError();
+  void shuffle([Random? random]) => throw UnimplementedError();
 
   @override
-  void sort([int Function(T a, T b) compare]) => throw UnimplementedError();
+  void sort([int Function(T a, T b)? compare]) => throw UnimplementedError();
 }

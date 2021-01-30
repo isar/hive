@@ -13,7 +13,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   BoxImpl(
     HiveImpl hive,
     String name,
-    KeyComparator keyComparator,
+    KeyComparator? keyComparator,
     CompactionStrategy compactionStrategy,
     StorageBackend backend,
   ) : super(hive, name, keyComparator, compactionStrategy, backend);
@@ -36,12 +36,12 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
-  E get(dynamic key, {E defaultValue}) {
+  E? get(dynamic key, {E? defaultValue}) {
     checkOpen();
 
     var frame = keystore.get(key);
     if (frame != null) {
-      return frame.value as E;
+      return frame.value as E?;
     } else {
       if (defaultValue != null && defaultValue is HiveObject) {
         defaultValue.init(key, this);
@@ -51,10 +51,10 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
-  E getAt(int index) {
+  E? getAt(int index) {
     checkOpen();
 
-    return keystore.getAt(index).value as E;
+    return keystore.getAt(index)?.value as E?;
   }
 
   @override

@@ -7,22 +7,22 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
-
+import '../common.dart';
 import '../mocks.dart';
 
 BoxImpl _getBox({
-  String name,
-  HiveImpl hive,
-  Keystore keystore,
-  CompactionStrategy cStrategy,
-  StorageBackend backend,
+  String? name,
+  HiveImpl? hive,
+  Keystore? keystore,
+  CompactionStrategy? cStrategy,
+  StorageBackend? backend,
 }) {
   var box = BoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     null,
     cStrategy ?? (total, deleted) => false,
-    backend ?? BackendMock(),
+    backend ?? MockStorageBackend(),
   );
   box.keystore = keystore ?? Keystore(box, ChangeNotifier(), null);
   return box;
@@ -55,7 +55,7 @@ void main() {
 
     group('.get()', () {
       test('returns defaultValue if key does not exist', () {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _getBox(backend: backend);
 
         expect(box.get('someKey'), null);
@@ -64,7 +64,7 @@ void main() {
       });
 
       test('returns cached value if it exists', () {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _getBox(
           backend: backend,
           keystore: Keystore.debug(frames: [
@@ -90,11 +90,18 @@ void main() {
 
     group('.putAll()', () {
       test('values', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
-        when(keystore.frames).thenReturn([Frame('keystoreFrames', 123)]);
+        var frames = [Frame('key1', 'value1'), Frame('key2', 'value2')];
+        var keystoreFrames = [Frame('keystoreFrames', 123)];
+
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
+        when(keystore.frames).thenReturn(keystoreFrames);
         when(keystore.beginTransaction(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(frames)));
+        returnFutureVoid(when(backend.compact(keystoreFrames)));
         when(backend.supportsCompaction).thenReturn(true);
+        when(keystore.length).thenReturn(-1);
+        when(keystore.deletedEntries).thenReturn(-1);
 
         var box = _getBox(
           keystore: keystore,
@@ -103,7 +110,6 @@ void main() {
         );
 
         await box.putAll({'key1': 'value1', 'key2': 'value2'});
-        var frames = [Frame('key1', 'value1'), Frame('key2', 'value2')];
         verifyInOrder([
           keystore.beginTransaction(frames),
           backend.writeFrames(frames),
@@ -113,8 +119,8 @@ void main() {
       });
 
       test('does nothing if no frames are provided', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.beginTransaction([])).thenReturn(false);
 
         var box = _getBox(backend: backend, keystore: keystore);
@@ -125,8 +131,8 @@ void main() {
       });
 
       test('handles exceptions', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
 
         when(backend.writeFrames(any)).thenThrow('Some error');
         when(keystore.beginTransaction(any)).thenReturn(true);
@@ -148,19 +154,33 @@ void main() {
 
     group('.deleteAll()', () {
       test('do nothing when deleting non existing keys', () async {
-        var backend = BackendMock();
-        var box = _getBox(backend: backend);
+        var frames = <Frame>[];
+
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
+        var box = _getBox(backend: backend, keystore: keystore);
+        when(keystore.frames).thenReturn(frames);
+        when(keystore.containsKey(any)).thenReturn(false);
+        returnFutureVoid(when(backend.compact(frames)));
+        when(keystore.beginTransaction(frames)).thenReturn(false);
 
         await box.deleteAll(['key1', 'key2', 'key3']);
         verifyZeroInteractions(backend);
       });
 
       test('delete keys', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var frames = [Frame.deleted('key1'), Frame.deleted('key2')];
+
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(backend.supportsCompaction).thenReturn(true);
         when(keystore.beginTransaction(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(frames)));
         when(keystore.containsKey(any)).thenReturn(true);
+        when(keystore.length).thenReturn(-1);
+        when(keystore.deletedEntries).thenReturn(-1);
+        when(keystore.frames).thenReturn(frames);
+        returnFutureVoid(when(backend.compact(frames)));
 
         var box = _getBox(
           backend: backend,
@@ -169,7 +189,6 @@ void main() {
         );
 
         await box.deleteAll(['key1', 'key2']);
-        var frames = [Frame.deleted('key1'), Frame.deleted('key2')];
         verifyInOrder([
           keystore.containsKey('key1'),
           keystore.containsKey('key2'),
