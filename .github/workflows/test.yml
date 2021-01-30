@@ -5,12 +5,10 @@ on: [push, pull_request]
 jobs:
   test-hive:
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         test-platform: [vm, chrome]
         dart-channel: [unstable]
-    
     steps:
     - uses: actions/checkout@v1
     - name: Install Dart
@@ -30,9 +28,13 @@ jobs:
         
   check-score:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [hive, hive_generator, hive_flutter]
     steps:
       - uses: actions/checkout@v1
-      - uses: axel-op/dart_package_analyzer@stable
+      - uses: axel-op/dart_package_analyzer@master
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          relativePath: ${{ matrix.package }}
           minAnnotationLevel: warning
