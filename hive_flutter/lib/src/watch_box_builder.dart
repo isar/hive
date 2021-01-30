@@ -15,13 +15,11 @@ class WatchBoxBuilder extends StatefulWidget {
   /// If you specify [watchKeys], the widget only refreshes when a value
   /// associated to a key in [watchKeys] changes.
   WatchBoxBuilder({
-    Key key,
-    @required this.box,
-    @required this.builder,
+    Key? key,
+    required this.box,
+    required this.builder,
     this.watchKeys,
-  })  : assert(box != null),
-        assert(builder != null),
-        super(key: key);
+  }) : super(key: key);
 
   /// The box which should be watched.
   final Box box;
@@ -30,7 +28,7 @@ class WatchBoxBuilder extends StatefulWidget {
   final BoxWidgetBuilder builder;
 
   /// Specifies which keys should be watched.
-  final List<String> watchKeys;
+  final List<String>? watchKeys;
 
   @override
   _WatchBoxBuilderState createState() => _WatchBoxBuilderState();
@@ -39,7 +37,7 @@ class WatchBoxBuilder extends StatefulWidget {
 // ignore: deprecated_member_use_from_same_package
 class _WatchBoxBuilderState extends State<WatchBoxBuilder> {
   @visibleForTesting
-  StreamSubscription subscription;
+  StreamSubscription? subscription;
 
   @override
   void initState() {
@@ -61,7 +59,7 @@ class _WatchBoxBuilderState extends State<WatchBoxBuilder> {
 
   void _subscribe() {
     subscription = widget.box.watch().listen((event) {
-      if (widget.watchKeys != null && !widget.watchKeys.contains(event.key)) {
+      if (widget.watchKeys != null && !widget.watchKeys!.contains(event.key)) {
         return;
       }
 

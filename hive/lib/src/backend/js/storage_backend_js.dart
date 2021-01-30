@@ -11,7 +11,6 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:meta/meta.dart';
 
 /// Handles all IndexedDB related tasks
 class StorageBackendJs extends StorageBackend {
@@ -38,7 +37,6 @@ class StorageBackendJs extends StorageBackend {
   }
 
   /// Not part of public API
-  @visibleForTesting
   dynamic encodeValue(Frame frame) {
     var value = frame.value;
     if (_cipher == null) {
@@ -73,7 +71,6 @@ class StorageBackendJs extends StorageBackend {
   }
 
   /// Not part of public API
-  @visibleForTesting
   dynamic decodeValue(dynamic value) {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
@@ -94,7 +91,6 @@ class StorageBackendJs extends StorageBackend {
   }
 
   /// Not part of public API
-  @visibleForTesting
   ObjectStore getStore(bool write, [String box = 'box']) {
     return _db
         .transaction(box, write ? 'readwrite' : 'readonly')
@@ -102,7 +98,6 @@ class StorageBackendJs extends StorageBackend {
   }
 
   /// Not part of public API
-  @visibleForTesting
   Future<List<dynamic>> getKeys({bool cursor = false}) {
     var store = getStore(false);
 
@@ -122,7 +117,6 @@ class StorageBackendJs extends StorageBackend {
   }
 
   /// Not part of public API
-  @visibleForTesting
   Future<Iterable<dynamic>> getValues({bool cursor = false}) {
     var store = getStore(false);
 
