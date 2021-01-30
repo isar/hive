@@ -27,6 +27,7 @@ jobs:
       working-directory: hive
         
   check-score:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
