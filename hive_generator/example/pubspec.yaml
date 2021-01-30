@@ -6,4 +6,4 @@ dev_dependencies:
   hive_generator:
     path: ..
 environment:
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: '>=2.12.0-0 <3.0.0'
