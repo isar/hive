@@ -1,6 +1,13 @@
+library hive_flutter.test.mocks;
+
 import 'package:hive/hive.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
 
-class BinaryReaderMock extends Mock implements BinaryReader {}
+export 'mocks.mocks.dart';
 
-class BinaryWriterMock extends Mock implements BinaryWriter {}
+@GenerateMocks([], customMocks: [
+  MockSpec<BinaryReader>(returnNullOnMissingStub: true),
+  MockSpec<BinaryWriter>(returnNullOnMissingStub: true),
+])
+// ignore: prefer_typing_uninitialized_variables, unused_element
+var _mocks;

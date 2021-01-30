@@ -1,10 +1,10 @@
-## 1.6.0-nullsafety.1
+# 1.6.0-nullsafety.1
 
 ### Fixes
 
 - Changed `meta` dependency version to `^1.3.0-nullsafety` to support null-safety
 
-## 1.6.0-nullsafety.0
+# 1.6.0-nullsafety.0
 
 ### Breaking changes
 

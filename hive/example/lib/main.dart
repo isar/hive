@@ -6,6 +6,8 @@ part 'main.g.dart';
 
 @HiveType(typeId: 1)
 class Person {
+  Person({required this.name, required this.age, required this.friends});
+
   @HiveField(0)
   String name;
 
@@ -29,10 +31,11 @@ void main() async {
 
   var box = await Hive.openBox('testBox');
 
-  var person = Person()
-    ..name = 'Dave'
-    ..age = 22
-    ..friends = ['Linda', 'Marc', 'Anne'];
+  var person = Person(
+    name: 'Dave',
+    age: 22,
+    friends: ['Linda', 'Marc', 'Anne'],
+  );
 
   await box.put('dave', person);
 
