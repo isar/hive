@@ -20,7 +20,7 @@ jobs:
         pub global activate test_coverage
         pub global run test_coverage --exclude "**/js/**"
       working-directory: hive
-    - uses: codecov/codecov-action@v1.0.0	
+    - uses: codecov/codecov-action@v1.0.0
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}	
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: hive/coverage/lcov.info

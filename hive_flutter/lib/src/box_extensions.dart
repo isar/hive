@@ -7,7 +7,7 @@ extension BoxX<T> on Box<T> {
   ///
   /// If [keys] filter is provided, only changes to entries with the
   /// specified keys notify the listeners.
-  ValueListenable<Box<T>> listenable({List<dynamic> keys}) =>
+  ValueListenable<Box<T>> listenable({List<dynamic>? keys}) =>
       _BoxListenable(this, keys?.toSet());
 }
 
@@ -18,18 +18,18 @@ extension LazyBoxX<T> on LazyBox<T> {
   ///
   /// If [keys] filter is provided, only changes to entries with the
   /// specified keys notify the listeners.
-  ValueListenable<LazyBox<T>> listenable({List<dynamic> keys}) =>
+  ValueListenable<LazyBox<T>> listenable({List<dynamic>? keys}) =>
       _BoxListenable(this, keys?.toSet());
 }
 
 class _BoxListenable<T, B extends BoxBase<T>> extends ValueListenable<B> {
   final B box;
 
-  final Set<dynamic> keys;
+  final Set<dynamic>? keys;
 
   final List<VoidCallback> _listeners = [];
 
-  StreamSubscription _subscription;
+  StreamSubscription? _subscription;
 
   _BoxListenable(this.box, this.keys);
 
@@ -38,7 +38,7 @@ class _BoxListenable<T, B extends BoxBase<T>> extends ValueListenable<B> {
     if (_listeners.isEmpty) {
       if (keys != null) {
         _subscription = box.watch().listen((event) {
-          if (keys.contains(event.key)) {
+          if (keys!.contains(event.key)) {
             for (var listener in _listeners) {
               listener();
             }

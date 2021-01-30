@@ -5,19 +5,19 @@ part 'person.g.dart';
 @HiveType(typeId: 1)
 class Person extends HiveObject {
   @HiveField(0)
-  String firstName;
+  String? firstName;
 
   @HiveField(1)
-  String lastName;
+  String? lastName;
 
   @HiveField(2)
-  DateTime birthday;
+  DateTime? birthday;
 
   @HiveField(3)
-  List<UserRole> roles;
+  List<UserRole>? roles;
 
   @HiveField(4)
-  HiveList<Person> friends;
+  HiveList<Person>? friends;
 }
 
 @HiveType(typeId: 2)

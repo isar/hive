@@ -5,3 +5,5 @@ dev_dependencies:
   build_runner: any
   hive_generator:
     path: ..
+environment:
+  sdk: '>=2.10.0 <3.0.0'
