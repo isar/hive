@@ -1,3 +1,7 @@
+## 0.9.0-nullsafety.0
+- Support generating null-safe code for libraries using Dart >= 2.12.0
+- Does not generate incompatible code for legacy libraries, so this is **NOT** a breaking change.
+
 ## 0.8.2
 - Inheritance support. Fixes [#442](https://github.com/hivedb/hive/issues/442)
 - Support for both older and newer analyzer versions
