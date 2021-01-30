@@ -18,7 +18,4 @@ dev_dependencies:
   build_test: any
   build_runner: any
   pedantic: ^1.10.0-nullsafety.3
-
-dependency_overrides:
-  hive:
-    path: ../hive
+  
