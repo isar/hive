@@ -232,9 +232,9 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     var boxNameLength = readByte();
     var boxName = String.fromCharCodes(viewBytes(boxNameLength));
-    var keys = [];
+    var keys = List<dynamic>.filled(length, null);
     for (var i = 0; i < length; i++) {
-      keys.add(readKey());
+      keys[i] = readKey();
     }
 
     return HiveListImpl.lazy(boxName, keys);
