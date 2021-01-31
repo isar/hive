@@ -7,3 +7,8 @@ dev_dependencies:
     path: ..
 environment:
   sdk: '>=2.12.0-0 <3.0.0'
+dependency_overrides:
+  hive:
+    path: ../../hive
+  hive_generator:
+    path: ..

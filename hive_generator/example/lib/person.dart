@@ -25,7 +25,7 @@ enum UserRole {
   @HiveField(0)
   customer,
 
-  @HiveField(1)
+  @HiveField(1, defaultValue: true)
   contentEditor,
 
   @HiveField(2)
