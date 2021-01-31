@@ -1,3 +1,9 @@
+# 1.6.0-nullsafety.2
+
+### Fixes
+
+- Added `defaultValue` property to `@HiveField()` annotation - [#557](https://github.com/hivedb/hive/pull/557)
+
 # 1.6.0-nullsafety.1
 
 ### Fixes
