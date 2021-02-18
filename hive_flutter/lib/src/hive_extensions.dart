@@ -10,11 +10,7 @@ extension HiveX on HiveInterface {
     if (!kIsWeb) {
       var appDir = await getApplicationDocumentsDirectory();
       if (appDir != null) {
-        var path = appDir.path;
-        if (subDir != null) {
-          path = path_helper.join(path, subDir);
-        }
-        init(path);
+        init(path_helper.join(appDir.path, subDir));
       } else {
         NullThrownError();
       }

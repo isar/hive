@@ -90,8 +90,8 @@ void main() {
 
     group('.putAll()', () {
       test('values', () async {
-        var frames = [Frame('key1', 'value1'), Frame('key2', 'value2')];
-        var keystoreFrames = [Frame('keystoreFrames', 123)];
+        var frames = <Frame>[Frame('key1', 'value1'), Frame('key2', 'value2')];
+        var keystoreFrames = <Frame>[Frame('keystoreFrames', 123)];
 
         var backend = MockStorageBackend();
         var keystore = MockKeystore();

@@ -5,7 +5,7 @@ homepage: https://github.com/hivedb/hive/tree/master/hive
 documentation: https://docs.hivedb.dev/
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
+  sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
   meta: ^1.3.0-nullsafety
@@ -13,7 +13,8 @@ dependencies:
 
 dev_dependencies:
   test: ^1.15.7
-  mockito: ^5.0.0-nullsafety.5
+  # TODO: Fix & update mockito version
+  mockito: 5.0.0-nullsafety.5
   pedantic: ^1.9.0
   path: ^1.7.0
   pointycastle: ^2.0.0
