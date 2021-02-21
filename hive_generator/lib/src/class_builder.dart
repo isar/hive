@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:analyzer/dart/element/element.dart';
@@ -12,6 +13,7 @@ class ClassBuilder extends Builder {
   var hiveListChecker = const TypeChecker.fromRuntime(HiveList);
   var listChecker = const TypeChecker.fromRuntime(List);
   var mapChecker = const TypeChecker.fromRuntime(Map);
+  var linkedHashMapChecker = const TypeChecker.fromRuntime(LinkedHashMap);
   var setChecker = const TypeChecker.fromRuntime(Set);
   var iterableChecker = const TypeChecker.fromRuntime(Iterable);
   var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
@@ -75,6 +77,8 @@ class ClassBuilder extends Builder {
       return '($variable as List)${_castIterable(type)}';
     } else if (mapChecker.isExactlyType(type)) {
       return '($variable as Map)${_castMap(type)}';
+    } else if (linkedHashMapChecker.isExactlyType(type)) {
+      return 'LinkedHashMap.from(($variable as Map)${_castMap(type)})';
     } else {
       return '$variable as ${type.getDisplayString()}';
     }
@@ -84,7 +88,8 @@ class ClassBuilder extends Builder {
     return listChecker.isExactlyType(type) ||
         setChecker.isExactlyType(type) ||
         iterableChecker.isExactlyType(type) ||
-        mapChecker.isExactlyType(type);
+        mapChecker.isExactlyType(type) ||
+        linkedHashMapChecker.isExactlyType(type);
   }
 
   bool isUint8List(DartType type) {
