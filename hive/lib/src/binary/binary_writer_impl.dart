@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -301,7 +302,11 @@ class BinaryWriterImpl extends BinaryWriter {
       _writeList(value, writeTypeId: writeTypeId);
     } else if (value is Map) {
       if (writeTypeId) {
-        writeByte(FrameValueType.mapT);
+        if (value is LinkedHashMap) {
+          writeByte(FrameValueType.linkedHashMapT);
+        } else {
+          writeByte(FrameValueType.mapT);
+        }
       }
       writeMap(value);
     } else {

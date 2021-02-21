@@ -147,4 +147,7 @@ class FrameValueType {
 
   /// List<HiveObject>
   static const hiveListT = 12;
+
+  /// LinkedHashMap<dynamic, dynamic>
+  static const linkedHashMapT = 13;
 }

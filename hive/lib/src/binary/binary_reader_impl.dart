@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -205,13 +206,13 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   @override
-  Map readMap([int length]) {
+  Map readMap([int length, Map<dynamic, dynamic> mapContainer]) {
     length ??= readUint32();
-    var map = <dynamic, dynamic>{};
+    mapContainer ??= <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
-      map[read()] = read();
+      mapContainer[read()] = read();
     }
-    return map;
+    return mapContainer;
   }
 
   /// Not part of public API
@@ -314,6 +315,8 @@ class BinaryReaderImpl extends BinaryReader {
         return readList();
       case FrameValueType.mapT:
         return readMap();
+      case FrameValueType.linkedHashMapT:
+        return readMap(null, LinkedHashMap.identity());
       case FrameValueType.hiveListT:
         return readHiveList();
       default:

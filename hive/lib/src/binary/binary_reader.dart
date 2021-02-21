@@ -85,9 +85,12 @@ abstract class BinaryReader {
   List readList([int length]);
 
   /// Read a map with [length] entries.
+  /// It is possible to specify different [Map] implementations by providing
+  /// the corresponding instance in [mapContainer]
   ///
   /// If [length] is not provided, it is read first.
-  Map readMap([int length]);
+  /// If [mapContainer] is not provided, the default [Map] is used
+  Map readMap([int length, Map<dynamic, dynamic> mapContainer]);
 
   /// Read and decode any value.
   ///
