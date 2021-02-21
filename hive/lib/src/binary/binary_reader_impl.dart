@@ -207,6 +207,8 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   Map readMap([int length, Map<dynamic, dynamic> mapContainer]) {
+    assert(mapContainer == null || mapContainer.isEmpty);
+
     length ??= readUint32();
     mapContainer ??= <dynamic, dynamic>{};
     for (var i = 0; i < length; i++) {
