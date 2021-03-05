@@ -1,3 +1,7 @@
+## 1.0.0
+
+- Stable null-safety version
+
 ## 0.9.0-nullsafety.1
 
 - Enum nullsafety support - [#555](https://github.com/hivedb/hive/issues/555)
