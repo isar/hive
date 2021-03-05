@@ -1,3 +1,7 @@
+## 1.0.0
+
+- Stable null-safety version
+
 ## 0.1.0-nullsafety.0
 
 - Null safety support
