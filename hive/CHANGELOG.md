@@ -1,3 +1,9 @@
+# 2.0.0
+
+### Fixes
+
+- Stable null-safety version
+
 # 1.6.0-nullsafety.2
 
 ### Fixes
