@@ -162,8 +162,8 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
   _i7.Stream<_i3.BoxEvent> watch({dynamic key}) => (super.noSuchMethod(
       Invocation.method(#watch, [], {#key: key}),
       Stream<_i3.BoxEvent>.empty()) as _i7.Stream<_i3.BoxEvent>);
-  _i9.Frame? insert(_i9.Frame? frame, {bool? notify = true}) => (super
-          .noSuchMethod(Invocation.method(#insert, [frame], {#notify: notify}))
+  _i9.Frame? insert(_i9.Frame? frame, {bool? notify = true, bool lazy = false}) =>
+      (super.noSuchMethod(Invocation.method(#insert, [frame], {#notify: notify}))
       as _i9.Frame?);
   bool beginTransaction(List<_i9.Frame>? newFrames) => (super.noSuchMethod(
       Invocation.method(#beginTransaction, [newFrames]), false) as bool);

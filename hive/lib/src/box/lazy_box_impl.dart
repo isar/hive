@@ -66,7 +66,7 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
       if (frame.value is HiveObject) {
         (frame.value as HiveObject).init(frame.key, this);
       }
-      keystore.insert(frame.toLazy());
+      keystore.insert(frame, lazy: true);
     }
 
     await performCompactionIfNeeded();

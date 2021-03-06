@@ -88,8 +88,8 @@ void main() {
             Frame('key1', 'value1'),
             Frame('key2', 'value2'),
           ]),
-          keystore.insert(Frame.lazy('key1')),
-          keystore.insert(Frame.lazy('key2')),
+          keystore.insert(Frame('key1', 'value1'), lazy: true),
+          keystore.insert(Frame('key2', 'value2'), lazy: true),
         ]);
       });
 
