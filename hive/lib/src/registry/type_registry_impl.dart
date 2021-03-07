@@ -2,25 +2,60 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/ignored_type_adapter.dart';
 import 'package:meta/meta.dart';
 
-class _ResolvedAdapter<T> {
+/// Not part of public API
+///
+/// Needed to codegen the TypeRegistry mock
+@visibleForTesting
+class ResolvedAdapter<T> {
   final TypeAdapter adapter;
   final int typeId;
 
-  _ResolvedAdapter(this.adapter, this.typeId);
+  ResolvedAdapter(this.adapter, this.typeId);
 
   bool matches(dynamic value) => value is T;
+}
+
+class _NullTypeRegistry implements TypeRegistryImpl {
+  const _NullTypeRegistry();
+
+  @override
+  Never get _typeAdapters => throw UnimplementedError();
+
+  @override
+  Never findAdapterForTypeId(int typeId) => throw UnimplementedError();
+
+  @override
+  Never findAdapterForValue(value) => throw UnimplementedError();
+
+  @override
+  Never ignoreTypeId<T>(int typeId) => throw UnimplementedError();
+
+  @override
+  Never isAdapterRegistered(int typeId, {bool internal = false}) =>
+      throw UnimplementedError();
+
+  @override
+  Never registerAdapter<T>(TypeAdapter<T> adapter,
+          {bool internal = false, bool override = false}) =>
+      throw UnimplementedError();
+
+  @override
+  Never resetAdapters() => throw UnimplementedError();
 }
 
 /// Not part of public API
 class TypeRegistryImpl implements TypeRegistry {
   /// Not part of public API
+  static const TypeRegistryImpl nullImpl = _NullTypeRegistry();
+
+  /// Not part of public API
   @visibleForTesting
   static const reservedTypeIds = 32;
 
-  final _typeAdapters = <int, _ResolvedAdapter>{};
+  final _typeAdapters = <int, ResolvedAdapter>{};
 
   /// Not part of public API
-  _ResolvedAdapter findAdapterForValue(dynamic value) {
+  ResolvedAdapter? findAdapterForValue(dynamic value) {
     for (var adapter in _typeAdapters.values) {
       if (adapter.matches(value)) return adapter;
     }
@@ -28,7 +63,7 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   /// Not part of public API
-  _ResolvedAdapter findAdapterForTypeId(int typeId) {
+  ResolvedAdapter? findAdapterForTypeId(int typeId) {
     return _typeAdapters[typeId];
   }
 
@@ -62,7 +97,7 @@ class TypeRegistryImpl implements TypeRegistry {
       }
     }
 
-    var resolved = _ResolvedAdapter<T>(adapter, typeId);
+    var resolved = ResolvedAdapter<T>(adapter, typeId);
     _typeAdapters[typeId] = resolved;
   }
 

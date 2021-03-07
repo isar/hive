@@ -43,7 +43,7 @@ abstract class BoxBase<E> {
   bool get isOpen;
 
   /// The location of the box in the file system. In the browser, this is null.
-  String get path;
+  String? get path;
 
   /// Whether this box is lazy or not.
   ///

@@ -6,6 +6,7 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Not part of public API
@@ -24,7 +25,7 @@ class FrameIoHelper extends FrameHelper {
 
   /// Not part of public API
   Future<int> keysFromFile(
-      String path, Keystore keystore, HiveCipher cipher) async {
+      String path, Keystore keystore, HiveCipher? cipher) async {
     var raf = await openFile(path);
     var fileReader = BufferedFileReader(raf);
     try {
@@ -36,7 +37,7 @@ class FrameIoHelper extends FrameHelper {
 
   /// Not part of public API
   Future<int> framesFromFile(String path, Keystore keystore,
-      TypeRegistry registry, HiveCipher cipher) async {
+      TypeRegistry registry, HiveCipher? cipher) async {
     var bytes = await readFile(path);
     return framesFromBytes(bytes as Uint8List, keystore, registry, cipher);
   }
@@ -45,11 +46,11 @@ class FrameIoHelper extends FrameHelper {
 class _KeyReader {
   final BufferedFileReader fileReader;
 
-  BinaryReaderImpl _reader;
+  late BinaryReaderImpl _reader;
 
   _KeyReader(this.fileReader);
 
-  Future<int> readKeys(Keystore keystore, HiveCipher cipher) async {
+  Future<int> readKeys(Keystore keystore, HiveCipher? cipher) async {
     await _load(4);
     while (true) {
       var frameOffset = fileReader.offset;
@@ -87,7 +88,7 @@ class _KeyReader {
   Future<int> _load(int bytes) async {
     var loadedBytes = await fileReader.loadBytes(bytes);
     var buffer = fileReader.peekBytes(loadedBytes);
-    _reader = BinaryReaderImpl(buffer, null);
+    _reader = BinaryReaderImpl(buffer, TypeRegistryImpl.nullImpl);
 
     return loadedBytes;
   }

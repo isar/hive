@@ -14,7 +14,7 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
   LazyBoxImpl(
     HiveImpl hive,
     String name,
-    KeyComparator keyComparator,
+    KeyComparator? keyComparator,
     CompactionStrategy compactionStrategy,
     StorageBackend backend,
   ) : super(hive, name, keyComparator, compactionStrategy, backend);
@@ -23,7 +23,7 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
   final bool lazy = true;
 
   @override
-  Future<E> get(dynamic key, {E defaultValue}) async {
+  Future<E?> get(dynamic key, {E? defaultValue}) async {
     checkOpen();
 
     var frame = keystore.get(key);
@@ -33,7 +33,7 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
       if (value is HiveObject) {
         value.init(key, this);
       }
-      return value as E;
+      return value as E?;
     } else {
       if (defaultValue != null && defaultValue is HiveObject) {
         defaultValue.init(key, this);
@@ -43,7 +43,7 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
   }
 
   @override
-  Future<E> getAt(int index) {
+  Future<E?> getAt(int index) {
     return get(keystore.keyAt(index));
   }
 

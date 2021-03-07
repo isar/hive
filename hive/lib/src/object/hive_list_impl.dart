@@ -14,20 +14,20 @@ class HiveListImpl<E extends HiveObject>
   /// Not part of public API
   final String boxName;
 
-  final List<dynamic> _keys;
+  final List<dynamic>? _keys;
 
   HiveInterface _hive = Hive;
 
-  List<E> _delegate;
+  List<E>? _delegate;
 
-  Box _box;
+  Box? _box;
 
   bool _invalidated = false;
 
   bool _disposed = false;
 
   /// Not part of public API
-  HiveListImpl(Box box, {List<E> objects})
+  HiveListImpl(Box box, {List<E>? objects})
       : boxName = box.name,
         _keys = null,
         _delegate = [],
@@ -38,12 +38,12 @@ class HiveListImpl<E extends HiveObject>
   }
 
   /// Not part of public API
-  HiveListImpl.lazy(this.boxName, List<dynamic> keys) : _keys = keys;
+  HiveListImpl.lazy(this.boxName, List<dynamic>? keys) : _keys = keys;
 
   @override
   Iterable<dynamic> get keys {
     if (_delegate == null) {
-      return _keys;
+      return _keys!;
     } else {
       return super.keys;
     }
@@ -60,10 +60,10 @@ class HiveListImpl<E extends HiveObject>
         throw HiveError('The box "$boxName" is a lazy box. '
             'You can only use HiveLists with normal boxes.');
       } else {
-        _box = box as Box;
+        _box = box;
       }
     }
-    return _box;
+    return _box!;
   }
 
   @override
@@ -74,7 +74,7 @@ class HiveListImpl<E extends HiveObject>
 
     if (_invalidated) {
       var retained = <E>[];
-      for (var obj in _delegate) {
+      for (var obj in _delegate!) {
         if (obj.isInHiveList(this)) {
           retained.add(obj);
         }
@@ -83,7 +83,7 @@ class HiveListImpl<E extends HiveObject>
       _invalidated = false;
     } else if (_delegate == null) {
       var list = <E>[];
-      for (var key in _keys) {
+      for (var key in _keys!) {
         if (box.containsKey(key)) {
           var obj = box.get(key) as E;
           obj.linkHiveList(this);
@@ -93,13 +93,13 @@ class HiveListImpl<E extends HiveObject>
       _delegate = list;
     }
 
-    return _delegate;
+    return _delegate!;
   }
 
   @override
   void dispose() {
     if (_delegate != null) {
-      for (var element in _delegate) {
+      for (var element in _delegate!) {
         element.unlinkHiveList(this);
       }
       _delegate = null;
@@ -116,19 +116,16 @@ class HiveListImpl<E extends HiveObject>
   }
 
   void _checkElementIsValid(E obj) {
-    if (obj == null) {
-      throw HiveError('HiveLists must not contain null elements.');
-    } else if (obj.box != box) {
+    if (obj.box != box) {
       throw HiveError('HiveObjects needs to be in the box "$boxName".');
     }
   }
 
   @override
   set length(int newLength) {
-    var delegate = this.delegate;
     if (newLength < delegate.length) {
       for (var i = newLength; i < delegate.length; i++) {
-        delegate[i]?.unlinkHiveList(this);
+        delegate[i].unlinkHiveList(this);
       }
     }
     delegate.length = newLength;
@@ -142,7 +139,7 @@ class HiveListImpl<E extends HiveObject>
     var oldValue = delegate[index];
     delegate[index] = value;
 
-    oldValue?.unlinkHiveList(this);
+    oldValue.unlinkHiveList(this);
   }
 
   @override
@@ -156,8 +153,6 @@ class HiveListImpl<E extends HiveObject>
   void addAll(Iterable<E> iterable) {
     for (var element in iterable) {
       _checkElementIsValid(element);
-    }
-    for (var element in iterable) {
       element.linkHiveList(this);
     }
     delegate.addAll(iterable);
@@ -166,7 +161,7 @@ class HiveListImpl<E extends HiveObject>
   @override
   HiveList<T> castHiveList<T extends HiveObject>() {
     if (_delegate != null) {
-      return HiveListImpl(box, objects: _delegate.cast());
+      return HiveListImpl(box, objects: _delegate!.cast());
     } else {
       return HiveListImpl.lazy(boxName, _keys);
     }

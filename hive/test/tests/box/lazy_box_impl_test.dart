@@ -8,21 +8,22 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
+import '../common.dart';
 import '../mocks.dart';
 
 LazyBoxImpl _getBox({
-  String name,
-  HiveImpl hive,
-  Keystore keystore,
-  CompactionStrategy cStrategy,
-  StorageBackend backend,
+  String? name,
+  HiveImpl? hive,
+  Keystore? keystore,
+  CompactionStrategy? cStrategy,
+  StorageBackend? backend,
 }) {
   var box = LazyBoxImpl(
     hive ?? HiveImpl(),
     name ?? 'testBox',
     null,
     cStrategy ?? (total, deleted) => false,
-    backend ?? BackendMock(),
+    backend ?? MockStorageBackend(),
   );
   box.keystore = keystore ?? Keystore(box, ChangeNotifier(), null);
   return box;
@@ -32,7 +33,7 @@ void main() {
   group('LazyBoxImpl', () {
     group('.get()', () {
       test('returns defaultValue if key does not exist', () async {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         var box = _getBox(backend: backend);
 
         expect(await box.get('someKey'), null);
@@ -41,7 +42,7 @@ void main() {
       });
 
       test('reads value from backend', () async {
-        var backend = BackendMock();
+        var backend = MockStorageBackend();
         when(backend.readValue(any)).thenAnswer((i) async => 'testVal');
 
         var box = _getBox(backend: backend);
@@ -58,7 +59,7 @@ void main() {
         Frame.lazy(0),
         Frame.lazy('a'),
       ]);
-      var backend = BackendMock();
+      var backend = MockStorageBackend();
       when(backend.readValue(any)).thenAnswer((i) {
         return Future.value('A');
       });
@@ -69,9 +70,12 @@ void main() {
 
     group('.putAll()', () {
       test('values', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.containsKey(any)).thenReturn(false);
+        returnFutureVoid(when(backend.writeFrames(any)));
+        when(keystore.length).thenReturn(-1);
+        when(keystore.deletedEntries).thenReturn(-1);
 
         var box = _getBox(
           backend: backend,
@@ -90,10 +94,11 @@ void main() {
       });
 
       test('handles exceptions', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
+        final theError = 'Some error';
 
-        when(backend.writeFrames(any)).thenThrow('Some error');
+        when(backend.writeFrames(any)).thenThrow(theError);
         when(keystore.containsKey(any)).thenReturn(true);
 
         var box = _getBox(
@@ -105,7 +110,7 @@ void main() {
           () async => await box.putAll(
             {'key1': 'value1', 'key2': 'value2'},
           ),
-          throwsA(anything),
+          throwsA(theError),
         );
         verifyInOrder([
           backend.writeFrames([
@@ -119,8 +124,8 @@ void main() {
 
     group('.deleteAll()', () {
       test('does nothing when deleting non existing keys', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.containsKey(any)).thenReturn(false);
         var box = _getBox(
           backend: backend,
@@ -132,9 +137,12 @@ void main() {
       });
 
       test('delete keys', () async {
-        var backend = BackendMock();
-        var keystore = KeystoreMock();
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
         when(keystore.containsKey(any)).thenReturn(true);
+        returnFutureVoid(when(backend.writeFrames(any)));
+        when(keystore.length).thenReturn(-1);
+        when(keystore.deletedEntries).thenReturn(-1);
 
         var box = _getBox(
           backend: backend,

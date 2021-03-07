@@ -106,7 +106,12 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
             getHiveFieldAnn(getter.variable) ?? getHiveFieldAnn(getter);
         if (getterAnn != null) {
           var field = getter.variable;
-          getters.add(AdapterField(getterAnn.index, field.name, field.type));
+          getters.add(AdapterField(
+            getterAnn.index,
+            field.name,
+            field.type,
+            getterAnn.defaultValue,
+          ));
         }
       }
 
@@ -116,7 +121,12 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
             getHiveFieldAnn(setter.variable) ?? getHiveFieldAnn(setter);
         if (setterAnn != null) {
           var field = setter.variable;
-          setters.add(AdapterField(setterAnn.index, field.name, field.type));
+          setters.add(AdapterField(
+            setterAnn.index,
+            field.name,
+            field.type,
+            setterAnn.defaultValue,
+          ));
         }
       }
     }

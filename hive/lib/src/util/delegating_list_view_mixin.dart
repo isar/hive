@@ -32,7 +32,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   List<R> cast<R>() => delegate.cast<R>();
 
   @override
-  bool contains(Object element) => delegate.contains(element);
+  bool contains(Object? element) => delegate.contains(element);
 
   @override
   E elementAt(int index) => delegate.elementAt(index);
@@ -45,7 +45,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
       delegate.expand<T>(f);
 
   @override
-  E firstWhere(bool Function(E element) test, {E Function() orElse}) =>
+  E firstWhere(bool Function(E element) test, {E Function()? orElse}) =>
       delegate.firstWhere(test, orElse: orElse);
 
   @override
@@ -62,7 +62,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   Iterable<E> getRange(int start, int end) => delegate.getRange(start, end);
 
   @override
-  int indexOf(Object element, [int start = 0]) =>
+  int indexOf(Object? element, [int start = 0]) =>
       delegate.indexOf(element as E, start);
 
   @override
@@ -82,15 +82,15 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   String join([String separator = '']) => delegate.join(separator);
 
   @override
-  int lastIndexOf(Object element, [int start]) =>
+  int lastIndexOf(Object? element, [int? start]) =>
       delegate.lastIndexOf(element as E, start);
 
   @override
-  int lastIndexWhere(bool Function(E element) test, [int start]) =>
+  int lastIndexWhere(bool Function(E element) test, [int? start]) =>
       delegate.lastIndexWhere(test, start);
 
   @override
-  E lastWhere(bool Function(E element) test, {E Function() orElse}) =>
+  E lastWhere(bool Function(E element) test, {E Function()? orElse}) =>
       delegate.lastWhere(test, orElse: orElse);
 
   @override
@@ -106,7 +106,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
   E get single => delegate.single;
 
   @override
-  E singleWhere(bool Function(E element) test, {E Function() orElse}) =>
+  E singleWhere(bool Function(E element) test, {E Function()? orElse}) =>
       delegate.singleWhere(test, orElse: orElse);
 
   @override
@@ -117,7 +117,7 @@ abstract class DelegatingListViewMixin<E> implements List<E> {
       delegate.skipWhile(test);
 
   @override
-  List<E> sublist(int start, [int end]) => delegate.sublist(start, end);
+  List<E> sublist(int start, [int? end]) => delegate.sublist(start, end);
 
   @override
   Iterable<E> take(int count) => delegate.take(count);

@@ -11,7 +11,7 @@ class BackendManager implements BackendManagerInterface {
 
   @override
   Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, HiveCipher cipher) async {
+      String name, String? path, bool crashRecovery, HiveCipher? cipher) async {
     if (path == null) {
       throw HiveError('You need to initialize Hive or '
           'provide a path to store the box.');
@@ -50,7 +50,8 @@ class BackendManager implements BackendManagerInterface {
   }
 
   @override
-  Future<void> deleteBox(String name, String path) async {
+  Future<void> deleteBox(String name, String? path) async {
+    ArgumentError.checkNotNull(path, 'path');
     await _deleteFileIfExists(File('$path$_delimiter$name.hive'));
     await _deleteFileIfExists(File('$path$_delimiter$name.hivec'));
     await _deleteFileIfExists(File('$path$_delimiter$name.lock'));
@@ -63,7 +64,8 @@ class BackendManager implements BackendManagerInterface {
   }
 
   @override
-  Future<bool> boxExists(String name, String path) async {
+  Future<bool> boxExists(String name, String? path) async {
+    ArgumentError.checkNotNull(path, 'path');
     return await File('$path$_delimiter$name.hive').exists() ||
         await File('$path$_delimiter$name.hivec').exists() ||
         await File('$path$_delimiter$name.lock').exists();

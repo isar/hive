@@ -20,7 +20,7 @@ class UserRoleAdapter extends TypeAdapter<UserRole> {
       case 2:
         return UserRole.admin;
       default:
-        return null;
+        return UserRole.customer;
     }
   }
 
@@ -61,11 +61,11 @@ class PersonAdapter extends TypeAdapter<Person> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Person()
-      ..firstName = fields[0] as String
-      ..lastName = fields[1] as String
-      ..birthday = fields[2] as DateTime
-      ..roles = (fields[3] as List)?.cast<UserRole>()
-      ..friends = (fields[4] as HiveList)?.castHiveList();
+      ..firstName = fields[0] as String?
+      ..lastName = fields[1] as String?
+      ..birthday = fields[2] as DateTime?
+      ..roles = (fields[3] as List?)?.cast<UserRole>()
+      ..friends = (fields[4] as HiveList?)?.castHiveList();
   }
 
   @override

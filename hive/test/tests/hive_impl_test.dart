@@ -21,17 +21,19 @@ void main() {
     test('.init()', () {
       var hive = HiveImpl();
 
-      hive.init('MYPATH');
+      expect(() => hive.init('MYPATH'), returnsNormally);
       expect(hive.homePath, 'MYPATH');
 
-      hive.init('OTHERPATH');
-      expect(hive.homePath, 'OTHERPATH');
+      expect(
+        () => hive.init('OTHERPATH'),
+        throwsHiveError('Instance has already been initialized.'),
+      );
 
       expect(
-        hive.findAdapterForValue(DateTime.now()).adapter,
+        hive.findAdapterForValue(DateTime.now())!.adapter,
         isA<DateTimeWithTimezoneAdapter>(),
       );
-      expect(hive.findAdapterForTypeId(16).adapter, isA<DateTimeAdapter>());
+      expect(hive.findAdapterForTypeId(16)!.adapter, isA<DateTimeAdapter>());
     });
 
     group('.openBox()', () {
@@ -71,8 +73,8 @@ void main() {
         test('same box returned if it is already opening', () async {
           var hive = await initHive();
 
-          Box box1;
-          Box box2;
+          Box? box1;
+          Box? box2;
           await Future.wait([
             hive.openBox('TESTBOX').then((value) => box1 = value),
             hive.openBox('testbox').then((value) => box2 = value)
@@ -96,8 +98,8 @@ void main() {
         });
 
         test('same box returned if it is already opening', () async {
-          LazyBox box1;
-          LazyBox box2;
+          LazyBox? box1;
+          LazyBox? box2;
 
           var hive = await initHive();
           await Future.wait([
@@ -245,7 +247,7 @@ void main() {
 
         var box1 = await hive.openBox('testBox1');
         await box1.put('key', 'value');
-        var box1File = File(box1.path);
+        var box1File = File(box1.path!);
 
         await hive.deleteBoxFromDisk('testBox1');
         expect(await box1File.exists(), false);
@@ -259,7 +261,7 @@ void main() {
 
         var box1 = await hive.openBox('testBox1');
         await box1.put('key', 'value');
-        var path = box1.path;
+        var path = box1.path!;
         await box1.close();
         var box1File = File(path);
 
@@ -282,11 +284,11 @@ void main() {
 
       var box1 = await hive.openBox('testBox1');
       await box1.put('key', 'value');
-      var box1File = File(box1.path);
+      var box1File = File(box1.path!);
 
       var box2 = await hive.openBox('testBox2');
       await box2.put('key', 'value');
-      var box2File = File(box1.path);
+      var box2File = File(box1.path!);
 
       await hive.deleteFromDisk();
       expect(await box1File.exists(), false);

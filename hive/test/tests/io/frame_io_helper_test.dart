@@ -1,5 +1,4 @@
 @TestOn('vm')
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -40,7 +39,8 @@ void main() {
       test('frame', () async {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytes));
-        var recoveryOffset = await ioHelper.keysFromFile(null, keystore, null);
+        var recoveryOffset =
+            await ioHelper.keysFromFile('null', keystore, null);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -54,7 +54,7 @@ void main() {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytesEncrypted));
         var recoveryOffset =
-            await ioHelper.keysFromFile(null, keystore, testCipher);
+            await ioHelper.keysFromFile('null', keystore, testCipher);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -74,7 +74,7 @@ void main() {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytes));
         var recoveryOffset =
-            await ioHelper.framesFromFile(null, keystore, testRegistry, null);
+            await ioHelper.framesFromFile('null', keystore, testRegistry, null);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -88,7 +88,7 @@ void main() {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytesEncrypted));
         var recoveryOffset = await ioHelper.framesFromFile(
-            null, keystore, testRegistry, testCipher);
+            'null', keystore, testRegistry, testCipher);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(

@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:hive_generator/src/builder.dart';
+import 'package:hive_generator/src/helper.dart';
 
 class EnumBuilder extends Builder {
   EnumBuilder(ClassElement cls, List<AdapterField> getters)
@@ -7,6 +8,8 @@ class EnumBuilder extends Builder {
 
   @override
   String buildRead() {
+    check(getters.isNotEmpty, '${cls.name} does not have any enum value.');
+
     var code = StringBuffer();
     code.writeln('switch (reader.readByte()) {');
 
@@ -16,9 +19,11 @@ class EnumBuilder extends Builder {
           return ${cls.name}.${field.name};''');
     }
 
+    var defaultField = getters.firstWhere((el) => el.defaultValue == true,
+        orElse: () => getters.first);
     code.writeln('''
       default:
-        return null;
+        return ${cls.name}.${defaultField.name};
       }''');
 
     return code.toString();

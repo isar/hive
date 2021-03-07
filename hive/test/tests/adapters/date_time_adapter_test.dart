@@ -8,7 +8,7 @@ void main() {
   group('DateTimeAdapter', () {
     test('.read()', () {
       var now = DateTime.now();
-      var binaryReader = BinaryReaderMock();
+      var binaryReader = MockBinaryReader();
       when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
 
       var date = DateTimeAdapter().read(binaryReader);
@@ -18,7 +18,7 @@ void main() {
 
     test('.write()', () {
       var now = DateTime.now();
-      var binaryWriter = BinaryWriterMock();
+      var binaryWriter = MockBinaryWriter();
 
       DateTimeAdapter().write(binaryWriter, now);
       verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
@@ -29,7 +29,7 @@ void main() {
     group('.read()', () {
       test('local', () {
         var now = DateTime.now();
-        var binaryReader = BinaryReaderMock();
+        var binaryReader = MockBinaryReader();
         when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
         when(binaryReader.readBool()).thenReturn(false);
 
@@ -40,7 +40,7 @@ void main() {
 
       test('UTC', () {
         var now = DateTime.now().toUtc();
-        var binaryReader = BinaryReaderMock();
+        var binaryReader = MockBinaryReader();
         when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
         when(binaryReader.readBool()).thenReturn(true);
 
@@ -54,7 +54,7 @@ void main() {
     group('.write()', () {
       test('local', () {
         var now = DateTime.now();
-        var binaryWriter = BinaryWriterMock();
+        var binaryWriter = MockBinaryWriter();
 
         DateTimeWithTimezoneAdapter().write(binaryWriter, now);
         verifyInOrder([
@@ -65,7 +65,7 @@ void main() {
 
       test('UTC', () {
         var now = DateTime.now().toUtc();
-        var binaryWriter = BinaryWriterMock();
+        var binaryWriter = MockBinaryWriter();
 
         DateTimeWithTimezoneAdapter().write(binaryWriter, now);
         verifyInOrder([

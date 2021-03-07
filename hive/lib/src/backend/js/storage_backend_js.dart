@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:html';
 import 'dart:indexed_db';
-import 'dart:typed_data';
 import 'dart:js_util';
+import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
@@ -10,21 +10,23 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Handles all IndexedDB related tasks
 class StorageBackendJs extends StorageBackend {
   static const _bytePrefix = [0x90, 0xA9];
   final Database _db;
-  final HiveCipher _cipher;
+  final HiveCipher? _cipher;
 
   TypeRegistry _registry;
 
   /// Not part of public API
-  StorageBackendJs(this._db, this._cipher, [this._registry]);
+  StorageBackendJs(this._db, this._cipher,
+      [this._registry = TypeRegistryImpl.nullImpl]);
 
   @override
-  String get path => null;
+  String? get path => null;
 
   @override
   bool supportsCompaction = false;
@@ -62,7 +64,7 @@ class StorageBackendJs extends StorageBackend {
     if (_cipher == null) {
       frameWriter.write(value);
     } else {
-      frameWriter.writeEncrypted(value, _cipher);
+      frameWriter.writeEncrypted(value, _cipher!);
     }
 
     var bytes = frameWriter.toBytes();
@@ -81,7 +83,7 @@ class StorageBackendJs extends StorageBackend {
         if (_cipher == null) {
           return reader.read();
         } else {
-          return reader.readEncrypted(_cipher);
+          return reader.readEncrypted(_cipher!);
         }
       } else {
         return bytes;
@@ -108,10 +110,10 @@ class StorageBackendJs extends StorageBackend {
       var completer = Completer<List<dynamic>>();
       var request = getStore(false).getAllKeys(null);
       request.onSuccess.listen((_) {
-        completer.complete(request.result as List<dynamic>);
+        completer.complete(request.result as List<dynamic>?);
       });
       request.onError.listen((_) {
-        completer.completeError(request.error);
+        completer.completeError(request.error!);
       });
       return completer.future;
     } else {
@@ -132,7 +134,7 @@ class StorageBackendJs extends StorageBackend {
         completer.complete(values);
       });
       request.onError.listen((_) {
-        completer.completeError(request.error);
+        completer.completeError(request.error!);
       });
       return completer.future;
     } else {
@@ -197,6 +199,6 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<void> deleteFromDisk() {
-    return window.indexedDB.deleteDatabase(_db.name);
+    return window.indexedDB!.deleteDatabase(_db.name!);
   }
 }

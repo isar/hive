@@ -31,10 +31,10 @@ abstract class Box<E> implements BoxBase<E> {
   ///
   /// If [defaultValue] is specified, it is returned in case the key does not
   /// exist.
-  E get(dynamic key, {E defaultValue});
+  E? get(dynamic key, {E? defaultValue});
 
   /// Returns the value associated with the n-th key.
-  E getAt(int index);
+  E? getAt(int index);
 
   /// Returns a map which contains all key - value pairs of the box.
   Map<dynamic, E> toMap();

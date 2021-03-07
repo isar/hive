@@ -16,7 +16,7 @@ class BinaryWriterImpl extends BinaryWriter {
   final TypeRegistryImpl _typeRegistry;
   Uint8List _buffer = Uint8List(_initBufferSize);
 
-  ByteData _byteDataInstance;
+  ByteData? _byteDataInstance;
 
   int _offset = 0;
 
@@ -24,7 +24,7 @@ class BinaryWriterImpl extends BinaryWriter {
   @pragma('dart2js:tryInline')
   ByteData get _byteData {
     _byteDataInstance ??= ByteData.view(_buffer.buffer);
-    return _byteDataInstance;
+    return _byteDataInstance!;
   }
 
   /// Not part of public API
@@ -55,6 +55,8 @@ class BinaryWriterImpl extends BinaryWriter {
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
   void _addBytes(List<int> bytes) {
+    ArgumentError.checkNotNull(bytes);
+
     var length = bytes.length;
     _reserveBytes(length);
     _buffer.setRange(_offset, _offset + length, bytes);
@@ -65,15 +67,16 @@ class BinaryWriterImpl extends BinaryWriter {
   @pragma('dart2js:tryInline')
   @override
   void writeByte(int byte) {
-    if (byte == null) {
-      throw ArgumentError.notNull();
-    }
+    ArgumentError.checkNotNull(byte);
+
     _reserveBytes(1);
     _buffer[_offset++] = byte;
   }
 
   @override
   void writeWord(int value) {
+    ArgumentError.checkNotNull(value);
+
     _reserveBytes(2);
     _buffer[_offset++] = value;
     _buffer[_offset++] = value >> 8;
@@ -81,9 +84,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeInt32(int value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
+    ArgumentError.checkNotNull(value);
+
     _reserveBytes(4);
     _byteData.setInt32(_offset, value, Endian.little);
     _offset += 4;
@@ -93,6 +95,8 @@ class BinaryWriterImpl extends BinaryWriter {
   @pragma('dart2js:tryInline')
   @override
   void writeUint32(int value) {
+    ArgumentError.checkNotNull(value);
+
     _reserveBytes(4);
     _buffer.writeUint32(_offset, value);
     _offset += 4;
@@ -105,9 +109,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeDouble(double value) {
-    if (value == null) {
-      throw ArgumentError.notNull();
-    }
+    ArgumentError.checkNotNull(value);
+
     _reserveBytes(8);
     _byteData.setFloat64(_offset, value, Endian.little);
     _offset += 8;
@@ -115,6 +118,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeBool(bool value) {
+    ArgumentError.checkNotNull(value);
+
     writeByte(value ? 1 : 0);
   }
 
@@ -124,6 +129,8 @@ class BinaryWriterImpl extends BinaryWriter {
     bool writeByteCount = true,
     Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
   }) {
+    ArgumentError.checkNotNull(value);
+
     var bytes = encoder.convert(value);
     if (writeByteCount) {
       writeUint32(bytes.length);
@@ -133,6 +140,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeByteList(List<int> bytes, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(bytes);
+
     if (writeLength) {
       writeUint32(bytes.length);
     }
@@ -141,6 +150,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeIntList(List<int> list, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(list);
+
     var length = list.length;
     if (writeLength) {
       writeUint32(length);
@@ -155,6 +166,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeDoubleList(List<double> list, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(list);
+
     var length = list.length;
     if (writeLength) {
       writeUint32(length);
@@ -169,6 +182,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeBoolList(List<bool> list, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(list);
+
     var length = list.length;
     if (writeLength) {
       writeUint32(length);
@@ -185,6 +200,8 @@ class BinaryWriterImpl extends BinaryWriter {
     bool writeLength = true,
     Converter<String, List<int>> encoder = BinaryWriter.utf8Encoder,
   }) {
+    ArgumentError.checkNotNull(list);
+
     if (writeLength) {
       writeUint32(list.length);
     }
@@ -197,6 +214,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeList(List list, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(list);
+
     if (writeLength) {
       writeUint32(list.length);
     }
@@ -207,6 +226,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeMap(Map<dynamic, dynamic> map, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(map);
+
     if (writeLength) {
       writeUint32(map.length);
     }
@@ -218,6 +239,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   /// Not part of public API
   void writeKey(dynamic key) {
+    ArgumentError.checkNotNull(key);
+
     if (key is String) {
       writeByte(FrameKeyType.asciiStringT);
       writeByte(key.length);
@@ -230,6 +253,8 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeHiveList(HiveList list, {bool writeLength = true}) {
+    ArgumentError.checkNotNull(list);
+
     if (writeLength) {
       writeUint32(list.length);
     }
@@ -242,7 +267,9 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   /// Not part of public API
-  int writeFrame(Frame frame, {HiveCipher cipher}) {
+  int writeFrame(Frame frame, {HiveCipher? cipher}) {
+    ArgumentError.checkNotNull(frame);
+
     var startOffset = _offset;
     _reserveBytes(4);
     _offset += 4; // reserve bytes for length
