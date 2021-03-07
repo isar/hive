@@ -146,7 +146,7 @@ class Keystore<E> {
   }
 
   /// Not part of public API
-  Frame? insert(Frame frame, {bool notify = true}) {
+  Frame? insert(Frame frame, {bool notify = true, bool lazy = false}) {
     var value = frame.value;
     Frame? deletedFrame;
 
@@ -160,7 +160,7 @@ class Keystore<E> {
         value.init(key, _box);
       }
 
-      deletedFrame = _store.insert(key, frame);
+      deletedFrame = _store.insert(key, lazy ? frame.toLazy() : frame);
     } else {
       deletedFrame = _store.delete(frame.key);
     }
