@@ -1,3 +1,9 @@
+# 2.0.1
+
+### Fixes
+
+- `BoxEvent` value is `null` when watching a `LazyBox` - [#592](https://github.com/hivedb/hive/pull/592)
+
 # 2.0.0
 
 ### Fixes

@@ -38,7 +38,7 @@ class ClassBuilder extends Builder {
     // The remaining fields to initialize.
     var fields = setters.toList();
 
-    for (var param in constr.parameters) {
+    for (var param in constr!.parameters) {
       var field = fields.firstOrNullWhere((it) => it.name == param.name);
       // Final fields
       field ??= getters.firstOrNullWhere((it) => it.name == param.name);
@@ -157,8 +157,14 @@ class ClassBuilder extends Builder {
 }
 
 extension _FirstOrNullWhere<T> on Iterable<T> {
-  T /*?*/ firstOrNullWhere(bool Function(T) predicate) =>
-      firstWhere(predicate, orElse: () => null);
+  T? firstOrNullWhere(bool Function(T) predicate) {
+    for (var it in this) {
+      if (predicate(it)) {
+        return it;
+      }
+    }
+    return null;
+  }
 }
 
 /// Suffix to use when accessing a field in [type].
@@ -186,15 +192,6 @@ String _suffixFromType(DartType type) {
 }
 
 String _displayString(DartType e) {
-  try {
-    var suffix = _suffixFromType(e);
-    return '${e.getDisplayString(withNullability: false) as String}$suffix';
-  } catch (error) {
-    if (error is TypeError) {
-      var suffix = _suffixFromType(e);
-      return '${e.getDisplayString() as String}$suffix';
-    } else {
-      rethrow;
-    }
-  }
+  var suffix = _suffixFromType(e);
+  return '${e.getDisplayString(withNullability: false)}$suffix';
 }
