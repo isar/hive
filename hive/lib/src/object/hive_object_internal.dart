@@ -1,7 +1,7 @@
 part of hive_object_internal;
 
 /// Not part of public API
-extension HiveObjectInternal on HiveObject {
+extension HiveObjectInternal on HiveObjectMixin {
   /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')

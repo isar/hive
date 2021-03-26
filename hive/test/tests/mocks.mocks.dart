@@ -1,21 +1,22 @@
+import 'dart:async' as _i7;
+import 'dart:collection' as _i2;
+import 'dart:convert' as _i15;
+import 'dart:io' as _i6;
+import 'dart:typed_data' as _i5;
+
+import 'package:hive/hive.dart' as _i3;
+import 'package:hive/src/backend/storage_backend.dart' as _i10;
+import 'package:hive/src/binary/frame.dart' as _i9;
+import 'package:hive/src/box/change_notifier.dart' as _i8;
 import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/box/default_key_comparator.dart';
-import 'package:mockito/mockito.dart' as _i1;
-import 'dart:collection' as _i2;
-import 'package:hive/hive.dart' as _i3;
-import 'package:hive/src/object/hive_object.dart' as _i4;
-import 'dart:typed_data' as _i5;
-import 'dart:io' as _i6;
-import 'dart:async' as _i7;
-import 'package:hive/src/box/change_notifier.dart' as _i8;
-import 'package:hive/src/binary/frame.dart' as _i9;
-import 'package:hive/src/backend/storage_backend.dart' as _i10;
 import 'package:hive/src/box/keystore.dart' as _i11;
 import 'package:hive/src/hive_impl.dart' as _i12;
-import 'package:hive/src/registry/type_registry_impl.dart' as _i13;
-import 'package:hive/src/object/hive_list_impl.dart' as _i14;
-import 'dart:convert' as _i15;
 import 'package:hive/src/io/frame_io_helper.dart' as _i16;
+import 'package:hive/src/object/hive_list_impl.dart' as _i14;
+import 'package:hive/src/object/hive_object.dart' as _i4;
+import 'package:hive/src/registry/type_registry_impl.dart' as _i13;
+import 'package:mockito/mockito.dart' as _i1;
 
 class _FakeType extends _i1.Fake implements Type {}
 
@@ -27,7 +28,7 @@ class _FakeLazyBox<E> extends _i1.Fake implements _i3.LazyBox<E> {}
 
 class _FakeBoxBase<E> extends _i1.Fake implements _i3.BoxBase<E> {}
 
-class _FakeHiveList<E extends _i4.HiveObject> extends _i1.Fake
+class _FakeHiveList<E extends _i4.HiveObjectMixin> extends _i1.Fake
     implements _i3.HiveList<E> {}
 
 class _FakeIterator<E> extends _i1.Fake implements Iterator<E> {}
@@ -162,9 +163,11 @@ class MockKeystore<E> extends _i1.Mock implements _i11.Keystore<E> {
   _i7.Stream<_i3.BoxEvent> watch({dynamic key}) => (super.noSuchMethod(
       Invocation.method(#watch, [], {#key: key}),
       Stream<_i3.BoxEvent>.empty()) as _i7.Stream<_i3.BoxEvent>);
-  _i9.Frame? insert(_i9.Frame? frame, {bool? notify = true, bool lazy = false}) =>
-      (super.noSuchMethod(Invocation.method(#insert, [frame], {#notify: notify}))
-      as _i9.Frame?);
+  _i9.Frame? insert(_i9.Frame? frame,
+          {bool? notify = true, bool lazy = false}) =>
+      (super.noSuchMethod(
+              Invocation.method(#insert, [frame], {#notify: notify}))
+          as _i9.Frame?);
   bool beginTransaction(List<_i9.Frame>? newFrames) => (super.noSuchMethod(
       Invocation.method(#beginTransaction, [newFrames]), false) as bool);
   int clear() => (super.noSuchMethod(Invocation.method(#clear, []), 0) as int);
@@ -277,7 +280,7 @@ class MockHiveList<E extends _i4.HiveObject> extends _i1.Mock
           as _i3.BoxBase<dynamic>);
   Iterable<dynamic> get keys =>
       (super.noSuchMethod(Invocation.getter(#keys), []) as Iterable<dynamic>);
-  _i3.HiveList<T> castHiveList<T extends _i4.HiveObject>() =>
+  _i3.HiveList<T> castHiveList<T extends _i4.HiveObjectMixin>() =>
       (super.noSuchMethod(
               Invocation.method(#castHiveList, []), _FakeHiveList<T>())
           as _i3.HiveList<T>);
@@ -336,7 +339,7 @@ class MockHiveListImpl<E extends _i4.HiveObject> extends _i1.Mock
       super.noSuchMethod(Invocation.method(#add, [element]));
   void addAll(Iterable<E>? iterable) =>
       super.noSuchMethod(Invocation.method(#addAll, [iterable]));
-  _i3.HiveList<T> castHiveList<T extends _i4.HiveObject>() =>
+  _i3.HiveList<T> castHiveList<T extends _i4.HiveObjectMixin>() =>
       (super.noSuchMethod(
               Invocation.method(#castHiveList, []), _FakeHiveList<T>())
           as _i3.HiveList<T>);
@@ -672,7 +675,7 @@ class MockBinaryWriter extends _i1.Mock implements _i3.BinaryWriter {
   void writeMap(Map<dynamic, dynamic>? map, {bool? writeLength = true}) =>
       super.noSuchMethod(
           Invocation.method(#writeMap, [map], {#writeLength: writeLength}));
-  void writeHiveList(_i3.HiveList<_i4.HiveObject>? list,
+  void writeHiveList(_i3.HiveList<_i4.HiveObjectMixin>? list,
           {bool? writeLength = true}) =>
       super.noSuchMethod(Invocation.method(
           #writeHiveList, [list], {#writeLength: writeLength}));
