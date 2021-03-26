@@ -5,13 +5,13 @@ homepage: https://github.com/hivedb/hive/tree/master/hive_generator
 documentation: https://docs.hivedb.dev/
 
 environment:                                                            
-  sdk: '>=2.10.0 <3.0.0'
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
-  build: ">=1.5.2 <3.0.0"
-  source_gen: ">=0.9.10+1 <2.0.0"
+  build: ^2.0.0
+  source_gen: ^1.0.0
   hive: ^2.0.0
-  analyzer: ">=0.40.0 <2.0.0"
+  analyzer: ^1.0.0
 
 dev_dependencies:
   test: ^1.16.0

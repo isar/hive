@@ -4,7 +4,7 @@ import 'package:hive_generator/src/helper.dart';
 
 class EnumBuilder extends Builder {
   EnumBuilder(ClassElement cls, List<AdapterField> getters)
-      : super(cls, getters, null);
+      : super(cls, getters);
 
   @override
   String buildRead() {

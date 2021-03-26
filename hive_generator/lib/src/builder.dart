@@ -15,7 +15,7 @@ abstract class Builder {
   final List<AdapterField> getters;
   final List<AdapterField> setters;
 
-  Builder(this.cls, this.getters, this.setters) : assert(cls != null);
+  Builder(this.cls, this.getters, [this.setters = const <AdapterField>[]]);
 
   String buildRead();
 
