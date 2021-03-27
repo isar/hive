@@ -9,6 +9,8 @@ Hive is a lightweight and blazing fast key-value database written in pure Dart. 
 
 ### [Documentation & Samples](https://docs.hivedb.dev/) 📖
 
+If you need queries, multi-isolate support or links between objects check out [Isar Database](https://github.com/isar/isar).
+
 ## Features
 
 - 🚀 Cross platform: mobile, desktop, browser
