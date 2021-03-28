@@ -3,6 +3,8 @@
 ### Fixes
 
 - `BoxEvent` value is `null` when watching a `LazyBox` - [#592](https://github.com/hivedb/hive/pull/592)
+- Allow calling `.init()` multiple times, instead of throwing error Hive will print warning to console
+- Hive will warn developers when registering adapters for `dynamic` type
 
 # 2.0.0
 
