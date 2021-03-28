@@ -1,3 +1,7 @@
+## 1.0.1
+
+- Fixed dependencies for null-safety compatibility
+
 ## 1.0.0
 
 - Stable null-safety version
