@@ -55,8 +55,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   void init(String path) {
-    if (homePath != null) {
-      throw HiveError('Instance has already been initialized.');
+    if (homePath == path) {
+      print(
+        'Hive instance has already been initialized. Please call Hive.init '
+        'only once if possible.',
+      );
     }
     homePath = path;
   }

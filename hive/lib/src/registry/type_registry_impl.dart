@@ -73,6 +73,16 @@ class TypeRegistryImpl implements TypeRegistry {
     bool internal = false,
     bool override = false,
   }) {
+    if (T == dynamic || T == Object) {
+      print(
+        'Registering type adapters for dynamic type is must be avoided, '
+        'otherwise all the write requests to Hive will be handled by given '
+        'adapter. Please explicitly provide adapter type on registerAdapter '
+        'method to avoid this kind of issues. For example if you want to '
+        'register MyTypeAdapter for MyType class you can call like this: '
+        'registerAdapter<MyType>(MyTypeAdapter())',
+      );
+    }
     var typeId = adapter.typeId;
     if (!internal) {
       if (typeId < 0 || typeId > 223) {

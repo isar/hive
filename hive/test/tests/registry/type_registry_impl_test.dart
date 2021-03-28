@@ -60,6 +60,11 @@ void main() {
         expect(() => registry.registerAdapter(TestAdapter()),
             throwsHiveError('already a TypeAdapter for typeId'));
       });
+
+      test('dynamic type', () {
+        var registry = TypeRegistryImpl();
+        registry.registerAdapter<dynamic>(TestAdapter());
+      });
     });
 
     test('.findAdapterForTypeId()', () {
