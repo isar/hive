@@ -1,3 +1,9 @@
+# 2.0.2
+
+### Fixes
+
+- `HiveObjectMixin` not assigning box to object - [#618](https://github.com/hivedb/hive/issues/618)
+
 # 2.0.1
 
 ### Fixes

@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 import 'integration.dart';
 
-class _TestObject extends HiveObject {
+class _TestObject with HiveObjectMixin {
   String name;
 
   _TestObject(this.name);

@@ -156,7 +156,7 @@ class Keystore<E> {
         _autoIncrement = key;
       }
 
-      if (value is HiveObject) {
+      if (value is HiveObjectMixin) {
         value.init(key, _box);
       }
 
@@ -167,9 +167,9 @@ class Keystore<E> {
 
     if (deletedFrame != null) {
       _deletedEntries++;
-      if (deletedFrame.value is HiveObject &&
+      if (deletedFrame.value is HiveObjectMixin &&
           !identical(deletedFrame.value, value)) {
-        (deletedFrame.value as HiveObject).dispose();
+        (deletedFrame.value as HiveObjectMixin).dispose();
       }
     }
 
@@ -257,8 +257,8 @@ class Keystore<E> {
     _store.clear();
 
     for (var frame in frameList) {
-      if (frame.value is HiveObject) {
-        (frame.value as HiveObject).dispose();
+      if (frame.value is HiveObjectMixin) {
+        (frame.value as HiveObjectMixin).dispose();
       }
       _notifier.notify(Frame.deleted(frame.key));
     }
