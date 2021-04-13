@@ -150,7 +150,7 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     _requireBytes(length * 8);
     var byteData = _byteData;
-    var list = List<int>.filled(length, 0);
+    var list = List<int>.filled(length, 0, growable: true);
     for (var i = 0; i < length; i++) {
       list[i] = byteData.getFloat64(_offset, Endian.little).toInt();
       _offset += 8;
@@ -163,7 +163,7 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     _requireBytes(length * 8);
     var byteData = _byteData;
-    var list = List<double>.filled(length, 0.0);
+    var list = List<double>.filled(length, 0.0, growable: true);
     for (var i = 0; i < length; i++) {
       list[i] = byteData.getFloat64(_offset, Endian.little);
       _offset += 8;
@@ -175,7 +175,7 @@ class BinaryReaderImpl extends BinaryReader {
   List<bool> readBoolList([int? length]) {
     length ??= readUint32();
     _requireBytes(length);
-    var list = List<bool>.filled(length, false);
+    var list = List<bool>.filled(length, false, growable: true);
     for (var i = 0; i < length; i++) {
       list[i] = _buffer[_offset++] > 0;
     }
@@ -187,7 +187,7 @@ class BinaryReaderImpl extends BinaryReader {
       [int? length,
       Converter<List<int>, String> decoder = BinaryReader.utf8Decoder]) {
     length ??= readUint32();
-    var list = List<String>.filled(length, '');
+    var list = List<String>.filled(length, '', growable: true);
     for (var i = 0; i < length; i++) {
       list[i] = readString(null, decoder);
     }
@@ -197,7 +197,7 @@ class BinaryReaderImpl extends BinaryReader {
   @override
   List readList([int? length]) {
     length ??= readUint32();
-    var list = List<dynamic>.filled(length, null);
+    var list = List<dynamic>.filled(length, null, growable: true);
     for (var i = 0; i < length; i++) {
       list[i] = read();
     }
@@ -232,7 +232,7 @@ class BinaryReaderImpl extends BinaryReader {
     length ??= readUint32();
     var boxNameLength = readByte();
     var boxName = String.fromCharCodes(viewBytes(boxNameLength));
-    var keys = List<dynamic>.filled(length, null);
+    var keys = List<dynamic>.filled(length, null, growable: true);
     for (var i = 0; i < length; i++) {
       keys[i] = readKey();
     }
