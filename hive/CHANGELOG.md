@@ -1,3 +1,9 @@
+# 2.0.3
+
+### Fixes
+
+- Fix regression where lists are no longer growable - [#631](https://github.com/hivedb/hive/pull/631)
+
 # 2.0.2
 
 ### Fixes
