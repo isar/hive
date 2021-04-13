@@ -104,7 +104,12 @@ class BinaryWriterImpl extends BinaryWriter {
 
   @override
   void writeInt(int value) {
-    writeDouble(value.toDouble());
+    if (value == null) {
+      throw ArgumentError.notNull();
+    }
+    _reserveBytes(8);
+    _byteData.setInt64(_offset, value, Endian.little);
+    _offset += 8;
   }
 
   @override

@@ -111,7 +111,10 @@ class BinaryReaderImpl extends BinaryReader {
 
   @override
   int readInt() {
-    return readDouble().toInt();
+    _requireBytes(8);
+    var value = _byteData.getInt64(_offset, Endian.little);
+    _offset += 8;
+    return value;
   }
 
   @override
