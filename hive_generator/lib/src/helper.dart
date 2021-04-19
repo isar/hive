@@ -1,14 +1,24 @@
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:hive/hive.dart';
 import 'package:source_gen/source_gen.dart';
 
 final _hiveFieldChecker = const TypeChecker.fromRuntime(HiveField);
 
-HiveField? getHiveFieldAnn(Element element) {
+class HiveFieldInfo {
+  HiveFieldInfo(this.index, this.defaultValue);
+
+  final int index;
+  final DartObject? defaultValue;
+}
+
+HiveFieldInfo? getHiveFieldAnn(Element element) {
   var obj = _hiveFieldChecker.firstAnnotationOfExact(element);
   if (obj == null) return null;
-  return HiveField(
+
+  return HiveFieldInfo(
     obj.getField('index')!.toIntValue()!,
+    obj.getField('defaultValue'),
   );
 }
 

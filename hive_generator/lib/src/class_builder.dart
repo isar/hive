@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -8,7 +9,15 @@ import 'package:hive_generator/src/builder.dart';
 import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
 
+import 'type_helper.dart';
+
 class ClassBuilder extends Builder {
+  ClassBuilder(
+    ClassElement cls,
+    List<AdapterField> getters,
+    List<AdapterField> setters,
+  ) : super(cls, getters, setters);
+
   var hiveListChecker = const TypeChecker.fromRuntime(HiveList);
   var listChecker = const TypeChecker.fromRuntime(List);
   var mapChecker = const TypeChecker.fromRuntime(Map);
@@ -16,12 +25,19 @@ class ClassBuilder extends Builder {
   var iterableChecker = const TypeChecker.fromRuntime(Iterable);
   var uint8ListChecker = const TypeChecker.fromRuntime(Uint8List);
 
-  ClassBuilder(
-      ClassElement cls, List<AdapterField> getters, List<AdapterField> setters)
-      : super(cls, getters, setters);
-
   @override
   String buildRead() {
+    var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
+    check(constr != null, 'Provide an unnamed constructor.');
+
+    // The remaining fields to initialize.
+    var fields = setters.toList();
+
+    // Empty classes
+    if (constr!.parameters.isEmpty && fields.isEmpty) {
+      return 'return ${cls.name}();';
+    }
+
     var code = StringBuffer();
     code.writeln('''
     final numOfFields = reader.readByte();
@@ -32,13 +48,7 @@ class ClassBuilder extends Builder {
     return ${cls.name}(
     ''');
 
-    var constr = cls.constructors.firstOrNullWhere((it) => it.name.isEmpty);
-    check(constr != null, 'Provide an unnamed constructor.');
-
-    // The remaining fields to initialize.
-    var fields = setters.toList();
-
-    for (var param in constr!.parameters) {
+    for (var param in constr.parameters) {
       var field = fields.firstOrNullWhere((it) => it.name == param.name);
       // Final fields
       field ??= getters.firstOrNullWhere((it) => it.name == param.name);
@@ -46,7 +56,12 @@ class ClassBuilder extends Builder {
         if (param.isNamed) {
           code.write('${param.name}: ');
         }
-        code.writeln('${_cast(param.type, 'fields[${field.index}]')},');
+        code.write(_value(
+          param.type,
+          'fields[${field.index}]',
+          field.defaultValue,
+        ));
+        code.writeln(',');
         fields.remove(field);
       }
     }
@@ -56,13 +71,23 @@ class ClassBuilder extends Builder {
     // There may still be fields to initialize that were not in the constructor
     // as initializing formals. We do so using cascades.
     for (var field in fields) {
-      code.writeln(
-          '..${field.name} = ${_cast(field.type, 'fields[${field.index}]')}');
+      code.write('..${field.name} = ');
+      code.writeln(_value(
+        field.type,
+        'fields[${field.index}]',
+        field.defaultValue,
+      ));
     }
 
     code.writeln(';');
 
     return code.toString();
+  }
+
+  String _value(DartType type, String variable, DartObject? defaultValue) {
+    var value = _cast(type, variable);
+    if (defaultValue?.isNull != false) return value;
+    return '$variable == null ? ${constantToString(defaultValue!)} : $value';
   }
 
   String _cast(DartType type, String variable) {

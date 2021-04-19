@@ -1,3 +1,8 @@
+## 1.1.0
+
+- Fixes empty class generates adapter with warnings - [#638](https://github.com/hivedb/hive/issues/638)
+- Default value support for class type adapter generators - [#625](https://github.com/hivedb/hive/issues/625)
+
 ## 1.0.1
 
 - Fixed dependencies for null-safety compatibility
