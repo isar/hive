@@ -1,3 +1,9 @@
+# 2.0.4
+
+### Enhancements
+
+- Adds default value support to hive_generator generated class adapters
+
 # 2.0.3
 
 ### Fixes

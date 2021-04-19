@@ -5,12 +5,10 @@ class HiveField {
   /// The index of this field.
   final int index;
 
-  /// Set `true` to use this enum value as default value instead of null in
-  /// null-safety.
+  /// The default value of this field for class hive types.
   ///
-  /// This property currently only used for enum types. In future might be used
-  /// for other properties too. If the defaultValue is not provided the first
-  /// enum will be used as default value.
+  /// In enum hive types set `true` to use this enum value as default value
+  /// instead of null in null-safety.
   ///
   /// ```dart
   /// @HiveType(typeId: 1)
@@ -22,7 +20,7 @@ class HiveField {
   ///   pear
   /// }
   /// ```
-  final bool defaultValue;
+  final dynamic defaultValue;
 
-  const HiveField(this.index, {this.defaultValue = false});
+  const HiveField(this.index, {this.defaultValue});
 }
