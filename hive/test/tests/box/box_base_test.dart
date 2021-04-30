@@ -12,12 +12,6 @@ import '../common.dart';
 
 import '../mocks.dart';
 
-//class _FakeStorageBackend extends Fake implements StorageBackend {}
-
-//class _FakeHiveImpl extends Fake implements HiveImpl {}
-
-//class _FakeKeystore extends Fake implements HiveImpl {}
-
 class _BoxBaseMock<E> extends BoxBaseImpl<E> with Mock {
   _BoxBaseMock(
     HiveImpl hive,

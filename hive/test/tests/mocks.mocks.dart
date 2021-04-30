@@ -28,8 +28,6 @@ import 'package:hive/src/backend/storage_backend.dart' show StorageBackend;
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/box/keystore.dart' show Keystore;
 
-//class _FakeType extends _i1.Fake implements Type {}
-
 class _FakeListQueue<E> extends _i1.Fake implements _i2.ListQueue<E> {}
 
 class _FakeBox<E> extends _i1.Fake implements _i3.Box<E> {}
