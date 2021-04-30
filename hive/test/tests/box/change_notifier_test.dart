@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
 
 class StreamControllerMock<T> extends Mock implements StreamController<T> {
+  @override
   Future<dynamic> close() =>
       (super.noSuchMethod(Invocation.method(#close, []), Future.value())
           as Future<dynamic>);

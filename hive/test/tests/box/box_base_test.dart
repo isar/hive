@@ -12,11 +12,11 @@ import '../common.dart';
 
 import '../mocks.dart';
 
-class _FakeStorageBackend extends Fake implements StorageBackend {}
+//class _FakeStorageBackend extends Fake implements StorageBackend {}
 
-class _FakeHiveImpl extends Fake implements HiveImpl {}
+//class _FakeHiveImpl extends Fake implements HiveImpl {}
 
-class _FakeKeystore extends Fake implements HiveImpl {}
+//class _FakeKeystore extends Fake implements HiveImpl {}
 
 class _BoxBaseMock<E> extends BoxBaseImpl<E> with Mock {
   _BoxBaseMock(
@@ -32,12 +32,18 @@ class _BoxBaseMock<E> extends BoxBaseImpl<E> with Mock {
           compactionStrategy,
           backend,
         );
+
+  @override
   Future<void> putAll(Map<dynamic, E> entries) =>
       (super.noSuchMethod(Invocation.method(#putAll, [entries]), Future.value())
           as Future<void>);
+
+  @override
   Future<void> deleteAll(Iterable keys) =>
       (super.noSuchMethod(Invocation.method(#deleteAll, [keys]), Future.value())
           as Future<void>);
+
+  @override
   bool get lazy =>
       (super.noSuchMethod(Invocation.getter(#lazy), false) as bool);
 }
