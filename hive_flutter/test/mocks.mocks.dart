@@ -197,12 +197,13 @@ class MockBinaryWriter extends _i1.Mock implements _i4.BinaryWriter {
           Invocation.method(#writeMap, [map], {#writeLength: writeLength}),
           returnValueForMissingStub: null);
   @override
-  void writeHiveList(_i4.HiveList<_i3.HiveObject>? list,
-          {bool? writeLength = true}) =>
+  void writeHiveList(covariant _i4.HiveList<_i3.HiveObject> list,
+          {bool writeLength = true}) =>
       super.noSuchMethod(
           Invocation.method(
               #writeHiveList, [list], {#writeLength: writeLength}),
           returnValueForMissingStub: null);
+
   @override
   void write<T>(T? value, {bool? writeTypeId = true}) => super.noSuchMethod(
       Invocation.method(#write, [value], {#writeTypeId: writeTypeId}),

@@ -17,5 +17,5 @@ dev_dependencies:
   mockito: 5.0.0-nullsafety.5
   pedantic: ^1.9.0
   path: ^1.7.0
-  pointycastle: ^2.0.0
+  pointycastle: ^3.0.1
   build_runner: ^1.10.0

@@ -1,6 +1,6 @@
 name: hive_flutter
 description: Extension for Hive. Makes it easier to use Hive in Flutter apps.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/hivedb/hive/tree/master/hive_flutter
 documentation: https://docs.hivedb.dev/
 
@@ -19,5 +19,5 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   pedantic: ^1.8.0
-  mockito: ^5.0.0-nullsafety.5
+  mockito: ^5.0.7
   build_runner: ^1.10.0

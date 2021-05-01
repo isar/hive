@@ -34,7 +34,7 @@ class WatchBoxBuilder extends StatefulWidget {
   _WatchBoxBuilderState createState() => _WatchBoxBuilderState();
 }
 
-// ignore: deprecated_member_use_from_same_package
+// ignore: deprecated_member_use
 class _WatchBoxBuilderState extends State<WatchBoxBuilder> {
   @visibleForTesting
   StreamSubscription? subscription;
@@ -47,7 +47,7 @@ class _WatchBoxBuilderState extends State<WatchBoxBuilder> {
   }
 
   @override
-  // ignore: deprecated_member_use_from_same_package
+  // ignore: deprecated_member_use
   void didUpdateWidget(WatchBoxBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
 
