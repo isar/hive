@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_flutter/src/adapters/time_adapter.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:mockito/mockito.dart';
 
 import '../mocks.dart';
