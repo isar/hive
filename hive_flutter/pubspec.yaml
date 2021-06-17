@@ -20,3 +20,4 @@ dev_dependencies:
     sdk: flutter
   pedantic: ^1.11.1
   mockito: ^5.0.10
+  build_runner: ^2.0.4
