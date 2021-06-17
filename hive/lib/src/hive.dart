@@ -48,6 +48,9 @@ abstract class HiveInterface implements TypeRegistry {
   /// Closes all open boxes.
   Future<void> close();
 
+  /// Closes an open box.
+  Future<void> closeBox(String name);
+
   /// Removes the file which contains the box and closes the box.
   ///
   /// In the browser, the IndexedDB database is being removed.

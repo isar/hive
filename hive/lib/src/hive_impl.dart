@@ -202,6 +202,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     return Future.wait(closeFutures);
   }
 
+  @override
+  Future<void> closeBox(String name) {
+    return _getBoxInternal(name).close();
+  }
+
   /// Not part of public API
   void unregisterBox(String name) {
     name = name.toLowerCase();

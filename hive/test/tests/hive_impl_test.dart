@@ -212,17 +212,32 @@ void main() {
       await hive.close();
     });
 
-    test('.close()', () async {
-      var hive = await initHive();
+    group('close', () {
+      test('.closeBox(name)', () async {
+        var hive = await initHive();
 
-      var box1 = await hive.openBox('box1');
-      var box2 = await hive.openBox('box2');
-      expect(box1.isOpen, true);
-      expect(box2.isOpen, true);
+        var box1 = await hive.openBox('box1');
+        var box2 = await hive.openBox('box2');
+        expect(box1.isOpen, true);
+        expect(box2.isOpen, true);
 
-      await hive.close();
-      expect(box1.isOpen, false);
-      expect(box2.isOpen, false);
+        await hive.closeBox('box1');
+        expect(box1.isOpen, false);
+        expect(box2.isOpen, true);
+      });
+
+      test('.close()', () async {
+        var hive = await initHive();
+
+        var box1 = await hive.openBox('box1');
+        var box2 = await hive.openBox('box2');
+        expect(box1.isOpen, true);
+        expect(box2.isOpen, true);
+
+        await hive.close();
+        expect(box1.isOpen, false);
+        expect(box2.isOpen, false);
+      });
     });
 
     test('.generateSecureKey()', () {
