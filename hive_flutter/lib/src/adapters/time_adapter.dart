@@ -1,11 +1,16 @@
 part of '../../adapters.dart';
 
-class TimeAdapter extends TypeAdapter<TimeOfDay> {
+class TimeOfDayAdapter extends TypeAdapter<TimeOfDay> {
   @override
-  TimeOfDay read(BinaryReader reader) => reader.read() as TimeOfDay;
+  TimeOfDay read(BinaryReader reader) {
+    final totalMinutes = reader.readInt();
+    return TimeOfDay(hour: totalMinutes ~/ 60, minute: totalMinutes % 60);
+  }
 
   @override
-  void write(BinaryWriter writer, TimeOfDay obj) => writer.write(obj);
+  void write(BinaryWriter writer, TimeOfDay obj) {
+    writer.writeInt(obj.hour * 60 + obj.minute);
+  }
 
   @override
   int get typeId => 201;

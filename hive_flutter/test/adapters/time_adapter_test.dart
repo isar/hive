@@ -8,22 +8,28 @@ import '../mocks.dart';
 
 void main() {
   group('TimeOfDayAdapter', () {
-    test('.read()', () {
-      final time = TimeOfDay(hour: 8, minute: 0);
-      final BinaryReader binaryReader = MockBinaryReader();
-      when(binaryReader.read()).thenReturn(time);
+    late TimeOfDay time;
+    late int totalMinutes;
 
-      final readTime = TimeAdapter().read(binaryReader);
-      verify(binaryReader.read());
+    setUp(() {
+      time = TimeOfDay(hour: 8, minute: 0);
+      totalMinutes = time.hour * 60 + time.minute;
+    });
+
+    test('.read()', () {
+      final BinaryReader binaryReader = MockBinaryReader();
+      when(binaryReader.readInt()).thenReturn(totalMinutes);
+
+      final readTime = TimeOfDayAdapter().read(binaryReader);
+      verify(binaryReader.readInt()).called(1);
       expect(readTime, time);
     });
 
     test('.write()', () {
-      final time = TimeOfDay(hour: 8, minute: 0);
       final BinaryWriter binaryWriter = MockBinaryWriter();
 
-      TimeAdapter().write(binaryWriter, time);
-      verify(binaryWriter.write(time));
+      TimeOfDayAdapter().write(binaryWriter, time);
+      verify(binaryWriter.writeInt(totalMinutes));
     });
   });
 }
