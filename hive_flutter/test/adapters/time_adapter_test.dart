@@ -1,29 +1,35 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_flutter/src/adapters/time_adapter.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:mockito/mockito.dart';
 
 import '../mocks.dart';
 
 void main() {
   group('TimeOfDayAdapter', () {
-    test('.read()', () {
-      final time = TimeOfDay(hour: 8, minute: 0);
-      final BinaryReader binaryReader = MockBinaryReader();
-      when(binaryReader.read()).thenReturn(time);
+    late TimeOfDay time;
+    late int totalMinutes;
 
-      final readTime = TimeAdapter().read(binaryReader);
-      verify(binaryReader.read());
+    setUp(() {
+      time = TimeOfDay(hour: 8, minute: 0);
+      totalMinutes = time.hour * 60 + time.minute;
+    });
+
+    test('.read()', () {
+      final BinaryReader binaryReader = MockBinaryReader();
+      when(binaryReader.readInt()).thenReturn(totalMinutes);
+
+      final readTime = TimeOfDayAdapter().read(binaryReader);
+      verify(binaryReader.readInt()).called(1);
       expect(readTime, time);
     });
 
     test('.write()', () {
-      final time = TimeOfDay(hour: 8, minute: 0);
       final BinaryWriter binaryWriter = MockBinaryWriter();
 
-      TimeAdapter().write(binaryWriter, time);
-      verify(binaryWriter.write(time));
+      TimeOfDayAdapter().write(binaryWriter, time);
+      verify(binaryWriter.writeInt(totalMinutes));
     });
   });
 }
