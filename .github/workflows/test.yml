@@ -25,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-platform: [vm, chrome]
         flutter-channel: [dev, beta, stable]
     steps:
       - uses: actions/checkout@v1
@@ -39,7 +38,7 @@ jobs:
         run: pub get
         working-directory: hive_flutter
       - name: Run tests
-        run: pub run test -p ${{ matrix.test-platform }}
+        run: pub test
         working-directory: hive_flutter
 
   test-hive_generator:

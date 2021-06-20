@@ -16,8 +16,7 @@ dependencies:
   path: ^1.8.0
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  test: ^1.15.7
   lints: ^1.0.1
   mockito: ^5.0.10
   build_runner: ^2.0.4
