@@ -16,6 +16,7 @@ jobs:
           sdk: ${{ matrix.dart-channel }}
       - name: Install dependencies
         run: pub get
+        working-directory: hive
       - name: Run tests
         run: pub run test -p ${{ matrix.test-platform }}
         working-directory: hive
@@ -33,6 +34,7 @@ jobs:
           sdk: ${{ matrix.dart-channel }}
       - name: Install dependencies
         run: pub get
+        working-directory: hive_flutter
       - name: Run tests
         run: pub run test -p ${{ matrix.test-platform }}
         working-directory: hive_flutter
@@ -49,6 +51,7 @@ jobs:
           sdk: ${{ matrix.dart-channel }}
       - name: Install dependencies
         run: pub get
+        working-directory: hive_generator/example
       - name: Generate build_runner output
         run: pub run build_runner build --delete-conflicting-outputs
         working-directory: hive_generator/example
