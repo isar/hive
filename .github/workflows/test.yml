@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         test-platform: [vm, chrome]
-        dart-channel: [unstable]
+        dart-channel: ["2.12.0", "2.13.0"]
     steps:
       - uses: actions/checkout@v1
       - uses: dart-lang/setup-dart@v1
@@ -25,7 +25,7 @@ jobs:
     strategy:
       matrix:
         test-platform: [vm, chrome]
-        dart-channel: [unstable]
+        dart-channel: ["2.12.0", "2.13.0"]
     steps:
       - uses: actions/checkout@v1
       - uses: dart-lang/setup-dart@v1
@@ -41,22 +41,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dart-channel: [unstable]
+        dart-channel: ["2.12.0", "2.13.0"]
     steps:
       - uses: actions/checkout@v1
-      - name: Install Dart
-        run: |
-          sudo apt-get update
-          sudo apt-get install apt-transport-https
-          sudo sh -c 'wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
-          sudo sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_${{ matrix.dart-channel }}.list > /etc/apt/sources.list.d/dart_${{ matrix.dart-channel }}.list'
-          sudo apt-get update
-          sudo apt-get install dart
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.dart-channel }}
+      - name: Install dependencies
+        run: pub get
       - name: Generate build_runner output
-        run: |
-          export PATH="$PATH:/usr/lib/dart/bin"
-          pub get
-          pub run build_runner build --delete-conflicting-outputs
+        run: pub run build_runner build --delete-conflicting-outputs
         working-directory: hive_generator/example
 
   check-score:
