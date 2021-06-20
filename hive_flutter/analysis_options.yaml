@@ -1,4 +1,4 @@
-include: package:pedantic/analysis_options.yaml
+include: package:lints/recommended.yaml
 analyzer:
   exclude:
     - "**/*.g.dart"
@@ -7,7 +7,7 @@ analyzer:
     implicit-casts: false
   errors:
     invalid_use_of_protected_member: error
-    always_declare_return_types: error 
+    always_declare_return_types: error
 linter:
   rules:
     - always_declare_return_types
