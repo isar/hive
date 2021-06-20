@@ -38,7 +38,7 @@ jobs:
         run: flutter pub get
         working-directory: hive_flutter
       - name: Run tests
-        run: flutter pub run test
+        run: flutter test
         working-directory: hive_flutter
 
   test-hive_generator:
