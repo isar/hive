@@ -35,10 +35,10 @@ jobs:
         with:
           flutter-version: ${{ matrix.dart-channel }}
       - name: Install dependencies
-        run: pub get
+        run: flutter pub get
         working-directory: hive_flutter
       - name: Run tests
-        run: pub test
+        run: flutter pub run test
         working-directory: hive_flutter
 
   test-hive_generator:
