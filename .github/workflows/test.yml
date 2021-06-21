@@ -33,7 +33,7 @@ jobs:
           java-version: "12.x"
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: ${{ matrix.dart-channel }}
+          channel: ${{ matrix.flutter-channel }}
       - name: Install dependencies
         run: flutter pub get
         working-directory: hive_flutter
