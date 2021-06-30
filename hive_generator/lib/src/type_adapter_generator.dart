@@ -10,7 +10,7 @@ import 'package:hive/hive.dart';
 class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   static String generateName(String typeName) {
     var adapterName =
-        '${typeName}Adapter'.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '');
+    '${typeName}Adapter'.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '');
     if (adapterName.startsWith('_')) {
       adapterName = adapterName.substring(1);
     }
@@ -144,7 +144,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
         if (otherField.index == field.index) {
           throw HiveError(
             'Duplicate field number: ${field.index}. Fields "${field.name}" '
-            'and "${otherField.name}" have the same number.',
+                'and "${otherField.name}" have the same number.',
           );
         }
       }
