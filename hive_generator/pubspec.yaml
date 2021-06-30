@@ -1,22 +1,24 @@
 name: hive_generator
 description: Extension for Hive. Automatically generates TypeAdapters to store any class.
-version: 1.1.0
+version: 0.8.2
 homepage: https://github.com/hivedb/hive/tree/master/hive_generator
 documentation: https://docs.hivedb.dev/
 
-environment:                                                            
+environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   build: ^2.0.0
   source_gen: ^1.0.0
+  source_helper: ^1.1.0
   hive: ^2.0.4
   analyzer: ^1.0.0
-  source_helper: ^1.1.0
+  dartx: ">=0.2.0 <1.0.0"
+  built_value: ^8.1.0
+  built_collection: ^5.1.0
 
 dev_dependencies:
-  test: ^1.16.0
+  test: ^1.6.4
   build_test: any
   build_runner: any
   pedantic: ^1.10.0
-  
