@@ -136,7 +136,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
 
   void verifyFieldIndices(List<AdapterField> fields) {
     for (var field in fields) {
-      check(field.index >= 0 || field.index <= 255,
+      check(field.index >= 0 && field.index <= 255,
           'Field numbers can only be in the range 0-255.');
 
       for (var otherField in fields) {
