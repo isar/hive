@@ -93,7 +93,7 @@ class ClassBuilder extends Builder {
   String _cast(DartType type, String variable) {
     var suffix = _suffixFromType(type);
     if (hiveListChecker.isAssignableFromType(type)) {
-      return '($variable as HiveList$suffix).castHiveList()';
+      return '($variable as HiveList$suffix)$suffix.castHiveList()';
     } else if (iterableChecker.isAssignableFromType(type) &&
         !isUint8List(type)) {
       return '($variable as List$suffix)${_castIterable(type)}';
