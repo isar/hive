@@ -221,12 +221,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<void> deleteFromDisk() {
-    var deleteFutures = _boxes.values.toList().map((box) {
-      return box.deleteFromDisk();
-    });
-
-    return Future.wait(deleteFutures);
+  Future<void> deleteFromDisk() async {
+    for (final box in _boxes.values) {
+      await box.deleteFromDisk();
+    }
   }
 
   @override
