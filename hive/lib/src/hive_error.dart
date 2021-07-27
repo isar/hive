@@ -1,11 +1,12 @@
 part of hive;
 
 /// An error related to Hive.
-class HiveException extends Error implements Exception {
+class HiveException extends HiveError implements Exception {
   /// A description of the error.
+  @override
   final String message;
 
-  HiveException(this.message);
+  HiveException(this.message) : super(message);
 
   @override
   String toString() {
