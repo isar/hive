@@ -26,7 +26,7 @@ mixin HiveObjectMixin {
 
   void _requireInitialized() {
     if (_box == null) {
-      throw HiveError('This object is currently not in a box.');
+      throw HiveException('This object is currently not in a box.');
     }
   }
 

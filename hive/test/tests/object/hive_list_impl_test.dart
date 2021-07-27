@@ -47,10 +47,10 @@ void main() {
     });
 
     group('.box', () {
-      test('throws HiveError if box is not open', () {
+      test('throws HiveException if box is not open', () {
         var hive = HiveImpl();
         var hiveList = HiveListImpl.lazy('someBox', [])..debugHive = hive;
-        expect(() => hiveList.box, throwsHiveError('you have to open the box'));
+        expect(() => hiveList.box, throwsHiveException('you have to open the box'));
       });
 
       test('returns the box', () async {
@@ -65,7 +65,7 @@ void main() {
       test('throws exception if HiveList is disposed', () {
         var list = HiveListImpl.lazy('box', []);
         list.dispose();
-        expect(() => list.delegate, throwsHiveError('already been disposed'));
+        expect(() => list.delegate, throwsHiveException('already been disposed'));
       });
 
       test('removes correct elements if invalidated', () {
@@ -139,13 +139,13 @@ void main() {
         expect(list, [newItem]);
       });
 
-      test('throws HiveError if HiveObject is not valid', () {
+      test('throws HiveException if HiveObject is not valid', () {
         var box = _mockBox();
         var oldItem = _getHiveObject('old', box);
         var newItem = _getHiveObject('new', MockBox());
 
         var list = HiveListImpl(box, objects: [oldItem]);
-        expect(() => list[0] = newItem, throwsHiveError());
+        expect(() => list[0] = newItem, throwsHiveException());
       });
     });
 
@@ -162,11 +162,11 @@ void main() {
         expect(list, [item1, item2]);
       });
 
-      test('throws HiveError if HiveObject is not valid', () {
+      test('throws HiveException if HiveObject is not valid', () {
         var box = _mockBox();
         var item = _getHiveObject('item', MockBox());
         var list = HiveListImpl(box);
-        expect(() => list.add(item), throwsHiveError('needs to be in the box'));
+        expect(() => list.add(item), throwsHiveException('needs to be in the box'));
       });
     });
 
@@ -183,13 +183,13 @@ void main() {
         expect(list, [item1, item2, item2]);
       });
 
-      test('throws HiveError if HiveObject is not valid', () {
+      test('throws HiveException if HiveObject is not valid', () {
         var box = _mockBox();
         var item = _getHiveObject('item', MockBox());
 
         var list = HiveListImpl(box);
         expect(() => list.addAll([item]),
-            throwsHiveError('needs to be in the box'));
+            throwsHiveException('needs to be in the box'));
       });
     });
   });

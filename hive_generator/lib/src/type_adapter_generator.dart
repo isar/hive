@@ -1,11 +1,12 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:hive/hive.dart';
 import 'package:hive_generator/src/builder.dart';
 import 'package:hive_generator/src/class_builder.dart';
 import 'package:hive_generator/src/enum_builder.dart';
 import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:hive/hive.dart';
+
 
 class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   static String generateName(String typeName) {
@@ -142,7 +143,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
       for (var otherField in fields) {
         if (otherField == field) continue;
         if (otherField.index == field.index) {
-          throw HiveError(
+          throw HiveException(
             'Duplicate field number: ${field.index}. Fields "${field.name}" '
             'and "${otherField.name}" have the same number.',
           );

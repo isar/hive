@@ -8,10 +8,10 @@ extension HiveObjectInternal on HiveObjectMixin {
   void init(dynamic key, BoxBase box) {
     if (_box != null) {
       if (_box != box) {
-        throw HiveError('The same instance of an HiveObject cannot '
+        throw HiveException('The same instance of an HiveObject cannot '
             'be stored in two different boxes.');
       } else if (_key != key) {
-        throw HiveError('The same instance of an HiveObject cannot '
+        throw HiveException('The same instance of an HiveObject cannot '
             'be stored with two different keys ("$_key" and "$key").');
       }
     }

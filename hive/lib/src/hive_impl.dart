@@ -167,11 +167,13 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         var typeName = box is LazyBox
             ? 'LazyBox<${box.valueType}>'
             : 'Box<${box.valueType}>';
-        throw HiveError('The box "$lowerCaseName" is already open '
+        throw HiveException('The box "$lowerCaseName" is already open '
             'and of type $typeName.');
       }
     } else {
-      throw HiveError('Box not found. Did you forget to call Hive.openBox()?');
+      throw HiveException(
+        'Box not found. Did you forget to call Hive.openBox()?',
+      );
     }
   }
 

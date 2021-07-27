@@ -54,10 +54,10 @@ class HiveListImpl<E extends HiveObjectMixin>
     if (_box == null) {
       var box = (_hive as HiveImpl).getBoxWithoutCheckInternal(boxName);
       if (box == null) {
-        throw HiveError(
+        throw HiveException(
             'To use this list, you have to open the box "$boxName" first.');
       } else if (box is! Box) {
-        throw HiveError('The box "$boxName" is a lazy box. '
+        throw HiveException('The box "$boxName" is a lazy box. '
             'You can only use HiveLists with normal boxes.');
       } else {
         _box = box;
@@ -69,7 +69,7 @@ class HiveListImpl<E extends HiveObjectMixin>
   @override
   List<E> get delegate {
     if (_disposed) {
-      throw HiveError('HiveList has already been disposed.');
+      throw HiveException('HiveList has already been disposed.');
     }
 
     if (_invalidated) {
@@ -117,7 +117,7 @@ class HiveListImpl<E extends HiveObjectMixin>
 
   void _checkElementIsValid(E obj) {
     if (obj.box != box) {
-      throw HiveError('HiveObjects needs to be in the box "$boxName".');
+      throw HiveException('HiveObjects needs to be in the box "$boxName".');
     }
   }
 

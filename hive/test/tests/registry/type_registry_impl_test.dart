@@ -49,16 +49,16 @@ void main() {
       test('unsupported typeId', () {
         var registry = TypeRegistryImpl();
         expect(() => registry.registerAdapter(TestAdapter(-1)),
-            throwsHiveError('not allowed'));
+            throwsHiveException('not allowed'));
         expect(() => registry.registerAdapter(TestAdapter(224)),
-            throwsHiveError('not allowed'));
+            throwsHiveException('not allowed'));
       });
 
       test('duplicate typeId', () {
         var registry = TypeRegistryImpl();
         registry.registerAdapter(TestAdapter());
         expect(() => registry.registerAdapter(TestAdapter()),
-            throwsHiveError('already a TypeAdapter for typeId'));
+            throwsHiveException('already a TypeAdapter for typeId'));
       });
 
       test('dynamic type', () {
@@ -128,9 +128,9 @@ void main() {
       test('unsupported typeId', () {
         var registry = TypeRegistryImpl();
         expect(() => registry.isAdapterRegistered(-1),
-            throwsHiveError('not allowed'));
+            throwsHiveException('not allowed'));
         expect(() => registry.isAdapterRegistered(224),
-            throwsHiveError('not allowed'));
+            throwsHiveException('not allowed'));
       });
     });
 
@@ -146,7 +146,7 @@ void main() {
         var registry = TypeRegistryImpl();
         registry.registerAdapter(TestAdapter());
         expect(() => registry.ignoreTypeId(0),
-            throwsHiveError('already a TypeAdapter for typeId'));
+            throwsHiveException('already a TypeAdapter for typeId'));
       });
     });
   });

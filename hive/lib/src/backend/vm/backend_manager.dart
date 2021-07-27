@@ -13,7 +13,7 @@ class BackendManager implements BackendManagerInterface {
   Future<StorageBackend> open(
       String name, String? path, bool crashRecovery, HiveCipher? cipher) async {
     if (path == null) {
-      throw HiveError('You need to initialize Hive or '
+      throw HiveException('You need to initialize Hive or '
           'provide a path to store the box.');
     }
     var dir = Directory(path);

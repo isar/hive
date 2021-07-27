@@ -94,7 +94,7 @@ class StorageBackendVm extends StorageBackend {
         await writeRaf.truncate(recoveryOffset);
         writeOffset = recoveryOffset;
       } else {
-        throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+        throw HiveException('Wrong checksum in hive file. Box may be corrupted.');
       }
     }
   }
@@ -110,7 +110,7 @@ class StorageBackendVm extends StorageBackend {
       var readFrame = reader.readFrame(cipher: _cipher, lazy: false);
 
       if (readFrame == null) {
-        throw HiveError(
+        throw HiveException(
             'Could not read value from box. Maybe your box is corrupted.');
       }
 
@@ -164,7 +164,7 @@ class StorageBackendVm extends StorageBackend {
             var skip = frame.offset - reader.offset;
             if (reader.remainingInBuffer < skip) {
               if (await reader.loadBytes(skip) < skip) {
-                throw HiveError('Could not compact box: Unexpected EOF.');
+                throw HiveException('Could not compact box: Unexpected EOF.');
               }
             }
             reader.skip(skip);
@@ -172,7 +172,7 @@ class StorageBackendVm extends StorageBackend {
 
           if (reader.remainingInBuffer < frame.length!) {
             if (await reader.loadBytes(frame.length!) < frame.length!) {
-              throw HiveError('Could not compact box: Unexpected EOF.');
+              throw HiveException('Could not compact box: Unexpected EOF.');
             }
           }
           await writer.write(reader.viewBytes(frame.length!));

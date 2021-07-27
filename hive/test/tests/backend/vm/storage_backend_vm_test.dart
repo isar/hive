@@ -183,7 +183,7 @@ void main() {
           await expectLater(
               () => backend.initialize(
                   TypeRegistryImpl.nullImpl, MockKeystore(), lazy),
-              throwsHiveError('corrupted'));
+              throwsHiveException('corrupted'));
         });
       }
 
@@ -224,7 +224,7 @@ void main() {
 
         var frame = Frame('test', 123, length: frameBytes.length, offset: 0);
         await expectLater(
-            () => backend.readValue(frame), throwsHiveError('corrupted'));
+            () => backend.readValue(frame), throwsHiveException('corrupted'));
 
         await readRaf.close();
       });
@@ -351,7 +351,7 @@ void main() {
 
         await syncedFile.truncate(await boxFile.length() - 1);
 
-        expect(() => box.compact(), throwsHiveError('unexpected eof'));
+        expect(() => box.compact(), throwsHiveException('unexpected eof'));
       });
     });*/
 

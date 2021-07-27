@@ -36,7 +36,7 @@ void main() {
 
         obj.init('someKey', box1);
         expect(() => obj.init('someKey', box2),
-            throwsHiveError('two different boxes'));
+            throwsHiveException('two different boxes'));
       });
 
       test('throws exception if object has already different key', () {
@@ -45,7 +45,7 @@ void main() {
 
         obj.init('key1', box);
         expect(
-            () => obj.init('key2', box), throwsHiveError('two different keys'));
+            () => obj.init('key2', box), throwsHiveException('two different keys'));
       });
     });
 
@@ -115,9 +115,9 @@ void main() {
         verify(box.put('key', obj));
       });
 
-      test('throws HiveError if object is not in a box', () async {
+      test('throws HiveException if object is not in a box', () async {
         var obj = TestHiveObject();
-        await expectLater(() => obj.save(), throwsHiveError('not in a box'));
+        await expectLater(() => obj.save(), throwsHiveException('not in a box'));
       });
     });
 
@@ -134,9 +134,9 @@ void main() {
         verify(box.delete('key'));
       });
 
-      test('throws HiveError if object is not in a box', () async {
+      test('throws HiveException if object is not in a box', () async {
         var obj = TestHiveObject();
-        await expectLater(() => obj.delete(), throwsHiveError('not in a box'));
+        await expectLater(() => obj.delete(), throwsHiveException('not in a box'));
       });
     });
 

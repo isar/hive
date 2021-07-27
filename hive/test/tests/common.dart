@@ -6,16 +6,16 @@ import 'package:mockito/mockito.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
-Matcher isAHiveError([String? contains]) {
+Matcher isAHiveException([String? contains]) {
   return allOf(
-      isA<HiveError>(),
-      predicate((HiveError e) =>
+      isA<HiveException>(),
+      predicate((HiveException e) =>
           contains == null ||
           e.toString().toLowerCase().contains(contains.toLowerCase())));
 }
 
-Matcher throwsHiveError([String? contains]) {
-  return throwsA(isAHiveError(contains));
+Matcher throwsHiveException([String? contains]) {
+  return throwsA(isAHiveException(contains));
 }
 
 final random = Random();

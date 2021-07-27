@@ -321,7 +321,7 @@ void main() {
 
       test('wrong key type', () {
         var br = fromBytes([2, 0, 0, 0, 0]);
-        expect(() => br.readKey(), throwsHiveError('unsupported key type'));
+        expect(() => br.readKey(), throwsHiveException('unsupported key type'));
       });
     });
 

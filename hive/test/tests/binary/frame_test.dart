@@ -15,13 +15,13 @@ void main() {
         Frame.lazy(4294967295);
         Frame.deleted(4294967295);
 
-        expect(() => Frame(-1, null), throwsHiveError());
-        expect(() => Frame.lazy(-1), throwsHiveError());
-        expect(() => Frame.deleted(-1), throwsHiveError());
+        expect(() => Frame(-1, null), throwsHiveException());
+        expect(() => Frame.lazy(-1), throwsHiveException());
+        expect(() => Frame.deleted(-1), throwsHiveException());
 
-        expect(() => Frame(4294967296, null), throwsHiveError());
-        expect(() => Frame.lazy(4294967296), throwsHiveError());
-        expect(() => Frame.deleted(4294967296), throwsHiveError());
+        expect(() => Frame(4294967296, null), throwsHiveException());
+        expect(() => Frame.lazy(4294967296), throwsHiveException());
+        expect(() => Frame.deleted(4294967296), throwsHiveException());
       });
 
       test('string keys', () {
@@ -33,13 +33,13 @@ void main() {
         Frame.lazy('a' * 255);
         Frame.deleted('a' * 255);
 
-        expect(() => Frame('hellö', null), throwsHiveError());
-        expect(() => Frame.lazy('hellö'), throwsHiveError());
-        expect(() => Frame.deleted('hellö'), throwsHiveError());
+        expect(() => Frame('hellö', null), throwsHiveException());
+        expect(() => Frame.lazy('hellö'), throwsHiveException());
+        expect(() => Frame.deleted('hellö'), throwsHiveException());
 
-        expect(() => Frame('a' * 256, null), throwsHiveError());
-        expect(() => Frame.lazy('a' * 256), throwsHiveError());
-        expect(() => Frame.deleted('a' * 256), throwsHiveError());
+        expect(() => Frame('a' * 256, null), throwsHiveException());
+        expect(() => Frame.lazy('a' * 256), throwsHiveException());
+        expect(() => Frame.deleted('a' * 256), throwsHiveException());
       });
     });
 

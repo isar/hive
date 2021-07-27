@@ -73,7 +73,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   @protected
   void checkOpen() {
     if (!_open) {
-      throw HiveError('Box has already been closed.');
+      throw HiveException('Box has already been closed.');
     }
   }
 

@@ -36,7 +36,7 @@ class StorageBackendMemory extends StorageBackend {
     );
 
     if (recoveryOffset != -1) {
-      throw HiveError('Wrong checksum in bytes. Box may be corrupted.');
+      throw HiveException('Wrong checksum in bytes. Box may be corrupted.');
     }
 
     _bytes = null;

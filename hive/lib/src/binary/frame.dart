@@ -49,15 +49,15 @@ class Frame {
   static bool assertKey(dynamic key) {
     if (key is int) {
       if (key < 0 || key > 0xFFFFFFFF) {
-        throw HiveError('Integer keys need to be in the range 0 - 0xFFFFFFFF');
+        throw HiveException('Integer keys need to be in the range 0 - 0xFFFFFFFF');
       }
     } else if (key is String) {
       if (key.length > 0xFF || !key.isAscii) {
-        throw HiveError(
+        throw HiveException(
             'String keys need to be ASCII Strings with a max length of 255');
       }
     } else {
-      throw HiveError('Keys need to be Strings or integers');
+      throw HiveException('Keys need to be Strings or integers');
     }
 
     return true;

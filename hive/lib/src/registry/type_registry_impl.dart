@@ -86,7 +86,7 @@ class TypeRegistryImpl implements TypeRegistry {
     var typeId = adapter.typeId;
     if (!internal) {
       if (typeId < 0 || typeId > 223) {
-        throw HiveError('TypeId $typeId not allowed.');
+        throw HiveException('TypeId $typeId not allowed.');
       }
       typeId = typeId + reservedTypeIds;
 
@@ -101,7 +101,7 @@ class TypeRegistryImpl implements TypeRegistry {
             'required.',
           );
         } else {
-          throw HiveError('There is already a TypeAdapter for '
+          throw HiveException('There is already a TypeAdapter for '
               'typeId ${typeId - reservedTypeIds}.');
         }
       }
@@ -115,7 +115,7 @@ class TypeRegistryImpl implements TypeRegistry {
   bool isAdapterRegistered(int typeId, {bool internal = false}) {
     if (!internal) {
       if (typeId < 0 || typeId > 223) {
-        throw HiveError('TypeId $typeId not allowed.');
+        throw HiveException('TypeId $typeId not allowed.');
       }
 
       typeId = typeId + reservedTypeIds;

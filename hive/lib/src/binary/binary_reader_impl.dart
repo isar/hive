@@ -223,7 +223,7 @@ class BinaryReaderImpl extends BinaryReader {
       var keyLength = readByte();
       return String.fromCharCodes(viewBytes(keyLength));
     } else {
-      throw HiveError('Unsupported key type. Frame might be corrupted.');
+      throw HiveException('Unsupported key type. Frame might be corrupted.');
     }
   }
 
@@ -247,7 +247,7 @@ class BinaryReaderImpl extends BinaryReader {
 
     var frameLength = readUint32();
     if (frameLength < 8) {
-      throw HiveError(
+      throw HiveException(
           'This should not happen. Please open an issue on GitHub.');
     }
     if (availableBytes < frameLength - 4) return null;
@@ -320,7 +320,7 @@ class BinaryReaderImpl extends BinaryReader {
       default:
         var resolved = _typeRegistry.findAdapterForTypeId(typeId);
         if (resolved == null) {
-          throw HiveError('Cannot read, unknown typeId: $typeId. '
+          throw HiveException('Cannot read, unknown typeId: $typeId. '
               'Did you forget to register an adapter?');
         }
         return resolved.adapter.read(this);
