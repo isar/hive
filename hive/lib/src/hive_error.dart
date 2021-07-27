@@ -24,6 +24,4 @@ class HiveException implements Exception {
   String toString() {
     return 'HiveException: $message';
   }
-
-  external StackTrace? get stackTrace;
 }
