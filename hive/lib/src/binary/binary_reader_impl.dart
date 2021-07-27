@@ -241,8 +241,11 @@ class BinaryReaderImpl extends BinaryReader {
   }
 
   /// Not part of public API
-  Frame? readFrame(
-      {HiveCipher? cipher, bool lazy = false, int frameOffset = 0}) {
+  Frame? readFrame({
+    HiveCipher? cipher,
+    bool lazy = false,
+    int frameOffset = 0,
+  }) {
     if (availableBytes < 4) return null;
 
     var frameLength = readUint32();
