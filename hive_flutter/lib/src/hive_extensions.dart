@@ -30,7 +30,7 @@ extension HiveX on HiveInterface {
       final filesToCopy = <File>[];
 
       await oldLocationDir.list().forEach((event) {
-        final extension = path.extension(event.path);
+        final extension = path_helper.extension(event.path);
 
         // If the item is a file and has an extension of .hive, add it and the
         // matching .lock file to the copy array.
@@ -39,7 +39,8 @@ extension HiveX on HiveInterface {
 
           // We do this instead of just copying all .lock files since .lock can
           // commonly be used for non-Hive purposes.
-          filesToCopy.add(File(event.path.replaceAll('.hive', '.lock')));
+          filesToCopy
+              .add(File('${path_helper.withoutExtension(event.path)}.lock'));
         }
       });
 
