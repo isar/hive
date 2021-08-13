@@ -2,19 +2,6 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/ignored_type_adapter.dart';
 import 'package:meta/meta.dart';
 
-/// Not part of public API
-///
-/// Needed to codegen the TypeRegistry mock
-@visibleForTesting
-class ResolvedAdapter<T> {
-  final TypeAdapter adapter;
-  final int typeId;
-
-  ResolvedAdapter(this.adapter, this.typeId);
-
-  bool matches(dynamic value) => value is T;
-}
-
 class _NullTypeRegistry implements TypeRegistryImpl {
   const _NullTypeRegistry();
 
@@ -41,6 +28,14 @@ class _NullTypeRegistry implements TypeRegistryImpl {
 
   @override
   Never resetAdapters() => throw UnimplementedError();
+
+  @override
+  void registerNestedTypeRegistryAdapter(
+    NestedTypeRegistryAdapter adapter, {
+    bool internal = false,
+    bool override = false,
+  }) =>
+      throw UnimplementedError();
 }
 
 /// Not part of public API
@@ -108,6 +103,41 @@ class TypeRegistryImpl implements TypeRegistry {
     }
 
     var resolved = ResolvedAdapter<T>(adapter, typeId);
+    _typeAdapters[typeId] = resolved;
+  }
+
+  @override
+  void registerNestedTypeRegistryAdapter(
+      NestedTypeRegistryAdapter adapter, {
+    bool internal = false,
+    bool override = false,
+  }) {
+
+    var typeId = adapter.typeId;
+    if (!internal) {
+      if (typeId < 0 || typeId > 223) {
+        throw HiveError('TypeId $typeId not allowed.');
+      }
+      typeId = typeId + reservedTypeIds;
+
+      var oldAdapter = findAdapterForTypeId(typeId);
+      if (oldAdapter != null) {
+        if (override) {
+          print(
+            'You are trying to override ${oldAdapter.runtimeType.toString()}'
+                'with ${adapter.runtimeType.toString()} for typeId: '
+                '${adapter.typeId}. Please note that overriding adapters might '
+                'cause weird errors. Try to avoid overriding adapters unless not '
+                'required.',
+          );
+        } else {
+          throw HiveError('There is already a TypeAdapter for '
+              'typeId ${typeId - reservedTypeIds}.');
+        }
+      }
+    }
+
+    var resolved = ResolvedNestedTypeRegistryResolvedAdapter(adapter, typeId);
     _typeAdapters[typeId] = resolved;
   }
 
