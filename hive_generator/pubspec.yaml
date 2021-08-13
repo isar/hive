@@ -10,7 +10,11 @@ environment:
 dependencies:
   build: ^2.0.0
   source_gen: ^1.0.0
-  hive: ^2.0.4
+  hive:
+    git:
+      url: https://github.com/xal/hive
+      ref: xal/nested_type_registry
+      path: hive
   analyzer: ^1.0.0
   source_helper: ^1.1.0
 
