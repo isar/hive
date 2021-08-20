@@ -11,12 +11,12 @@ dependencies:
   build: ^2.0.0
   source_gen: ^1.0.0
   hive: ^2.0.4
-  analyzer: ^1.0.0
+  analyzer: ">=1.0.0 <3.0.0"
   source_helper: ^1.1.0
 
 dev_dependencies:
-  test: ^1.16.0
+  test: ^1.17.11
   build_test: any
   build_runner: any
-  pedantic: ^1.10.0
+  pedantic: ^1.11.1
   
