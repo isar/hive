@@ -11,11 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  hive:
-    git:
-      url: https://github.com/xal/hive
-      ref: xal/nested_type_registry2
-      path: hive
+  hive: ^2.0.4
   path_provider: ^2.0.2
   path: ^1.8.0
 
