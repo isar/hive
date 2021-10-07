@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/ignored_type_adapter.dart';
+import 'package:hive/src/registry/nested_type_registry_adapter_impl.dart';
 import 'package:meta/meta.dart';
 
 class _NullTypeRegistry implements TypeRegistryImpl {
@@ -28,6 +29,10 @@ class _NullTypeRegistry implements TypeRegistryImpl {
 
   @override
   Never resetAdapters() => throw UnimplementedError();
+
+  @override
+  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId) =>
+      throw UnimplementedError();
 
   @override
   void registerNestedTypeRegistryAdapter(
@@ -107,12 +112,15 @@ class TypeRegistryImpl implements TypeRegistry {
   }
 
   @override
+  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId) =>
+      NestedTypeRegistryAdapterImpl(typeId: typeId);
+
+  @override
   void registerNestedTypeRegistryAdapter(
-      NestedTypeRegistryAdapter adapter, {
+    NestedTypeRegistryAdapter adapter, {
     bool internal = false,
     bool override = false,
   }) {
-
     var typeId = adapter.typeId;
     if (!internal) {
       if (typeId < 0 || typeId > 223) {
@@ -125,10 +133,10 @@ class TypeRegistryImpl implements TypeRegistry {
         if (override) {
           print(
             'You are trying to override ${oldAdapter.runtimeType.toString()}'
-                'with ${adapter.runtimeType.toString()} for typeId: '
-                '${adapter.typeId}. Please note that overriding adapters might '
-                'cause weird errors. Try to avoid overriding adapters unless not '
-                'required.',
+            'with ${adapter.runtimeType.toString()} for typeId: '
+            '${adapter.typeId}. Please note that overriding adapters might '
+            'cause weird errors. Try to avoid overriding adapters unless not '
+            'required.',
           );
         } else {
           throw HiveError('There is already a TypeAdapter for '

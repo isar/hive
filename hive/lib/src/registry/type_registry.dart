@@ -17,6 +17,8 @@ abstract class TypeRegistry {
     bool override = false,
   });
 
+  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId);
+
   void registerNestedTypeRegistryAdapter(NestedTypeRegistryAdapter adapter, {
     bool internal = false,
     bool override = false,
@@ -29,9 +31,7 @@ abstract class TypeRegistry {
   void ignoreTypeId<T>(int typeId);
 
   ResolvedAdapter? findAdapterForValue(dynamic value);
-
 }
-
 
 /// Not part of public API
 ///
