@@ -12,7 +12,7 @@ dependencies:
   crypto: ^3.0.0
 
 dev_dependencies:
-  test: ^1.15.7
+  test: ^1.18.2
   # TODO: Fix & update mockito version
   mockito: 5.0.0-nullsafety.5
   pedantic: ^1.9.0
