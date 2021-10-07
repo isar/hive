@@ -14,7 +14,7 @@ dependencies:
 dev_dependencies:
   test: ^1.17.12
   # TODO: Fix & update mockito version
-  mockito: 5.0.0-nullsafety.5
+  mockito: ^5.0.16
   pedantic: ^1.9.0
   path: ^1.7.0
   pointycastle: ^3.0.1
