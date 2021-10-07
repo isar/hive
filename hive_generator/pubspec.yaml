@@ -13,7 +13,7 @@ dependencies:
   hive:
     git:
       url: https://github.com/xal/hive
-      ref: xal/nested_type_registry
+      ref: xal/nested_type_registry2
       path: hive
   analyzer: ">=1.0.0 <3.0.0"
   source_helper: ^1.1.0
