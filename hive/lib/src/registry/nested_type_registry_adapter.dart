@@ -1,8 +1,9 @@
 part of hive;
 
+// special adapter to implement TypeRegistry inside other TypeRegistry
 abstract class NestedTypeRegistryAdapter implements TypeAdapter, TypeRegistry {}
 
-
+// Needed to catch which types registered in nested type Registry
 class ResolvedNestedTypeRegistryResolvedAdapter extends ResolvedAdapter {
   @override
   final NestedTypeRegistryAdapter adapter;

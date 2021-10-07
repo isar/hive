@@ -1,6 +1,8 @@
 import '../../hive.dart';
 import 'type_registry_impl.dart';
 
+// read/write values as in TypeRegistryImpl
+// but have own typeId for parent registry
 class NestedTypeRegistryAdapterImpl extends TypeRegistryImpl
     implements NestedTypeRegistryAdapter {
   @override
