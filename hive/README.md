@@ -72,6 +72,52 @@ person.save();
 print(box.getAt(0)) // Dave - 30
 ```
 
+Hive has limitation 224 (256 - 32 reserved) types limit per type registry. 
+However, you can use `Hive.createNestedTypeRegistryAdapter & Hive.registerNestedTypeRegistryAdapter`.
+Pros:
+- avoid typeIds conflicts if you several libraries with own adapters list and ids conflict
+- you can use 224*224 type ids
+- compatible with already exist Hive storages
+Cons:
+- slower performance  
+
+```dart
+@HiveType(typeId: 0)
+class Person extends HiveObject {
+}
+
+@HiveType(typeId: 0)
+class Home extends HiveObject {
+}
+@HiveType(typeId: 1)
+class Work extends HiveObject {
+}
+```
+
+```dart
+// 1 is typeId
+var nestedAdapter = Hive.createNestedTypeRegistryAdapter(1);
+
+nestedAdapter.registerAdapter(HomeAdapter());
+nestedAdapter.registerAdapter(WorkAdapter());
+
+Hive.registerAdapter(PersonAdapter());
+Hive.registerAdapter(nestedAdapter);
+```
+
+Another possible issue is required `typeId` field in `@HiveType`. 
+Sometimes it is better to specify all ids in one files during registration.
+You can achieve this via `OverrideIdAdapter`
+
+```dart
+Hive.registerAdapter(
+  OverrideIdAdapter(
+    100,
+    PersonAdapter(),
+  ),
+);
+```
+
 ## Hive ❤️ Flutter
 
 Hive was written with Flutter in mind. It is a perfect fit if you need a lightweight datastore for your app. After adding the required dependencies and initializing Hive, you can use Hive in your project:
