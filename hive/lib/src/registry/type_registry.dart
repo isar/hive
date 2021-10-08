@@ -12,17 +12,23 @@ abstract class TypeRegistry {
   /// will be overridden if [override] set to `true`. Please note that internal
   /// adapters are registered and maintained by hive itself. Use [internal]
   /// parameter only if you want to override exists adapter implementation.
+  /// Note: [NestedTypeRegistryAdapter] should be registered
+  /// with registerNestedTypeRegistryAdapter
   void registerAdapter<T>(TypeAdapter<T> adapter, {
     bool internal = false,
     bool override = false,
   });
 
+  /// Exposed API to create internal implementation for nested registries
   NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId);
 
-  void registerNestedTypeRegistryAdapter(NestedTypeRegistryAdapter adapter, {
-    bool internal = false,
-    bool override = false,
-  });
+  /// Register [NestedTypeRegistryAdapter] crated
+  /// via [createNestedTypeRegistryAdapter]
+  void registerNestedTypeRegistryAdapter(
+      NestedTypeRegistryAdapter adapter, {
+        bool internal = false,
+        bool override = false,
+      });
 
   /// Returns true if a [TypeAdapter] is registered
   bool isAdapterRegistered(int typeId);

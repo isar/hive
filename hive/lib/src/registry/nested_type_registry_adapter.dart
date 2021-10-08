@@ -1,23 +1,28 @@
 part of hive;
 
-// special adapter to implement TypeRegistry inside other TypeRegistry
+/// special adapter to implement TypeRegistry inside other TypeRegistry
 abstract class NestedTypeRegistryAdapter implements TypeAdapter, TypeRegistry {}
 
-// Needed to catch which types registered in nested type Registry
-class ResolvedNestedTypeRegistryResolvedAdapter extends ResolvedAdapter {
+/// Needed to catch which types registered in nested type Registry
+class NestedTypeRegistryResolvedAdapter extends ResolvedAdapter {
+  final NestedTypeRegistryAdapter nestedTypeRegistryAdapter;
+
+  NestedTypeRegistryResolvedAdapter(
+    this.nestedTypeRegistryAdapter,
+  ) : super(
+          nestedTypeRegistryAdapter,
+          nestedTypeRegistryAdapter.typeId,
+        );
+
   @override
-  final NestedTypeRegistryAdapter adapter;
-
-  ResolvedNestedTypeRegistryResolvedAdapter(this.adapter, int typeId)
-      : super(
-    adapter,
-    typeId,
-  );
-
   bool matches(dynamic value) {
-    var adapterForValue = adapter.findAdapterForValue(value);
+    // NestedTypeRegistryResolvedAdapter matches value
+    // if at least one nested adapter matches it
+    var nestedAdapterForValue =
+        nestedTypeRegistryAdapter.findAdapterForValue(value);
 
-    return adapterForValue != null;
+    var adapterForTypeExist = nestedAdapterForValue != null;
+
+    return adapterForTypeExist;
   }
 }
-

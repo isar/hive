@@ -41,6 +41,14 @@ class _NullTypeRegistry implements TypeRegistryImpl {
     bool override = false,
   }) =>
       throw UnimplementedError();
+
+  @override
+  void _checkIsPossibleToRegisterAdapter({
+    required TypeAdapter adapter,
+    required bool internal,
+    required bool override,
+  }) =>
+      throw UnimplementedError();
 }
 
 /// Not part of public API
@@ -73,6 +81,12 @@ class TypeRegistryImpl implements TypeRegistry {
     bool internal = false,
     bool override = false,
   }) {
+    if (adapter is NestedTypeRegistryAdapter) {
+      throw ArgumentError(
+        'use registerNestedTypeRegistryAdapter '
+        'for NestedTypeRegistryAdapter',
+      );
+    }
     if (T == dynamic || T == Object) {
       print(
         'Registering type adapters for dynamic type is must be avoided, '
@@ -83,30 +97,12 @@ class TypeRegistryImpl implements TypeRegistry {
         'registerAdapter<MyType>(MyTypeAdapter())',
       );
     }
+    _checkIsPossibleToRegisterAdapter(
+      adapter: adapter,
+      internal: internal,
+      override: override,
+    );
     var typeId = adapter.typeId;
-    if (!internal) {
-      if (typeId < 0 || typeId > 223) {
-        throw HiveError('TypeId $typeId not allowed.');
-      }
-      typeId = typeId + reservedTypeIds;
-
-      var oldAdapter = findAdapterForTypeId(typeId);
-      if (oldAdapter != null) {
-        if (override) {
-          print(
-            'You are trying to override ${oldAdapter.runtimeType.toString()}'
-            'with ${adapter.runtimeType.toString()} for typeId: '
-            '${adapter.typeId}. Please note that overriding adapters might '
-            'cause weird errors. Try to avoid overriding adapters unless not '
-            'required.',
-          );
-        } else {
-          throw HiveError('There is already a TypeAdapter for '
-              'typeId ${typeId - reservedTypeIds}.');
-        }
-      }
-    }
-
     var resolved = ResolvedAdapter<T>(adapter, typeId);
     _typeAdapters[typeId] = resolved;
   }
@@ -120,6 +116,24 @@ class TypeRegistryImpl implements TypeRegistry {
     NestedTypeRegistryAdapter adapter, {
     bool internal = false,
     bool override = false,
+  }) {
+    _checkIsPossibleToRegisterAdapter(
+      adapter: adapter,
+      internal: internal,
+      override: override,
+    );
+
+    var typeId = adapter.typeId;
+    var resolved = NestedTypeRegistryResolvedAdapter(
+      adapter,
+    );
+    _typeAdapters[typeId] = resolved;
+  }
+
+  void _checkIsPossibleToRegisterAdapter({
+    required TypeAdapter adapter,
+    required bool internal,
+    required bool override,
   }) {
     var typeId = adapter.typeId;
     if (!internal) {
@@ -144,9 +158,6 @@ class TypeRegistryImpl implements TypeRegistry {
         }
       }
     }
-
-    var resolved = ResolvedNestedTypeRegistryResolvedAdapter(adapter, typeId);
-    _typeAdapters[typeId] = resolved;
   }
 
   @override
