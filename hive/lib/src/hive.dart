@@ -51,7 +51,7 @@ abstract class HiveInterface implements TypeRegistry {
   /// Removes the file which contains the box and closes the box.
   ///
   /// In the browser, the IndexedDB database is being removed.
-  Future<void> deleteBoxFromDisk(String name);
+  Future<void> deleteBoxFromDisk(String name, {String? path});
 
   /// Deletes all currently open boxes from disk.
   ///
@@ -62,7 +62,7 @@ abstract class HiveInterface implements TypeRegistry {
   List<int> generateSecureKey();
 
   /// Checks if a box exists
-  Future<bool> boxExists(String name);
+  Future<bool> boxExists(String name, {String? path});
 }
 
 ///
