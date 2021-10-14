@@ -1,5 +1,5 @@
 import 'package:hive/src/object/hive_object.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
@@ -70,7 +70,7 @@ void main() {
         obj.linkHiveList(list);
         obj.dispose();
 
-        verify(list.invalidate());
+        verify(() => list.invalidate());
       });
     });
 
@@ -106,13 +106,13 @@ void main() {
       test('updates object in box', () {
         var obj = TestHiveObject();
         var box = MockBox();
-        returnFutureVoid(when(box.put('key', obj)));
+        returnFutureVoid(when(() => box.put('key', obj)));
 
         obj.init('key', box);
         verifyZeroInteractions(box);
 
         obj.save();
-        verify(box.put('key', obj));
+        verify(() => box.put('key', obj));
       });
 
       test('throws HiveError if object is not in a box', () async {
@@ -125,13 +125,13 @@ void main() {
       test('removes object from box', () {
         var obj = TestHiveObject();
         var box = MockBox();
-        returnFutureVoid(when(box.delete('key')));
+        returnFutureVoid(when(() => box.delete('key')));
 
         obj.init('key', box);
         verifyZeroInteractions(box);
 
         obj.delete();
-        verify(box.delete('key'));
+        verify(() => box.delete('key'));
       });
 
       test('throws HiveError if object is not in a box', () async {
@@ -149,7 +149,7 @@ void main() {
       test('returns true if object is in normal box', () {
         var obj = TestHiveObject();
         var box = MockBox();
-        when(box.lazy).thenReturn(false);
+        when(() => box.lazy).thenReturn(false);
         obj.init('key', box);
 
         expect(obj.isInBox, true);
@@ -159,13 +159,13 @@ void main() {
           () {
         var obj = TestHiveObject();
         var box = MockBox();
-        when(box.lazy).thenReturn(true);
+        when(() => box.lazy).thenReturn(true);
         obj.init('key', box);
 
-        when(box.containsKey('key')).thenReturn(true);
+        when(() => box.containsKey('key')).thenReturn(true);
         expect(obj.isInBox, true);
 
-        when(box.containsKey('key')).thenReturn(false);
+        when(() => box.containsKey('key')).thenReturn(false);
         expect(obj.isInBox, false);
       });
     });

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:hive/hive.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
@@ -112,7 +112,7 @@ Future<void> expectDirEqualsAssetDir(Directory dir1, String part1,
   return expectDirsEqual(dir1, assetDir);
 }
 
-void returnFutureVoid(PostExpectation<Future<void>> v) =>
+void returnFutureVoid(When<Future<void>> v) =>
     v.thenAnswer((i) => Future.value(null));
 
 final bool soundNullSafety = (() {

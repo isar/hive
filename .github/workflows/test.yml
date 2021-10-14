@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         test-platform: [vm, chrome]
-        dart-channel: ["2.12.0", "2.13.0"]
+        dart-channel: ["2.12.0", "2.13.0", "2.14.0"]
     steps:
       - uses: actions/checkout@v1
       - uses: dart-lang/setup-dart@v1
