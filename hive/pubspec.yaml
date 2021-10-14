@@ -12,10 +12,9 @@ dependencies:
   crypto: ^3.0.0
 
 dev_dependencies:
-  test: ^1.15.7
-  # TODO: Fix & update mockito version
-  mockito: 5.0.0-nullsafety.5
+  test: ^1.17.12
+  mocktail: ^0.2.0
   pedantic: ^1.9.0
   path: ^1.7.0
   pointycastle: ^3.0.1
-  build_runner: ^1.10.0
+  build_runner: ^2.1.2

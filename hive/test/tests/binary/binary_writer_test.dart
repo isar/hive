@@ -5,7 +5,7 @@ import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../frames.dart';
@@ -353,7 +353,7 @@ void main() {
 
     group('.writeHiveList()', () {
       var box = MockBox();
-      when(box.name).thenReturn('Box');
+      when(() => box.name).thenReturn('Box');
 
       var obj = TestHiveObject()..init('key', box);
 
@@ -458,7 +458,7 @@ void main() {
 
       test('HiveList', () {
         var box = MockBox();
-        when(box.name).thenReturn('Box');
+        when(() => box.name).thenReturn('Box');
 
         var obj = TestHiveObject()..init('key', box);
         var list = HiveList(box, objects: [obj]);

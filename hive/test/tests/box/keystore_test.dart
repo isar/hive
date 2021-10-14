@@ -1,6 +1,6 @@
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../mocks.dart';
@@ -252,10 +252,10 @@ void main() {
           var keystore = Keystore.debug(notifier: notifier);
 
           keystore.insert(Frame('key1', 'val1'));
-          verify(notifier.notify(Frame('key1', 'val1')));
+          verify(() => notifier.notify(Frame('key1', 'val1')));
 
           keystore.insert(Frame('key1', 'val2'));
-          verify(notifier.notify(Frame('key1', 'val2')));
+          verify(() => notifier.notify(Frame('key1', 'val2')));
         });
       });
 
@@ -307,7 +307,7 @@ void main() {
           reset(notifier);
 
           keystore.insert(Frame.deleted('key1'));
-          verify(notifier.notify(Frame.deleted('key1')));
+          verify(() => notifier.notify(Frame.deleted('key1')));
 
           keystore.insert(Frame.deleted('key1'));
           verifyNoMoreInteractions(notifier);
@@ -328,8 +328,8 @@ void main() {
         expect(created, true);
         expect(keystore.transactions.first.added, ['key1', 'key2']);
         expect(keystore.frames, [Frame('key1', 'val1'), Frame('key2', 'val2')]);
-        verify(notifier.notify(Frame('key1', 'val1')));
-        verify(notifier.notify(Frame('key2', 'val2')));
+        verify(() => notifier.notify(Frame('key1', 'val1')));
+        verify(() => notifier.notify(Frame('key2', 'val2')));
       });
 
       test('overriding existing keys', () {
@@ -350,8 +350,8 @@ void main() {
           'key1': Frame('key1', 'val1'),
         });
         expect(keystore.frames, [Frame('key1', 'val2'), Frame('key2', 'val3')]);
-        verify(notifier.notify(Frame('key1', 'val2')));
-        verify(notifier.notify(Frame('key2', 'val3')));
+        verify(() => notifier.notify(Frame('key1', 'val2')));
+        verify(() => notifier.notify(Frame('key2', 'val3')));
       });
 
       test('empty transaction', () {
@@ -390,7 +390,7 @@ void main() {
           'key1': Frame('key1', 'val1'),
         });
         expect(keystore.frames, [Frame('key2', 'val2')]);
-        verify(notifier.notify(Frame.deleted('key1')));
+        verify(() => notifier.notify(Frame.deleted('key1')));
       });
     });
 
@@ -429,7 +429,7 @@ void main() {
           keystore.transactions,
           [KeyTransaction()..added.add('otherKey')],
         );
-        verify(notifier.notify(Frame.deleted('key')));
+        verify(() => notifier.notify(Frame.deleted('key')));
       });
 
       test('add then override', () {
@@ -482,7 +482,7 @@ void main() {
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val1')]);
         expectTrx(keystore.transactions, []);
-        verify(notifier.notify(Frame('key', 'val1')));
+        verify(() => notifier.notify(Frame('key', 'val1')));
       });
 
       test('override then add', () {
@@ -535,7 +535,7 @@ void main() {
         keystore.cancelTransaction();
         expect(keystore.frames, [Frame('key', 'val1')]);
         expectTrx(keystore.transactions, []);
-        verify(notifier.notify(Frame('key', 'val1')));
+        verify(() => notifier.notify(Frame('key', 'val1')));
       });
 
       test('delete then add', () {
@@ -612,8 +612,8 @@ void main() {
         reset(notifier);
 
         keystore.clear();
-        verify(notifier.notify(Frame.deleted('key1')));
-        verify(notifier.notify(Frame.deleted('key2')));
+        verify(() => notifier.notify(Frame.deleted('key1')));
+        verify(() => notifier.notify(Frame.deleted('key2')));
       });
     });
   });

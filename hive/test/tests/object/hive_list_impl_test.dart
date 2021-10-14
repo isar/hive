@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/object/hive_object.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../common.dart';
@@ -13,9 +13,10 @@ import '../mocks.dart';
 HiveObject _getHiveObject(String key, MockBox box) {
   var hiveObject = TestHiveObject();
   hiveObject.init(key, box);
-  when(box.get(key, defaultValue: argThat(isNotNull, named: 'defaultValue')))
+  when(() => box.get(key,
+          defaultValue: captureAny(that: isNotNull, named: 'defaultValue')))
       .thenReturn(hiveObject);
-  when(box.get(key)).thenReturn(hiveObject);
+  when(() => box.get(key)).thenReturn(hiveObject);
   return hiveObject;
 }
 
@@ -23,7 +24,7 @@ MockBox _mockBox() {
   var box = MockBox();
   // The HiveListImpl constructor sets the boxName property to box.name,
   // therefore we need to return an valid String on sound null safety.
-  when(box.name).thenReturn('testBox');
+  when(() => box.name).thenReturn('testBox');
   return box;
 }
 
@@ -83,10 +84,10 @@ void main() {
       test('creates delegate and links HiveList if delegate == null', () {
         var hive = MockHiveImpl();
         var box = _mockBox();
-        when(box.containsKey('item1')).thenReturn(true);
-        when(box.containsKey('item2')).thenReturn(true);
-        when(box.containsKey('none')).thenReturn(false);
-        when(hive.getBoxWithoutCheckInternal('box')).thenReturn(box);
+        when(() => box.containsKey('item1')).thenReturn(true);
+        when(() => box.containsKey('item2')).thenReturn(true);
+        when(() => box.containsKey('none')).thenReturn(false);
+        when(() => hive.getBoxWithoutCheckInternal('box')).thenReturn(box);
 
         var item1 = _getHiveObject('item1', box);
         var item2 = _getHiveObject('item2', box);
