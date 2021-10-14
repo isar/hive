@@ -1,5 +1,4 @@
 @TestOn('vm')
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -8,14 +7,14 @@ import 'package:hive/src/backend/vm/read_write_sync.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
+import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../../common.dart';
 import '../../frames.dart';
-
 import '../../mocks.dart';
 
 const testMap = {
@@ -63,6 +62,11 @@ StorageBackendVm _getBackend({
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(KeystoreFake());
+    registerFallbackValue(TypeRegistryFake());
+  });
+
   group('StorageBackendVm', () {
     test('.path returns path for of open box file', () {
       var file = File('some/path');
@@ -80,10 +84,10 @@ void main() {
         var file = MockFile();
         var readRaf = MockRandomAccessFile();
         var writeRaf = MockRandomAccessFile();
-        when(file.open()).thenAnswer((i) => Future.value(readRaf));
-        when(file.open(mode: FileMode.writeOnlyAppend))
+        when(() => file.open()).thenAnswer((i) => Future.value(readRaf));
+        when(() => file.open(mode: FileMode.writeOnlyAppend))
             .thenAnswer((i) => Future.value(writeRaf));
-        when(writeRaf.length()).thenAnswer((_) => Future.value(0));
+        when(() => writeRaf.length()).thenAnswer((_) => Future.value(0));
 
         var backend = _getBackend(file: file);
         await backend.open();
@@ -95,10 +99,10 @@ void main() {
         var file = MockFile();
         var writeFile = MockRandomAccessFile();
         var readRaf = MockRandomAccessFile();
-        when(file.open(mode: FileMode.writeOnlyAppend))
+        when(() => file.open(mode: FileMode.writeOnlyAppend))
             .thenAnswer((i) => Future.value(writeFile));
-        when(file.open()).thenAnswer((i) => Future.value(readRaf));
-        when(writeFile.length()).thenAnswer((i) => Future.value(123));
+        when(() => file.open()).thenAnswer((i) => Future.value(readRaf));
+        when(() => writeFile.length()).thenAnswer((i) => Future.value(123));
 
         var backend = _getBackend(file: file);
         await backend.open();
@@ -109,19 +113,24 @@ void main() {
     group('.initialize()', () {
       File getLockFile() {
         var lockMockFile = MockFile();
-        when(lockMockFile.open(mode: FileMode.write))
+        when(() => lockMockFile.open(mode: FileMode.write))
             .thenAnswer((i) => Future.value(MockRandomAccessFile()));
         return lockMockFile;
       }
 
       FrameIoHelper getFrameIoHelper(int recoveryOffset) {
         var helper = MockFrameIoHelper();
-        when(helper.framesFromFile(any, any, any, any)).thenAnswer((i) {
-          return Future.value(recoveryOffset);
-        });
-        when(helper.keysFromFile(any, any, any)).thenAnswer((i) {
-          return Future.value(recoveryOffset);
-        });
+        when(() => helper.framesFromFile(
+              any(),
+              any(),
+              any(),
+              any(),
+            )).thenAnswer((i) => Future.value(recoveryOffset));
+        when(() => helper.keysFromFile(
+              any(),
+              any(),
+              any(),
+            )).thenAnswer((i) => Future.value(recoveryOffset));
         return helper;
       }
 
@@ -129,19 +138,19 @@ void main() {
         test('opens lock file and acquires lock', () async {
           var lockFile = MockFile();
           var lockRaf = MockRandomAccessFile();
-          when(lockFile.open(mode: FileMode.write))
+          when(() => lockFile.open(mode: FileMode.write))
               .thenAnswer((i) => Future.value(lockRaf));
-          when(lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
+          when(() => lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
 
           var backend = _getBackend(
             lockFile: lockFile,
             ioHelper: getFrameIoHelper(-1),
           );
-          when(backend.path).thenReturn('nullPath');
+          when(() => backend.path).thenReturn('nullPath');
 
           await backend.initialize(
               TypeRegistryImpl.nullImpl, MockKeystore(), lazy);
-          verify(lockRaf.lock());
+          verify(() => lockRaf.lock());
         });
 
         test('recoveryOffset with crash recovery', () async {
@@ -155,15 +164,16 @@ void main() {
             crashRecovery: true,
             writeRaf: writeRaf,
           );
-          when(backend.path).thenReturn('nullPath');
-          when(lockFile.open(mode: FileMode.write))
+          when(() => backend.path).thenReturn('nullPath');
+          when(() => lockFile.open(mode: FileMode.write))
               .thenAnswer((i) => Future.value(lockRaf));
-          when(lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
-          when(writeRaf.truncate(20)).thenAnswer((i) => Future.value(writeRaf));
+          when(() => lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
+          when(() => writeRaf.truncate(20))
+              .thenAnswer((i) => Future.value(writeRaf));
 
           await backend.initialize(
               TypeRegistryImpl.nullImpl, MockKeystore(), lazy);
-          verify(writeRaf.truncate(20));
+          verify(() => writeRaf.truncate(20));
         });
 
         test('recoveryOffset without crash recovery', () async {
@@ -175,10 +185,10 @@ void main() {
             ioHelper: getFrameIoHelper(20),
             crashRecovery: false,
           );
-          when(backend.path).thenReturn('nullPath');
-          when(lockFile.open(mode: FileMode.write))
+          when(() => backend.path).thenReturn('nullPath');
+          when(() => lockFile.open(mode: FileMode.write))
               .thenAnswer((i) => Future.value(lockRaf));
-          when(lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
+          when(() => lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
 
           await expectLater(
               () => backend.initialize(
@@ -236,8 +246,9 @@ void main() {
         var bytes = getFrameBytes(frames);
 
         var writeRaf = MockRandomAccessFile();
-        when(writeRaf.setPosition(0)).thenAnswer((i) => Future.value(writeRaf));
-        when(writeRaf.writeFrom(bytes))
+        when(() => writeRaf.setPosition(0))
+            .thenAnswer((i) => Future.value(writeRaf));
+        when(() => writeRaf.writeFrom(bytes))
             .thenAnswer((i) => Future.value(writeRaf));
 
         var backend = _getBackend(writeRaf: writeRaf)
@@ -247,15 +258,17 @@ void main() {
           ..registry = TypeRegistryImpl.nullImpl;
 
         await backend.writeFrames(frames);
-        verify(writeRaf.writeFrom(bytes));
+        verify(() => writeRaf.writeFrom(bytes));
       });
 
       test('updates offsets', () async {
         var frames = [Frame('key1', 'value'), Frame('key2', null)];
 
         var writeRaf = MockRandomAccessFile();
-        when(writeRaf.setPosition(5)).thenAnswer((i) => Future.value(writeRaf));
-        when(writeRaf.writeFrom(any)).thenAnswer((i) => Future.value(writeRaf));
+        when(() => writeRaf.setPosition(5))
+            .thenAnswer((i) => Future.value(writeRaf));
+        when(() => writeRaf.writeFrom(any()))
+            .thenAnswer((i) => Future.value(writeRaf));
 
         var backend = _getBackend(writeRaf: writeRaf)
           // The registry needs to be initialized before writing values, and
@@ -274,7 +287,7 @@ void main() {
 
       test('resets writeOffset on error', () async {
         var writeRaf = MockRandomAccessFile();
-        when(writeRaf.writeFrom(any)).thenThrow('error');
+        when(() => writeRaf.writeFrom(any())).thenThrow('error');
         var backend = _getBackend(writeRaf: writeRaf)
           // The registry needs to be initialized before writing values, and
           // because we do not call StorageBackendVM.initialize(), we set it
@@ -284,7 +297,7 @@ void main() {
 
         await expectLater(() => backend.writeFrames([Frame('key1', 'value')]),
             throwsA(anything));
-        verify(writeRaf.setPosition(123));
+        verify(() => writeRaf.setPosition(123));
         expect(backend.writeOffset, 123);
       });
     });
@@ -357,14 +370,16 @@ void main() {
 
     test('.clear()', () async {
       var writeRaf = MockRandomAccessFile();
-      when(writeRaf.truncate(0)).thenAnswer((i) => Future.value(writeRaf));
-      when(writeRaf.setPosition(0)).thenAnswer((i) => Future.value(writeRaf));
+      when(() => writeRaf.truncate(0))
+          .thenAnswer((i) => Future.value(writeRaf));
+      when(() => writeRaf.setPosition(0))
+          .thenAnswer((i) => Future.value(writeRaf));
       var backend = _getBackend(writeRaf: writeRaf);
       backend.writeOffset = 111;
 
       await backend.clear();
-      verify(writeRaf.truncate(0));
-      verify(writeRaf.setPosition(0));
+      verify(() => writeRaf.truncate(0));
+      verify(() => writeRaf.setPosition(0));
       expect(backend.writeOffset, 0);
     });
 
@@ -374,10 +389,10 @@ void main() {
       var lockRaf = MockRandomAccessFile();
       var lockFile = MockFile();
 
-      returnFutureVoid(when(readRaf.close()));
-      returnFutureVoid(when(writeRaf.close()));
-      returnFutureVoid(when(lockRaf.close()));
-      when(lockFile.delete()).thenAnswer((i) => Future.value(lockFile));
+      returnFutureVoid(when(() => readRaf.close()));
+      returnFutureVoid(when(() => writeRaf.close()));
+      returnFutureVoid(when(() => lockRaf.close()));
+      when(() => lockFile.delete()).thenAnswer((i) => Future.value(lockFile));
 
       var backend = _getBackend(
         lockFile: lockFile,
@@ -388,10 +403,10 @@ void main() {
 
       await backend.close();
       verifyInOrder([
-        readRaf.close(),
-        writeRaf.close(),
-        lockRaf.close(),
-        lockFile.delete(),
+        () => readRaf.close(),
+        () => writeRaf.close(),
+        () => lockRaf.close(),
+        () => lockFile.delete(),
       ]);
     });
 
@@ -402,11 +417,11 @@ void main() {
       var lockFile = MockFile();
       var file = MockFile();
 
-      returnFutureVoid(when(readRaf.close()));
-      returnFutureVoid(when(writeRaf.close()));
-      returnFutureVoid(when(lockRaf.close()));
-      when(lockFile.delete()).thenAnswer((i) => Future.value(lockFile));
-      when(file.delete()).thenAnswer((i) => Future.value(file));
+      returnFutureVoid(when(() => readRaf.close()));
+      returnFutureVoid(when(() => writeRaf.close()));
+      returnFutureVoid(when(() => lockRaf.close()));
+      when(() => lockFile.delete()).thenAnswer((i) => Future.value(lockFile));
+      when(() => file.delete()).thenAnswer((i) => Future.value(file));
 
       var backend = _getBackend(
         file: file,
@@ -418,11 +433,11 @@ void main() {
 
       await backend.deleteFromDisk();
       verifyInOrder([
-        readRaf.close(),
-        writeRaf.close(),
-        lockRaf.close(),
-        lockFile.delete(),
-        file.delete()
+        () => readRaf.close(),
+        () => writeRaf.close(),
+        () => lockRaf.close(),
+        () => lockFile.delete(),
+        () => file.delete()
       ]);
     });
   });

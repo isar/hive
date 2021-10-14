@@ -1,5 +1,5 @@
 import 'package:hive/src/adapters/date_time_adapter.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../mocks.dart';
@@ -9,10 +9,10 @@ void main() {
     test('.read()', () {
       var now = DateTime.now();
       var binaryReader = MockBinaryReader();
-      when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
+      when(() => binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
 
       var date = DateTimeAdapter().read(binaryReader);
-      verify(binaryReader.readInt());
+      verify(() => binaryReader.readInt());
       expect(date, now.subtract(Duration(microseconds: now.microsecond)));
     });
 
@@ -21,7 +21,7 @@ void main() {
       var binaryWriter = MockBinaryWriter();
 
       DateTimeAdapter().write(binaryWriter, now);
-      verify(binaryWriter.writeInt(now.millisecondsSinceEpoch));
+      verify(() => binaryWriter.writeInt(now.millisecondsSinceEpoch));
     });
   });
 
@@ -30,22 +30,30 @@ void main() {
       test('local', () {
         var now = DateTime.now();
         var binaryReader = MockBinaryReader();
-        when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
-        when(binaryReader.readBool()).thenReturn(false);
+        when(() => binaryReader.readInt())
+            .thenReturn(now.millisecondsSinceEpoch);
+        when(() => binaryReader.readBool()).thenReturn(false);
 
         var date = DateTimeWithTimezoneAdapter().read(binaryReader);
-        verifyInOrder([binaryReader.readInt(), binaryReader.readBool()]);
+        verifyInOrder([
+          () => binaryReader.readInt(),
+          () => binaryReader.readBool(),
+        ]);
         expect(date, now.subtract(Duration(microseconds: now.microsecond)));
       });
 
       test('UTC', () {
         var now = DateTime.now().toUtc();
         var binaryReader = MockBinaryReader();
-        when(binaryReader.readInt()).thenReturn(now.millisecondsSinceEpoch);
-        when(binaryReader.readBool()).thenReturn(true);
+        when(() => binaryReader.readInt())
+            .thenReturn(now.millisecondsSinceEpoch);
+        when(() => binaryReader.readBool()).thenReturn(true);
 
         var date = DateTimeWithTimezoneAdapter().read(binaryReader);
-        verifyInOrder([binaryReader.readInt(), binaryReader.readBool()]);
+        verifyInOrder([
+          () => binaryReader.readInt(),
+          () => binaryReader.readBool(),
+        ]);
         expect(date, now.subtract(Duration(microseconds: now.microsecond)));
         expect(date.isUtc, true);
       });
@@ -58,8 +66,8 @@ void main() {
 
         DateTimeWithTimezoneAdapter().write(binaryWriter, now);
         verifyInOrder([
-          binaryWriter.writeInt(now.millisecondsSinceEpoch),
-          binaryWriter.writeBool(false),
+          () => binaryWriter.writeInt(now.millisecondsSinceEpoch),
+          () => binaryWriter.writeBool(false),
         ]);
       });
 
@@ -69,8 +77,8 @@ void main() {
 
         DateTimeWithTimezoneAdapter().write(binaryWriter, now);
         verifyInOrder([
-          binaryWriter.writeInt(now.millisecondsSinceEpoch),
-          binaryWriter.writeBool(true),
+          () => binaryWriter.writeInt(now.millisecondsSinceEpoch),
+          () => binaryWriter.writeBool(true),
         ]);
       });
     });
