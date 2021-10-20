@@ -9,9 +9,10 @@ class NestedTypeRegistryResolvedAdapter extends ResolvedAdapter {
 
   NestedTypeRegistryResolvedAdapter(
     this.nestedTypeRegistryAdapter,
+    int id,
   ) : super(
           nestedTypeRegistryAdapter,
-          nestedTypeRegistryAdapter.typeId,
+          id,
         );
 
   @override
