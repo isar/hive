@@ -26,7 +26,6 @@ abstract class TypeRegistry {
   /// via [createNestedTypeRegistryAdapter]
   void registerNestedTypeRegistryAdapter(
       NestedTypeRegistryAdapter adapter, {
-        bool internal = false,
         bool override = false,
       });
 

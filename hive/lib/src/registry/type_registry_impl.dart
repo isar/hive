@@ -103,23 +103,28 @@ class TypeRegistryImpl implements TypeRegistry {
       override: override,
     );
     var typeId = adapter.typeId;
+    if(!internal) {
+      typeId = typeId + reservedTypeIds;
+    }
     var resolved = ResolvedAdapter<T>(adapter, typeId);
     _typeAdapters[typeId] = resolved;
   }
 
   @override
-  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId) =>
-      NestedTypeRegistryAdapterImpl(typeId: typeId);
+  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId) {
+    typeId = typeId + reservedTypeIds;
+
+    return NestedTypeRegistryAdapterImpl(typeId: typeId);
+  }
 
   @override
   void registerNestedTypeRegistryAdapter(
     NestedTypeRegistryAdapter adapter, {
-    bool internal = false,
     bool override = false,
   }) {
     _checkIsPossibleToRegisterAdapter(
       adapter: adapter,
-      internal: internal,
+      internal: false,
       override: override,
     );
 
