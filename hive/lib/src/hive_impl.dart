@@ -107,8 +107,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
           newBox = BoxImpl<E>(this, name, comparator, compaction, backend);
         }
 
-        await newBox.initialize();
         _boxes[name] = newBox;
+        await newBox.initialize();
 
         completer.complete();
         return newBox;
