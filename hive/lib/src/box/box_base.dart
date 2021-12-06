@@ -124,4 +124,7 @@ abstract class BoxBase<E> {
   ///
   /// In the browser, the IndexedDB database is being removed.
   Future<void> deleteFromDisk();
+
+  /// Flushes all pending changes of the box to disk.
+  Future<void> flush();
 }

@@ -103,4 +103,9 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
     }
     return map;
   }
+
+  @override
+  Future<void> flush() async {
+    await backend.flush();
+  }
 }

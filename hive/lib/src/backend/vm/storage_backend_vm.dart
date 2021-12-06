@@ -226,4 +226,11 @@ class StorageBackendVm extends StorageBackend {
       await _file.delete();
     });
   }
+
+  @override
+  Future<void> flush() {
+    return _sync.syncWrite(() async {
+      await writeRaf.flush();
+    });
+  }
 }

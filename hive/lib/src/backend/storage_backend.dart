@@ -34,6 +34,9 @@ abstract class StorageBackend {
 
   /// Clear database and delete from disk
   Future<void> deleteFromDisk();
+
+  /// Flush all changes to disk
+  Future<void> flush();
 }
 
 /// Abstract database manager
