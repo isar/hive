@@ -92,4 +92,9 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
 
     await performCompactionIfNeeded();
   }
+
+  @override
+  Future<void> flush() async {
+    await backend.flush();
+  }
 }

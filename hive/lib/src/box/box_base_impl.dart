@@ -254,4 +254,7 @@ class _NullBoxBase<E> implements BoxBase<E> {
 
   @override
   Never watch({key}) => throw UnimplementedError();
+
+  @override
+  Never flush() => throw UnimplementedError();
 }

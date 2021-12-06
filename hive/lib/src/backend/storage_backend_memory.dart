@@ -67,4 +67,7 @@ class StorageBackendMemory extends StorageBackend {
   Future<void> deleteFromDisk() {
     throw UnsupportedError('This operation is unsupported for memory boxes.');
   }
+
+  @override
+  Future<void> flush() => Future.value();
 }

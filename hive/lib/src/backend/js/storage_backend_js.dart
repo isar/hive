@@ -205,4 +205,7 @@ class StorageBackendJs extends StorageBackend {
         : WorkerGlobalScope.instance.indexedDB;
     return indexDB!.deleteDatabase(_db.name!);
   }
+
+  @override
+  Future<void> flush() => Future.value();
 }
