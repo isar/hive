@@ -16,6 +16,7 @@ import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:hive/src/util/extensions.dart';
+import 'package:hive/src/util/hash.dart';
 import 'package:meta/meta.dart';
 
 export 'src/object/hive_object.dart' show HiveObject, HiveObjectMixin;

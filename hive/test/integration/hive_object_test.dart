@@ -10,6 +10,7 @@ class _TestObject with HiveObjectMixin {
   _TestObject(this.name);
 
   @override
+  // ignore: hash_and_equals
   bool operator ==(dynamic other) => other is _TestObject && other.name == name;
 }
 

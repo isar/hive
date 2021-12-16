@@ -41,7 +41,6 @@ void main() {
     });
 
     test('.every()', () {
-      expect(testList.every((e) => e is String), isTrue);
       expect(testList.every((e) => e == 'b'), isFalse);
     });
 

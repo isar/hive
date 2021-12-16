@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/util/extensions.dart';
+import 'package:hive/src/util/hash.dart';
 
 /// Not part of public API
 class Frame {
@@ -83,6 +84,12 @@ class Frame {
     } else {
       return false;
     }
+  }
+
+  @override
+  int get hashCode {
+    return runtimeType.hashCode ^
+        calculateHashCode([key, value, length, deleted]);
   }
 
   @override

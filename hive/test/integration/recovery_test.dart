@@ -1,12 +1,11 @@
 @TestOn('vm')
-
 import 'dart:async';
 import 'dart:io';
 
 import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
-import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 import '../tests/backend/vm/storage_backend_vm_test.dart';
 import '../tests/common.dart';

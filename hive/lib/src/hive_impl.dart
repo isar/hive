@@ -12,8 +12,8 @@ import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
 import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
-import 'package:hive/src/util/extensions.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
+import 'package:hive/src/util/extensions.dart';
 import 'package:meta/meta.dart';
 
 import 'backend/storage_backend.dart';
@@ -131,7 +131,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool crashRecovery = true,
     String? path,
     Uint8List? bytes,
-    @deprecated List<int>? encryptionKey,
+    @Deprecated('Please use encryptionCipher instead') List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
@@ -148,7 +148,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String? path,
-    @deprecated List<int>? encryptionKey,
+    @Deprecated('Please use encryptionCipher instead') List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);

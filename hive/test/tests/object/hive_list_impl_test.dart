@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/object/hive_object.dart';

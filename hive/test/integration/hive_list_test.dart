@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
-import 'package:hive/src/object/hive_object.dart';
 import 'package:test/test.dart';
 
 import 'integration.dart';
@@ -14,6 +13,7 @@ class _TestObject extends HiveObject {
   _TestObject(this.name);
 
   @override
+  // ignore: hash_and_equals
   bool operator ==(dynamic other) => other is _TestObject && other.name == name;
 }
 

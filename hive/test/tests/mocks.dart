@@ -9,7 +9,6 @@ import 'package:hive/src/box/keystore.dart';
 import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
-import 'package:hive/src/object/hive_object.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Mocks

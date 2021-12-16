@@ -18,3 +18,4 @@ dev_dependencies:
   path: ^1.7.0
   pointycastle: ^3.0.1
   build_runner: ^2.1.2
+  lints: ^1.0.1
