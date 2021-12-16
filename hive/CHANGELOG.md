@@ -1,3 +1,15 @@
+# 2.0.5
+
+### Enhancements
+
+- Get IndexedDB selectively based on window property - [#802](https://github.com/hivedb/hive/pull/802)
+- Added `path` parameter to `boxExists` and `deleteBoxFromDisk` methods - [#776](https://github.com/hivedb/hive/pull/776)
+- Added `flush` method to boxes - [#852](https://github.com/hivedb/hive/pull/852)
+
+### Fixes
+
+- Don't loose track of box objects if init crashes - [#846](https://github.com/hivedb/hive/pull/846)
+
 # 2.0.4
 
 ### Enhancements
