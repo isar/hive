@@ -96,6 +96,14 @@ class Frame {
           'length: $length, offset: $offset)';
     }
   }
+
+  @override
+  int get hashCode =>
+      runtimeType.hashCode ^
+      key.hashCode ^
+      value.hashCode ^
+      length.hashCode ^
+      deleted.hashCode;
 }
 
 /// Possible Key types

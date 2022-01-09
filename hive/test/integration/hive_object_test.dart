@@ -11,6 +11,9 @@ class _TestObject with HiveObjectMixin {
 
   @override
   bool operator ==(dynamic other) => other is _TestObject && other.name == name;
+
+  @override
+  int get hashCode => runtimeType.hashCode ^ name.hashCode;
 }
 
 class _TestObjectAdapter extends TypeAdapter<_TestObject> {
