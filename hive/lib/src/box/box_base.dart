@@ -21,6 +21,9 @@ class BoxEvent {
     }
     return false;
   }
+
+  @override
+  int get hashCode => runtimeType.hashCode ^ key.hashCode ^ value.hashCode;
 }
 
 /// Boxes contain all of your data. In the browser, each box has its own

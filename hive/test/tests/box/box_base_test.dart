@@ -208,7 +208,7 @@ void main() {
     group('.add()', () {
       test('calls put()', () async {
         var box = _openBoxBaseMock();
-        when(() => box.put(0, 123)).thenAnswer((i) => Future.value(0));
+        when(() => box.put(0, 123)).thenAnswer((i) => Future.value());
 
         expect(await box.add(123), 0);
         verify(() => box.put(0, 123));
