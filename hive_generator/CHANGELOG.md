@@ -1,3 +1,7 @@
+## 1.1.2
+
+- Updated `analyzer` version constraints
+
 ## 1.1.1
 
 - Updated dependency versions
