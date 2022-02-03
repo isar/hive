@@ -100,17 +100,6 @@ class SettingsPage extends StatelessWidget {
 
 Boxes are cached and therefore fast enough to be used directly in the `build()` method of Flutter widgets.
 
-## Benchmark
-
-|                                         1000 read iterations                                         |                                    1000 write iterations                                    |
-| :--------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
-|         ![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_read.png)         |    ![](https://raw.githubusercontent.com/hivedb/hive/master/.github/benchmark_write.png)    |
-| SharedPreferences is on par with Hive when it comes to read performance. SQLite performs much worse. | Hive greatly outperforms SQLite and SharedPreferences when it comes to writing or deleting. |
-
-The benchmark was performed on a Oneplus 6T with Android Q. You can [run the benchmark yourself](https://github.com/hivedb/hive_benchmark).
-
-\*Take this benchmark with a grain of salt. It is very hard to compare databases objectively since they were made for different purposes.
-
 ### Licence
 
 ```
