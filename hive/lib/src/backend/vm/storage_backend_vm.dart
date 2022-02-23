@@ -92,6 +92,7 @@ class StorageBackendVm extends StorageBackend {
       if (_crashRecovery) {
         print('Recovering corrupted box.');
         await writeRaf.truncate(recoveryOffset);
+        await writeRaf.setPosition(recoveryOffset);
         writeOffset = recoveryOffset;
       } else {
         throw HiveError('Wrong checksum in hive file. Box may be corrupted.');

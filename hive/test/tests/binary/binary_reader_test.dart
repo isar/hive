@@ -351,6 +351,39 @@ void main() {
     });
 
     group('.readFrame()', () {
+      final List<Uint8List> nullFramesBytes = [
+        // availableBytes < 4
+        // there is ONLY 3 bytes provided
+        Uint8List.fromList([8, 0, 0]),
+        // frameLength < 8
+        // frame is 7 length
+        Uint8List.fromList([7, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+        // availableBytes < frameLength - 4
+        // frame is 10 length however ONLY 9 bytes provided
+        Uint8List.fromList([10, 0, 0, 0, 0, 0, 0, 0, 0]),
+        // computedCrc != crc
+        // 0, 0, 0, 0 crc is: 0 and computedCrc is: 274301637
+        Uint8List.fromList([10, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+      ];
+
+      test('null', () {
+        for (final bytes in nullFramesBytes) {
+          final reader = BinaryReaderImpl(bytes, testRegistry);
+          final frame = reader.readFrame(lazy: false);
+
+          expect(frame, null);
+        }
+      });
+
+      test('null lazy', () {
+        for (final bytes in nullFramesBytes) {
+          final reader = BinaryReaderImpl(bytes, testRegistry);
+          final frame = reader.readFrame(lazy: true);
+
+          expect(frame, null);
+        }
+      });
+
       test('normal', () {
         var frames = framesSetLengthOffset(testFrames, frameBytes);
         var offset = 0;
@@ -397,7 +430,7 @@ void main() {
         }
       });
 
-      test('lazy', () {
+      test('encrypted lazy', () {
         var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
         var offset = 0;
         for (var i = 0; i < frames.length; i++) {
