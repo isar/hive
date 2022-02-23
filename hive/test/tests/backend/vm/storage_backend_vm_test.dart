@@ -169,10 +169,13 @@ void main() {
           when(() => lockRaf.lock()).thenAnswer((i) => Future.value(lockRaf));
           when(() => writeRaf.truncate(20))
               .thenAnswer((i) => Future.value(writeRaf));
+          when(() => writeRaf.setPosition(20))
+              .thenAnswer((i) => Future.value(writeRaf));
 
           await backend.initialize(
               TypeRegistryImpl.nullImpl, MockKeystore(), lazy);
           verify(() => writeRaf.truncate(20));
+          verify(() => writeRaf.setPosition(20));
         });
 
         test('recoveryOffset without crash recovery', () async {
