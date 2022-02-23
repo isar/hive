@@ -243,13 +243,14 @@ class BinaryReaderImpl extends BinaryReader {
   /// Not part of public API
   Frame? readFrame(
       {HiveCipher? cipher, bool lazy = false, int frameOffset = 0}) {
+    // frame length is stored on 4 bytes
     if (availableBytes < 4) return null;
 
+    // frame length should be at least 8 bytes
     var frameLength = readUint32();
-    if (frameLength < 8) {
-      throw HiveError(
-          'This should not happen. Please open an issue on GitHub.');
-    }
+    if (frameLength < 8) return null;
+
+    // frame is bigger than avaible bytes
     if (availableBytes < frameLength - 4) return null;
 
     var crc = _buffer.readUint32(_offset + frameLength - 8);
@@ -260,6 +261,7 @@ class BinaryReaderImpl extends BinaryReader {
       crc: cipher?.calculateKeyCrc() ?? 0,
     );
 
+    // frame is corrupted or provided chiper is different
     if (computedCrc != crc) return null;
 
     _limitAvailableBytes(frameLength - 8);
