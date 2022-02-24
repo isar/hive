@@ -1,3 +1,9 @@
+# 2.0.6
+
+### Fixes
+
+- Fixed issue caused database to crash when executing crash recovery - [#914](https://github.com/hivedb/hive/pull/914)
+
 # 2.0.5
 
 ### Enhancements
