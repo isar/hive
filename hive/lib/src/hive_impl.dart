@@ -91,6 +91,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       var completer = Completer();
       _openingBoxes[name] = completer.future;
 
+      BoxBaseImpl<E>? newBox;
       try {
         StorageBackend backend;
         if (bytes != null) {
@@ -100,7 +101,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
               await _manager.open(name, path ?? homePath, recovery, cipher);
         }
 
-        BoxBaseImpl<E> newBox;
         if (lazy) {
           newBox = LazyBoxImpl<E>(this, name, comparator, compaction, backend);
         } else {
@@ -113,6 +113,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         completer.complete();
         return newBox;
       } catch (error, stackTrace) {
+        newBox?.close();
         completer.completeError(error, stackTrace);
         rethrow;
       } finally {
