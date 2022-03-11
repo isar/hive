@@ -244,7 +244,7 @@ class BinaryWriterImpl extends BinaryWriter {
     if (key is String) {
       writeByte(FrameKeyType.utf8StringT);
       var bytes = BinaryWriter.utf8Encoder.convert(key);
-      writeUint32(bytes.length);
+      writeByte(bytes.length);
       _addBytes(bytes);
     } else {
       writeByte(FrameKeyType.uintT);
