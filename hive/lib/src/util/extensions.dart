@@ -2,17 +2,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 /// Not part of public API
-extension StringX on String {
-  /// Not part of public API
-  bool get isAscii {
-    for (var cu in codeUnits) {
-      if (cu > 127) return false;
-    }
-    return true;
-  }
-}
-
-/// Not part of public API
 extension ListIntX on List<int> {
   /// Not part of public API
   @pragma('vm:prefer-inline')
