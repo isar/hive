@@ -112,7 +112,7 @@ class FrameKeyType {
   static const uintT = 0;
 
   /// String key
-  static const asciiStringT = 1;
+  static const utf8StringT = 1;
 }
 
 /// Possible value types
