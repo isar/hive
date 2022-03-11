@@ -12,7 +12,9 @@ class ResolvedAdapter<T> {
 
   ResolvedAdapter(this.adapter, this.typeId);
 
-  bool matches(dynamic value) => value is T;
+  bool matchesRuntimeType(dynamic value) => value.runtimeType == T;
+
+  bool matchesType(dynamic value) => value is T;
 }
 
 class _NullTypeRegistry implements TypeRegistryImpl {
@@ -56,10 +58,16 @@ class TypeRegistryImpl implements TypeRegistry {
 
   /// Not part of public API
   ResolvedAdapter? findAdapterForValue(dynamic value) {
+    ResolvedAdapter? match;
     for (var adapter in _typeAdapters.values) {
-      if (adapter.matches(value)) return adapter;
+      if (adapter.matchesRuntimeType(value)) {
+        return adapter;
+      }
+      if (adapter.matchesType(value) && match == null) {
+        match = adapter;
+      }
     }
-    return null;
+    return match;
   }
 
   /// Not part of public API
