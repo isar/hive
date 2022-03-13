@@ -232,7 +232,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   @override
   List<int> generateSecureKey() {
-    return _secureRandom.nextBytes(32);
+    return _secureRandom.nextBytes(32).toList();
   }
 
   @override
