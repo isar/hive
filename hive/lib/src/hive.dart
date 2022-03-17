@@ -5,7 +5,11 @@ abstract class HiveInterface implements TypeRegistry {
   /// Initialize Hive by giving it a home directory.
   ///
   /// (Not necessary in the browser)
-  void init(String path);
+  Future<void> init(
+    String? path, {
+    HiveStorageBackendPreference backendPreference =
+        HiveStorageBackendPreference.native,
+  });
 
   /// Opens a box.
   ///

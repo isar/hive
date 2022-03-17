@@ -6,7 +6,7 @@ import 'dart:indexed_db';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/js/storage_backend_js.dart';
+import 'package:hive/src/backend/js/native/storage_backend_js.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';

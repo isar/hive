@@ -31,6 +31,7 @@ part 'src/crypto/hive_aes_cipher.dart';
 part 'src/crypto/hive_cipher.dart';
 part 'src/object/hive_collection.dart';
 part 'src/object/hive_list.dart';
+part 'src/object/hive_storage_backend_preference.dart';
 part 'src/registry/type_registry.dart';
 part 'src/registry/type_adapter.dart';
 part 'src/hive_error.dart';

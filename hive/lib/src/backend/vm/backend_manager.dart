@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:hive/hive.dart';
@@ -8,6 +9,10 @@ import 'package:meta/meta.dart';
 /// Not part of public API
 class BackendManager implements BackendManagerInterface {
   final _delimiter = Platform.isWindows ? '\\' : '/';
+
+  static BackendManager select(
+          [HiveStorageBackendPreference? backendPreference]) =>
+      BackendManager();
 
   @override
   Future<StorageBackend> open(
