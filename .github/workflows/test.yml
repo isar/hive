@@ -34,6 +34,10 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           channel: ${{ matrix.flutter-channel }}
+      - name: Locally override the dependencies
+        run: |
+          echo -e "\ndependency_overrides:\n  hive:\n    path: ../hive" >> pubspec.yaml
+        working-directory: hive_flutter
       - name: Install dependencies
         run: flutter pub get
         working-directory: hive_flutter
@@ -51,6 +55,10 @@ jobs:
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.dart-channel }}
+      - name: Locally override the dependencies
+        run: |
+          echo -e "\ndependency_overrides:\n  hive:\n    path: ../../hive" >> pubspec.yaml
+        working-directory: hive_generator/example
       - name: Install dependencies
         run: pub get
         working-directory: hive_generator/example
