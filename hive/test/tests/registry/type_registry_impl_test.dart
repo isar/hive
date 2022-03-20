@@ -135,8 +135,8 @@ void main() {
       });
 
       test(
-          'returns adapter if exact runtime type of value matches ignoring registration order',
-          () {
+          'returns adapter if exact runtime type of value matches ignoring '
+          'registration order', () {
         final registry = TypeRegistryImpl();
         final parentAdapter = ParentAdapter(0);
         final childAdapter = ChildAdapter(1);

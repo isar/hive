@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/util/extensions.dart';
 
 /// Not part of public API
 class Frame {
