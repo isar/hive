@@ -12,9 +12,9 @@ dependencies:
   crypto: ^3.0.0
 
 dev_dependencies:
-  test: ^1.20.2
-  mocktail: ^0.3.0
-  lints: ^2.0.0
-  path: ^1.8.1
-  pointycastle: ^3.5.2
-  build_runner: ^2.1.8
+  test: ^1.17.12
+  mocktail: ^0.2.0
+  lints: ^1.0.0
+  path: ^1.7.0
+  pointycastle: ^3.0.1
+  build_runner: ^2.1.2
