@@ -1,3 +1,14 @@
+# 2.1.0
+
+### Fixes
+
+- Do not return uninitialized box - [#916](https://github.com/hivedb/hive/pull/916)
+
+### Enhancements
+
+- Adapter type inheritance - [#927](https://github.com/hivedb/hive/pull/927)
+- UTF8 keys - [#928](https://github.com/hivedb/hive/pull/928)
+
 # 2.0.6
 
 ### Fixes
