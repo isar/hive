@@ -41,6 +41,14 @@ void main() {
         expect(() => Frame.lazy('a' * 256), throwsHiveError());
         expect(() => Frame.deleted('a' * 256), throwsHiveError());
       });
+
+      test('non int or string keys', () {
+        expect(() => Frame(null, null), throwsHiveError());
+        expect(() => Frame(true, null), throwsHiveError());
+        expect(() => Frame(Object(), null), throwsHiveError());
+        expect(() => Frame(() => 0, null), throwsHiveError());
+        expect(() => Frame(Frame('test', null), null), throwsHiveError());
+      });
     });
 
     test('.toString()', () {

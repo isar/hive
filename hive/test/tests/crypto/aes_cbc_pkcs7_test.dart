@@ -1,4 +1,3 @@
-@Skip('Cannot run with sound null safety')
 import 'dart:typed_data';
 
 import 'package:hive/src/crypto/aes_cbc_pkcs7.dart';
