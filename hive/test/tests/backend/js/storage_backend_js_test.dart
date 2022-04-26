@@ -6,7 +6,7 @@ import 'dart:indexed_db';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/js/storage_backend_js.dart';
+import 'package:hive/src/backend/js/native/storage_backend_js.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/change_notifier.dart';
@@ -22,7 +22,7 @@ StorageBackendJs _getBackend({
   HiveCipher? cipher,
   TypeRegistry registry = TypeRegistryImpl.nullImpl,
 }) {
-  return StorageBackendJs(db ?? _nullDatabase, cipher, registry);
+  return StorageBackendJs(db ?? _nullDatabase, cipher, 'box', registry);
 }
 
 Future<Database> _openDb([String name = 'testBox']) async {
@@ -70,7 +70,8 @@ void main() async {
       });
 
       test('crypto', () {
-        var backend = StorageBackendJs(_nullDatabase, testCipher, testRegistry);
+        var backend =
+            StorageBackendJs(_nullDatabase, testCipher, 'box', testRegistry);
         var i = 0;
         for (var frame in testFrames) {
           var buffer = backend.encodeValue(frame) as ByteBuffer;
@@ -87,7 +88,7 @@ void main() async {
             'key': Uint8List.fromList([1, 2, 3]),
             'otherKey': null
           });
-          var backend = StorageBackendJs(_nullDatabase, null);
+          var backend = StorageBackendJs(_nullDatabase, null, 'box');
           var encoded =
               Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
 

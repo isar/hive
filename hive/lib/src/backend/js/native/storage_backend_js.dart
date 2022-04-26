@@ -19,11 +19,12 @@ class StorageBackendJs extends StorageBackend {
   static const _bytePrefix = [0x90, 0xA9];
   final Database _db;
   final HiveCipher? _cipher;
+  final String objectStoreName;
 
   TypeRegistry _registry;
 
   /// Not part of public API
-  StorageBackendJs(this._db, this._cipher,
+  StorageBackendJs(this._db, this._cipher, this.objectStoreName,
       [this._registry = TypeRegistryImpl.nullImpl]);
 
   @override
@@ -96,10 +97,10 @@ class StorageBackendJs extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  ObjectStore getStore(bool write, [String box = 'box']) {
+  ObjectStore getStore(bool write) {
     return _db
-        .transaction(box, write ? 'readwrite' : 'readonly')
-        .objectStore(box);
+        .transaction(objectStoreName, write ? 'readwrite' : 'readonly')
+        .objectStore(objectStoreName);
   }
 
   /// Not part of public API
