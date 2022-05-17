@@ -46,7 +46,6 @@ Future _performTest(bool lazy) async {
       await box.close();
     }
 
-    print((await boxFile.readAsBytes()).length);
     expect(await boxFile.readAsBytes(), getFrameBytes(subFrames));
   }
 }

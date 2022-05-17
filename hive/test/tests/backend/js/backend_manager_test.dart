@@ -19,16 +19,16 @@ void main() {
   group('BackendManager', () {
     group('.boxExists()', () {
       test('returns true', () async {
-        var backendManager = BackendManager();
+        var backendManager = BackendManager.select();
         var db = await _openDb();
         db.close();
-        expect(await backendManager.boxExists('testBox', null), isTrue);
+        expect(await backendManager.boxExists('testBox', null, null), isTrue);
       });
 
       test('returns false', () async {
-        var backendManager = BackendManager();
+        var backendManager = BackendManager.select();
         var boxName = 'notexists-${DateTime.now().millisecondsSinceEpoch}';
-        expect(await backendManager.boxExists(boxName, null), isFalse);
+        expect(await backendManager.boxExists(boxName, null, null), isFalse);
       });
     });
   });

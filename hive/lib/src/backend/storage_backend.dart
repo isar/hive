@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hive/hive.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
@@ -42,12 +44,12 @@ abstract class StorageBackend {
 /// Abstract database manager
 abstract class BackendManagerInterface {
   /// Opens database connection and creates StorageBackend
-  Future<StorageBackend> open(
-      String name, String path, bool crashRecovery, HiveCipher cipher);
+  Future<StorageBackend> open(String name, String? path, bool crashRecovery,
+      HiveCipher? cipher, String? collection);
 
   /// Deletes database
-  Future<void> deleteBox(String name, String? path);
+  Future<void> deleteBox(String name, String? path, String? collection);
 
   /// Checks if box exists
-  Future<bool> boxExists(String name, String? path);
+  Future<bool> boxExists(String name, String? path, String? collection);
 }

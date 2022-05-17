@@ -22,7 +22,7 @@ import 'backend/storage_backend.dart';
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   final _boxes = HashMap<String, BoxBaseImpl>();
   final _openingBoxes = HashMap<String, Future>();
-  final BackendManager _manager;
+  BackendManagerInterface? _manager;
   final Random _secureRandom = Random.secure();
 
   /// Not part of public API
@@ -30,9 +30,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   String? homePath;
 
   /// Not part of public API
-  HiveImpl() : _manager = BackendManager() {
-    _registerDefaultAdapters();
-  }
+  HiveImpl();
 
   /// Not part of public API
   @visibleForTesting
@@ -42,7 +40,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   /// Not part of public API
   @visibleForTesting
-  HiveImpl.test() : _manager = BackendManager() {
+  HiveImpl.test() : _manager = BackendManager.select() {
     registerAdapter(DateTimeAdapter<DateTime>(), internal: true);
     registerAdapter(BigIntAdapter(), internal: true);
   }
@@ -54,8 +52,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  void init(String path) {
+  void init(
+    String? path, {
+    HiveStorageBackendPreference backendPreference =
+        HiveStorageBackendPreference.native,
+  }) {
     homePath = path;
+    _manager ??= BackendManager.select(backendPreference);
+    _registerDefaultAdapters();
   }
 
   Future<BoxBase<E>> _openBox<E>(
@@ -67,6 +71,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool recovery,
     String? path,
     Uint8List? bytes,
+    String? collection,
   ) async {
     assert(path == null || bytes == null);
     assert(name.length <= 255 && name.isAscii,
@@ -97,8 +102,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         if (bytes != null) {
           backend = StorageBackendMemory(bytes, cipher);
         } else {
-          backend =
-              await _manager.open(name, path ?? homePath, recovery, cipher);
+          backend = await _manager!
+              .open(name, path ?? homePath, recovery, cipher, collection);
         }
 
         if (lazy) {
@@ -132,13 +137,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool crashRecovery = true,
     String? path,
     Uint8List? bytes,
+    String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
     }
     return await _openBox<E>(name, false, encryptionCipher, keyComparator,
-        compactionStrategy, crashRecovery, path, bytes) as Box<E>;
+        compactionStrategy, crashRecovery, path, bytes, collection) as Box<E>;
   }
 
   @override
@@ -149,13 +155,22 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String? path,
+    String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
     }
-    return await _openBox<E>(name, true, encryptionCipher, keyComparator,
-        compactionStrategy, crashRecovery, path, null) as LazyBox<E>;
+    return await _openBox<E>(
+        name,
+        true,
+        encryptionCipher,
+        keyComparator,
+        compactionStrategy,
+        crashRecovery,
+        path,
+        null,
+        collection) as LazyBox<E>;
   }
 
   BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy]) {
@@ -211,13 +226,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<void> deleteBoxFromDisk(String name, {String? path}) async {
+  Future<void> deleteBoxFromDisk(String name,
+      {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
     var box = _boxes[lowerCaseName];
     if (box != null) {
       await box.deleteFromDisk();
     } else {
-      await _manager.deleteBox(lowerCaseName, path ?? homePath);
+      await _manager!.deleteBox(lowerCaseName, path ?? homePath, collection);
     }
   }
 
@@ -236,8 +252,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   @override
-  Future<bool> boxExists(String name, {String? path}) async {
+  Future<bool> boxExists(String name,
+      {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
-    return await _manager.boxExists(lowerCaseName, path ?? homePath);
+    return await _manager!
+        .boxExists(lowerCaseName, path ?? homePath, collection);
   }
 }
