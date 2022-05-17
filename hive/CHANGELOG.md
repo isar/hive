@@ -1,3 +1,9 @@
+# 2.2.0
+
+### Enhancements
+
+- Added multiple storage backends for web - [#956](https://github.com/hivedb/hive/pull/956)
+
 # 2.1.0
 
 ### Fixes
