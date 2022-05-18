@@ -20,9 +20,12 @@ import 'backend/storage_backend.dart';
 
 /// Not part of public API
 class HiveImpl extends TypeRegistryImpl implements HiveInterface {
+  static final BackendManagerInterface _defaultBackendManager =
+      BackendManager.select();
+
   final _boxes = HashMap<String, BoxBaseImpl>();
   final _openingBoxes = HashMap<String, Future>();
-  BackendManagerInterface? _manager;
+  BackendManagerInterface? _managerOverride;
   final Random _secureRandom = Random.secure();
 
   /// Not part of public API
@@ -34,16 +37,21 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   /// Not part of public API
   @visibleForTesting
-  HiveImpl.debug(this._manager) {
+  HiveImpl.debug(this._managerOverride) {
     _registerDefaultAdapters();
   }
 
   /// Not part of public API
   @visibleForTesting
-  HiveImpl.test() : _manager = BackendManager.select() {
+  HiveImpl.test() : _managerOverride = BackendManager.select() {
     registerAdapter(DateTimeAdapter<DateTime>(), internal: true);
     registerAdapter(BigIntAdapter(), internal: true);
   }
+
+  /// either returns the preferred [BackendManagerInterface] or the
+  /// platform default fallback
+  BackendManagerInterface get _manager =>
+      _managerOverride ?? _defaultBackendManager;
 
   void _registerDefaultAdapters() {
     registerAdapter(DateTimeWithTimezoneAdapter(), internal: true);
@@ -58,7 +66,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         HiveStorageBackendPreference.native,
   }) {
     homePath = path;
-    _manager ??= BackendManager.select(backendPreference);
+    _managerOverride = BackendManager.select(backendPreference);
     _registerDefaultAdapters();
   }
 
@@ -102,8 +110,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         if (bytes != null) {
           backend = StorageBackendMemory(bytes, cipher);
         } else {
-          backend = await _manager!
-              .open(name, path ?? homePath, recovery, cipher, collection);
+          backend = await _manager.open(
+              name, path ?? homePath, recovery, cipher, collection);
         }
 
         if (lazy) {
@@ -233,7 +241,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (box != null) {
       await box.deleteFromDisk();
     } else {
-      await _manager!.deleteBox(lowerCaseName, path ?? homePath, collection);
+      await _manager.deleteBox(lowerCaseName, path ?? homePath, collection);
     }
   }
 
@@ -255,7 +263,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<bool> boxExists(String name,
       {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
-    return await _manager!
-        .boxExists(lowerCaseName, path ?? homePath, collection);
+    return await _manager.boxExists(
+        lowerCaseName, path ?? homePath, collection);
   }
 }
