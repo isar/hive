@@ -1,3 +1,10 @@
+# 2.2.1
+
+### Fixes
+
+- Retracted hive@2.2.0 from pub.dev
+- Fixed hive web backend null value exception - [#968](https://github.com/hivedb/hive/pull/968)
+
 # 2.2.0
 
 ### Enhancements
