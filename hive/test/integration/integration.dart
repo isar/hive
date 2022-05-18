@@ -14,17 +14,15 @@ Future<HiveImpl> createHive() async {
   if (!isBrowser) {
     var dir = await getTempDir();
     hive.init(dir.path);
+  } else {
+    hive.init(null);
   }
   return hive;
 }
 
 Future<BoxBase<T>> openBox<T>(bool lazy,
     {HiveInterface? hive, List<int>? encryptionKey}) async {
-  hive ??= HiveImpl();
-  if (!isBrowser) {
-    var dir = await getTempDir();
-    hive.init(dir.path);
-  }
+  hive ??= await createHive();
   var id = Random().nextInt(99999999);
   HiveCipher? cipher;
   if (encryptionKey != null) {

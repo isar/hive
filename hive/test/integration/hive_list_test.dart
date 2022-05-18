@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:test/test.dart';
 
@@ -38,7 +37,7 @@ class _TestObjectAdapter extends TypeAdapter<_TestObject> {
 
 void main() {
   test('add and remove objects to / from HiveList', () async {
-    var hive = HiveImpl();
+    var hive = await createHive();
     hive.registerAdapter(_TestObjectAdapter());
     var box = await openBox<_TestObject>(false, hive: hive) as Box<_TestObject>;
 
