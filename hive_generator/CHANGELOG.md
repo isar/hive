@@ -1,3 +1,7 @@
+## 1.1.3
+
+- Updated `analyzer` version constraints to `<5.0.0`
+
 ## 1.1.2
 
 - Updated `analyzer` version constraints
