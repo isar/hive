@@ -200,11 +200,15 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<void> deleteFromDisk() {
-    final indexDB = js.context.hasProperty('window')
-        ? window.indexedDB
-        : WorkerGlobalScope.instance.indexedDB;
-    return indexDB!.deleteDatabase(_db.name!);
+  Future<void> deleteFromDisk() async {
+    if (_db.objectStoreNames?.length != 1) {
+      _db.deleteObjectStore(objectStoreName);
+    } else {
+      final indexDB = js.context.hasProperty('window')
+          ? window.indexedDB
+          : WorkerGlobalScope.instance.indexedDB;
+      await indexDB!.deleteDatabase(_db.name!);
+    }
   }
 
   @override
