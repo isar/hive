@@ -4,8 +4,12 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:hive/hive.dart';
 
-class BoxCollection {
+import 'box_collection_stub.dart' as implementation;
+
+class BoxCollection implements implementation.BoxCollection {
+  @override
   final String name;
+  @override
   final Set<String> boxNames;
   HiveCipher? _cipher;
 
@@ -34,9 +38,11 @@ class BoxCollection {
     return collection;
   }
 
+  @override
   Future<CollectionBox<V>> openBox<V>(String name,
       {bool preload = false,
-      CollectionBox<V> Function(String, BoxCollection)? boxCreator}) async {
+      implementation.CollectionBox<V> Function(String, BoxCollection)?
+          boxCreator}) async {
     if (!boxNames.contains(name)) {
       throw Exception(
           'Box with name $name is not in the known box names of this collection.');
@@ -46,10 +52,14 @@ class BoxCollection {
       return _openBoxes[i] as CollectionBox<V>;
     }
     final boxIdentifier = '${this.name}_$name';
-    final box = boxCreator?.call(boxIdentifier, this) ??
+    final box = boxCreator?.call(boxIdentifier, this) as CollectionBox<V>? ??
         CollectionBox<V>(boxIdentifier, this);
     if (preload) {
-      box._cachedBox = await Hive.openBox(box.name, encryptionCipher: _cipher);
+      box._cachedBox = await Hive.openBox(
+        box.name,
+        encryptionCipher: _cipher,
+        collection: name,
+      );
     }
     _openBoxes.add(box);
     return box;
@@ -57,6 +67,7 @@ class BoxCollection {
 
   final List<CollectionBox> _openBoxes = [];
 
+  @override
   Future<void> transaction(
     Future<void> Function() action, {
     List<String>? boxNames,
@@ -80,20 +91,24 @@ class BoxCollection {
     });
   }
 
+  @override
   void close() {
     for (final box in _openBoxes) {
       box._cachedBox?.close();
     }
   }
 
+  @override
   Future<void> deleteFromDisk() => Future.wait(
         boxNames.map(Hive.deleteBoxFromDisk),
       );
 }
 
 /// represents a [Box] being part of a [BoxCollection]
-class CollectionBox<V> {
+class CollectionBox<V> implements implementation.CollectionBox<V> {
+  @override
   final String name;
+  @override
   final BoxCollection boxCollection;
 
   static final transactionBoxes = <Zone, Set<String>>{};
@@ -104,6 +119,7 @@ class CollectionBox<V> {
     return _cachedBox ??= await Hive.openLazyBox<V>(
       name,
       encryptionCipher: boxCollection._cipher,
+      collection: boxCollection.name,
     );
   }
 
@@ -120,6 +136,7 @@ class CollectionBox<V> {
     }
   }
 
+  @override
   Future<List<String>> getAllKeys() async {
     final box = await _getBox();
     return box.keys
@@ -134,6 +151,7 @@ class CollectionBox<V> {
         .toList();
   }
 
+  @override
   Future<Map<String, V>> getAllValues() async {
     final box = await _getBox();
     final keys = box.keys.toList();
@@ -149,6 +167,7 @@ class CollectionBox<V> {
         .map((k, v) => MapEntry(Uri.decodeComponent(k.toString()), v as V));
   }
 
+  @override
   Future<V?> get(String key) async {
     key = _toHiveKey(key);
     final box = await _getBox();
@@ -156,6 +175,7 @@ class CollectionBox<V> {
     return (box as Box).get(key) as V?;
   }
 
+  @override
   Future<List<V?>> getAll(
     List<String> keys,
   ) async {
@@ -172,7 +192,8 @@ class CollectionBox<V> {
     return values;
   }
 
-  Future<void> put(String key, V val) async {
+  @override
+  Future<void> put(String key, V val, [Object? transaction]) async {
     if (val == null) {
       return delete(key);
     }
@@ -181,12 +202,14 @@ class CollectionBox<V> {
     await _flushOrMark();
   }
 
+  @override
   Future<void> delete(String key) async {
     final box = await _getBox();
     await box.delete(_toHiveKey(key));
     await _flushOrMark();
   }
 
+  @override
   Future<void> deleteAll(List<String> keys) async {
     final hiveKeys = keys.map(_toHiveKey);
     final box = await _getBox();
@@ -194,12 +217,14 @@ class CollectionBox<V> {
     await _flushOrMark();
   }
 
+  @override
   Future<void> clear() async {
     final box = await _getBox();
     await box.deleteAll(box.keys);
     await _flushOrMark();
   }
 
+  @override
   Future<void> flush() async {
     final box = await _getBox();
     // we do *not* await the flushing here. That makes it so that we can execute

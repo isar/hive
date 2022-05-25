@@ -2,10 +2,13 @@ import 'dart:html';
 import 'dart:indexed_db';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/box_collection/box_collection_stub.dart'
+    as implementation;
 
 /// represents a [BoxCollection] for raw use with indexed DB
-class BoxCollection {
+class BoxCollection implements implementation.BoxCollection {
   final Database _db;
+  @override
   final Set<String> boxNames;
 
   BoxCollection(this._db, this.boxNames);
@@ -31,9 +34,13 @@ class BoxCollection {
     return BoxCollection(_db, boxNames);
   }
 
-  Future<CollectionBoxIndexedDb<V>> openBox<V>(String name,
+  @override
+  String get name => _db.name!;
+
+  @override
+  Future<CollectionBox<V>> openBox<V>(String name,
       {bool preload = false,
-      CollectionBoxIndexedDb<V> Function(String, BoxCollection)?
+      implementation.CollectionBox<V> Function(String, BoxCollection)?
           boxCreator}) async {
     if (!boxNames.contains(name)) {
       throw Exception(
@@ -41,10 +48,10 @@ class BoxCollection {
     }
     final i = _openBoxes.indexWhere((box) => box.name == name);
     if (i != -1) {
-      return _openBoxes[i] as CollectionBoxIndexedDb<V>;
+      return _openBoxes[i] as CollectionBox<V>;
     }
-    final box =
-        boxCreator?.call(name, this) ?? CollectionBoxIndexedDb<V>(name, this);
+    final box = boxCreator?.call(name, this) as CollectionBox<V>? ??
+        CollectionBox<V>(name, this);
     if (preload) {
       box._cache.addAll(await box.getAllValues());
     }
@@ -52,10 +59,11 @@ class BoxCollection {
     return box;
   }
 
-  final List<CollectionBoxIndexedDb> _openBoxes = [];
+  final List<CollectionBox> _openBoxes = [];
 
   List<Future<void> Function(Transaction txn)>? _txnCache;
 
+  @override
   Future<void> transaction(
     Future<void> Function() action, {
     List<String>? boxNames,
@@ -80,8 +88,10 @@ class BoxCollection {
     return;
   }
 
+  @override
   void close() => _db.close();
 
+  @override
   Future<void> deleteFromDisk() async {
     final factory = window.indexedDB;
     for (final box in _openBoxes) {
@@ -97,13 +107,15 @@ class BoxCollection {
   }
 }
 
-class CollectionBoxIndexedDb<V> {
+class CollectionBox<V> implements implementation.CollectionBox<V> {
+  @override
   final String name;
+  @override
   final BoxCollection boxCollection;
   final Map<String, V?> _cache = {};
   Set<String>? _cachedKeys;
 
-  CollectionBoxIndexedDb(this.name, this.boxCollection) {
+  CollectionBox(this.name, this.boxCollection) {
     if (!(V is String ||
         V is int ||
         V is Object ||
@@ -115,6 +127,7 @@ class CollectionBoxIndexedDb<V> {
     }
   }
 
+  @override
   Future<List<String>> getAllKeys([Transaction? txn]) async {
     final cachedKey = _cachedKeys;
     if (cachedKey != null) return cachedKey.toList();
@@ -128,6 +141,7 @@ class CollectionBoxIndexedDb<V> {
     return keys;
   }
 
+  @override
   Future<Map<String, V>> getAllValues([Transaction? txn]) async {
     txn ??= boxCollection._db.transaction(name, 'readonly');
     final store = txn.objectStore(name);
@@ -139,6 +153,7 @@ class CollectionBoxIndexedDb<V> {
     return map;
   }
 
+  @override
   Future<V?> get(String key, [Transaction? txn]) async {
     if (_cache.containsKey(key)) return _cache[key];
     txn ??= boxCollection._db.transaction(name, 'readonly');
@@ -147,6 +162,7 @@ class CollectionBoxIndexedDb<V> {
     return _cache[key];
   }
 
+  @override
   Future<List<V?>> getAll(List<String> keys, [Transaction? txn]) async {
     if (!keys.any((key) => !_cache.containsKey(key))) {
       return keys.map((key) => _cache[key]).toList();
@@ -160,7 +176,12 @@ class CollectionBoxIndexedDb<V> {
     return list.cast<V?>();
   }
 
-  Future<void> put(String key, V val, [Transaction? txn]) async {
+  @override
+  Future<void> put(String key, V val, [Object? transaction]) async {
+    Transaction? txn;
+    if (transaction is Transaction) {
+      txn = transaction;
+    }
     if (val == null) {
       return delete(key, txn);
     }
@@ -180,6 +201,7 @@ class CollectionBoxIndexedDb<V> {
     return;
   }
 
+  @override
   Future<void> delete(String key, [Transaction? txn]) async {
     final txnCache = boxCollection._txnCache;
     if (txnCache != null) {
@@ -197,6 +219,7 @@ class CollectionBoxIndexedDb<V> {
     return;
   }
 
+  @override
   Future<void> deleteAll(List<String> keys, [Transaction? txn]) async {
     final txnCache = boxCollection._txnCache;
     if (txnCache != null) {
@@ -218,6 +241,7 @@ class CollectionBoxIndexedDb<V> {
     return;
   }
 
+  @override
   Future<void> clear([Transaction? txn]) async {
     final txnCache = boxCollection._txnCache;
     if (txnCache != null) {
@@ -235,5 +259,6 @@ class CollectionBoxIndexedDb<V> {
     return;
   }
 
+  @override
   Future<void> flush() => Future.value();
 }

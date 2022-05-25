@@ -201,13 +201,26 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<void> deleteFromDisk() async {
-    if (_db.objectStoreNames?.length != 1) {
-      _db.deleteObjectStore(objectStoreName);
-    } else {
-      final indexDB = js.context.hasProperty('window')
-          ? window.indexedDB
-          : WorkerGlobalScope.instance.indexedDB;
+    final indexDB = js.context.hasProperty('window')
+        ? window.indexedDB
+        : WorkerGlobalScope.instance.indexedDB;
+
+    print('Delete ${_db.name} // $objectStoreName from disk');
+
+    // directly deleting the entire DB if a non-collection Box
+    if (_db.objectStoreNames?.length == 1) {
       await indexDB!.deleteDatabase(_db.name!);
+    } else {
+      final db =
+          await indexDB!.open(_db.name!, version: 1, onUpgradeNeeded: (e) {
+        var db = e.target.result as Database;
+        if ((db.objectStoreNames ?? []).contains(objectStoreName)) {
+          db.deleteObjectStore(objectStoreName);
+        }
+      });
+      if ((db.objectStoreNames ?? []).isEmpty) {
+        await indexDB.deleteDatabase(_db.name!);
+      }
     }
   }
 
