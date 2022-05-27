@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -12,7 +13,7 @@ export '../generated/frame_values_encrypted.g.dart';
 export '../generated/frames.g.dart';
 export '../generated/frames_encrypted.g.dart';
 
-TypeRegistry get testRegistry => HiveImpl.test();
+TypeRegistry get testRegistry => HiveImpl();
 
 class _HiveAesCipherStaticIV extends HiveAesCipher {
   _HiveAesCipherStaticIV() : super(Uint8List.fromList(List.filled(32, 1)));
@@ -78,8 +79,8 @@ List<Frame> get testFrames => <Frame>[
         'Map': {'Key': 'Val', 'Key2': 2}
       }),
       Frame('DateTime test', [
-        DateTime.fromMillisecondsSinceEpoch(0),
-        DateTime.fromMillisecondsSinceEpoch(1566656623020),
+        DateTimeWithoutTZ.fromMillisecondsSinceEpoch(0),
+        DateTimeWithoutTZ.fromMillisecondsSinceEpoch(1566656623020),
       ]),
       Frame('BigInt Test',
           BigInt.parse('1234567890123456789012345678901234567890'))
