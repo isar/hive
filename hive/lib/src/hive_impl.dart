@@ -33,19 +33,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   String? homePath;
 
   /// Not part of public API
-  HiveImpl();
-
-  /// Not part of public API
-  @visibleForTesting
-  HiveImpl.debug(this._managerOverride) {
+  HiveImpl() {
     _registerDefaultAdapters();
-  }
-
-  /// Not part of public API
-  @visibleForTesting
-  HiveImpl.test() : _managerOverride = BackendManager.select() {
-    registerAdapter(DateTimeAdapter<DateTime>(), internal: true);
-    registerAdapter(BigIntAdapter(), internal: true);
   }
 
   /// either returns the preferred [BackendManagerInterface] or the
@@ -67,7 +56,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }) {
     homePath = path;
     _managerOverride = BackendManager.select(backendPreference);
-    _registerDefaultAdapters();
   }
 
   Future<BoxBase<E>> _openBox<E>(

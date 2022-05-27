@@ -20,7 +20,7 @@ Future _performTest(bool lazy) async {
   framesSetLengthOffset(frames, frameBytes);
 
   var dir = await getTempDir();
-  var hive = HiveImpl.test();
+  var hive = HiveImpl();
   hive.init(dir.path);
 
   for (var i = 0; i < bytes.length; i++) {
