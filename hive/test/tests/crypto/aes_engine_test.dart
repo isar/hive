@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:hive/src/crypto/aes_engine.dart';
 import 'package:pointycastle/api.dart';
-import 'package:pointycastle/block/aes_fast.dart';
+import 'package:pointycastle/block/aes.dart';
 import 'package:test/test.dart';
 
 import 'message.dart';
@@ -17,7 +17,7 @@ void main() {
     test('.encryptBlock()', () {
       var out = Uint8List(message.length);
 
-      var pcEngine = AESFastEngine();
+      var pcEngine = AESEngine();
       var outPc = Uint8List(message.length);
 
       for (var i = 0; i < message.length; i += aesBlockSize) {
@@ -31,7 +31,7 @@ void main() {
     test('.decryptBlock()', () {
       var out = Uint8List(message.length);
 
-      var pcEngine = AESFastEngine();
+      var pcEngine = AESEngine();
       var encrypted = Uint8List(message.length);
 
       for (var i = 0; i < message.length; i += aesBlockSize) {
