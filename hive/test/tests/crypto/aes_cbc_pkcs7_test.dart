@@ -10,7 +10,7 @@ import 'message.dart';
 PaddedBlockCipherImpl getCipher() {
   var pcCipher = PaddedBlockCipherImpl(
     PKCS7Padding(),
-    CBCBlockCipher(AESFastEngine()),
+    CBCBlockCipher(AESEngine()),
   );
   pcCipher.init(
     true,
