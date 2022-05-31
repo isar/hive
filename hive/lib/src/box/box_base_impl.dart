@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/box/change_notifier.dart';
@@ -176,25 +178,30 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
     if (!backend.supportsCompaction) return;
     if (keystore.deletedEntries == 0) return;
 
+    await flush();
+
     await backend.compact(keystore.frames);
     keystore.resetDeletedEntries();
   }
 
   /// Not part of public API
   @protected
-  Future<void> performCompactionIfNeeded() {
+  FutureOr<void> performCompactionIfNeeded() {
     if (_compactionStrategy(keystore.length, keystore.deletedEntries)) {
       return compact();
     }
-
-    return Future.value();
   }
 
   @override
   Future<void> close() async {
     if (!_open) return;
 
-    _open = false;
+    try {
+      await flush();
+    } finally {
+      _open = false;
+    }
+
     await keystore.close();
     hive.unregisterBox(name);
 

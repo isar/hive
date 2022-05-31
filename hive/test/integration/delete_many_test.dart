@@ -24,6 +24,8 @@ Future _performTest(bool lazy) async {
     await box.delete('null$i');
   }
 
+  await box.flush();
+
   box = await box.reopen();
   for (var i = 0; i < amount; i++) {
     expect(box.containsKey('string$i'), false);

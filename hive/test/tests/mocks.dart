@@ -17,7 +17,10 @@ class MockBox<E> extends Mock implements Box<E> {}
 
 class MockChangeNotifier extends Mock implements ChangeNotifier {}
 
-class MockStorageBackend extends Mock implements StorageBackend {}
+class MockStorageBackend extends Mock implements StorageBackend {
+  @override
+  flush() async {}
+}
 
 class MockKeystore extends Mock implements Keystore {}
 

@@ -11,6 +11,8 @@ import 'package:path_provider/path_provider.dart'
     if (dart.library.html) 'src/stub/path_provider.dart';
 
 export 'package:hive/hive.dart';
+export 'src/crypto/hive_aes_native_cbc_cipher.dart';
+export 'src/crypto/hive_aes_native_gcm_cipher.dart';
 
 part 'src/box_extensions.dart';
 part 'src/hive_extensions.dart';

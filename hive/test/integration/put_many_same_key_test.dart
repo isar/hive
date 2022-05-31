@@ -17,6 +17,7 @@ Future _performTest(bool lazy) async {
         await box.put('int$i', n);
         await box.put('bool$i', n % 2 == 0);
         await box.put('null$i', null);
+        await box.flush();
 
         expect(await await box.get('string$i'), 'test$n');
         expect(await await box.get('int$i'), n);
@@ -28,6 +29,8 @@ Future _performTest(bool lazy) async {
       await completer.future;
     }
   }
+
+  await box.flush();
 
   box = await box.reopen();
   for (var i = 0; i < amount; i++) {

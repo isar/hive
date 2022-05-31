@@ -14,7 +14,7 @@ import '../tests/frames.dart';
 import 'integration.dart';
 
 Future _performTest(bool lazy) async {
-  var bytes = getFrameBytes(testFrames);
+  var bytes = await getFrameBytes(testFrames);
   var frames = testFrames;
 
   framesSetLengthOffset(frames, frameBytes);
@@ -46,7 +46,7 @@ Future _performTest(bool lazy) async {
       await box.close();
     }
 
-    expect(await boxFile.readAsBytes(), getFrameBytes(subFrames));
+    expect(await boxFile.readAsBytes(), await getFrameBytes(subFrames));
   }
 }
 

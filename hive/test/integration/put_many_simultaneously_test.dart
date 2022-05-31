@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:hive/hive.dart';
 import 'package:test/test.dart';
 
 import '../util/is_browser.dart';
@@ -18,6 +21,8 @@ Future _performTest(bool lazy) async {
     futures.add(putEntries());
   }
   await Future.wait(futures);
+
+  await box.flush();
 
   box = await box.reopen();
   for (var i = 0; i < amount; i++) {
