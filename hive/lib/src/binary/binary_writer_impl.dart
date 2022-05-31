@@ -11,7 +11,7 @@ import 'package:meta/meta.dart';
 
 /// Not part of public API
 class BinaryWriterImpl extends BinaryWriter {
-  static const _initBufferSize = 256;
+  static const _initBufferSize = 4096;
 
   final TypeRegistryImpl _typeRegistry;
   Uint8List _buffer = Uint8List(_initBufferSize);
