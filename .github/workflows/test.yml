@@ -36,7 +36,7 @@ jobs:
           channel: ${{ matrix.flutter-channel }}
       - name: Override dependency version
         run: |
-          echo -e "\ndependency_overrides:\n  win32: 2.6.1" >> pubspec.yaml
+          echo -e "\ndependency_overrides:\n  win32: 2.6.1\n  hive:\n    path: ../hive" >> pubspec.yaml
         working-directory: hive_flutter
       - name: Install dependencies
         run: flutter pub get

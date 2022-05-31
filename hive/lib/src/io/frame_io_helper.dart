@@ -70,7 +70,7 @@ class _KeyReader {
         if (available < frameLength) return frameOffset;
       }
 
-      var frame = _reader.readFrame(
+      var frame = await _reader.readFrame(
         cipher: cipher,
         lazy: true,
         frameOffset: frameOffset,

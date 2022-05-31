@@ -366,82 +366,88 @@ void main() {
         Uint8List.fromList([10, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
       ];
 
-      test('null', () {
+      test('null', () async {
         for (final bytes in nullFramesBytes) {
           final reader = BinaryReaderImpl(bytes, testRegistry);
-          final frame = reader.readFrame(lazy: false);
+          final frame = await reader.readFrame(lazy: false);
 
           expect(frame, null);
         }
       });
 
-      test('null lazy', () {
+      test('null lazy', () async {
         for (final bytes in nullFramesBytes) {
           final reader = BinaryReaderImpl(bytes, testRegistry);
-          final frame = reader.readFrame(lazy: true);
+          final frame = await reader.readFrame(lazy: true);
 
           expect(frame, null);
         }
       });
 
-      test('normal', () {
+      test('normal', () async {
         var frames = framesSetLengthOffset(testFrames, frameBytes);
         var offset = 0;
         for (var i = 0; i < frames.length; i++) {
           final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
+          final actual =
+              await reader.readFrame(lazy: false, frameOffset: offset);
           expectFrame(
-            reader.readFrame(lazy: false, frameOffset: offset)!,
+            actual!,
             frame,
           );
           offset += frameBytes[i].length;
         }
       });
 
-      test('lazy', () {
+      test('lazy', () async {
         var frames = framesSetLengthOffset(testFrames, frameBytes);
         var offset = 0;
         for (var i = 0; i < frames.length; i++) {
           final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytes[i], testRegistry);
+          final actual =
+              await reader.readFrame(lazy: true, frameOffset: offset);
           expectFrame(
-            reader.readFrame(lazy: true, frameOffset: offset)!,
+            actual!,
             frame.toLazy(),
           );
           offset += frameBytes[i].length;
         }
       });
 
-      test('encrypted', () {
+      test('encrypted', () async {
         var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
         var offset = 0;
         for (var i = 0; i < frames.length; i++) {
           final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
+          final actual = await reader.readFrame(
+            lazy: false,
+            frameOffset: offset,
+            cipher: testCipher,
+          );
           expectFrame(
-            reader.readFrame(
-              lazy: false,
-              frameOffset: offset,
-              cipher: testCipher,
-            )!,
+            actual!,
             frame,
           );
           offset += frameBytesEncrypted[i].length;
         }
       });
 
-      test('encrypted lazy', () {
+      test('encrypted lazy', () async {
         var frames = framesSetLengthOffset(testFrames, frameBytesEncrypted);
         var offset = 0;
         for (var i = 0; i < frames.length; i++) {
           final frame = frames[i];
           var reader = BinaryReaderImpl(frameBytesEncrypted[i], testRegistry);
+          final actual = await reader.readFrame(
+            lazy: true,
+            frameOffset: offset,
+            cipher: testCipher,
+          );
           expectFrame(
-            reader.readFrame(
-              lazy: true,
-              frameOffset: offset,
-              cipher: testCipher,
-            )!,
+            actual!,
             frame.toLazy(),
           );
           offset += frameBytesEncrypted[i].length;

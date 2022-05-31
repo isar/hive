@@ -1,5 +1,4 @@
 @TestOn('browser')
-
 import 'dart:async' show Future;
 import 'dart:html';
 import 'dart:indexed_db';
@@ -17,6 +16,7 @@ import 'package:test/test.dart';
 import '../../frames.dart';
 
 late final Database _nullDatabase;
+
 StorageBackendJs _getBackend({
   Database? db,
   HiveCipher? cipher,
@@ -54,27 +54,28 @@ void main() async {
     });
 
     group('.encodeValue()', () {
-      test('primitive', () {
+      test('primitive', () async {
         var values = [
           null, 11, 17.25, true, 'hello', //
           [11, 12, 13], [17.25, 17.26], [true, false], ['str1', 'str2'] //
         ];
         var backend = _getBackend();
         for (var value in values) {
-          expect(backend.encodeValue(Frame('key', value)), value);
+          expect(await backend.encodeValue(Frame('key', value)), value);
         }
 
         var bytes = Uint8List.fromList([1, 2, 3]);
-        var buffer = backend.encodeValue(Frame('key', bytes)) as ByteBuffer;
+        var buffer =
+            await backend.encodeValue(Frame('key', bytes)) as ByteBuffer;
         expect(Uint8List.view(buffer), [1, 2, 3]);
       });
 
-      test('crypto', () {
+      test('crypto', () async {
         var backend =
             StorageBackendJs(_nullDatabase, testCipher, 'box', testRegistry);
         var i = 0;
         for (var frame in testFrames) {
-          var buffer = backend.encodeValue(frame) as ByteBuffer;
+          var buffer = await backend.encodeValue(frame) as ByteBuffer;
           var bytes = Uint8List.view(buffer);
           expect(bytes.sublist(28),
               [0x90, 0xA9, ...frameValuesBytesEncrypted[i]].sublist(28));
@@ -83,25 +84,25 @@ void main() async {
       });
 
       group('non primitive', () {
-        test('map', () {
+        test('map', () async {
           var frame = Frame(0, {
             'key': Uint8List.fromList([1, 2, 3]),
             'otherKey': null
           });
           var backend = StorageBackendJs(_nullDatabase, null, 'box');
           var encoded =
-              Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
+              Uint8List.view(await backend.encodeValue(frame) as ByteBuffer);
 
           var writer = BinaryWriterImpl(TypeRegistryImpl.nullImpl)
             ..write(frame.value);
           expect(encoded, [0x90, 0xA9, ...writer.toBytes()]);
         });
 
-        test('bytes which start with signature', () {
+        test('bytes which start with signature', () async {
           var frame = Frame(0, Uint8List.fromList([0x90, 0xA9, 1, 2, 3]));
           var backend = _getBackend();
           var encoded =
-              Uint8List.view(backend.encodeValue(frame) as ByteBuffer);
+              Uint8List.view(await backend.encodeValue(frame) as ByteBuffer);
 
           var writer = BinaryWriterImpl(TypeRegistryImpl.nullImpl)
             ..write(frame.value);
@@ -111,37 +112,38 @@ void main() async {
     });
 
     group('.decodeValue()', () {
-      test('primitive', () {
+      test('primitive', () async {
         var backend = _getBackend();
-        expect(backend.decodeValue(null), null);
-        expect(backend.decodeValue(11), 11);
-        expect(backend.decodeValue(17.25), 17.25);
-        expect(backend.decodeValue(true), true);
-        expect(backend.decodeValue('hello'), 'hello');
-        expect(backend.decodeValue([11, 12, 13]), [11, 12, 13]);
-        expect(backend.decodeValue([17.25, 17.26]), [17.25, 17.26]);
+        expect(await backend.decodeValue(null), null);
+        expect(await backend.decodeValue(11), 11);
+        expect(await backend.decodeValue(17.25), 17.25);
+        expect(await backend.decodeValue(true), true);
+        expect(await backend.decodeValue('hello'), 'hello');
+        expect(await backend.decodeValue([11, 12, 13]), [11, 12, 13]);
+        expect(await backend.decodeValue([17.25, 17.26]), [17.25, 17.26]);
 
         var bytes = Uint8List.fromList([1, 2, 3]);
-        expect(backend.decodeValue(bytes.buffer), [1, 2, 3]);
+        expect(await backend.decodeValue(bytes.buffer), [1, 2, 3]);
       });
 
-      test('crypto', () {
+      test('crypto', () async {
         var cipher = HiveAesCipher(Uint8List.fromList(List.filled(32, 1)));
         var backend = _getBackend(cipher: cipher, registry: testRegistry);
         var i = 0;
         for (var testFrame in testFrames) {
           var bytes = [0x90, 0xA9, ...frameValuesBytesEncrypted[i]];
-          var value = backend.decodeValue(Uint8List.fromList(bytes).buffer);
+          var value =
+              await backend.decodeValue(Uint8List.fromList(bytes).buffer);
           expect(value, testFrame.value);
           i++;
         }
       });
 
-      test('non primitive', () {
+      test('non primitive', () async {
         var backend = _getBackend(registry: testRegistry);
         for (var testFrame in testFrames) {
-          var bytes = backend.encodeValue(testFrame);
-          var value = backend.decodeValue(bytes);
+          var bytes = await backend.encodeValue(testFrame);
+          var value = await backend.decodeValue(bytes);
           expect(value, testFrame.value);
         }
       });

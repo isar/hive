@@ -49,6 +49,9 @@ class StorageBackendVm extends StorageBackend {
 
   bool _compactionScheduled = false;
 
+  /// a cache for asynchronouse I/O operations
+  final Set<Future<void>> _ongoingTransactions = {};
+
   /// Not part of public API
   StorageBackendVm(
       this._file, this._lockFile, this._crashRecovery, this._cipher)
@@ -101,22 +104,31 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(Frame frame) {
-    return _sync.syncRead(() async {
-      await readRaf.setPosition(frame.offset);
+  Future<dynamic> readValue(Frame frame) async {
+    Future<dynamic> operation() async {
+      await Future.wait(_ongoingTransactions);
+      return _sync.syncRead(() async {
+        await readRaf.setPosition(frame.offset);
 
-      var bytes = await readRaf.read(frame.length!);
+        var bytes = await readRaf.read(frame.length!);
 
-      var reader = BinaryReaderImpl(bytes, registry);
-      var readFrame = reader.readFrame(cipher: _cipher, lazy: false);
+        var reader = BinaryReaderImpl(bytes, registry);
+        var readFrame = await reader.readFrame(cipher: _cipher, lazy: false);
 
-      if (readFrame == null) {
-        throw HiveError(
-            'Could not read value from box. Maybe your box is corrupted.');
-      }
+        if (readFrame == null) {
+          throw HiveError(
+              'Could not read value from box. Maybe your box is corrupted.');
+        }
 
-      return readFrame.value;
-    });
+        return readFrame.value;
+      });
+    }
+
+    final operationFuture = operation.call();
+    _ongoingTransactions.add(operationFuture);
+    final result = await operationFuture;
+    _ongoingTransactions.remove(operationFuture);
+    return result;
   }
 
   @override
@@ -125,15 +137,25 @@ class StorageBackendVm extends StorageBackend {
       var writer = BinaryWriterImpl(registry);
 
       for (var frame in frames) {
-        frame.length = writer.writeFrame(frame, cipher: _cipher);
+        frame.length = await writer.writeFrame(frame, cipher: _cipher);
+      }
+      final bytes = writer.toBytes();
+
+      final cachedOffset = writeOffset;
+      Future<void> operation() async {
+        // adding to the end of the queue
+        await Future.wait(_ongoingTransactions);
+        try {
+          await writeRaf.writeFrom(bytes);
+        } catch (e) {
+          await writeRaf.setPosition(cachedOffset);
+          rethrow;
+        }
       }
 
-      try {
-        await writeRaf.writeFrom(writer.toBytes());
-      } catch (e) {
-        await writeRaf.setPosition(writeOffset);
-        rethrow;
-      }
+      final future = operation();
+      _ongoingTransactions.add(future);
+      future.then((value) => _ongoingTransactions.remove(future));
 
       for (var frame in frames) {
         frame.offset = writeOffset;
@@ -216,7 +238,8 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
+    await Future.wait(_ongoingTransactions);
     return _sync.syncReadWrite(_closeInternal);
   }
 
@@ -229,7 +252,8 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> flush() {
+  Future<void> flush() async {
+    await Future.wait(_ongoingTransactions);
     return _sync.syncWrite(() async {
       await writeRaf.flush();
     });

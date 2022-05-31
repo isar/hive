@@ -231,7 +231,7 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
     // other stuff while the flusing is still in progress. Fortunately, hive has
     // a proper read / write queue, meaning that if we do actually want to write
     // something again, it'll wait until the flush is completed.
-    box.flush();
+    await box.flush();
   }
 
   Future<void> _flushOrMark() async {

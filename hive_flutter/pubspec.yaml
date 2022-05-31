@@ -11,12 +11,14 @@ dependencies:
   flutter:
     sdk: flutter
 
+  cryptography: ^2.0.5
   hive: ^2.2.1
   path_provider: ^2.0.10
-  path: ^1.8.2
+  path: ^1.8.1
 
 dev_dependencies:
   test: ^1.21.1
   lints: ^2.0.0
   mockito: ^5.2.0
   build_runner: ^2.1.11
+

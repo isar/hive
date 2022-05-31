@@ -95,6 +95,12 @@ abstract class BoxBase<E> {
   /// Saves all the [values] with auto-increment keys.
   Future<Iterable<int>> addAll(Iterable<E> values);
 
+  /// Beta: Performs the following write-only operations in memory and later
+  /// flushes
+  ///
+  /// This can be used to improve speed on many small write operations
+  // Future<void> transaction(Future<void> Function() operation);
+
   /// Deletes the given [key] from the box.
   ///
   /// If it does not exist, nothing happens.
