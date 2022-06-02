@@ -19,7 +19,7 @@ class BackendManager implements BackendManagerInterface {
     final databaseName = collection ?? name;
     final objectStoreName = collection == null ? 'box' : name;
 
-    final db =
+    var db =
         await indexedDB!.open(databaseName, version: 1, onUpgradeNeeded: (e) {
       var db = e.target.result as Database;
       if (!(db.objectStoreNames ?? []).contains(objectStoreName)) {
@@ -27,11 +27,32 @@ class BackendManager implements BackendManagerInterface {
       }
     });
 
+    // in case the objectStore is not contained, re-open the db and
+    // update version
+    if (!(db.objectStoreNames ?? []).contains(objectStoreName)) {
+      print(
+          'Creating objectStore $objectStoreName in database $databaseName...');
+      db = await indexedDB!.open(
+        databaseName,
+        version: (db.version ?? 1) + 1,
+        onUpgradeNeeded: (e) {
+          var db = e.target.result as Database;
+          if (!(db.objectStoreNames ?? []).contains(objectStoreName)) {
+            db.createObjectStore(objectStoreName);
+          }
+        },
+      );
+    }
+
+    print('Got object store $objectStoreName in database $databaseName.');
+
     return StorageBackendJs(db, cipher, objectStoreName);
   }
 
   @override
   Future<void> deleteBox(String name, String? path, String? collection) async {
+    print('Delete $name // $collection from disk');
+
     // compatibility for old store format
     final databaseName = collection ?? name;
     final objectStoreName = collection == null ? 'box' : name;
