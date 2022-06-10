@@ -1,3 +1,9 @@
+# 2.2.2
+
+### Fixes
+
+- Register DateTime adapter on web - [#983](https://github.com/hivedb/hive/pull/983)
+
 # 2.2.1
 
 ### Fixes
