@@ -1,3 +1,10 @@
+# 2.2.3
+
+### Enhancements
+
+- Exposed `resetAdapters` method for testing - [#1014](https://github.com/hivedb/hive/pull/1014)
+- Removed unnecessary print statement - [#1015](https://github.com/hivedb/hive/pull/1015)
+
 # 2.2.2
 
 ### Fixes
