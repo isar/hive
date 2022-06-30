@@ -72,7 +72,7 @@ abstract class HiveInterface implements TypeRegistry {
 
   /// Clears all registered adapters.
   ///
-  /// To register an adapter use [TypeRegistry.registerAdapter].
+  /// To register an adapter use [registerAdapter].
   ///
   /// NOTE: [resetAdapters] also clears the default adapters registered
   /// by Hive.
