@@ -79,6 +79,7 @@ abstract class HiveInterface implements TypeRegistry {
   ///
   /// WARNING: This method is only intended to be used for integration and unit tests
   /// and SHOULD not be used in production code.
+  @visibleForTesting
   void resetAdapters();
 }
 
