@@ -255,7 +255,4 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     return await _manager.boxExists(
         lowerCaseName, path ?? homePath, collection);
   }
-
-  
-
 }

@@ -336,7 +336,7 @@ void main() {
         expect(hive.resetAdapters, returnsNormally);
       });
 
-       test('clears an adapter', () async {
+      test('clears an adapter', () async {
         final hive = await initHive();
         final adapter = _TestAdapter(1);
 
