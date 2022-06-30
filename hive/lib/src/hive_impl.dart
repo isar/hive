@@ -226,7 +226,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
     var box = _boxes[lowerCaseName];
-    print(box);
     if (box != null) {
       await box.deleteFromDisk();
     } else {
