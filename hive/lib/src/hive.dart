@@ -69,6 +69,18 @@ abstract class HiveInterface implements TypeRegistry {
 
   /// Checks if a box exists
   Future<bool> boxExists(String name, {String? path});
+
+  /// Clears all registered adapters.
+  ///
+  /// To register an adapter use [registerAdapter].
+  ///
+  /// NOTE: [resetAdapters] also clears the default adapters registered
+  /// by Hive.
+  ///
+  /// WARNING: This method is only intended to be used for integration and unit tests
+  /// and SHOULD not be used in production code.
+  @visibleForTesting
+  void resetAdapters();
 }
 
 ///

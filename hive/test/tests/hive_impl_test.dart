@@ -9,6 +9,19 @@ import 'package:test/test.dart';
 
 import 'common.dart';
 
+class _TestAdapter extends TypeAdapter<int> {
+  _TestAdapter([this.typeId = 0]);
+
+  @override
+  final int typeId;
+
+  @override
+  int read(_) => 5;
+
+  @override
+  void write(_, __) {}
+}
+
 void main() {
   group('HiveImpl', () {
     Future<HiveImpl> initHive() async {
@@ -314,6 +327,25 @@ void main() {
         await hive.deleteBoxFromDisk('testBox1');
         expect(await hive.boxExists('testBox1'), false);
         await hive.close();
+      });
+    });
+
+    group('.resetAdapters()', () {
+      test('returns normally', () async {
+        final hive = await initHive();
+        expect(hive.resetAdapters, returnsNormally);
+      });
+
+      test('clears an adapter', () async {
+        final hive = await initHive();
+        final adapter = _TestAdapter(1);
+
+        expect(hive.isAdapterRegistered(adapter.typeId), isFalse);
+        hive.registerAdapter(adapter);
+        expect(hive.isAdapterRegistered(adapter.typeId), isTrue);
+
+        hive.resetAdapters();
+        expect(hive.isAdapterRegistered(adapter.typeId), isFalse);
       });
     });
   });
