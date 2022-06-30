@@ -132,7 +132,6 @@ class TypeRegistryImpl implements TypeRegistry {
     return findAdapterForTypeId(typeId) != null;
   }
 
-  /// Not part of public API
   void resetAdapters() {
     _typeAdapters.clear();
   }
