@@ -158,7 +158,7 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
     int index, {
     bool notify = true,
   }) {
-    return delete(keystore.getAt(index)!.key, notify: false);
+    return delete(keystore.getAt(index)!.key, notify: notify);
   }
 
   @override

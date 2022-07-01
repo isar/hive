@@ -191,7 +191,7 @@ class Keystore<E> {
         transaction.added.add(frame.key);
       }
 
-      var deletedFrame = insert(frame, notify: false);
+      var deletedFrame = insert(frame, notify: notify);
       if (deletedFrame != null) {
         transaction.deleted[frame.key] = deletedFrame;
       }

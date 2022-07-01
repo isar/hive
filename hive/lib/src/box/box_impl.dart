@@ -79,7 +79,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
       }
     }
 
-    return _writeFrames(frames, notify: true);
+    return _writeFrames(frames, notify: notify);
   }
 
   Future<void> _writeFrames(
