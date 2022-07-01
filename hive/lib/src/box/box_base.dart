@@ -141,7 +141,7 @@ abstract class BoxBase<E> {
   Future<void> compact();
 
   /// Removes all entries from the box.
-  Future<int> clear({bool notify = false});
+  Future<int> clear({bool notify = true});
 
   /// Closes the box.
   ///

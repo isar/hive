@@ -71,7 +71,7 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
-  Future<void> deleteAll(Iterable<dynamic> keys, {bool notify = false}) {
+  Future<void> deleteAll(Iterable<dynamic> keys, {bool notify = true}) {
     var frames = <Frame>[];
     for (var key in keys) {
       if (keystore.containsKey(key)) {

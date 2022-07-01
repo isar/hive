@@ -229,7 +229,7 @@ class _NullBoxBase<E> implements BoxBase<E> {
       throw UnimplementedError();
 
   @override
-  Never clear({bool notify = false}) => throw UnimplementedError();
+  Never clear({bool notify = true}) => throw UnimplementedError();
 
   @override
   Never close() => throw UnimplementedError();
