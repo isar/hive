@@ -118,7 +118,6 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
   CollectionBox(this.name, this.boxCollection) {
     if (!(V is String ||
         V is int ||
-        V is Object ||
         V is List<Object?> ||
         V is Map<String, Object?> ||
         V is double)) {

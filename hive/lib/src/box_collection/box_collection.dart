@@ -127,7 +127,6 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
     if (!(V is String ||
         V is bool ||
         V is int ||
-        V is Object ||
         V is List<Object?> ||
         V is Map<String, Object?> ||
         V is double)) {

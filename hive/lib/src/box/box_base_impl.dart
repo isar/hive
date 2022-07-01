@@ -101,44 +101,72 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   }
 
   @override
-  Future<void> put(dynamic key, E value) => putAll({key: value});
+  Future<void> put(
+    dynamic key,
+    E value, {
+    bool notify = true,
+  }) =>
+      putAll(
+        {key: value},
+        notify: notify,
+      );
 
   @override
-  Future<void> delete(dynamic key) => deleteAll([key]);
+  Future<void> delete(
+    dynamic key, {
+    bool notify = true,
+  }) =>
+      deleteAll(
+        [key],
+        notify: notify,
+      );
 
   @override
-  Future<int> add(E value) async {
+  Future<int> add(
+    E value, {
+    bool notify = true,
+  }) async {
     var key = keystore.autoIncrement();
-    await put(key, value);
+    await put(key, value, notify: notify);
     return key;
   }
 
   @override
-  Future<Iterable<int>> addAll(Iterable<E> values) async {
+  Future<Iterable<int>> addAll(
+    Iterable<E> values, {
+    bool notify = true,
+  }) async {
     var entries = <int, E>{};
     for (var value in values) {
       entries[keystore.autoIncrement()] = value;
     }
-    await putAll(entries);
+    await putAll(entries, notify: notify);
     return entries.keys;
   }
 
   @override
-  Future<void> putAt(int index, E value) {
-    return putAll({keystore.getAt(index)!.key: value});
+  Future<void> putAt(
+    int index,
+    E value, {
+    bool notify = true,
+  }) {
+    return putAll({keystore.getAt(index)!.key: value}, notify: notify);
   }
 
   @override
-  Future<void> deleteAt(int index) {
-    return delete(keystore.getAt(index)!.key);
+  Future<void> deleteAt(
+    int index, {
+    bool notify = true,
+  }) {
+    return delete(keystore.getAt(index)!.key, notify: false);
   }
 
   @override
-  Future<int> clear() async {
+  Future<int> clear({bool notify = true}) async {
     checkOpen();
 
     await backend.clear();
-    return keystore.clear();
+    return keystore.clear(notify: notify);
   }
 
   @override
@@ -187,13 +215,21 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
 
 class _NullBoxBase<E> implements BoxBase<E> {
   @override
-  Never add(E value) => throw UnimplementedError();
+  Never add(
+    E value, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
-  Never addAll(Iterable<E> values) => throw UnimplementedError();
+  Never addAll(
+    Iterable<E> values, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
-  Never clear() => throw UnimplementedError();
+  Never clear({bool notify = false}) => throw UnimplementedError();
 
   @override
   Never close() => throw UnimplementedError();
@@ -205,13 +241,25 @@ class _NullBoxBase<E> implements BoxBase<E> {
   Never containsKey(key) => throw UnimplementedError();
 
   @override
-  Never delete(key) => throw UnimplementedError();
+  Never delete(
+    key, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
-  Never deleteAll(Iterable keys) => throw UnimplementedError();
+  Never deleteAll(
+    Iterable keys, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
-  Never deleteAt(int index) => throw UnimplementedError();
+  Never deleteAt(
+    int index, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
   Never deleteFromDisk() => throw UnimplementedError();
@@ -244,13 +292,27 @@ class _NullBoxBase<E> implements BoxBase<E> {
   Never get path => throw UnimplementedError();
 
   @override
-  Never put(key, E value) => throw UnimplementedError();
+  Never put(
+    key,
+    E value, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
-  Never putAll(Map<dynamic, E> entries) => throw UnimplementedError();
+  Never putAll(
+    Map<dynamic, E> entries, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
-  Never putAt(int index, E value) => throw UnimplementedError();
+  Never putAt(
+    int index,
+    E value, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
 
   @override
   Never watch({key}) => throw UnimplementedError();

@@ -80,42 +80,68 @@ abstract class BoxBase<E> {
   bool containsKey(dynamic key);
 
   /// Saves the [key] - [value] pair.
-  Future<void> put(dynamic key, E value);
+  Future<void> put(
+    dynamic key,
+    E value, {
+    bool notify = true,
+  });
 
   /// Associates the [value] with the n-th key. An exception is raised if the
   /// key does not exist.
-  Future<void> putAt(int index, E value);
+  Future<void> putAt(
+    int index,
+    E value, {
+    bool notify = true,
+  });
 
   /// Saves all the key - value pairs in the [entries] map.
-  Future<void> putAll(Map<dynamic, E> entries);
+  Future<void> putAll(
+    Map<dynamic, E> entries, {
+    bool notify = true,
+  });
 
   /// Saves the [value] with an auto-increment key.
-  Future<int> add(E value);
+  Future<int> add(
+    E value, {
+    bool notify = true,
+  });
 
   /// Saves all the [values] with auto-increment keys.
-  Future<Iterable<int>> addAll(Iterable<E> values);
+  Future<Iterable<int>> addAll(
+    Iterable<E> values, {
+    bool notify = true,
+  });
 
   /// Deletes the given [key] from the box.
   ///
   /// If it does not exist, nothing happens.
-  Future<void> delete(dynamic key);
+  Future<void> delete(
+    dynamic key, {
+    bool notify = true,
+  });
 
   /// Deletes the n-th key from the box.
   ///
   /// If it does not exist, nothing happens.
-  Future<void> deleteAt(int index);
+  Future<void> deleteAt(
+    int index, {
+    bool notify = true,
+  });
 
   /// Deletes all the given [keys] from the box.
   ///
   /// If a key does not exist, it is skipped.
-  Future<void> deleteAll(Iterable<dynamic> keys);
+  Future<void> deleteAll(
+    Iterable<dynamic> keys, {
+    bool notify = true,
+  });
 
   /// Induces compaction manually. This is rarely needed. You should consider
   /// providing a custom compaction strategy instead.
   Future<void> compact();
 
   /// Removes all entries from the box.
-  Future<int> clear();
+  Future<int> clear({bool notify = false});
 
   /// Closes the box.
   ///
