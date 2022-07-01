@@ -45,6 +45,7 @@ class BoxCollection implements implementation.BoxCollection {
           boxCreator}) async {
     if (!boxNames.contains(name)) {
       throw Exception(
+          // ignore: lines_longer_than_80_chars
           'Box with name $name is not in the known box names of this collection.');
     }
     final i = _openBoxes.indexWhere((box) => box.name == name);
@@ -131,6 +132,7 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
         V is Map<String, Object?> ||
         V is double)) {
       throw Exception(
+          // ignore: lines_longer_than_80_chars
           'Value type ${V.runtimeType} is not one of the allowed value types {String, int, double, List<Object?>, Map<String, Object?>}.');
     }
   }
