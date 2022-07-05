@@ -181,14 +181,17 @@ class Keystore<E> {
   }
 
   /// Not part of public API
-  bool beginTransaction(List<Frame> newFrames) {
+  bool beginTransaction(
+    List<Frame> newFrames, {
+    bool notify = true,
+  }) {
     var transaction = KeyTransaction<E>();
     for (var frame in newFrames) {
       if (!frame.deleted) {
         transaction.added.add(frame.key);
       }
 
-      var deletedFrame = insert(frame);
+      var deletedFrame = insert(frame, notify: notify);
       if (deletedFrame != null) {
         transaction.deleted[frame.key] = deletedFrame;
       }
@@ -208,7 +211,7 @@ class Keystore<E> {
   }
 
   /// Not part of public API
-  void cancelTransaction() {
+  void cancelTransaction({bool notify = true}) {
     var canceled = transactions.removeFirst();
 
     deleted_loop:
@@ -226,7 +229,9 @@ class Keystore<E> {
       }
 
       _store.insert(key, deletedFrame);
-      _notifier.notify(deletedFrame!);
+      if (notify) {
+        _notifier.notify(deletedFrame!);
+      }
     }
 
     added_loop:
@@ -245,13 +250,15 @@ class Keystore<E> {
       }
       if (!isOverride) {
         _store.delete(key);
-        _notifier.notify(Frame.deleted(key));
+        if (notify) {
+          _notifier.notify(Frame.deleted(key));
+        }
       }
     }
   }
 
   /// Not part of public API
-  int clear() {
+  int clear({bool notify = true}) {
     var frameList = frames.toList();
 
     _store.clear();
@@ -260,7 +267,9 @@ class Keystore<E> {
       if (frame.value is HiveObjectMixin) {
         (frame.value as HiveObjectMixin).dispose();
       }
-      _notifier.notify(Frame.deleted(frame.key));
+      if (notify) {
+        _notifier.notify(Frame.deleted(frame.key));
+      }
     }
 
     _deletedEntries = 0;

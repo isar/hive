@@ -22,6 +22,7 @@ class BoxCollection implements implementation.BoxCollection {
     final factory = window.indexedDB;
     if (factory == null) {
       throw Exception(
+          // ignore: lines_longer_than_80_chars
           'Unable to open FluffyBox collection - IndexedDB not supported in this browser!');
     }
     final _db = await factory.open(name, version: 1,
@@ -44,6 +45,7 @@ class BoxCollection implements implementation.BoxCollection {
           boxCreator}) async {
     if (!boxNames.contains(name)) {
       throw Exception(
+          // ignore: lines_longer_than_80_chars
           'Box with name $name is not in the known box names of this collection.');
     }
     final i = _openBoxes.indexWhere((box) => box.name == name);
@@ -118,11 +120,11 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
   CollectionBox(this.name, this.boxCollection) {
     if (!(V is String ||
         V is int ||
-        V is Object ||
         V is List<Object?> ||
         V is Map<String, Object?> ||
         V is double)) {
       throw Exception(
+          // ignore: lines_longer_than_80_chars
           'Value type ${V.runtimeType} is not one of the allowed value types {String, int, double, List<Object?>, Map<String, Object?>}.');
     }
   }
