@@ -22,7 +22,9 @@ abstract class HiveInterface implements TypeRegistry {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String? path,
-    Uint8List? bytes,
+    @Deprecated('Use [backend] with a [StorageBackendMemory] instead')
+        Uint8List? bytes,
+    StorageBackend? backend,
     String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
   });
@@ -40,6 +42,7 @@ abstract class HiveInterface implements TypeRegistry {
     String? path,
     String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
+    StorageBackend? backend,
   });
 
   /// Returns a previously opened box.

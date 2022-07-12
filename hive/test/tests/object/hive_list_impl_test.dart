@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'package:hive/hive.dart';
 import 'package:hive/src/object/hive_list_impl.dart';
 import 'package:hive/src/object/hive_object.dart';
 import 'package:mocktail/mocktail.dart';
@@ -55,7 +54,8 @@ void main() {
 
       test('returns the box', () async {
         var hive = await createHive();
-        var box = await hive.openBox<int>('someBox', bytes: Uint8List(0));
+        var box = await hive.openBox<int>('someBox',
+            backend: StorageBackendMemory(null, null));
         var hiveList = HiveListImpl.lazy('someBox', [])..debugHive = hive;
         expect(hiveList.box, box);
       });

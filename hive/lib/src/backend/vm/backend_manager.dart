@@ -10,36 +10,67 @@ import 'package:meta/meta.dart';
 class BackendManager implements BackendManagerInterface {
   final _delimiter = Platform.isWindows ? '\\' : '/';
 
+  // caching the backend manager as it makes no sense to have different backends
+  // within the same application
+  static HiveStorageBackendPreference? _backend;
+
+  BackendManager();
+
   static BackendManager select(
-          [HiveStorageBackendPreference? backendPreference]) =>
-      BackendManager();
+      [HiveStorageBackendPreference? backendPreference]) {
+    _backend ??= backendPreference;
+    return BackendManager();
+  }
 
   @override
   Future<StorageBackend> open(String name, String? path, bool crashRecovery,
       HiveCipher? cipher, String? collection) async {
-    if (path == null) {
-      throw HiveError('You need to initialize Hive or '
-          'provide a path to store the box.');
+    late StorageBackend backend;
+    if (_backend == HiveStorageBackendPreference.native ||
+        _backend is HiveStorageBackendPreferenceWebWorker ||
+        _backend == null) {
+      if (path == null) {
+        throw HiveError('You need to initialize Hive or '
+            'provide a path to store the box.');
+      }
+
+      if (path.endsWith(_delimiter)) path = path.substring(0, path.length - 1);
+
+      if (collection != null) {
+        path = path + collection;
+      }
+
+      var dir = Directory(path);
+
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      var file = await findHiveFileAndCleanUp(name, path);
+      var lockFile = File('$path$_delimiter$name.lock');
+
+      final backendVm = StorageBackendVm(file, lockFile, crashRecovery, cipher);
+      await backendVm.open();
+      backend = backendVm;
+    } else if (_backend == HiveStorageBackendPreference.memory) {
+      backend = StorageBackendMemory(null, cipher);
+    } else {
+      throw UnimplementedError(
+          '$_backend is not a known HiveStorageBackendPreference');
     }
-
-    if (path.endsWith(_delimiter)) path = path.substring(0, path.length - 1);
-
-    if (collection != null) {
-      path = path + collection;
-    }
-
-    var dir = Directory(path);
-
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-
-    var file = await findHiveFileAndCleanUp(name, path);
-    var lockFile = File('$path$_delimiter$name.lock');
-
-    var backend = StorageBackendVm(file, lockFile, crashRecovery, cipher);
-    await backend.open();
     return backend;
+  }
+
+  @override
+  Future<Map<String, StorageBackend>> openCollection(
+      Set<String> names,
+      String? path,
+      bool crashRecovery,
+      HiveCipher? cipher,
+      String collection) async {
+    return Map.fromEntries(await Future.wait(names.map((e) =>
+        open(e, path, crashRecovery, cipher, collection)
+            .then((value) => MapEntry(e, value)))));
   }
 
   /// Not part of public API
