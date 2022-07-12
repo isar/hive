@@ -204,6 +204,8 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   @override
   Future<void> deleteFromDisk() async {
     if (_open) {
+      // deleteFromDisk does not work in some cases
+      await clear();
       _open = false;
       await keystore.close();
       hive.unregisterBox(name);

@@ -47,6 +47,10 @@ abstract class BackendManagerInterface {
   Future<StorageBackend> open(String name, String? path, bool crashRecovery,
       HiveCipher? cipher, String? collection);
 
+  /// Opens database collection connection and creates StorageBackends for each
+  Future<Map<String, StorageBackend>> openCollection(Set<String> names,
+      String? path, bool crashRecovery, HiveCipher? cipher, String collection);
+
   /// Deletes database
   Future<void> deleteBox(String name, String? path, String? collection);
 
