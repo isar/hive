@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:html';
-import 'dart:indexed_db';
-import 'dart:js' as js;
-import 'dart:js_util';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/backend/js/web_worker/web_worker_interface.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
@@ -15,16 +12,18 @@ import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Handles all IndexedDB related tasks
-class StorageBackendJs extends StorageBackend {
+class StorageBackendWebWorker extends StorageBackend {
   static const _bytePrefix = [0x90, 0xA9];
-  final Database _db;
+  final WebWorkerInterface _interface;
+  final String _db;
   final HiveCipher? _cipher;
   final String objectStoreName;
 
   TypeRegistry _registry;
 
   /// Not part of public API
-  StorageBackendJs(this._db, this._cipher, this.objectStoreName,
+  StorageBackendWebWorker(
+      this._interface, this._db, this._cipher, this.objectStoreName,
       [this._registry = TypeRegistryImpl.nullImpl]);
 
   @override
@@ -97,51 +96,16 @@ class StorageBackendJs extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  ObjectStore getStore(bool write) {
-    return _db
-        .transaction(objectStoreName, write ? 'readwrite' : 'readonly')
-        .objectStore(objectStoreName);
-  }
-
-  /// Not part of public API
-  @visibleForTesting
   Future<List<dynamic>> getKeys({bool cursor = false}) {
-    var store = getStore(false);
-
-    if (hasProperty(store, 'getAllKeys') && !cursor) {
-      var completer = Completer<List<dynamic>>();
-      var request = getStore(false).getAllKeys(null);
-      request.onSuccess.listen((_) {
-        completer.complete(request.result as List<dynamic>?);
-      });
-      request.onError.listen((_) {
-        completer.completeError(request.error!);
-      });
-      return completer.future;
-    } else {
-      return store.openCursor(autoAdvance: true).map((e) => e.key).toList();
-    }
+    return _interface.query('getAllKeys', _db, objectStoreName);
   }
 
   /// Not part of public API
   @visibleForTesting
-  Future<Iterable<dynamic>> getValues({bool cursor = false}) {
-    var store = getStore(false);
-
-    if (hasProperty(store, 'getAll') && !cursor) {
-      var completer = Completer<Iterable<dynamic>>();
-      var request = store.getAll(null);
-      request.onSuccess.listen((_) {
-        var values = (request.result as List).map(decodeValue);
-        completer.complete(values);
-      });
-      request.onError.listen((_) {
-        completer.completeError(request.error!);
-      });
-      return completer.future;
-    } else {
-      return store.openCursor(autoAdvance: true).map((e) => e.value).toList();
-    }
+  Future<Iterable<dynamic>> getValues({bool cursor = false}) async {
+    final values = await _interface.query<Iterable<dynamic>>(
+        'getAll', _db, objectStoreName);
+    return values.map(decodeValue);
   }
 
   @override
@@ -167,19 +131,27 @@ class StorageBackendJs extends StorageBackend {
 
   @override
   Future<dynamic> readValue(Frame frame) async {
-    var value = await getStore(false).getObject(frame.key);
+    var value = await _interface.query('get', _db, objectStoreName, frame.key);
     return decodeValue(value);
   }
 
   @override
   Future<void> writeFrames(List<Frame> frames) async {
-    var store = getStore(true);
-    for (var frame in frames) {
-      if (frame.deleted) {
-        await store.delete(frame.key);
-      } else {
-        await store.put(encodeValue(frame), frame.key);
-      }
+    // TODO(TheOneWithTheBraid): implement as transaction
+    final deleted = frames.where((element) => element.deleted).toList();
+    final notDeleted = frames.where((element) => !element.deleted).toList();
+
+    if (deleted.isNotEmpty) {
+      await _interface.query('deleteKey', _db, objectStoreName,
+          deleted.map((e) => e.key).toList());
+    }
+    if (notDeleted.isNotEmpty) {
+      await _interface.query(
+          'put',
+          _db,
+          objectStoreName,
+          notDeleted.map((e) => e.key).toList(),
+          notDeleted.map(encodeValue).toList());
     }
   }
 
@@ -189,37 +161,18 @@ class StorageBackendJs extends StorageBackend {
   }
 
   @override
-  Future<void> clear() {
-    return getStore(true).clear();
+  Future<void> clear() async {
+    await _interface.query('clear', _db, objectStoreName);
   }
 
   @override
-  Future<void> close() {
-    _db.close();
-    return Future.value();
+  Future<void> close() async {
+    await _interface.query('close', _db, objectStoreName);
   }
 
   @override
   Future<void> deleteFromDisk() async {
-    final indexDB = js.context.hasProperty('window')
-        ? window.indexedDB
-        : WorkerGlobalScope.instance.indexedDB;
-
-    // directly deleting the entire DB if a non-collection Box
-    if (_db.objectStoreNames?.length == 1) {
-      await indexDB!.deleteDatabase(_db.name!);
-    } else {
-      final db =
-          await indexDB!.open(_db.name!, version: 1, onUpgradeNeeded: (e) {
-        var db = e.target.result as Database;
-        if ((db.objectStoreNames ?? []).contains(objectStoreName)) {
-          db.deleteObjectStore(objectStoreName);
-        }
-      });
-      if ((db.objectStoreNames ?? []).isEmpty) {
-        await indexDB.deleteDatabase(_db.name!);
-      }
-    }
+    await _interface.query('delete', _db, objectStoreName);
   }
 
   @override

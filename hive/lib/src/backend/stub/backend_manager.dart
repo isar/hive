@@ -16,6 +16,16 @@ class BackendManager implements BackendManagerInterface {
   }
 
   @override
+  Future<Map<String, StorageBackend>> openCollection(
+      Set<String> names,
+      String? path,
+      bool crashRecovery,
+      HiveCipher? cipher,
+      String? collection) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> deleteBox(String name, String? path, String? collection) {
     throw UnimplementedError();
   }

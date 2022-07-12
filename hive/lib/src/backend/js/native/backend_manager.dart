@@ -30,8 +30,6 @@ class BackendManager implements BackendManagerInterface {
     // in case the objectStore is not contained, re-open the db and
     // update version
     if (!(db.objectStoreNames ?? []).contains(objectStoreName)) {
-      print(
-          'Creating objectStore $objectStoreName in database $databaseName...');
       db = await indexedDB!.open(
         databaseName,
         version: (db.version ?? 1) + 1,
@@ -44,15 +42,49 @@ class BackendManager implements BackendManagerInterface {
       );
     }
 
-    print('Got object store $objectStoreName in database $databaseName.');
-
     return StorageBackendJs(db, cipher, objectStoreName);
   }
 
   @override
-  Future<void> deleteBox(String name, String? path, String? collection) async {
-    print('Delete $name // $collection from disk');
+  Future<Map<String, StorageBackend>> openCollection(
+      Set<String> names,
+      String? path,
+      bool crashRecovery,
+      HiveCipher? cipher,
+      String collection) async {
+    var db =
+        await indexedDB!.open(collection, version: 1, onUpgradeNeeded: (e) {
+      var db = e.target.result as Database;
+      for (var objectStoreName in names) {
+        if (!(db.objectStoreNames ?? []).contains(objectStoreName)) {
+          db.createObjectStore(objectStoreName);
+        }
+      }
+    });
 
+    // in case the objectStore is not contained, re-open the db and
+    // update version
+    if (!(names.every((objectStoreName) =>
+        (db.objectStoreNames ?? []).contains(objectStoreName)))) {
+      db = await indexedDB!.open(
+        collection,
+        version: (db.version ?? 1) + 1,
+        onUpgradeNeeded: (e) {
+          var db = e.target.result as Database;
+          for (var objectStoreName in names) {
+            if (!(db.objectStoreNames ?? []).contains(objectStoreName)) {
+              db.createObjectStore(objectStoreName);
+            }
+          }
+        },
+      );
+    }
+    return Map.fromEntries(
+        names.map((e) => MapEntry(e, StorageBackendJs(db, cipher, e))));
+  }
+
+  @override
+  Future<void> deleteBox(String name, String? path, String? collection) async {
     // compatibility for old store format
     final databaseName = collection ?? name;
     final objectStoreName = collection == null ? 'box' : name;
