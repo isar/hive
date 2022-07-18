@@ -17,7 +17,7 @@ abstract class BackendManager {
       [HiveStorageBackendPreference? backendPreference]) {
     if (_manager == null) {
       if (backendPreference is HiveStorageBackendPreferenceWebWorker) {
-        _manager = web_worker.BackendManagerWebWorker(backendPreference.path);
+        _manager = web_worker.BackendManagerWebWorker(backendPreference);
       } else if (backendPreference == HiveStorageBackendPreference.native ||
           backendPreference == null) {
         _manager = native.BackendManager();

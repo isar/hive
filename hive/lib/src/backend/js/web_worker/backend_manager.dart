@@ -10,16 +10,17 @@ import 'storage_backend_web_worker.dart';
 
 /// Opens IndexedDB databases
 class BackendManagerWebWorker implements BackendManagerInterface {
-  final String href;
+  final HiveStorageBackendPreferenceWebWorker backendPreference;
 
   WebWorkerInterface? _interface;
 
   WebWorkerInterface get interface {
-    _interface ??= WebWorkerInterface(href);
+    _interface ??= WebWorkerInterface(
+        backendPreference.path, backendPreference.onStackTrace);
     return _interface!;
   }
 
-  BackendManagerWebWorker(this.href);
+  BackendManagerWebWorker(this.backendPreference);
 
   IdbFactory? get indexedDB => js.context.hasProperty('window')
       ? window.indexedDB
@@ -45,7 +46,8 @@ class BackendManagerWebWorker implements BackendManagerInterface {
       HiveCipher? cipher,
       String collection) async {
     // for collections, create an additional interface
-    final interface = WebWorkerInterface(href);
+    final interface = WebWorkerInterface(
+        backendPreference.path, backendPreference.onStackTrace);
     await interface.query('open', collection, null, null, names);
     return Map.fromEntries(names.map(
       (e) => MapEntry(

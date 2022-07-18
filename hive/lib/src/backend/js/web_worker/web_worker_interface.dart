@@ -4,15 +4,17 @@ import 'dart:js_util';
 
 import 'dart:math';
 
+import 'package:hive/hive.dart';
 import 'package:hive/src/backend/js/web_worker/web_worker_operation.dart';
 
 class WebWorkerInterface {
+  final WebWorkerStackTraceCallback onStackTrace;
   final Worker _worker;
   final Random _random = Random();
 
   final Map<double, Completer> _queries = {};
 
-  WebWorkerInterface(String href) : _worker = Worker(href) {
+  WebWorkerInterface(String href, this.onStackTrace) : _worker = Worker(href) {
     print('[hive] Created Worker($href)');
     _worker.onMessage.listen(_handleMessage);
   }
@@ -39,9 +41,40 @@ class WebWorkerInterface {
 
   void _handleMessage(MessageEvent event) {
     final label = event.data['label'];
+    // don't forget handling errors of our second thread...
+    if (label == 'stacktrace') {
+      final origin = event.data['origin'];
+      final completer = _queries[origin];
+
+      final error = event.data['error']!;
+
+      Future.value(
+        onStackTrace.call(event.data['stacktrace'] as String),
+      ).then(
+        (stackTrace) => completer?.completeError(
+          WebWorkerError(error: error, stackTrace: stackTrace),
+        ),
+      );
+    }
     final completer = _queries[label];
     var response = event.data['response'];
     completer?.complete(response);
     _queries.remove(label);
+  }
+}
+
+class WebWorkerError extends Error {
+  /// the error thrown in the web worker. Usually a [String]
+  final Object? error;
+
+  /// de-serialized [StackTrace]
+  @override
+  final StackTrace stackTrace;
+
+  WebWorkerError({required this.error, required this.stackTrace});
+
+  @override
+  String toString() {
+    return '$error, $stackTrace';
   }
 }

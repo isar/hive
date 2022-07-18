@@ -1,5 +1,9 @@
 part of hive;
 
+/// converts a stringifyed, obfuscated [StackTrace] into a [StackTrace]
+typedef WebWorkerStackTraceCallback = FutureOr<StackTrace> Function(
+    String obfuscatedStackTrace);
+
 /// declares the preferred JS StorageBackend to be used
 ///
 /// - [HiveStorageBackendPreference.native] causes almost no startup delay while
@@ -18,14 +22,30 @@ abstract class HiveStorageBackendPreference {
   ///
   /// Caution: DB will *not* persist
   static const HiveStorageBackendPreference memory =
-  _HiveStorageBackendPreferenceMemory._();
+      _HiveStorageBackendPreferenceMemory._();
 
   /// uses a web worker for DB transactions
   ///
-  /// the path points to the compiled `web_worker.dart.js` file calling
+  /// the [path] points to the compiled `web_worker.dart.js` file calling
   /// [startWebWorker].
-  factory HiveStorageBackendPreference.webWorker(String path) =>
-      HiveStorageBackendPreferenceWebWorker._(path);
+  ///
+  /// the [onStackTrace] callback provides a stringifyed [StackTrace] in case
+  /// the web worker encounters an error. Together with the source map (the
+  /// `.dart.js` file), this can be used to properly capture errors in the web
+  /// worker.
+  ///
+  /// Recommended packages on pub.dev:
+  /// - [source_map_stack_trace](https://pub.dev/source_map_stack_trace)
+  /// - [source_maps](https://pub.dev/source_maps)
+  ///
+  /// Default to:
+  /// [HiveStorageBackendPreferenceWebWorker.defaultStackTraceHandler]
+  factory HiveStorageBackendPreference.webWorker(
+    String path, {
+    WebWorkerStackTraceCallback onStackTrace =
+        HiveStorageBackendPreferenceWebWorker.defaultStackTraceHandler,
+  }) =>
+      HiveStorageBackendPreferenceWebWorker._(path, onStackTrace: onStackTrace);
 
   @override
   int get hashCode => runtimeType.hashCode;
@@ -44,9 +64,20 @@ class _HiveStorageBackendPreferenceMemory extends HiveStorageBackendPreference {
 
 class HiveStorageBackendPreferenceWebWorker
     extends HiveStorageBackendPreference {
+  /// the default handler for stackTraces in web workers
+  static StackTrace defaultStackTraceHandler(String obfuscatedStackTrace) {
+    return StackTrace.fromString(obfuscatedStackTrace);
+  }
+
+  /// the [String] of the web worker path
   final String path;
 
-  const HiveStorageBackendPreferenceWebWorker._(this.path) : super._();
+  /// a handler converting stringigyed stack traces into a [StackTrace]
+  final WebWorkerStackTraceCallback onStackTrace;
+
+  const HiveStorageBackendPreferenceWebWorker._(this.path,
+      {required this.onStackTrace})
+      : super._();
 
   @override
   String toString() => 'HiveStorageBackendPreferenceWebWorker( $path )';

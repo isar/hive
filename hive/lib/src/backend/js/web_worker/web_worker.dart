@@ -41,7 +41,7 @@ Future<void> startWebWorker() async {
           final operation = WebWorkerOperation.fromJson(Map.from(data as Map));
 
           void respond([Object? response]) {
-            allowInterop(sendResponse).call(context, operation.label, response);
+            allowInterop(sendResponse).call(operation.label, response);
           }
 
           switch (operation.command) {
@@ -228,10 +228,10 @@ Future<void> startWebWorker() async {
               break;
           }
         } on Event catch (e, s) {
-          print('[web worker]: Runtime error:'
-              ' ${(e.target as Request).error}, $s');
+          allowInterop(_replyError)
+              .call((e.target as Request).error, s, data['label'] as double);
         } catch (e, s) {
-          print('[web worker]: Runtime error: $e, $s');
+          allowInterop(_replyError).call(e, s, data['label'] as double);
         }
       },
     ),
@@ -266,21 +266,44 @@ Future<int> getDatabaseVersion(String database) async {
 Future? _putVersionsFuture;
 
 void setDatabaseVersion(String database, int version) {
+  _versionCache[database] = version;
   (_putVersionsFuture ?? Future.value(null)).then((value) {
-    _versionCache[database] = version;
     final db = _databases['hive_web_worker_database_versions']!;
     final txn = db.transaction('versions', 'readwrite');
     _putVersionsFuture =
-        txn.objectStore('versions').put(_versionCache, 'versions');
+        txn.objectStore('versions').put(jsify(_versionCache), 'versions');
     _putVersionsFuture?.then((value) => _putVersionsFuture = null);
   });
 }
 
-void sendResponse(JsObject context, double label, dynamic response) {
+void sendResponse(double label, dynamic response) {
   try {
     self.postMessage({
       'label': label,
       'response': response,
+    });
+  } catch (e, s) {
+    print('[web worker] Error responding: $e, $s');
+  }
+}
+
+void _replyError(Object? error, StackTrace stackTrace, double origin) {
+  if (error != null) {
+    try {
+      final jsError = jsify(error);
+      if (jsError != null) {
+        error = jsError;
+      }
+    } catch (e) {
+      error = error.toString();
+    }
+  }
+  try {
+    self.postMessage({
+      'label': 'stacktrace',
+      'origin': origin,
+      'error': error,
+      'stacktrace': stackTrace.toString(),
     });
   } catch (e, s) {
     print('[web worker] Error responding: $e, $s');
