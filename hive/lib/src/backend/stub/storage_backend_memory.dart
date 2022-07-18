@@ -32,10 +32,10 @@ class StorageBackendMemory extends StorageBackend {
 
   /// An in-memory storage has no path
   @override
-  String? get path => null;
+  final path = null;
 
   @override
-  bool get supportsCompaction => false;
+  final bool supportsCompaction = false;
 
   @override
   Future<void> initialize(
