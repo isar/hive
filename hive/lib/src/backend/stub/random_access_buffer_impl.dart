@@ -35,8 +35,8 @@ class RandomAccessBufferImpl implements RandomAccessBuffer {
   int get writeOffset => _writeOffset;
 
   @override
-  Future read(
-      Frame frame, TypeRegistry typeRegistry, HiveCipher? cipher) async {
+  Future<dynamic> read(
+      Frame frame, TypeRegistry typeRegistry, HiveCipher? cipher) {
     return _sync.syncRead(() async {
       var bytes = _bytes.sublist(frame.offset, frame.offset + frame.length!);
       var reader = BinaryReaderImpl(bytes, typeRegistry);

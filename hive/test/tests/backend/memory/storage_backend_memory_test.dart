@@ -48,6 +48,26 @@ void main() {
           'val');
     });
 
+    test('.readValue() returns previously stored value - multiple frames',
+        () async {
+      var backend = StorageBackendMemory(null, null);
+      await backend.initialize(
+          TypeRegistryImpl.nullImpl, MockKeystore(), false);
+
+      var frame1 = Frame('key', 'val');
+      var frame1Bytes = getFrameBytes([frame1]);
+
+      var frame2 = Frame('123', 'abc');
+      var frame2Bytes = getFrameBytes([frame2]);
+
+      var frame3 = Frame('apfelkuchen', 'lecker');
+
+      await backend.writeFrames([frame1, frame2, frame3]);
+      final value = await backend.readValue(Frame('123', '123',
+          offset: frame1Bytes.length, length: frame2Bytes.lengthInBytes));
+      expect('abc', value);
+    });
+
     test('.writeFrames() writes data', () async {
       var backend = StorageBackendMemory(null, null);
       await backend.initialize(

@@ -14,7 +14,6 @@ import 'package:hive/src/box/keystore.dart';
 /// persisted and is lost on close. Data is not stored, is highly volatile
 /// and does not survive a page refresh.
 class StorageBackendMemory extends StorageBackend {
-
   late final RandomAccessBuffer _randomAccessBuffer;
 
   final HiveCipher? _cipher;
@@ -39,8 +38,8 @@ class StorageBackendMemory extends StorageBackend {
   bool get supportsCompaction => false;
 
   @override
-  Future<void> initialize(TypeRegistry registry, Keystore keystore,
-      bool lazy) async {
+  Future<void> initialize(
+      TypeRegistry registry, Keystore keystore, bool lazy) async {
     _typeRegistry = registry;
     _randomAccessBuffer.recoveryCheck(registry, keystore, _cipher);
   }
@@ -51,8 +50,8 @@ class StorageBackendMemory extends StorageBackend {
   }
 
   @override
-  Future<void> writeFrames(List<Frame> frames) async {
-    _randomAccessBuffer.write(frames, _typeRegistry!, _cipher);
+  Future<void> writeFrames(List<Frame> frames) {
+    return _randomAccessBuffer.write(frames, _typeRegistry!, _cipher);
   }
 
   @override
@@ -61,18 +60,18 @@ class StorageBackendMemory extends StorageBackend {
   }
 
   @override
-  Future<void> clear() async {
-    _randomAccessBuffer.clear();
+  Future<void> clear() {
+    return _randomAccessBuffer.clear();
   }
 
   @override
-  Future<void> close() async {
-    _randomAccessBuffer.clear();
+  Future<void> close() {
+    return _randomAccessBuffer.clear();
   }
 
   @override
-  Future<void> deleteFromDisk() async {
-    _randomAccessBuffer.clear();
+  Future<void> deleteFromDisk() {
+    return _randomAccessBuffer.clear();
   }
 
   /// Nothing to flush to disk as we act directly in-memory
