@@ -6,8 +6,8 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
-import '../common.dart';
-import '../mocks.dart';
+import '../../common.dart';
+import '../../mocks.dart';
 
 void main() {
   group('StorageBackendMemory', () {

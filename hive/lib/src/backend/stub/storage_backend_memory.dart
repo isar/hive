@@ -2,33 +2,36 @@ import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
-import 'package:hive/src/backend/vm/read_write_sync.dart';
-import 'package:hive/src/binary/binary_reader_impl.dart';
-import 'package:hive/src/binary/binary_writer_impl.dart';
+import 'package:hive/src/backend/stub/random_access_buffer.dart';
+import 'package:hive/src/backend/stub/random_access_buffer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
-import 'package:hive/src/binary/frame_helper.dart';
 import 'package:hive/src/box/keystore.dart';
 
-/// In-memory Storage backend
+/// In-memory storage backend
+///
+/// This storage memory uses the [RandomAccessBuffer] which is an abstraction
+/// for managing data in [Uint8List] as a mean of storage. Data will not be
+/// persisted and is lost on close. Data is not stored, is highly volatile
+/// and does not survive a page refresh.
 class StorageBackendMemory extends StorageBackend {
+
+  late final RandomAccessBuffer _randomAccessBuffer;
+
   final HiveCipher? _cipher;
-
-  final ReadWriteSync _sync;
-
-  final FrameHelper _frameHelper;
-
-  Uint8List _bytes;
 
   TypeRegistry? _typeRegistry;
 
-  int _writeOffset = 0;
+  /// Default constructor for the [StorageBackendMemory]
+  ///
+  /// If needed, provide a [Uint8List] with already existing bytes and the
+  /// corresponding [initialOffset]. For encryption, provide a [_cipher].
+  StorageBackendMemory(Uint8List? bytes, this._cipher,
+      [int initialOffset = 0]) {
+    _randomAccessBuffer =
+        RandomAccessBufferImpl(bytes, initialOffset: initialOffset);
+  }
 
-  /// Not part of public API
-  StorageBackendMemory(Uint8List? bytes, this._cipher)
-      : _bytes = bytes ?? Uint8List(0),
-        _sync = ReadWriteSync(),
-        _frameHelper = FrameHelper();
-
+  /// An in-memory storage has no path
   @override
   String? get path => null;
 
@@ -36,59 +39,20 @@ class StorageBackendMemory extends StorageBackend {
   bool get supportsCompaction => false;
 
   @override
-  Future<void> initialize(
-      TypeRegistry registry, Keystore keystore, bool lazy) async {
+  Future<void> initialize(TypeRegistry registry, Keystore keystore,
+      bool lazy) async {
     _typeRegistry = registry;
-
-    var recoveryOffset = _frameHelper.framesFromBytes(
-      _bytes,
-      keystore,
-      registry,
-      _cipher,
-    );
-
-    if (recoveryOffset != -1) {
-      throw HiveError('Wrong checksum in bytes. Box may be corrupted.');
-    }
-
-    _writeOffset = _bytes.offsetInBytes;
+    _randomAccessBuffer.recoveryCheck(registry, keystore, _cipher);
   }
 
   @override
-  Future<dynamic> readValue(Frame frame) {
-    return _sync.syncRead(() async {
-      var bytes = _bytes.sublist(frame.offset, frame.offset + frame.length!);
-      var reader = BinaryReaderImpl(bytes, _typeRegistry!);
-      var readFrame = reader.readFrame(cipher: _cipher, lazy: false);
-
-      if (readFrame == null) {
-        throw HiveError(
-            'Could not read value from box. Maybe your box is corrupted.');
-      }
-
-      return readFrame.value;
-    });
+  Future<dynamic> readValue(Frame frame) async {
+    return _randomAccessBuffer.read(frame, _typeRegistry!, _cipher);
   }
 
   @override
-  Future<void> writeFrames(List<Frame> frames) {
-    return _sync.syncWrite(() async {
-      var writer = BinaryWriterImpl(_typeRegistry!);
-
-      for (var frame in frames) {
-        frame.length = writer.writeFrame(frame, cipher: _cipher);
-      }
-
-      var b = BytesBuilder();
-      b.add(_bytes);
-      b.add(writer.toBytes());
-      _bytes = b.toBytes();
-
-      for (var frame in frames) {
-        frame.offset = _writeOffset;
-        _writeOffset += frame.length!;
-      }
-    });
+  Future<void> writeFrames(List<Frame> frames) async {
+    _randomAccessBuffer.write(frames, _typeRegistry!, _cipher);
   }
 
   @override
@@ -97,31 +61,21 @@ class StorageBackendMemory extends StorageBackend {
   }
 
   @override
-  Future<void> clear() {
-    return _sync.syncReadWrite(() async {
-      _clearMemoryBuffer();
-    });
+  Future<void> clear() async {
+    _randomAccessBuffer.clear();
   }
 
   @override
   Future<void> close() async {
-    _clearMemoryBuffer();
+    _randomAccessBuffer.clear();
   }
 
   @override
-  Future<void> deleteFromDisk() {
-    return _sync.syncReadWrite(() async {
-      _clearMemoryBuffer();
-    });
+  Future<void> deleteFromDisk() async {
+    _randomAccessBuffer.clear();
   }
 
   /// Nothing to flush to disk as we act directly in-memory
   @override
   Future<void> flush() => Future.value();
-
-  /// Clear the memory buffer and reset the offset
-  void _clearMemoryBuffer() {
-    _bytes = Uint8List(0);
-    _writeOffset = 0;
-  }
 }
