@@ -49,9 +49,6 @@ class StorageBackendVm extends StorageBackend {
 
   bool _compactionScheduled = false;
 
-  /// a cache for asynchronouse I/O operations
-  final Set<Future<void>> _ongoingTransactions = {};
-
   /// Not part of public API
   StorageBackendVm(
       this._file, this._lockFile, this._crashRecovery, this._cipher)
@@ -105,30 +102,21 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<dynamic> readValue(Frame frame) async {
-    Future<dynamic> operation() async {
-      await Future.wait(_ongoingTransactions);
-      await _sync.syncRead(() async {
-        await readRaf.setPosition(frame.offset);
+    return await _sync.syncRead(() async {
+      await readRaf.setPosition(frame.offset);
 
-        var bytes = await readRaf.read(frame.length!);
+      var bytes = await readRaf.read(frame.length!);
 
-        var reader = BinaryReaderImpl(bytes, registry);
-        var readFrame = await reader.readFrame(cipher: _cipher, lazy: false);
+      var reader = BinaryReaderImpl(bytes, registry);
+      var readFrame = await reader.readFrame(cipher: _cipher, lazy: false);
 
-        if (readFrame == null) {
-          throw HiveError(
-              'Could not read value from box. Maybe your box is corrupted.');
-        }
+      if (readFrame == null) {
+        throw HiveError(
+            'Could not read value from box. Maybe your box is corrupted.');
+      }
 
-        return readFrame.value;
-      });
-    }
-
-    final operationFuture = operation.call();
-    _ongoingTransactions.add(operationFuture);
-    final result = await operationFuture;
-    _ongoingTransactions.remove(operationFuture);
-    return result;
+      return readFrame.value;
+    });
   }
 
   @override
@@ -138,26 +126,18 @@ class StorageBackendVm extends StorageBackend {
     for (var frame in frames) {
       frame.length = await writer.writeFrame(frame, cipher: _cipher);
     }
-    Future<void> operation() async {
-      // adding to the end of the queue
-      await Future.wait(_ongoingTransactions);
-      await _sync.syncWrite(() async {
-        final bytes = writer.toBytes();
+    await _sync.syncWrite(() async {
+      final bytes = writer.toBytes();
 
-        final cachedOffset = writeOffset;
-        try {
-          /// TODO(TheOneWithTheBraid): implement real transactions with cache
-          await writeRaf.writeFrom(bytes);
-        } catch (e) {
-          await writeRaf.setPosition(cachedOffset);
-          rethrow;
-        }
-      });
-    }
-
-    final future = operation();
-    _ongoingTransactions.add(future);
-    future.then((value) => _ongoingTransactions.remove(future));
+      final cachedOffset = writeOffset;
+      try {
+        /// TODO(TheOneWithTheBraid): implement real transactions with cache
+        await writeRaf.writeFrom(bytes);
+      } catch (e) {
+        await writeRaf.setPosition(cachedOffset);
+        rethrow;
+      }
+    });
 
     for (var frame in frames) {
       frame.offset = writeOffset;
@@ -170,63 +150,55 @@ class StorageBackendVm extends StorageBackend {
     if (_compactionScheduled) return Future.value();
     _compactionScheduled = true;
 
-    Future<void> operation() async {
-      await Future.wait(_ongoingTransactions);
-      await _sync.syncReadWrite(() async {
-        await readRaf.setPosition(0);
-        var reader = BufferedFileReader(readRaf);
+    await _sync.syncReadWrite(() async {
+      await readRaf.setPosition(0);
+      var reader = BufferedFileReader(readRaf);
 
-        var fileDirectory = path.substring(0, path.length - 5);
-        var compactFile = File('$fileDirectory.hivec');
-        var compactRaf = await compactFile.open(mode: FileMode.write);
-        var writer = BufferedFileWriter(compactRaf);
+      var fileDirectory = path.substring(0, path.length - 5);
+      var compactFile = File('$fileDirectory.hivec');
+      var compactRaf = await compactFile.open(mode: FileMode.write);
+      var writer = BufferedFileWriter(compactRaf);
 
-        var sortedFrames = frames.toList();
-        sortedFrames.sort((a, b) => a.offset.compareTo(b.offset));
-        try {
-          for (var frame in sortedFrames) {
-            if (frame.offset == -1) continue; // Frame has not been written yet
-            if (frame.offset != reader.offset) {
-              var skip = frame.offset - reader.offset;
-              if (reader.remainingInBuffer < skip) {
-                if (await reader.loadBytes(skip) < skip) {
-                  throw HiveError('Could not compact box: Unexpected EOF.');
-                }
-              }
-              reader.skip(skip);
-            }
-
-            if (reader.remainingInBuffer < frame.length!) {
-              if (await reader.loadBytes(frame.length!) < frame.length!) {
+      var sortedFrames = frames.toList();
+      sortedFrames.sort((a, b) => a.offset.compareTo(b.offset));
+      try {
+        for (var frame in sortedFrames) {
+          if (frame.offset == -1) continue; // Frame has not been written yet
+          if (frame.offset != reader.offset) {
+            var skip = frame.offset - reader.offset;
+            if (reader.remainingInBuffer < skip) {
+              if (await reader.loadBytes(skip) < skip) {
                 throw HiveError('Could not compact box: Unexpected EOF.');
               }
             }
-            await writer.write(reader.viewBytes(frame.length!));
+            reader.skip(skip);
           }
-          await writer.flush();
-        } finally {
-          await compactRaf.close();
+
+          if (reader.remainingInBuffer < frame.length!) {
+            if (await reader.loadBytes(frame.length!) < frame.length!) {
+              throw HiveError('Could not compact box: Unexpected EOF.');
+            }
+          }
+          await writer.write(reader.viewBytes(frame.length!));
         }
+        await writer.flush();
+      } finally {
+        await compactRaf.close();
+      }
 
-        await readRaf.close();
-        await writeRaf.close();
-        await compactFile.rename(path);
-        await open();
+      await readRaf.close();
+      await writeRaf.close();
+      await compactFile.rename(path);
+      await open();
 
-        var offset = 0;
-        for (var frame in sortedFrames) {
-          if (frame.offset == -1) continue;
-          frame.offset = offset;
-          offset += frame.length!;
-        }
-        _compactionScheduled = false;
-      });
-    }
-
-    final future = operation();
-    _ongoingTransactions.add(future);
-    await future;
-    _ongoingTransactions.remove(future);
+      var offset = 0;
+      for (var frame in sortedFrames) {
+        if (frame.offset == -1) continue;
+        frame.offset = offset;
+        offset += frame.length!;
+      }
+      _compactionScheduled = false;
+    });
   }
 
   @override
@@ -248,7 +220,6 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> close() async {
-    await Future.wait(_ongoingTransactions);
     return _sync.syncReadWrite(_closeInternal);
   }
 
@@ -262,16 +233,8 @@ class StorageBackendVm extends StorageBackend {
 
   @override
   Future<void> flush() async {
-    Future<void> operation() async {
-      await Future.wait(_ongoingTransactions);
-      await _sync.syncWrite(() async {
-        await writeRaf.flush();
-      });
-    }
-
-    final future = operation();
-    _ongoingTransactions.add(future);
-    await future;
-    _ongoingTransactions.remove(future);
+    await _sync.syncWrite(() async {
+      await writeRaf.flush();
+    });
   }
 }
