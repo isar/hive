@@ -25,7 +25,7 @@ const testMap = {
   'LastKey': true,
 };
 
-Uint8List getFrameBytes(Iterable<Frame> frames) {
+Future<Uint8List> getFrameBytes(Iterable<Frame> frames) async {
   var writer = BinaryWriterImpl(testRegistry);
   for (var frame in frames) {
     writer.writeFrame(frame);
@@ -211,7 +211,7 @@ void main() {
     group('.readValue()', () {
       test('reads value with offset', () async {
         var frameBytes = getFrameBytes([Frame('test', 123)]);
-        var readRaf = await getTempRaf([1, 2, 3, 4, 5, ...frameBytes]);
+        var readRaf = await getTempRaf([1, 2, 3, 4, 5, ...await frameBytes]);
 
         var backend = _getBackend(readRaf: readRaf)
           // The registry needs to be initialized before reading values, and
@@ -219,7 +219,7 @@ void main() {
           // manually.
           ..registry = TypeRegistryImpl.nullImpl;
         var value = await backend.readValue(
-          Frame('test', 123, length: frameBytes.length, offset: 5),
+          Frame('test', 123, length: (await frameBytes).length, offset: 5),
         );
         expect(value, 123);
 
@@ -245,12 +245,14 @@ void main() {
     group('.writeFrames()', () {
       test('writes bytes', () async {
         var frames = [Frame('key1', 'value'), Frame('key2', null)];
-        var bytes = getFrameBytes(frames);
+        var bytes = await getFrameBytes(frames);
 
         var writeRaf = MockRandomAccessFile();
         when(() => writeRaf.setPosition(0))
             .thenAnswer((i) => Future.value(writeRaf));
         when(() => writeRaf.writeFrom(bytes))
+            .thenAnswer((i) => Future.value(writeRaf));
+        when(() => writeRaf.flush())
             .thenAnswer((i) => Future.value(writeRaf));
 
         var backend = _getBackend(writeRaf: writeRaf)
@@ -260,6 +262,7 @@ void main() {
           ..registry = TypeRegistryImpl.nullImpl;
 
         await backend.writeFrames(frames);
+        await backend.flush();
         verify(() => writeRaf.writeFrom(bytes));
       });
 
@@ -354,7 +357,7 @@ void main() {
 
       test('throws error if corrupted', () async {
         var bytes = BytesBuilder();
-        var boxFile = await getTempFile(); 
+        var boxFile = await getTempFile();
         var syncedFile = SyncedFile(boxFile.path);
         await syncedFile.open();
 

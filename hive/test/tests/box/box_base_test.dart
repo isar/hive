@@ -26,6 +26,9 @@ class _BoxBaseMock<E> extends BoxBaseImpl<E> with Mock {
           compactionStrategy,
           backend,
         );
+
+  @override
+  Future<void> flush() => Future.value();
 }
 
 _BoxBaseMock _openBoxBaseMock({
@@ -296,6 +299,7 @@ void main() {
         var keystore = MockKeystore();
 
         returnFutureVoid(when(() => backend.clear()));
+
         when(() => keystore.clear()).thenReturn(2);
 
         var box = _openBoxBaseMock(backend: backend, keystore: keystore);
@@ -400,6 +404,7 @@ void main() {
         var box = _openBoxBaseMock(backend: backend, keystore: keystore);
         returnFutureVoid(when(() => keystore.close()));
         returnFutureVoid(when(() => backend.close()));
+
         returnFutureVoid(when(() => backend.deleteFromDisk()));
 
         await box.close();

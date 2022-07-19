@@ -240,12 +240,11 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
 
   @override
   Future<void> flush() async {
-    final box = await _getBox();
     // we do *not* await the flushing here. That makes it so that we can execute
     // other stuff while the flushing is still in progress. Fortunately, hive
     // has a proper read / write queue, meaning that if we do actually want to
     // write something again, it'll wait until the flush is completed.
-    box.flush();
+    _getBox().then((box) => box.flush());
   }
 
   Future<void> _flushOrMark() async {

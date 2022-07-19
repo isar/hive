@@ -41,7 +41,7 @@ class StorageBackendJs extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  dynamic encodeValue(Frame frame) {
+  Future<dynamic> encodeValue(Frame frame) async {
     var value = frame.value;
     if (_cipher == null) {
       if (value == null) {
@@ -66,7 +66,7 @@ class StorageBackendJs extends StorageBackend {
     if (_cipher == null) {
       frameWriter.write(value);
     } else {
-      frameWriter.writeEncrypted(value, _cipher!);
+      await frameWriter.writeEncrypted(value, _cipher!);
     }
 
     var bytes = frameWriter.toBytes();
@@ -76,7 +76,7 @@ class StorageBackendJs extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  dynamic decodeValue(dynamic value) {
+  Future<dynamic> decodeValue(dynamic value) async {
     if (value is ByteBuffer) {
       var bytes = Uint8List.view(value);
       if (_isEncoded(bytes)) {
@@ -131,9 +131,9 @@ class StorageBackendJs extends StorageBackend {
     if (hasProperty(store, 'getAll') && !cursor) {
       var completer = Completer<Iterable<dynamic>>();
       var request = store.getAll(null);
-      request.onSuccess.listen((_) {
-        var values = (request.result as List).map(decodeValue);
-        completer.complete(values);
+      request.onSuccess.listen((_) async {
+        var futures = (request.result as List).map(decodeValue);
+        completer.complete(await Future.wait(futures));
       });
       request.onError.listen((_) {
         completer.completeError(request.error!);
@@ -178,7 +178,7 @@ class StorageBackendJs extends StorageBackend {
       if (frame.deleted) {
         await store.delete(frame.key);
       } else {
-        await store.put(encodeValue(frame), frame.key);
+        await store.put(await encodeValue(frame), frame.key);
       }
     }
   }

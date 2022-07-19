@@ -164,6 +164,35 @@ class SettingsPage extends StatelessWidget {
 
 Boxes are cached and therefore fast enough to be used directly in the `build()` method of Flutter widgets.
 
+### Native AES crypto implementation
+
+When using Flutter, Hive supports native encryption using [package:cryptography](https://pub.dev/packages/cryptography)
+and [package:cryptography_flutter](https://pub.dev/packages/cryptography_flutter).
+
+Native AES implementations tremendously speed up operations on encrypted Boxes.
+
+Please follow these steps:
+
+1. add dependency to pubspec.yaml
+
+```yaml
+dependencies:
+  cryptography_flutter: ^2.0.2
+```
+
+2. enable native implementations
+
+```dart
+import 'package:cryptography_flutter/cryptography_flutter.dart';
+
+void main() {
+  // Enable Flutter cryptography
+  FlutterCryptography.enable();
+
+  // ....
+}
+```
+
 ## Benchmark
 
 |                                         1000 read iterations                                         |                                    1000 write iterations                                    |

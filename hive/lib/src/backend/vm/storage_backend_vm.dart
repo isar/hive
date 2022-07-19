@@ -101,14 +101,14 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<dynamic> readValue(Frame frame) {
-    return _sync.syncRead(() async {
+  Future<dynamic> readValue(Frame frame) async {
+    return await _sync.syncRead(() async {
       await readRaf.setPosition(frame.offset);
 
       var bytes = await readRaf.read(frame.length!);
 
       var reader = BinaryReaderImpl(bytes, registry);
-      var readFrame = reader.readFrame(cipher: _cipher, lazy: false);
+      var readFrame = await reader.readFrame(cipher: _cipher, lazy: false);
 
       if (readFrame == null) {
         throw HiveError(
@@ -120,34 +120,37 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> writeFrames(List<Frame> frames) {
-    return _sync.syncWrite(() async {
-      var writer = BinaryWriterImpl(registry);
+  Future<void> writeFrames(List<Frame> frames) async {
+    var writer = BinaryWriterImpl(registry);
 
-      for (var frame in frames) {
-        frame.length = writer.writeFrame(frame, cipher: _cipher);
-      }
+    for (var frame in frames) {
+      frame.length = await writer.writeFrame(frame, cipher: _cipher);
+    }
+    await _sync.syncWrite(() async {
+      final bytes = writer.toBytes();
 
+      final cachedOffset = writeOffset;
       try {
-        await writeRaf.writeFrom(writer.toBytes());
+        /// TODO(TheOneWithTheBraid): implement real transactions with cache
+        await writeRaf.writeFrom(bytes);
       } catch (e) {
-        await writeRaf.setPosition(writeOffset);
+        await writeRaf.setPosition(cachedOffset);
         rethrow;
       }
-
-      for (var frame in frames) {
-        frame.offset = writeOffset;
-        writeOffset += frame.length!;
-      }
     });
+
+    for (var frame in frames) {
+      frame.offset = writeOffset;
+      writeOffset += frame.length!;
+    }
   }
 
   @override
-  Future<void> compact(Iterable<Frame> frames) {
+  Future<void> compact(Iterable<Frame> frames) async {
     if (_compactionScheduled) return Future.value();
     _compactionScheduled = true;
 
-    return _sync.syncReadWrite(() async {
+    await _sync.syncReadWrite(() async {
       await readRaf.setPosition(0);
       var reader = BufferedFileReader(readRaf);
 
@@ -216,7 +219,7 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     return _sync.syncReadWrite(_closeInternal);
   }
 
@@ -229,8 +232,8 @@ class StorageBackendVm extends StorageBackend {
   }
 
   @override
-  Future<void> flush() {
-    return _sync.syncWrite(() async {
+  Future<void> flush() async {
+    await _sync.syncWrite(() async {
       await writeRaf.flush();
     });
   }

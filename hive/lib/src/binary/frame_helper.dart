@@ -7,18 +7,18 @@ import 'package:hive/src/box/keystore.dart';
 /// Not part of public API
 class FrameHelper {
   /// Not part of public API
-  int framesFromBytes(
+  Future<int> framesFromBytes(
     Uint8List bytes,
     Keystore? keystore,
     TypeRegistry registry,
     HiveCipher? cipher,
-  ) {
+  ) async {
     var reader = BinaryReaderImpl(bytes, registry);
 
     while (reader.availableBytes != 0) {
       var frameOffset = reader.usedBytes;
 
-      var frame = reader.readFrame(
+      var frame = await reader.readFrame(
         cipher: cipher,
         lazy: false,
         frameOffset: frameOffset,
