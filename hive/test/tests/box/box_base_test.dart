@@ -418,8 +418,10 @@ void main() {
           keystore: keystore,
           backend: backend,
         );
+        when(() => keystore.clear()).thenReturn(0);
         returnFutureVoid(when(() => keystore.close()));
         returnFutureVoid(when(() => backend.close()));
+        returnFutureVoid(when(() => backend.clear()));
         returnFutureVoid(when(() => backend.deleteFromDisk()));
 
         await box.deleteFromDisk();

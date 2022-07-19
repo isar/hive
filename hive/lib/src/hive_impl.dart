@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/big_int_adapter.dart';
 import 'package:hive/src/adapters/date_time_adapter.dart';
-import 'package:hive/src/backend/storage_backend_memory.dart';
 import 'package:hive/src/box/box_base_impl.dart';
 import 'package:hive/src/box/box_impl.dart';
 import 'package:hive/src/box/default_compaction_strategy.dart';
@@ -39,7 +38,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   /// either returns the preferred [BackendManagerInterface] or the
   /// platform default fallback
-  BackendManagerInterface get _manager =>
+  BackendManagerInterface get manager =>
       _managerOverride ?? _defaultBackendManager;
 
   void _registerDefaultAdapters() {
@@ -66,10 +65,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compaction,
     bool recovery,
     String? path,
-    Uint8List? bytes,
+    StorageBackend? backend,
     String? collection,
   ) async {
-    assert(path == null || bytes == null);
+    assert(path == null || backend == null);
     assert(name.length <= 255 && name.isAscii,
         'Box names need to be ASCII Strings with a max length of 255.');
     name = name.toLowerCase();
@@ -94,13 +93,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
       BoxBaseImpl<E>? newBox;
       try {
-        StorageBackend backend;
-        if (bytes != null) {
-          backend = StorageBackendMemory(bytes, cipher);
-        } else {
-          backend = await _manager.open(
-              name, path ?? homePath, recovery, cipher, collection);
-        }
+        backend ??= await manager.open(
+            name, path ?? homePath, recovery, cipher, collection);
 
         if (lazy) {
           newBox = LazyBoxImpl<E>(this, name, comparator, compaction, backend);
@@ -132,15 +126,20 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String? path,
-    Uint8List? bytes,
+    @Deprecated('Use [backend] with a [StorageBackendMemory] instead')
+        Uint8List? bytes,
+    StorageBackend? backend,
     String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
     }
+    if (backend == null && bytes != null) {
+      backend = StorageBackendMemory(bytes, encryptionCipher);
+    }
     return await _openBox<E>(name, false, encryptionCipher, keyComparator,
-        compactionStrategy, crashRecovery, path, bytes, collection) as Box<E>;
+        compactionStrategy, crashRecovery, path, backend, collection) as Box<E>;
   }
 
   @override
@@ -153,6 +152,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String? path,
     String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
+    StorageBackend? backend,
   }) async {
     if (encryptionKey != null) {
       encryptionCipher = HiveAesCipher(encryptionKey);
@@ -165,9 +165,53 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         compactionStrategy,
         crashRecovery,
         path,
-        null,
+        backend,
         collection) as LazyBox<E>;
   }
+
+  /*Future<Map<String, LazyBox>> openBoxCollection(
+      String name, Set<String> boxNames, HiveCipher? cipher, String? path) async
+      {
+    final backends =
+        await manager.openCollection(boxNames, path, false, cipher, name);
+    return Map.fromEntries(await Future.wait(boxNames.map((boxName) async {
+      assert(boxName.length <= 255 && boxName.isAscii,
+          'Box names need to be ASCII Strings with a max length of 255.');
+      boxName = boxName.toLowerCase();
+      if (isBoxOpen(boxName)) {
+        return MapEntry(boxName, lazyBox(boxName));
+      } else {
+        if (_openingBoxes.containsKey(boxName)) {
+          await _openingBoxes[boxName];
+          return MapEntry(boxName, lazyBox(boxName));
+        }
+
+        var completer = Completer();
+        _openingBoxes[boxName] = completer.future;
+
+        BoxBaseImpl? newBox;
+        try {
+          final backend = backends[boxName]!;
+
+          newBox = LazyBoxImpl(this, boxName, defaultKeyComparator,
+              defaultCompactionStrategy, backend);
+
+          await newBox.initialize();
+          _boxes[boxName] = newBox;
+
+          completer.complete();
+          return MapEntry(boxName, newBox as LazyBoxImpl);
+        } catch (error, stackTrace) {
+          newBox?.close();
+          completer.completeError(error, stackTrace);
+          rethrow;
+        } finally {
+          // ignore: unawaited_futures
+          _openingBoxes.remove(boxName);
+        }
+      }
+    })));
+  }*/
 
   BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy]) {
     var lowerCaseName = name.toLowerCase();
@@ -229,7 +273,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     if (box != null) {
       await box.deleteFromDisk();
     } else {
-      await _manager.deleteBox(lowerCaseName, path ?? homePath, collection);
+      await manager.deleteBox(lowerCaseName, path ?? homePath, collection);
     }
   }
 
@@ -251,7 +295,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   Future<bool> boxExists(String name,
       {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
-    return await _manager.boxExists(
-        lowerCaseName, path ?? homePath, collection);
+    return await manager.boxExists(lowerCaseName, path ?? homePath, collection);
   }
 }
