@@ -71,12 +71,15 @@ class BoxCollection implements implementation.BoxCollection {
     final box = boxCreator?.call(boxIdentifier, this) as CollectionBox<V>? ??
         CollectionBox<V>(boxIdentifier, this);
     if (preload) {
-      box._cachedBox = await Hive.openBox(
-        box.name,
-        encryptionCipher: _cipher,
-        collection: name,
-        backend: _backends[name]!,
-      );
+      final hive = Hive as HiveImpl;
+      box._cachedBox = Hive.isBoxOpen(box.name)
+          ? hive.lazyBox(box.name, name)
+          : await Hive.openBox(
+              box.name,
+              encryptionCipher: _cipher,
+              collection: name,
+              backend: _backends[name]!,
+            );
     }
     _openBoxes.add(box);
     return box;
@@ -117,7 +120,7 @@ class BoxCollection implements implementation.BoxCollection {
 
   @override
   Future<void> deleteFromDisk() => Future.wait(
-        boxNames.map(Hive.deleteBoxFromDisk),
+        boxNames.map((box) => Hive.deleteBoxFromDisk(box, collection: name)),
       );
 }
 

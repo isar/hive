@@ -22,7 +22,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   static final BackendManagerInterface _defaultBackendManager =
       BackendManager.select();
 
-  final _boxes = HashMap<String, BoxBaseImpl>();
+  final _boxes = HashMap<TupleBoxKey, BoxBaseImpl>();
   final _openingBoxes = HashMap<String, Future>();
   BackendManagerInterface? _managerOverride;
   final Random _secureRandom = Random.secure();
@@ -103,7 +103,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         }
 
         await newBox.initialize();
-        _boxes[name] = newBox;
+        _boxes[TupleBoxKey(name, collection)] = newBox;
 
         completer.complete();
         return newBox;
@@ -213,9 +213,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     })));
   }*/
 
-  BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy]) {
+  BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy, String? collection]) {
     var lowerCaseName = name.toLowerCase();
-    var box = _boxes[lowerCaseName];
+    var box = _boxes[TupleBoxKey(lowerCaseName, collection)];
     if (box != null) {
       if ((lazy == null || box.lazy == lazy) && box.valueType == E) {
         return box as BoxBase<E>;
@@ -232,21 +232,22 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   /// Not part of public API
-  BoxBase? getBoxWithoutCheckInternal(String name) {
+  BoxBase? getBoxWithoutCheckInternal(String name, [String? collection]) {
     var lowerCaseName = name.toLowerCase();
-    return _boxes[lowerCaseName];
+    return _boxes[TupleBoxKey(lowerCaseName, collection)];
   }
 
   @override
-  Box<E> box<E>(String name) => _getBoxInternal<E>(name, false) as Box<E>;
+  Box<E> box<E>(String name, [String? collection]) =>
+      _getBoxInternal<E>(name, false, collection) as Box<E>;
 
   @override
-  LazyBox<E> lazyBox<E>(String name) =>
-      _getBoxInternal<E>(name, true) as LazyBox<E>;
+  LazyBox<E> lazyBox<E>(String name, [String? collection]) =>
+      _getBoxInternal<E>(name, true, collection) as LazyBox<E>;
 
   @override
-  bool isBoxOpen(String name) {
-    return _boxes.containsKey(name.toLowerCase());
+  bool isBoxOpen(String name, [String? collection]) {
+    return _boxes.containsKey(TupleBoxKey(name.toLowerCase(), collection));
   }
 
   @override
@@ -259,17 +260,17 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 
   /// Not part of public API
-  void unregisterBox(String name) {
+  void unregisterBox(String name, [String? collection]) {
     name = name.toLowerCase();
     _openingBoxes.remove(name);
-    _boxes.remove(name);
+    _boxes.remove(TupleBoxKey(name, collection));
   }
 
   @override
   Future<void> deleteBoxFromDisk(String name,
       {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
-    var box = _boxes[lowerCaseName];
+    var box = _boxes[TupleBoxKey(lowerCaseName, collection)];
     if (box != null) {
       await box.deleteFromDisk();
     } else {
@@ -296,5 +297,22 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
     return await manager.boxExists(lowerCaseName, path ?? homePath, collection);
+  }
+}
+
+
+/// tiny helper for map key management...
+class TupleBoxKey {
+  final String box;
+  final String? collection;
+
+  TupleBoxKey(this.box, this.collection);
+
+  @override
+  int get hashCode => box.hashCode + collection.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return hashCode == other.hashCode;
   }
 }
