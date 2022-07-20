@@ -36,7 +36,7 @@ class WebWorkerInterface {
     );
 
     _worker.postMessage(jsify(operation.toJson()));
-    return completer.future;
+    return completer.future.timeout(Duration(seconds: 45));
   }
 
   void _handleMessage(MessageEvent event) {
