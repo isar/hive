@@ -72,12 +72,12 @@ class BoxCollection implements implementation.BoxCollection {
         CollectionBox<V>(boxIdentifier, this);
     if (preload) {
       final hive = Hive as HiveImpl;
-      box._cachedBox = Hive.isBoxOpen(box.name)
-          ? hive.lazyBox(box.name, name)
-          : await Hive.openBox(
+      box._cachedBox = hive.isBoxOpen(box.name, this.name)
+          ? hive.lazyBox(box.name, this.name)
+          : await hive.openBox(
               box.name,
               encryptionCipher: _cipher,
-              collection: name,
+              collection: this.name,
               backend: _backends[name]!,
             );
     }
@@ -137,12 +137,15 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
 
   Future<BoxBase> _getBox() async {
     if (_cachedBox == null || !_cachedBox!.isOpen) {
-      _cachedBox = await Hive.openLazyBox<V>(
-        name,
-        encryptionCipher: boxCollection._cipher,
-        collection: boxCollection.name,
-        backend: boxCollection._backends[name]!,
-      );
+      final hive = Hive as HiveImpl;
+      _cachedBox = hive.isBoxOpen(name, boxCollection.name)
+          ?  hive.lazyBox(name, boxCollection.name)
+          : await hive.openLazyBox(
+              name,
+              encryptionCipher: boxCollection._cipher,
+              collection: boxCollection.name,
+              backend: boxCollection._backends[name]!,
+            );
     }
 
     return _cachedBox!;
