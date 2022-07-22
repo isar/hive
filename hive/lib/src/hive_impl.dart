@@ -23,7 +23,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       BackendManager.select();
 
   final _boxes = HashMap<TupleBoxKey, BoxBaseImpl>();
-  final _openingBoxes = HashMap<String, Future>();
+  final _openingBoxes = HashMap<TupleBoxKey, Future>();
   BackendManagerInterface? _managerOverride;
   final Random _secureRandom = Random.secure();
 
@@ -79,8 +79,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         return box(name);
       }
     } else {
-      if (_openingBoxes.containsKey(name)) {
-        await _openingBoxes[name];
+      if (_openingBoxes.containsKey(TupleBoxKey(name, collection))) {
+        await _openingBoxes[TupleBoxKey(name, collection)];
         if (lazy) {
           return lazyBox(name);
         } else {
@@ -89,7 +89,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       }
 
       var completer = Completer();
-      _openingBoxes[name] = completer.future;
+      _openingBoxes[TupleBoxKey(name, collection)] = completer.future;
 
       BoxBaseImpl<E>? newBox;
       try {
@@ -113,7 +113,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         rethrow;
       } finally {
         // ignore: unawaited_futures
-        _openingBoxes.remove(name);
+        _openingBoxes.remove(TupleBoxKey(name, collection));
       }
     }
   }
@@ -233,7 +233,10 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   /// Not part of public API
   BoxBase? getBoxWithoutCheckInternal(String name, [String? collection]) {
+    print('Fetching box $name');
+    print(_boxes.keys);
     var lowerCaseName = name.toLowerCase();
+    print(_boxes.containsKey(TupleBoxKey(lowerCaseName, collection)));
     return _boxes[TupleBoxKey(lowerCaseName, collection)];
   }
 
@@ -262,7 +265,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   /// Not part of public API
   void unregisterBox(String name, [String? collection]) {
     name = name.toLowerCase();
-    _openingBoxes.remove(name);
+    _openingBoxes.remove(TupleBoxKey(name, collection));
     _boxes.remove(TupleBoxKey(name, collection));
   }
 
@@ -300,7 +303,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   }
 }
 
-
 /// tiny helper for map key management...
 class TupleBoxKey {
   final String box;
@@ -309,7 +311,12 @@ class TupleBoxKey {
   TupleBoxKey(this.box, this.collection);
 
   @override
-  int get hashCode => box.hashCode + collection.hashCode;
+  String toString() => collection == null ? box : '$collection.$box';
+
+  @override
+  int get hashCode => collection == null
+      ? box.hashCode
+      : [box.hashCode, collection.hashCode].hashCode;
 
   @override
   bool operator ==(Object other) {
