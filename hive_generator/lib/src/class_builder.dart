@@ -33,11 +33,6 @@ class ClassBuilder extends Builder {
     // The remaining fields to initialize.
     var fields = setters.toList();
 
-    // Empty classes
-    if (constr!.parameters.isEmpty && fields.isEmpty) {
-      return 'return ${cls.name}();';
-    }
-
     var code = StringBuffer();
     code.writeln('''
     final numOfFields = reader.readByte();
