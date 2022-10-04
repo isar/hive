@@ -36,7 +36,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     var typeId = getTypeId(annotation);
 
     var adapterName = getAdapterName(cls.name, annotation);
-    var builder = cls.isEnum
+    var builder = cls.isDartCoreEnum
         ? EnumBuilder(cls, getters)
         : ClassBuilder(cls, getters, setters);
 
@@ -78,7 +78,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   Set<String> getAllAccessorNames(ClassElement cls) {
     var accessorNames = <String>{};
 
-    var supertypes = cls.allSupertypes.map((it) => it.element);
+    var supertypes = cls.allSupertypes.map((it) => it.element2);
     for (var type in [cls, ...supertypes]) {
       for (var accessor in type.accessors) {
         if (accessor.isSetter) {

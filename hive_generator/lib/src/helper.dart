@@ -32,10 +32,10 @@ bool isLibraryNNBD(Element element) {
   }
 }
 
-Iterable<ClassElement> getTypeAndAllSupertypes(ClassElement cls) {
-  var types = <ClassElement>{};
+Iterable<InterfaceElement> getTypeAndAllSupertypes(ClassElement cls) {
+  var types = <InterfaceElement>{};
   types.add(cls);
-  types.addAll(cls.allSupertypes.map((it) => it.element));
+  types.addAll(cls.allSupertypes.map((it) => it.element2));
   return types;
 }
 
