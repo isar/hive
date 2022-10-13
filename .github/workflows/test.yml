@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dart-channel: ["2.18.2", "2.19.0"]
+        dart-channel: ["2.18.2"]
     steps:
       - uses: actions/checkout@v1
       - uses: dart-lang/setup-dart@v1
