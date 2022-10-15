@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:hive_flutter/adapters.dart';
-import 'package:hive_flutter/src/crypto/hive_aes_native_cbc_cipher.dart';
 import 'package:test/test.dart';
 
 import 'directory.dart';
