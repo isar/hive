@@ -15,10 +15,10 @@ jobs:
         with:
           sdk: ${{ matrix.dart-channel }}
       - name: Install dependencies
-        run: pub get
+        run: dart pub get
         working-directory: hive
       - name: Run tests
-        run: pub run test -p ${{ matrix.test-platform }}
+        run: dart pub run test -p ${{ matrix.test-platform }}
         working-directory: hive
 
   test-hive-flutter:
