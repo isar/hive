@@ -101,6 +101,70 @@ void main() {
       });
     });
 
+    group('.registerNestedAdapters()', () {
+      test('register', () {
+        var parentRegistry = TypeRegistryImpl();
+        parentRegistry.registerNestedAdapters(
+          (registry) {
+            registry.registerAdapter(TestAdapter());
+          },
+          parentTypeId: 4,
+        );
+
+        var resolved = parentRegistry.findAdapterForValue(123)!;
+        expect(resolved.typeId, 36);
+      });
+
+      test('unsupported typeId', () {
+        var registry = TypeRegistryImpl();
+        expect(() => registry.registerNestedAdapters((_) {}, parentTypeId: -1),
+            throwsHiveError('not allowed'));
+        expect(() => registry.registerNestedAdapters((_) {}, parentTypeId: 226),
+            throwsHiveError('not allowed'));
+      });
+
+      test('duplicate parent typeId', () {
+        var parentRegistry = TypeRegistryImpl();
+        parentRegistry.registerNestedAdapters((registry) {}, parentTypeId: 0);
+        expect(
+            () =>
+                parentRegistry.registerNestedAdapters((_) {}, parentTypeId: 0),
+            throwsHiveError('already a TypeAdapter for typeId'));
+
+        expect(() {
+          parentRegistry.registerNestedAdapters(
+            (registry) {
+              registry.registerAdapter(TestAdapter());
+              registry.registerAdapter(TestAdapter());
+            },
+            parentTypeId: 0,
+          );
+        }, throwsHiveError('already a TypeAdapter for typeId'));
+      });
+
+      test('duplicate nested typeId', () {
+        var parentRegistry = TypeRegistryImpl();
+
+        expect(() {
+          parentRegistry.registerNestedAdapters(
+            (registry) {
+              registry.registerAdapter(TestAdapter());
+              registry.registerAdapter(TestAdapter());
+            },
+            parentTypeId: 0,
+          );
+        }, throwsHiveError('already a TypeAdapter for typeId'));
+      });
+
+      test('dynamic type', () {
+        var parentRegistry = TypeRegistryImpl();
+        parentRegistry.registerNestedAdapters(
+          (registry) => registry.registerAdapter<dynamic>(TestAdapter()),
+          parentTypeId: 0,
+        );
+      });
+    });
+
     test('.findAdapterForTypeId()', () {
       var registry = TypeRegistryImpl();
       var adapter = TestAdapter();
