@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive/src/adapters/ignored_type_adapter.dart';
+import 'package:hive/src/registry/nested_type_registry_adapter_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Not part of public API
@@ -43,6 +44,26 @@ class _NullTypeRegistry implements TypeRegistryImpl {
 
   @override
   Never resetAdapters() => throw UnimplementedError();
+
+  @override
+  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId) =>
+      throw UnimplementedError();
+
+  @override
+  void registerNestedTypeRegistryAdapter(
+    NestedTypeRegistryAdapter adapter, {
+    bool internal = false,
+    bool override = false,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  void _checkIsPossibleToRegisterAdapter({
+    required TypeAdapter adapter,
+    required bool internal,
+    required bool override,
+  }) =>
+      throw UnimplementedError();
 }
 
 /// Not part of public API
@@ -81,6 +102,12 @@ class TypeRegistryImpl implements TypeRegistry {
     bool internal = false,
     bool override = false,
   }) {
+    if (adapter is NestedTypeRegistryAdapter) {
+      throw ArgumentError(
+        'use registerNestedTypeRegistryAdapter '
+        'for NestedTypeRegistryAdapter',
+      );
+    }
     if (T == dynamic || T == Object) {
       print(
         'Registering type adapters for dynamic type is must be avoided, '
@@ -91,6 +118,54 @@ class TypeRegistryImpl implements TypeRegistry {
         'registerAdapter<MyType>(MyTypeAdapter())',
       );
     }
+    _checkIsPossibleToRegisterAdapter(
+      adapter: adapter,
+      internal: internal,
+      override: override,
+    );
+    var typeId = adapter.typeId;
+    if (!internal) {
+      typeId = typeId + reservedTypeIds;
+    }
+    var resolved = ResolvedAdapter<T>(adapter, typeId);
+    _typeAdapters[typeId] = resolved;
+  }
+
+  @override
+  NestedTypeRegistryAdapter createNestedTypeRegistryAdapter(int typeId) =>
+      NestedTypeRegistryAdapterImpl(typeId: typeId);
+
+  @override
+  void registerNestedTypeRegistryAdapter(
+    NestedTypeRegistryAdapter adapter, {
+    bool override = false,
+  }) {
+    var internal = false;
+
+    _checkIsPossibleToRegisterAdapter(
+      adapter: adapter,
+      internal: internal,
+      override: override,
+    );
+
+    var typeId = adapter.typeId;
+
+    if (!internal) {
+      typeId = typeId + reservedTypeIds;
+    }
+
+    var resolved = NestedTypeRegistryResolvedAdapter(
+      adapter,
+      typeId,
+    );
+    _typeAdapters[typeId] = resolved;
+  }
+
+  void _checkIsPossibleToRegisterAdapter({
+    required TypeAdapter adapter,
+    required bool internal,
+    required bool override,
+  }) {
     var typeId = adapter.typeId;
     if (!internal) {
       if (typeId < 0 || typeId > 223) {
@@ -114,9 +189,6 @@ class TypeRegistryImpl implements TypeRegistry {
         }
       }
     }
-
-    var resolved = ResolvedAdapter<T>(adapter, typeId);
-    _typeAdapters[typeId] = resolved;
   }
 
   @override
