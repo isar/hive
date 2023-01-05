@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/util/extensions.dart';
 
 /// Not part of public API
 class Frame {
@@ -52,9 +51,8 @@ class Frame {
         throw HiveError('Integer keys need to be in the range 0 - 0xFFFFFFFF');
       }
     } else if (key is String) {
-      if (key.length > 0xFF || !key.isAscii) {
-        throw HiveError(
-            'String keys need to be ASCII Strings with a max length of 255');
+      if (key.length > 0xFF) {
+        throw HiveError('String keys need to be a max length of 255');
       }
     } else {
       throw HiveError('Keys need to be Strings or integers');
@@ -96,6 +94,14 @@ class Frame {
           'length: $length, offset: $offset)';
     }
   }
+
+  @override
+  int get hashCode =>
+      runtimeType.hashCode ^
+      key.hashCode ^
+      value.hashCode ^
+      length.hashCode ^
+      deleted.hashCode;
 }
 
 /// Possible Key types
@@ -104,7 +110,7 @@ class FrameKeyType {
   static const uintT = 0;
 
   /// String key
-  static const asciiStringT = 1;
+  static const utf8StringT = 1;
 }
 
 /// Possible value types

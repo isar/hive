@@ -33,6 +33,40 @@ class TestAdapter2 extends TypeAdapter<int> {
   void write(BinaryWriter writer, obj) {}
 }
 
+class Parent {}
+
+class Child extends Parent {}
+
+class ParentAdapter extends TypeAdapter<Parent> {
+  ParentAdapter([this.typeId = 0]);
+
+  @override
+  final int typeId;
+
+  @override
+  Parent read(BinaryReader reader) {
+    return Parent();
+  }
+
+  @override
+  void write(BinaryWriter writer, Parent obj) {}
+}
+
+class ChildAdapter extends TypeAdapter<Child> {
+  ChildAdapter([this.typeId = 0]);
+
+  @override
+  final int typeId;
+
+  @override
+  Child read(BinaryReader reader) {
+    return Child();
+  }
+
+  @override
+  void write(BinaryWriter writer, Child obj) {}
+}
+
 void main() {
   group('TypeRegistryImpl', () {
     group('.registerAdapter()', () {
@@ -98,6 +132,30 @@ void main() {
         var resolvedAdapter = registry.findAdapterForValue(123)!;
         expect(resolvedAdapter.typeId, 32);
         expect(resolvedAdapter.adapter, adapter1);
+      });
+
+      test(
+          'returns adapter if exact runtime type of value matches ignoring '
+          'registration order', () {
+        final registry = TypeRegistryImpl();
+        final parentAdapter = ParentAdapter(0);
+        final childAdapter = ChildAdapter(1);
+        registry.registerAdapter(parentAdapter);
+        registry.registerAdapter(childAdapter);
+
+        final resolvedAdapter = registry.findAdapterForValue(Child());
+        expect(resolvedAdapter?.typeId, 33);
+        expect(resolvedAdapter?.adapter, childAdapter);
+      });
+
+      test('returns super type adapter for subtype', () {
+        final registry = TypeRegistryImpl();
+        final parentAdapter = ParentAdapter(0);
+        registry.registerAdapter(parentAdapter);
+
+        final resolvedAdapter = registry.findAdapterForValue(Child());
+        expect(resolvedAdapter?.typeId, 32);
+        expect(resolvedAdapter?.adapter, parentAdapter);
       });
     });
 

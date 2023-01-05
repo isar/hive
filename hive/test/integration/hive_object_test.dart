@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'package:hive/src/hive_impl.dart';
 import 'package:test/test.dart';
 
 import 'integration.dart';
@@ -11,6 +10,9 @@ class _TestObject with HiveObjectMixin {
 
   @override
   bool operator ==(dynamic other) => other is _TestObject && other.name == name;
+
+  @override
+  int get hashCode => runtimeType.hashCode ^ name.hashCode;
 }
 
 class _TestObjectAdapter extends TypeAdapter<_TestObject> {
@@ -29,8 +31,8 @@ class _TestObjectAdapter extends TypeAdapter<_TestObject> {
 }
 
 Future _performTest(bool lazy) async {
-  var hive = HiveImpl();
-  hive.registerAdapter(_TestObjectAdapter());
+  var hive = await createHive();
+  hive.registerAdapter<_TestObject>(_TestObjectAdapter());
   var box = await openBox(lazy, hive: hive);
 
   var obj1 = _TestObject('test1');

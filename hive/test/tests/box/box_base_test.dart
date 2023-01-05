@@ -26,6 +26,9 @@ class _BoxBaseMock<E> extends BoxBaseImpl<E> with Mock {
           compactionStrategy,
           backend,
         );
+
+  @override
+  Future<void> flush() => Future.value();
 }
 
 _BoxBaseMock _openBoxBaseMock({
@@ -208,7 +211,7 @@ void main() {
     group('.add()', () {
       test('calls put()', () async {
         var box = _openBoxBaseMock();
-        when(() => box.put(0, 123)).thenAnswer((i) => Future.value(0));
+        when(() => box.put(0, 123)).thenAnswer((i) => Future.value());
 
         expect(await box.add(123), 0);
         verify(() => box.put(0, 123));
@@ -296,6 +299,7 @@ void main() {
         var keystore = MockKeystore();
 
         returnFutureVoid(when(() => backend.clear()));
+
         when(() => keystore.clear()).thenReturn(2);
 
         var box = _openBoxBaseMock(backend: backend, keystore: keystore);
@@ -400,6 +404,7 @@ void main() {
         var box = _openBoxBaseMock(backend: backend, keystore: keystore);
         returnFutureVoid(when(() => keystore.close()));
         returnFutureVoid(when(() => backend.close()));
+
         returnFutureVoid(when(() => backend.deleteFromDisk()));
 
         await box.close();
@@ -418,8 +423,10 @@ void main() {
           keystore: keystore,
           backend: backend,
         );
+        when(() => keystore.clear()).thenReturn(0);
         returnFutureVoid(when(() => keystore.close()));
         returnFutureVoid(when(() => backend.close()));
+        returnFutureVoid(when(() => backend.clear()));
         returnFutureVoid(when(() => backend.deleteFromDisk()));
 
         await box.deleteFromDisk();

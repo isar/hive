@@ -8,17 +8,17 @@ jobs:
     strategy:
       matrix:
         test-platform: [vm, chrome]
-        dart-channel: ["2.12.0", "2.13.0", "2.14.0"]
+        dart-channel: ["2.16.0", "2.18.2"]
     steps:
       - uses: actions/checkout@v1
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.dart-channel }}
       - name: Install dependencies
-        run: pub get
+        run: dart pub get
         working-directory: hive
       - name: Run tests
-        run: pub run test -p ${{ matrix.test-platform }}
+        run: dart pub run test -p ${{ matrix.test-platform }}
         working-directory: hive
 
   test-hive-flutter:
@@ -34,6 +34,10 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           channel: ${{ matrix.flutter-channel }}
+      - name: Override dependency version
+        run: |
+          echo -e "\ndependency_overrides:\n  win32: 2.6.1\n  hive:\n    path: ../hive" >> pubspec.yaml
+        working-directory: hive_flutter
       - name: Install dependencies
         run: flutter pub get
         working-directory: hive_flutter
@@ -45,17 +49,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dart-channel: ["2.12.0", "2.13.0"]
+        dart-channel: ["2.18.2"]
     steps:
       - uses: actions/checkout@v1
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.dart-channel }}
       - name: Install dependencies
-        run: pub get
+        run: dart pub get
         working-directory: hive_generator/example
       - name: Generate build_runner output
-        run: pub run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
         working-directory: hive_generator/example
 
   check-score:

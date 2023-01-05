@@ -33,13 +33,21 @@ void main() {
         Frame.lazy('a' * 255);
         Frame.deleted('a' * 255);
 
-        expect(() => Frame('hellö', null), throwsHiveError());
-        expect(() => Frame.lazy('hellö'), throwsHiveError());
-        expect(() => Frame.deleted('hellö'), throwsHiveError());
+        Frame('hellö', null);
+        Frame.lazy('hellö');
+        Frame.deleted('hellö');
 
         expect(() => Frame('a' * 256, null), throwsHiveError());
         expect(() => Frame.lazy('a' * 256), throwsHiveError());
         expect(() => Frame.deleted('a' * 256), throwsHiveError());
+      });
+
+      test('non int or string keys', () {
+        expect(() => Frame(null, null), throwsHiveError());
+        expect(() => Frame(true, null), throwsHiveError());
+        expect(() => Frame(Object(), null), throwsHiveError());
+        expect(() => Frame(() => 0, null), throwsHiveError());
+        expect(() => Frame(Frame('test', null), null), throwsHiveError());
       });
     });
 

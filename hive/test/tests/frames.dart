@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:hive/hive.dart';
+import 'package:hive/src/adapters/date_time_adapter.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/hive_impl.dart';
@@ -12,7 +14,7 @@ export '../generated/frame_values_encrypted.g.dart';
 export '../generated/frames.g.dart';
 export '../generated/frames_encrypted.g.dart';
 
-TypeRegistry get testRegistry => HiveImpl.test();
+TypeRegistry get testRegistry => HiveImpl();
 
 class _HiveAesCipherStaticIV extends HiveAesCipher {
   _HiveAesCipherStaticIV() : super(Uint8List.fromList(List.filled(32, 1)));
@@ -78,8 +80,8 @@ List<Frame> get testFrames => <Frame>[
         'Map': {'Key': 'Val', 'Key2': 2}
       }),
       Frame('DateTime test', [
-        DateTime.fromMillisecondsSinceEpoch(0),
-        DateTime.fromMillisecondsSinceEpoch(1566656623020),
+        DateTimeWithoutTZ.fromMillisecondsSinceEpoch(0),
+        DateTimeWithoutTZ.fromMillisecondsSinceEpoch(1566656623020),
       ]),
       Frame('BigInt Test',
           BigInt.parse('1234567890123456789012345678901234567890'))
@@ -157,7 +159,7 @@ void expectFrames(Iterable<Frame> f1, Iterable<Frame> f2) {
 
 void buildGoldens() async {
   Future<void> generate(String fileName, String varName,
-      Uint8List Function(Frame frame) transformer) async {
+      FutureOr<Uint8List> Function(Frame frame) transformer) async {
     var file = File('test/generated/$fileName.g.dart');
     await file.create();
     var code = StringBuffer();
@@ -165,7 +167,7 @@ void buildGoldens() async {
     code.writeln('final $varName = [');
     for (var frame in testFrames) {
       code.writeln('// ${frame.key}');
-      var bytes = transformer(frame);
+      var bytes = await transformer(frame);
       code.writeln('Uint8List.fromList(${bytes.toString()}),');
     }
     code.writeln('];');
@@ -187,9 +189,10 @@ void buildGoldens() async {
     writer.writeFrame(f, cipher: testCipher);
     return writer.toBytes();
   });
-  await generate('frame_values_encrypted', 'frameValuesBytesEncrypted', (f) {
-    var writer = BinaryWriterImpl(HiveImpl())
-      ..writeEncrypted(f.value, testCipher, writeTypeId: false);
+  await generate('frame_values_encrypted', 'frameValuesBytesEncrypted',
+      (f) async {
+    var writer = BinaryWriterImpl(HiveImpl());
+    await writer.writeEncrypted(f.value, testCipher, writeTypeId: false);
     return writer.toBytes();
   });
 }

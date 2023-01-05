@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -11,7 +12,7 @@ import 'package:meta/meta.dart';
 
 /// Not part of public API
 class BinaryWriterImpl extends BinaryWriter {
-  static const _initBufferSize = 256;
+  static const _initBufferSize = 4096;
 
   final TypeRegistryImpl _typeRegistry;
   Uint8List _buffer = Uint8List(_initBufferSize);
@@ -242,9 +243,10 @@ class BinaryWriterImpl extends BinaryWriter {
     ArgumentError.checkNotNull(key);
 
     if (key is String) {
-      writeByte(FrameKeyType.asciiStringT);
-      writeByte(key.length);
-      _addBytes(key.codeUnits);
+      writeByte(FrameKeyType.utf8StringT);
+      var bytes = BinaryWriter.utf8Encoder.convert(key);
+      writeByte(bytes.length);
+      _addBytes(bytes);
     } else {
       writeByte(FrameKeyType.uintT);
       writeUint32(key as int);
@@ -267,7 +269,7 @@ class BinaryWriterImpl extends BinaryWriter {
   }
 
   /// Not part of public API
-  int writeFrame(Frame frame, {HiveCipher? cipher}) {
+  Future<int> writeFrame(Frame frame, {HiveCipher? cipher}) async {
     ArgumentError.checkNotNull(frame);
 
     var startOffset = _offset;
@@ -280,7 +282,7 @@ class BinaryWriterImpl extends BinaryWriter {
       if (cipher == null) {
         write(frame.value);
       } else {
-        writeEncrypted(frame.value, cipher);
+        await writeEncrypted(frame.value, cipher);
       }
     }
 
@@ -393,8 +395,8 @@ class BinaryWriterImpl extends BinaryWriter {
   /// Not part of public API
   @pragma('vm:prefer-inline')
   @pragma('dart2js:tryInline')
-  void writeEncrypted(dynamic value, HiveCipher cipher,
-      {bool writeTypeId = true}) {
+  FutureOr<void> writeEncrypted(dynamic value, HiveCipher cipher,
+      {bool writeTypeId = true}) async {
     var valueWriter = BinaryWriterImpl(_typeRegistry)
       ..write(value, writeTypeId: writeTypeId);
     var inp = valueWriter._buffer;
@@ -402,7 +404,7 @@ class BinaryWriterImpl extends BinaryWriter {
 
     _reserveBytes(cipher.maxEncryptedSize(inp));
 
-    var len = cipher.encrypt(inp, 0, inpLength, _buffer, _offset);
+    var len = await cipher.encrypt(inp, 0, inpLength, _buffer, _offset);
 
     _offset += len;
   }

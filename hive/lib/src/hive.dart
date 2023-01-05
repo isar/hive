@@ -5,7 +5,11 @@ abstract class HiveInterface implements TypeRegistry {
   /// Initialize Hive by giving it a home directory.
   ///
   /// (Not necessary in the browser)
-  void init(String path);
+  void init(
+    String? path, {
+    HiveStorageBackendPreference backendPreference =
+        HiveStorageBackendPreference.native,
+  });
 
   /// Opens a box.
   ///
@@ -18,8 +22,11 @@ abstract class HiveInterface implements TypeRegistry {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String? path,
-    Uint8List? bytes,
-    @deprecated List<int>? encryptionKey,
+    @Deprecated('Use [backend] with a [StorageBackendMemory] instead')
+        Uint8List? bytes,
+    StorageBackend? backend,
+    String? collection,
+    @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
   });
 
   /// Opens a lazy box.
@@ -33,7 +40,9 @@ abstract class HiveInterface implements TypeRegistry {
     CompactionStrategy compactionStrategy = defaultCompactionStrategy,
     bool crashRecovery = true,
     String? path,
-    @deprecated List<int>? encryptionKey,
+    String? collection,
+    @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
+    StorageBackend? backend,
   });
 
   /// Returns a previously opened box.
@@ -51,7 +60,8 @@ abstract class HiveInterface implements TypeRegistry {
   /// Removes the file which contains the box and closes the box.
   ///
   /// In the browser, the IndexedDB database is being removed.
-  Future<void> deleteBoxFromDisk(String name, {String? path});
+  Future<void> deleteBoxFromDisk(String name,
+      {String? path, String? collection});
 
   /// Deletes all currently open boxes from disk.
   ///
@@ -63,6 +73,18 @@ abstract class HiveInterface implements TypeRegistry {
 
   /// Checks if a box exists
   Future<bool> boxExists(String name, {String? path});
+
+  /// Clears all registered adapters.
+  ///
+  /// To register an adapter use [registerAdapter].
+  ///
+  /// NOTE: [resetAdapters] also clears the default adapters registered
+  /// by Hive.
+  ///
+  /// WARNING: This method is only intended to be used for integration and
+  /// unit tests and SHOULD not be used in production code.
+  @visibleForTesting
+  void resetAdapters();
 }
 
 ///

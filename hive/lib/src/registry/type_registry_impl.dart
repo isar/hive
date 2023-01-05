@@ -3,6 +3,21 @@ import 'package:hive/src/adapters/ignored_type_adapter.dart';
 import 'package:hive/src/registry/nested_type_registry_adapter_impl.dart';
 import 'package:meta/meta.dart';
 
+/// Not part of public API
+///
+/// Needed to codegen the TypeRegistry mock
+@visibleForTesting
+class ResolvedAdapter<T> {
+  final TypeAdapter adapter;
+  final int typeId;
+
+  ResolvedAdapter(this.adapter, this.typeId);
+
+  bool matchesRuntimeType(dynamic value) => value.runtimeType == T;
+
+  bool matchesType(dynamic value) => value is T;
+}
+
 class _NullTypeRegistry implements TypeRegistryImpl {
   const _NullTypeRegistry();
 
@@ -64,10 +79,16 @@ class TypeRegistryImpl implements TypeRegistry {
 
   /// Not part of public API
   ResolvedAdapter? findAdapterForValue(dynamic value) {
+    ResolvedAdapter? match;
     for (var adapter in _typeAdapters.values) {
-      if (adapter.matches(value)) return adapter;
+      if (adapter.matchesRuntimeType(value)) {
+        return adapter;
+      }
+      if (adapter.matchesType(value) && match == null) {
+        match = adapter;
+      }
     }
-    return null;
+    return match;
   }
 
   /// Not part of public API
@@ -183,7 +204,6 @@ class TypeRegistryImpl implements TypeRegistry {
     return findAdapterForTypeId(typeId) != null;
   }
 
-  /// Not part of public API
   void resetAdapters() {
     _typeAdapters.clear();
   }

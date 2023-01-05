@@ -1,3 +1,67 @@
+# 3.0.0-dev
+
+### Enchantments
+
+- Implemented in-memory storage backend
+- Added `notify` parameter to public APIs
+- Web Worker support
+- Threaded AesCipher support (requires hive_flutter >=2.0.0-dev)
+
+# 2.2.3
+
+### Enhancements
+
+- Exposed `resetAdapters` method for testing - [#1014](https://github.com/hivedb/hive/pull/1014)
+- Removed unnecessary print statement - [#1015](https://github.com/hivedb/hive/pull/1015)
+
+# 2.2.2
+
+### Fixes
+
+- Register DateTime adapter on web - [#983](https://github.com/hivedb/hive/pull/983)
+
+# 2.2.1
+
+### Fixes
+
+- Retracted hive@2.2.0 from pub.dev
+- Fixed hive web backend null value exception - [#968](https://github.com/hivedb/hive/pull/968)
+
+# 2.2.0
+
+### Enhancements
+
+- Added multiple storage backends for web - [#956](https://github.com/hivedb/hive/pull/956)
+
+# 2.1.0
+
+### Fixes
+
+- Do not return uninitialized box - [#916](https://github.com/hivedb/hive/pull/916)
+
+### Enhancements
+
+- Adapter type inheritance - [#927](https://github.com/hivedb/hive/pull/927)
+- UTF8 keys - [#928](https://github.com/hivedb/hive/pull/928)
+
+# 2.0.6
+
+### Fixes
+
+- Fixed issue caused database to crash when executing crash recovery - [#914](https://github.com/hivedb/hive/pull/914)
+
+# 2.0.5
+
+### Enhancements
+
+- Get IndexedDB selectively based on window property - [#802](https://github.com/hivedb/hive/pull/802)
+- Added `path` parameter to `boxExists` and `deleteBoxFromDisk` methods - [#776](https://github.com/hivedb/hive/pull/776)
+- Added `flush` method to boxes - [#852](https://github.com/hivedb/hive/pull/852)
+
+### Fixes
+
+- Don't loose track of box objects if init crashes - [#846](https://github.com/hivedb/hive/pull/846)
+
 # 2.0.4
 
 ### Enhancements

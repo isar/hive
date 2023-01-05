@@ -58,17 +58,20 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
   }
 
   @override
-  Future<void> putAll(Map<dynamic, E> kvPairs) {
+  Future<void> putAll(
+    Map<dynamic, E> kvPairs, {
+    bool notify = true,
+  }) {
     var frames = <Frame>[];
     for (var key in kvPairs.keys) {
       frames.add(Frame(key, kvPairs[key]));
     }
 
-    return _writeFrames(frames);
+    return _writeFrames(frames, notify: notify);
   }
 
   @override
-  Future<void> deleteAll(Iterable<dynamic> keys) {
+  Future<void> deleteAll(Iterable<dynamic> keys, {bool notify = true}) {
     var frames = <Frame>[];
     for (var key in keys) {
       if (keystore.containsKey(key)) {
@@ -76,13 +79,16 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
       }
     }
 
-    return _writeFrames(frames);
+    return _writeFrames(frames, notify: notify);
   }
 
-  Future<void> _writeFrames(List<Frame> frames) async {
+  Future<void> _writeFrames(
+    List<Frame> frames, {
+    bool notify = true,
+  }) async {
     checkOpen();
 
-    if (!keystore.beginTransaction(frames)) return;
+    if (!keystore.beginTransaction(frames, notify: notify)) return;
 
     try {
       await backend.writeFrames(frames);
@@ -102,5 +108,10 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
       map[frame.key] = frame.value as E;
     }
     return map;
+  }
+
+  @override
+  Future<void> flush() async {
+    await backend.flush();
   }
 }

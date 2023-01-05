@@ -12,11 +12,12 @@ class AdapterField {
 }
 
 abstract class Builder {
-  final ClassElement cls;
+  final InterfaceElement interface;
   final List<AdapterField> getters;
   final List<AdapterField> setters;
 
-  Builder(this.cls, this.getters, [this.setters = const <AdapterField>[]]);
+  Builder(this.interface, this.getters,
+      [this.setters = const <AdapterField>[]]);
 
   String buildRead();
 

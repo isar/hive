@@ -1,4 +1,3 @@
-@Skip('Cannot run with sound null safety')
 import 'dart:typed_data';
 
 import 'package:hive/src/crypto/aes_cbc_pkcs7.dart';
@@ -11,7 +10,7 @@ import 'message.dart';
 PaddedBlockCipherImpl getCipher() {
   var pcCipher = PaddedBlockCipherImpl(
     PKCS7Padding(),
-    CBCBlockCipher(AESFastEngine()),
+    CBCBlockCipher(AESEngine()),
   );
   pcCipher.init(
     true,

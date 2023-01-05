@@ -1,46 +1,33 @@
-import 'dart:html';
-import 'dart:indexed_db';
-import 'dart:js' as js;
 import 'package:hive/hive.dart';
-import 'package:hive/src/backend/js/storage_backend_js.dart';
 import 'package:hive/src/backend/storage_backend.dart';
+import 'package:hive/src/backend/stub/backend_manager_memory.dart';
+
+import 'native/backend_manager.dart' as native;
+import 'web_worker/backend_manager.dart' as web_worker;
 
 /// Opens IndexedDB databases
-class BackendManager implements BackendManagerInterface {
-  IdbFactory? get indexedDB => js.context.hasProperty('window')
-      ? window.indexedDB
-      : WorkerGlobalScope.instance.indexedDB;
+abstract class BackendManager {
+  // caching the backend manager as it makes no sense to have different backends
+  // within the same application
+  static BackendManagerInterface? _manager;
 
-  @override
-  Future<StorageBackend> open(
-      String name, String? path, bool crashRecovery, HiveCipher? cipher) async {
-    var db = await indexedDB!.open(name, version: 1, onUpgradeNeeded: (e) {
-      var db = e.target.result as Database;
-      if (!db.objectStoreNames!.contains('box')) {
-        db.createObjectStore('box');
+  const BackendManager._();
+
+  static BackendManagerInterface select(
+      [HiveStorageBackendPreference? backendPreference]) {
+    if (_manager == null) {
+      if (backendPreference is HiveStorageBackendPreferenceWebWorker) {
+        _manager = web_worker.BackendManagerWebWorker(backendPreference);
+      } else if (backendPreference == HiveStorageBackendPreference.native ||
+          backendPreference == null) {
+        _manager = native.BackendManager();
+      } else if (backendPreference == HiveStorageBackendPreference.memory) {
+        _manager = BackendManagerMemory();
+      } else {
+        throw UnimplementedError(
+            '$backendPreference is not a known HiveStorageBackendPreference');
       }
-    });
-
-    return StorageBackendJs(db, cipher);
-  }
-
-  @override
-  Future<void> deleteBox(String name, String? path) {
-    return indexedDB!.deleteDatabase(name);
-  }
-
-  @override
-  Future<bool> boxExists(String name, String? path) async {
-    // https://stackoverflow.com/a/17473952
-    try {
-      var _exists = true;
-      await indexedDB!.open(name, version: 1, onUpgradeNeeded: (e) {
-        e.target.transaction!.abort();
-        _exists = false;
-      });
-      return _exists;
-    } catch (error) {
-      return false;
     }
+    return _manager!;
   }
 }

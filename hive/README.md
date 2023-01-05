@@ -7,9 +7,10 @@
 
 Hive is a lightweight and blazing fast key-value database written in pure Dart. Inspired by [Bitcask](https://en.wikipedia.org/wiki/Bitcask).
 
-### [Documentation & Samples](https://docs.hivedb.dev/) 📖
+[Documentation & Samples](https://docs.hivedb.dev/) 📖
 
-If you need queries, multi-isolate support or links between objects check out [Isar Database](https://github.com/isar/isar).
+### Before you start
+Consider using [Isar](https://github.com/isar/isar), a Flutter database by the author of Hive that is superior in every way!
 
 ## Features
 
@@ -37,6 +38,70 @@ var name = box.get('name');
 
 print('Name: $name');
 ```
+
+## BoxCollections
+
+`BoxCollections` are a set of boxes which can be similarly used as normal boxes, except of that
+they dramatically improve speed on web. They support opening and closing all boxes of a collection
+at once and more efficiently store data in indexed DB on web.
+
+Aside, they also expose Transactions which can be used to speed up tremendous numbers of database
+transactions on web.
+
+On `dart:io` platforms, there is no performance gain by BoxCollections or Transactions. Only
+BoxCollections might be useful for some box hierarchy and development experience.
+
+```dart
+// Create a box collection
+  final collection = await BoxCollection.open(
+    'MyFirstFluffyBox', // Name of your database
+    {'cats', 'dogs'}, // Names of your boxes
+    path: './', // Path where to store your boxes (Only used in Flutter / Dart IO)
+    key: HiveCipher(), // Key to encrypt your boxes (Only used in Flutter / Dart IO)
+  );
+
+  // Open your boxes. Optional: Give it a type.
+  final catsBox = collection.openBox<Map>('cats');
+
+  // Put something in
+  await catsBox.put('fluffy', {'name': 'Fluffy', 'age': 4});
+  await catsBox.put('loki', {'name': 'Loki', 'age': 2});
+
+  // Get values of type (immutable) Map?
+  final loki = await catsBox.get('loki');
+  print('Loki is ${loki?['age']} years old.');
+
+  // Returns a List of values
+  final cats = await catsBox.getAll(['loki', 'fluffy']);
+  print(cats);
+
+  // Returns a List<String> of all keys
+  final allCatKeys = await catsBox.getAllKeys();
+  print(allCatKeys);
+
+  // Returns a Map<String, Map> with all keys and entries
+  final catMap = await catsBox.getAllValues();
+  print(catMap);
+
+  // delete one or more entries
+  await catsBox.delete('loki');
+  await catsBox.deleteAll(['loki', 'fluffy']);
+
+  // ...or clear the whole box at once
+  await catsBox.clear();
+
+  // Speed up write actions with transactions
+  await collection.transaction(
+    () async {
+      await catsBox.put('fluffy', {'name': 'Fluffy', 'age': 4});
+      await catsBox.put('loki', {'name': 'Loki', 'age': 2});
+      // ...
+    },
+    boxNames: ['cats'], // By default all boxes become blocked.
+    readOnly: false,
+  );
+```
+
 
 ## Store objects
 
@@ -145,6 +210,35 @@ class SettingsPage extends StatelessWidget {
 ```
 
 Boxes are cached and therefore fast enough to be used directly in the `build()` method of Flutter widgets.
+
+### Native AES crypto implementation
+
+When using Flutter, Hive supports native encryption using [package:cryptography](https://pub.dev/packages/cryptography)
+and [package:cryptography_flutter](https://pub.dev/packages/cryptography_flutter).
+
+Native AES implementations tremendously speed up operations on encrypted Boxes.
+
+Please follow these steps:
+
+1. add dependency to pubspec.yaml
+
+```yaml
+dependencies:
+  cryptography_flutter: ^2.0.2
+```
+
+2. enable native implementations
+
+```dart
+import 'package:cryptography_flutter/cryptography_flutter.dart';
+
+void main() {
+  // Enable Flutter cryptography
+  FlutterCryptography.enable();
+
+  // ....
+}
+```
 
 ## Benchmark
 

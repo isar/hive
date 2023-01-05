@@ -1,11 +1,11 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:hive/hive.dart';
 import 'package:hive_generator/src/builder.dart';
 import 'package:hive_generator/src/class_builder.dart';
 import 'package:hive_generator/src/enum_builder.dart';
 import 'package:hive_generator/src/helper.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:hive/hive.dart';
 
 class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   static String generateName(String typeName) {
@@ -23,9 +23,9 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   @override
   Future<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) async {
-    var cls = getClass(element);
+    var interface = getInterface(element);
     var library = await buildStep.inputLibrary;
-    var gettersAndSetters = getAccessors(cls, library);
+    var gettersAndSetters = getAccessors(interface, library);
 
     var getters = gettersAndSetters[0];
     verifyFieldIndices(getters);
@@ -35,23 +35,23 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
 
     var typeId = getTypeId(annotation);
 
-    var adapterName = getAdapterName(cls.name, annotation);
-    var builder = cls.isEnum
-        ? EnumBuilder(cls, getters)
-        : ClassBuilder(cls, getters, setters);
+    var adapterName = getAdapterName(interface.name, annotation);
+    var builder = interface is EnumElement
+        ? EnumBuilder(interface, getters)
+        : ClassBuilder(interface, getters, setters);
 
     return '''
-    class $adapterName extends TypeAdapter<${cls.name}> {
+    class $adapterName extends TypeAdapter<${interface.name}> {
       @override
       final int typeId = $typeId;
 
       @override
-      ${cls.name} read(BinaryReader reader) {
+      ${interface.name} read(BinaryReader reader) {
         ${builder.buildRead()}
       }
 
       @override
-      void write(BinaryWriter writer, ${cls.name} obj) {
+      void write(BinaryWriter writer, ${interface.name} obj) {
         ${builder.buildWrite()}
       }
 
@@ -68,18 +68,18 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
     ''';
   }
 
-  ClassElement getClass(Element element) {
+  InterfaceElement getInterface(Element element) {
     check(element.kind == ElementKind.CLASS || element.kind == ElementKind.ENUM,
         'Only classes or enums are allowed to be annotated with @HiveType.');
 
-    return element as ClassElement;
+    return element as InterfaceElement;
   }
 
-  Set<String> getAllAccessorNames(ClassElement cls) {
+  Set<String> getAllAccessorNames(InterfaceElement interface) {
     var accessorNames = <String>{};
 
-    var supertypes = cls.allSupertypes.map((it) => it.element);
-    for (var type in [cls, ...supertypes]) {
+    var supertypes = interface.allSupertypes.map((it) => it.element2);
+    for (var type in [interface, ...supertypes]) {
       for (var accessor in type.accessors) {
         if (accessor.isSetter) {
           var name = accessor.name;
@@ -94,13 +94,13 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
   }
 
   List<List<AdapterField>> getAccessors(
-      ClassElement cls, LibraryElement library) {
-    var accessorNames = getAllAccessorNames(cls);
+      InterfaceElement interface, LibraryElement library) {
+    var accessorNames = getAllAccessorNames(interface);
 
     var getters = <AdapterField>[];
     var setters = <AdapterField>[];
     for (var name in accessorNames) {
-      var getter = cls.lookUpGetter(name, library);
+      var getter = interface.lookUpGetter(name, library);
       if (getter != null) {
         var getterAnn =
             getHiveFieldAnn(getter.variable) ?? getHiveFieldAnn(getter);
@@ -115,7 +115,7 @@ class TypeAdapterGenerator extends GeneratorForAnnotation<HiveType> {
         }
       }
 
-      var setter = cls.lookUpSetter('$name=', library);
+      var setter = interface.lookUpSetter('$name=', library);
       if (setter != null) {
         var setterAnn =
             getHiveFieldAnn(setter.variable) ?? getHiveFieldAnn(setter);

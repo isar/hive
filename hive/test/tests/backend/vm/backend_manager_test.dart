@@ -1,8 +1,8 @@
 @TestOn('vm')
 
 import 'package:hive/src/backend/vm/backend_manager.dart';
-import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 import '../../common.dart';
 

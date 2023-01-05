@@ -5,8 +5,9 @@ import '../util/is_browser.dart';
 import 'integration.dart';
 
 Future _performTest(bool lazy) async {
+  var hive = await createHive();
   var repeat = isBrowser ? 20 : 1000;
-  var box = await openBox(lazy);
+  var box = await openBox(lazy, hive: hive);
   for (var i = 0; i < repeat; i++) {
     for (var frame in valueTestFrames) {
       await box.put('${frame.key}n$i', frame.value);

@@ -52,7 +52,7 @@ String literalToString(DartObject object, List<String> typeInformation) {
   } else if (object.type is FunctionType) {
     badType = 'Function';
   } else if (!reader.isLiteral) {
-    badType = object.type!.element!.name;
+    badType = object.type!.element2!.name;
   }
 
   if (badType != null) {

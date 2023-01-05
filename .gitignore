@@ -94,6 +94,9 @@ unlinked_spec.ds
 # Coverage
 coverage/
 
+# JavaScipt
+web_worker.dart.js*
+
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
