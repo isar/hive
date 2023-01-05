@@ -37,11 +37,9 @@ void main() {
       expect(() => hive.init('MYPATH'), returnsNormally);
       expect(hive.homePath, 'MYPATH');
 
-      expect(
-        hive.findAdapterForValue(DateTime.now())!.adapter,
-        isA<DateTimeWithTimezoneAdapter>(),
-      );
-      expect(hive.findAdapterForTypeId(16)!.adapter, isA<DateTimeAdapter>());
+      expect(hive.findAdapterForValue(DateTime.now())?.adapter,
+          isA<DateTimeWithTimezoneAdapter>());
+      expect(hive.findAdapterForTypeId(16)?.adapter, isA<DateTimeAdapter>());
     });
 
     group('.openBox()', () {

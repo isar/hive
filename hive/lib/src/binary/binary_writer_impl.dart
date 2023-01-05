@@ -334,7 +334,7 @@ class BinaryWriterImpl extends BinaryWriter {
       }
       writeMap(value);
     } else {
-      var resolved = _typeRegistry.findAdapterForValue(value);
+      final resolved = _typeRegistry.findAdapterForValue(value);
       if (resolved == null) {
         throw HiveError('Cannot write, unknown type: ${value.runtimeType}. '
             'Did you forget to register an adapter?');
