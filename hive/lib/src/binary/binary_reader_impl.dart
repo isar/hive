@@ -320,7 +320,7 @@ class BinaryReaderImpl extends BinaryReader {
       case FrameValueType.hiveListT:
         return readHiveList();
       default:
-        final resolved = _typeRegistry.findAdapterForTypeId(typeId);
+        var resolved = _typeRegistry.findAdapterForTypeId(typeId);
         if (resolved == null) {
           throw HiveError('Cannot read, unknown typeId: $typeId. '
               'Did you forget to register an adapter?');
