@@ -31,6 +31,9 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @visibleForTesting
   String? homePath;
 
+  @visibleForTesting
+  bool useLocks = true;
+
   /// Not part of public API
   HiveImpl() {
     _registerDefaultAdapters();
@@ -52,9 +55,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String? path, {
     HiveStorageBackendPreference backendPreference =
         HiveStorageBackendPreference.native,
+    bool useLocks = true,
   }) {
     homePath = path;
     _managerOverride = BackendManager.select(backendPreference);
+    this.useLocks = useLocks;
   }
 
   Future<BoxBase<E>> _openBox<E>(
