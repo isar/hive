@@ -8,6 +8,7 @@ import 'package:hive/src/binary/binary_reader_impl.dart';
 import 'package:hive/src/binary/binary_writer_impl.dart';
 import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/box/keystore.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:hive/src/io/buffered_file_reader.dart';
 import 'package:hive/src/io/buffered_file_writer.dart';
 import 'package:hive/src/io/frame_io_helper.dart';
@@ -78,7 +79,9 @@ class StorageBackendVm extends StorageBackend {
     this.registry = registry;
 
     lockRaf = await _lockFile.open(mode: FileMode.write);
-    await lockRaf.lock();
+    if ((Hive as HiveImpl).useLocks) {
+      await lockRaf.lock();
+    }
 
     int recoveryOffset;
     if (!lazy) {

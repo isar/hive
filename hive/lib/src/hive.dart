@@ -5,10 +5,22 @@ abstract class HiveInterface implements TypeRegistry {
   /// Initialize Hive by giving it a home directory.
   ///
   /// (Not necessary in the browser)
+  ///
+  /// The [useLocks] parameter can be used to turn off lockfiles for the
+  /// database. Locks are used to prevent other processes from opening the
+  /// database and in turn protect the database from corruption. If you turn
+  /// this off, you need to externally synchronize accesses to the database.
+  /// There is no performance benefit from disabling locks. The only benefit is
+  /// that some platforms don't allow you to suspend while holding a lock for a
+  /// file in a shared folder (i.e. on iOS, if you move the database to a
+  /// shared container). If your app isn't crashing because it holds a lock
+  /// during suspension and you don't know that you need this feature and don't
+  /// understand the consequences, don't turn locking off.
   void init(
     String? path, {
     HiveStorageBackendPreference backendPreference =
         HiveStorageBackendPreference.native,
+    bool useLocks = true,
   });
 
   /// Opens a box.
