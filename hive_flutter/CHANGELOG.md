@@ -1,3 +1,6 @@
+## 3.0.0-dev
+
+- Changed initFlutter function like Hive init. Changes could break older versions of app so bumped it to 3.0.0-dev.
 ## 2.0.0-dev
 
 - Threaded AesCipher support
