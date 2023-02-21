@@ -80,7 +80,13 @@ class StorageBackendVm extends StorageBackend {
 
     lockRaf = await _lockFile.open(mode: FileMode.write);
     if ((Hive as HiveImpl).useLocks) {
-      await lockRaf.lock();
+      try {
+        await lockRaf.lock();
+      } catch (e) {
+        // Close the opened file to not leave it blocked for other purposes.
+        await lockRaf.close();
+        rethrow;
+      }
     }
 
     int recoveryOffset;
