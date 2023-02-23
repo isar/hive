@@ -23,7 +23,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       BackendManager.select();
 
   final _boxes = HashMap<TupleBoxKey, BoxBaseImpl>();
-  final _openingBoxes = HashMap<TupleBoxKey, Future>();
+  final _openingBoxes = HashMap<TupleBoxKey, Future<bool>>();
   BackendManagerInterface? _managerOverride;
   final Random _secureRandom = Random.secure();
 
@@ -85,15 +85,19 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       }
     } else {
       if (_openingBoxes.containsKey(TupleBoxKey(name, collection))) {
-        await _openingBoxes[TupleBoxKey(name, collection)];
-        if (lazy) {
-          return lazyBox(name);
+        bool? opened = await _openingBoxes[TupleBoxKey(name, collection)];
+        if (opened ?? false) {
+          if (lazy) {
+            return lazyBox(name);
+          } else {
+            return box(name);
+          }
         } else {
-          return box(name);
+          throw HiveError('The opening of the box $name failed previously.');
         }
       }
 
-      var completer = Completer();
+      var completer = Completer<bool>();
       _openingBoxes[TupleBoxKey(name, collection)] = completer.future;
 
       BoxBaseImpl<E>? newBox;
@@ -110,11 +114,16 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         await newBox.initialize();
         _boxes[TupleBoxKey(name, collection)] = newBox;
 
-        completer.complete();
+        completer.complete(true);
         return newBox;
-      } catch (error, stackTrace) {
-        newBox?.close();
-        completer.completeError(error, stackTrace);
+      } catch (error) {
+        // Finish by signaling an error has occurred. We complete before closing
+        // the box, because that can fail and this the Completer would never get
+        // completed.
+        completer.complete(false);
+        // Await the closing of the box to prevent leaving a hanging Future
+        // which could not be caught.
+        await newBox?.close();
         rethrow;
       } finally {
         // ignore: unawaited_futures
