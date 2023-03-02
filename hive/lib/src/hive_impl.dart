@@ -31,7 +31,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   @visibleForTesting
   String? homePath;
 
-  @visibleForTesting
   bool useLocks = true;
 
   /// Not part of public API

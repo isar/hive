@@ -46,7 +46,7 @@ class StorageBackendVm extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  late final TypeRegistry registry;
+  late TypeRegistry registry;
 
   bool _compactionScheduled = false;
 
