@@ -74,8 +74,8 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String? collection,
   ) async {
     assert(path == null || backend == null);
-    assert(name.length <= 255 && name.isAscii,
-        'Box names need to be ASCII Strings with a max length of 255.');
+    assert(name.length <= 255,
+        'Box names need to be a max length of 255.');
     name = name.toLowerCase();
     if (isBoxOpen(name)) {
       if (lazy) {
