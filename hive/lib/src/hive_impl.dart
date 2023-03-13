@@ -74,8 +74,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String? collection,
   ) async {
     assert(path == null || backend == null);
-    assert(name.length <= 255,
-        'Box names need to be a max length of 255.');
+    assert(name.length <= 255, 'Box names need to be a max length of 255.');
     name = name.toLowerCase();
     if (isBoxOpen(name)) {
       if (lazy) {
@@ -113,8 +112,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         completer.complete();
         return newBox;
       } catch (error, stackTrace) {
-        newBox?.close();
-        completer.completeError(error, stackTrace);
+        try {
+          await newBox?.close();
+        } finally {
+          completer.completeError(error, stackTrace);
+        }
         rethrow;
       } finally {
         // ignore: unawaited_futures
@@ -173,50 +175,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         backend,
         collection) as LazyBox<E>;
   }
-
-  /*Future<Map<String, LazyBox>> openBoxCollection(
-      String name, Set<String> boxNames, HiveCipher? cipher, String? path) async
-      {
-    final backends =
-        await manager.openCollection(boxNames, path, false, cipher, name);
-    return Map.fromEntries(await Future.wait(boxNames.map((boxName) async {
-      assert(boxName.length <= 255 && boxName.isAscii,
-          'Box names need to be ASCII Strings with a max length of 255.');
-      boxName = boxName.toLowerCase();
-      if (isBoxOpen(boxName)) {
-        return MapEntry(boxName, lazyBox(boxName));
-      } else {
-        if (_openingBoxes.containsKey(boxName)) {
-          await _openingBoxes[boxName];
-          return MapEntry(boxName, lazyBox(boxName));
-        }
-
-        var completer = Completer();
-        _openingBoxes[boxName] = completer.future;
-
-        BoxBaseImpl? newBox;
-        try {
-          final backend = backends[boxName]!;
-
-          newBox = LazyBoxImpl(this, boxName, defaultKeyComparator,
-              defaultCompactionStrategy, backend);
-
-          await newBox.initialize();
-          _boxes[boxName] = newBox;
-
-          completer.complete();
-          return MapEntry(boxName, newBox as LazyBoxImpl);
-        } catch (error, stackTrace) {
-          newBox?.close();
-          completer.completeError(error, stackTrace);
-          rethrow;
-        } finally {
-          // ignore: unawaited_futures
-          _openingBoxes.remove(boxName);
-        }
-      }
-    })));
-  }*/
 
   BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy, String? collection]) {
     var lowerCaseName = name.toLowerCase();
