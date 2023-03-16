@@ -31,12 +31,13 @@ class BoxCollection implements implementation.BoxCollection {
     String? path,
     @Deprecated('Use [cipher] instead') HiveCipher? key,
     HiveCipher? cipher,
+    bool useLocks = true,
   }) async {
     // compatibility for [key]
     cipher ??= key;
 
     if (!_hiveInit) {
-      Hive.init(path ?? './');
+      Hive.init(path ?? './', useLocks: useLocks);
       _hiveInit = true;
     }
     final names = boxNames..add('bad_keys');
