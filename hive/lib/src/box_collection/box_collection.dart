@@ -33,6 +33,9 @@ class BoxCollection implements implementation.BoxCollection {
     HiveCipher? cipher,
     bool useLocks = true,
   }) async {
+    if (name.contains('/') || name.trim() != name || name.isEmpty) {
+      throw HiveError('Invalid collection name "$name"');
+    }
     // compatibility for [key]
     cipher ??= key;
 
@@ -140,7 +143,7 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
     if (_cachedBox == null || !_cachedBox!.isOpen) {
       final hive = Hive as HiveImpl;
       _cachedBox = hive.isBoxOpen(name, boxCollection.name)
-          ?  hive.lazyBox(name, boxCollection.name)
+          ? hive.lazyBox(name, boxCollection.name)
           : await hive.openLazyBox(
               name,
               encryptionCipher: boxCollection._cipher,
