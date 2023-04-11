@@ -37,7 +37,7 @@ class BackendManager implements BackendManagerInterface {
       if (path.endsWith(_delimiter)) path = path.substring(0, path.length - 1);
 
       if (collection != null) {
-        path = path + collection;
+        path = '$path/$collection';
       }
 
       var dir = Directory(path);
