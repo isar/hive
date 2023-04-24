@@ -4,7 +4,6 @@ import 'package:hive/src/binary/frame.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:test/test.dart';
 
-
 void main() {
   group('RandomAccessBuffer', () {
     test('empty random access buffer', () {

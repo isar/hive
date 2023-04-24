@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -12,34 +13,44 @@ import 'package:meta/meta.dart';
 /// Not part of public API
 class FrameIoHelper extends FrameHelper {
   /// Not part of public API
+  ///
+  /// helps allowing to override this method in tests
   @visibleForTesting
-  Future<RandomAccessFile> openFile(String path) {
-    return File(path).open();
+  FutureOr<RandomAccessFile> overridableRAF(RandomAccessFile raf) {
+    return raf;
   }
 
   /// Not part of public API
+  ///
+  /// helps allowing to override this method in tests
   @visibleForTesting
-  Future<List<int>> readFile(String path) {
-    return File(path).readAsBytes();
+  Future<Uint8List> overridableReadFile(RandomAccessFile raf) async {
+    final previousPosition = await raf.position(); // likely 0 in any case
+
+    final length = await raf.length();
+    final bytes = await raf.read(length);
+
+    await raf.setPosition(previousPosition);
+
+    return bytes;
   }
 
   /// Not part of public API
   Future<int> keysFromFile(
-      String path, Keystore keystore, HiveCipher? cipher) async {
-    var raf = await openFile(path);
-    var fileReader = BufferedFileReader(raf);
-    try {
-      return await _KeyReader(fileReader).readKeys(keystore, cipher);
-    } finally {
-      await raf.close();
-    }
+      RandomAccessFile raf, Keystore keystore, HiveCipher? cipher) async {
+    // only used for testing override
+    final file = await overridableRAF(raf);
+    final fileReader = BufferedFileReader(file);
+
+    return await _KeyReader(fileReader).readKeys(keystore, cipher);
   }
 
   /// Not part of public API
-  Future<int> framesFromFile(String path, Keystore keystore,
+  Future<int> framesFromFile(RandomAccessFile raf, Keystore keystore,
       TypeRegistry registry, HiveCipher? cipher) async {
-    var bytes = await readFile(path);
-    return framesFromBytes(bytes as Uint8List, keystore, registry, cipher);
+    // only used for testing override
+    final bytes = await overridableReadFile(raf);
+    return framesFromBytes(bytes, keystore, registry, cipher);
   }
 }
 
