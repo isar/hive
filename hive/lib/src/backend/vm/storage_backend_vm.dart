@@ -111,6 +111,7 @@ class StorageBackendVm extends StorageBackend {
         stackTrace: s,
         name: 'hive',
       );
+      rethrow;
     }
   }
 
