@@ -230,7 +230,9 @@ class StorageBackendVm extends StorageBackend {
     await writeRaf.close();
 
     await lockRaf?.close();
-    await _lockFile.delete();
+    if (await _lockFile.exists()) {
+      await _lockFile.delete();
+    }
   }
 
   @override
