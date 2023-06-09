@@ -1,4 +1,7 @@
 import 'dart:io';
+// for [BytesBuilder]
+// ignore: unnecessary_import
+import 'dart:typed_data';
 
 /// Not part of public API
 class BufferedFileWriter {
