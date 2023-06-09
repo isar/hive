@@ -3,8 +3,6 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "example/**"
-  strong-mode:
-    implicit-casts: false
   errors:
     invalid_use_of_protected_member: error
     always_declare_return_types: error
@@ -12,7 +10,6 @@ linter:
   rules:
     - avoid_function_literals_in_foreach_calls
     - avoid_renaming_method_parameters
-    - avoid_returning_null
     - avoid_unused_constructor_parameters
     - await_only_futures
     - camel_case_types

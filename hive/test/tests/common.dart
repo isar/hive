@@ -117,6 +117,7 @@ void returnFutureVoid(When<Future<void>> v) =>
 
 final bool soundNullSafety = (() {
   try {
+    // ignore: cast_from_null_always_fails
     null as Object;
     return false;
   } on TypeError {
