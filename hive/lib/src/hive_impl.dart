@@ -118,8 +118,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         }
         rethrow;
       } finally {
-        // ignore: unawaited_futures
-        _openingBoxes.remove(TupleBoxKey(name, collection));
+        unawaited(_openingBoxes.remove(TupleBoxKey(name, collection)));
       }
     }
   }
