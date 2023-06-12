@@ -13,7 +13,6 @@ import 'package:hive/src/box/default_key_comparator.dart';
 import 'package:hive/src/box/lazy_box_impl.dart';
 import 'package:hive/src/registry/type_registry_impl.dart';
 import 'package:hive/src/util/extensions.dart';
-import 'package:meta/meta.dart';
 
 import 'backend/storage_backend.dart';
 
@@ -27,12 +26,11 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
   BackendManagerInterface? _managerOverride;
   final Random _secureRandom = Random.secure();
 
-  /// Not part of public API
-  @visibleForTesting
   String? homePath;
 
-  @visibleForTesting
   bool useLocks = true;
+
+  bool wasInitialized=false;
 
   /// Not part of public API
   HiveImpl() {
@@ -60,6 +58,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     homePath = path;
     _managerOverride = BackendManager.select(backendPreference);
     this.useLocks = useLocks;
+    wasInitialized=true;
   }
 
   Future<BoxBase<E>> _openBox<E>(
@@ -74,8 +73,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     String? collection,
   ) async {
     assert(path == null || backend == null);
-    assert(name.length <= 255 && name.isAscii,
-        'Box names need to be ASCII Strings with a max length of 255.');
+    assert(name.length <= 255, 'Box names need to be a max length of 255.');
     name = name.toLowerCase();
     if (isBoxOpen(name)) {
       if (lazy) {
@@ -126,8 +124,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         await newBox?.close();
         rethrow;
       } finally {
-        // ignore: unawaited_futures
-        _openingBoxes.remove(TupleBoxKey(name, collection));
+        unawaited(_openingBoxes.remove(TupleBoxKey(name, collection)));
       }
     }
   }
@@ -182,50 +179,6 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
         backend,
         collection) as LazyBox<E>;
   }
-
-  /*Future<Map<String, LazyBox>> openBoxCollection(
-      String name, Set<String> boxNames, HiveCipher? cipher, String? path) async
-      {
-    final backends =
-        await manager.openCollection(boxNames, path, false, cipher, name);
-    return Map.fromEntries(await Future.wait(boxNames.map((boxName) async {
-      assert(boxName.length <= 255 && boxName.isAscii,
-          'Box names need to be ASCII Strings with a max length of 255.');
-      boxName = boxName.toLowerCase();
-      if (isBoxOpen(boxName)) {
-        return MapEntry(boxName, lazyBox(boxName));
-      } else {
-        if (_openingBoxes.containsKey(boxName)) {
-          await _openingBoxes[boxName];
-          return MapEntry(boxName, lazyBox(boxName));
-        }
-
-        var completer = Completer();
-        _openingBoxes[boxName] = completer.future;
-
-        BoxBaseImpl? newBox;
-        try {
-          final backend = backends[boxName]!;
-
-          newBox = LazyBoxImpl(this, boxName, defaultKeyComparator,
-              defaultCompactionStrategy, backend);
-
-          await newBox.initialize();
-          _boxes[boxName] = newBox;
-
-          completer.complete();
-          return MapEntry(boxName, newBox as LazyBoxImpl);
-        } catch (error, stackTrace) {
-          newBox?.close();
-          completer.completeError(error, stackTrace);
-          rethrow;
-        } finally {
-          // ignore: unawaited_futures
-          _openingBoxes.remove(boxName);
-        }
-      }
-    })));
-  }*/
 
   BoxBase<E> _getBoxInternal<E>(String name, [bool? lazy, String? collection]) {
     var lowerCaseName = name.toLowerCase();

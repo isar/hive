@@ -21,8 +21,6 @@ class BoxCollection implements implementation.BoxCollection {
 
   BoxCollection(this.name, this._backends);
 
-  static bool _hiveInit = false;
-
   late CollectionBox<String?> _badKeyBox;
 
   static Future<BoxCollection> open(
@@ -31,18 +29,25 @@ class BoxCollection implements implementation.BoxCollection {
     String? path,
     @Deprecated('Use [cipher] instead') HiveCipher? key,
     HiveCipher? cipher,
+    bool useLocks = true,
   }) async {
+    if (name.contains('/') || name.trim() != name || name.isEmpty) {
+      throw HiveError('Invalid collection name "$name"');
+    }
     // compatibility for [key]
     cipher ??= key;
 
-    if (!_hiveInit) {
-      Hive.init(path ?? './');
-      _hiveInit = true;
+    final hive = Hive as HiveImpl;
+
+    if (!hive.wasInitialized && path != null) {
+      throw HiveError(
+        'You need to initialize Hive or '
+        'provide a path to store the box.',
+      );
     }
     final names = boxNames..add('bad_keys');
-    final backends = await (Hive as HiveImpl)
-        .manager
-        .openCollection(names, path, false, cipher, name);
+    final backends = await hive.manager
+        .openCollection(names, path ?? hive.homePath, false, cipher, name);
 
     final collection = BoxCollection(name, backends);
     if (cipher != null) {
@@ -139,7 +144,7 @@ class CollectionBox<V> implements implementation.CollectionBox<V> {
     if (_cachedBox == null || !_cachedBox!.isOpen) {
       final hive = Hive as HiveImpl;
       _cachedBox = hive.isBoxOpen(name, boxCollection.name)
-          ?  hive.lazyBox(name, boxCollection.name)
+          ? hive.lazyBox(name, boxCollection.name)
           : await hive.openLazyBox(
               name,
               encryptionCipher: boxCollection._cipher,

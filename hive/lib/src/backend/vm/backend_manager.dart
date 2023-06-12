@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:hive/src/backend/storage_backend.dart';
 import 'package:hive/src/backend/vm/storage_backend_vm.dart';
+import 'package:hive/src/hive_impl.dart';
 import 'package:meta/meta.dart';
 
 /// Not part of public API
@@ -37,7 +38,7 @@ class BackendManager implements BackendManagerInterface {
       if (path.endsWith(_delimiter)) path = path.substring(0, path.length - 1);
 
       if (collection != null) {
-        path = path + collection;
+        path = '$path/$collection';
       }
 
       var dir = Directory(path);
@@ -68,9 +69,21 @@ class BackendManager implements BackendManagerInterface {
       bool crashRecovery,
       HiveCipher? cipher,
       String collection) async {
-    return Map.fromEntries(await Future.wait(names.map((e) =>
-        open(e, path, crashRecovery, cipher, collection)
-            .then((value) => MapEntry(e, value)))));
+    return Map.fromEntries(
+      await Future.wait(
+        names.map(
+          (e) => open(
+            e,
+            path ?? (Hive as HiveImpl).homePath,
+            crashRecovery,
+            cipher,
+            collection,
+          ).then(
+            (value) => MapEntry(e, value),
+          ),
+        ),
+      ),
+    );
   }
 
   /// Not part of public API
