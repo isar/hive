@@ -17,7 +17,9 @@ class ChangeNotifier {
 
   /// Not part of public API
   void notify(Frame frame) {
-    _streamController.add(BoxEvent(frame.key, frame.value, frame.deleted));
+    if (!_streamController.isClosed) {
+      _streamController.add(BoxEvent(frame.key, frame.value, frame.deleted));
+    }
   }
 
   /// Not part of public API
