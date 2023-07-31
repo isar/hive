@@ -13,6 +13,15 @@ mixin HiveObjectMixin {
 
   dynamic _key;
 
+  void  set setKey(dynamic key){
+    print("BoxBase");
+    this._key=key;
+  }
+  set setBox(BoxBase box){
+    print("BoxBase");
+    this._box=box;
+  }
+
   // HiveLists containing this object
   final _hiveLists = <HiveList, int>{};
 
