@@ -165,4 +165,43 @@ void main() {
       });
     });
   });
+
+  group('deleteAllAt()', () {
+    test('does nothing when deleting non existing keys', () async {
+      var backend = MockStorageBackend();
+      var keystore = MockKeystore();
+      when(() => keystore.containsKey(any())).thenReturn(false);
+      var box = _getBox(
+        backend: backend,
+        keystore: keystore,
+      );
+
+      await box.deleteAllAt([0, 1, 2]);
+      verifyZeroInteractions(backend);
+    });
+
+    test('delete keys', () async {
+      var frames = [Frame.deleted('key1'), Frame.deleted('key2')];
+      var backend = MockStorageBackend();
+      var keystore = MockKeystore();
+      when(() => keystore.containsKey(any())).thenReturn(true);
+      returnFutureVoid(when(() => backend.writeFrames(any())));
+      when(() => keystore.frames).thenReturn(frames);
+      when(() => keystore.length).thenReturn(-1);
+      when(() => keystore.deletedEntries).thenReturn(-1);
+
+      var box = _getBox(
+        backend: backend,
+        keystore: keystore,
+      );
+
+      await box.deleteAllAt([0, 1]);
+      await box.flush();
+      verifyInOrder([
+        () => backend.writeFrames(frames),
+        () => keystore.insert(Frame.deleted('key1')),
+        () => keystore.insert(Frame.deleted('key2')),
+      ]);
+    });
+  });
 }

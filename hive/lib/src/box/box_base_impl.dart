@@ -164,21 +164,6 @@ abstract class BoxBaseImpl<E> implements BoxBase<E> {
   }
 
   @override
-  Future<void> deleteAllAt(
-    Iterable<int> indexes, {
-    bool notify = true,
-  }) async {
-    for (var index in indexes.toList()..sort((a, b) => b.compareTo(a))) {
-      try {
-        deleteAt(index, notify: notify);
-      } catch (e) {
-        // Ignore errors
-      }
-    }
-    return;
-  }
-
-  @override
   Future<int> clear({bool notify = true}) async {
     checkOpen();
 

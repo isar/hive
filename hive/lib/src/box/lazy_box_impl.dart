@@ -107,6 +107,36 @@ class LazyBoxImpl<E> extends BoxBaseImpl<E> implements LazyBox<E> {
   }
 
   @override
+  Future<void> deleteAllAt(
+    Iterable<int> indexes, {
+    bool notify = true,
+  }) async {
+    checkOpen();
+
+    var frames = <Frame>[];
+    for (var index in indexes) {
+      try {
+        var frame = (keystore.frames as List<Frame>)[index];
+        frames.add(Frame.deleted(frame.key));
+      } catch (e) {
+        // Ignore errors (index doesn't exist)
+      }
+    }
+
+    if (frames.isEmpty) return;
+    await backend.writeFrames(frames);
+
+    for (var frame in frames) {
+      keystore.insert(
+        frame,
+        notify: notify,
+      );
+    }
+
+    await performCompactionIfNeeded();
+  }
+
+  @override
   Future<void> flush() async {
     await backend.flush();
   }

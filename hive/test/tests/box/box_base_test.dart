@@ -293,42 +293,6 @@ void main() {
       });
     });
 
-    group('.deleteAllAt()', () {
-      test('deletes frames at given indexes', () async {
-        var box = _openBoxBaseMock();
-        returnFutureVoid(when(() => box.delete('a')));
-        returnFutureVoid(when(() => box.delete('b')));
-
-        box.keystore.insert(Frame.lazy('a'));
-        box.keystore.insert(Frame.lazy('b'));
-        box.keystore.insert(Frame.lazy('c'));
-
-        await box.deleteAllAt([0, 1]);
-        verify(() => box.delete('a'));
-        verify(() => box.delete('b'));
-      });
-
-      test('does nothing for empty indexes', () async {
-        var box = _openBoxBaseMock();
-        box.keystore.insert(Frame.lazy('a'));
-        box.keystore.insert(Frame.lazy('b'));
-        box.keystore.insert(Frame.lazy('c'));
-
-        await box.deleteAllAt([]);
-        verifyNever(() => box.deleteAll(any()));
-      });
-
-      test('does nothing for invalid indexes', () async {
-        var box = _openBoxBaseMock();
-        box.keystore.insert(Frame.lazy('a'));
-        box.keystore.insert(Frame.lazy('b'));
-        box.keystore.insert(Frame.lazy('c'));
-
-        await box.deleteAllAt([-1, 3]);
-        verifyNever(() => box.deleteAll(any()));
-      });
-    });
-
     group('.clear()', () {
       test('clears keystore and backend', () async {
         var backend = MockStorageBackend();

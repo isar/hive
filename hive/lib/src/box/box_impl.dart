@@ -82,6 +82,21 @@ class BoxImpl<E> extends BoxBaseImpl<E> implements Box<E> {
     return _writeFrames(frames, notify: notify);
   }
 
+  @override
+  Future<void> deleteAllAt(Iterable<int> indexes, {bool notify = true}) {
+    var frames = <Frame>[];
+    for (var index in indexes) {
+      try {
+        var frame = (keystore.frames as List<Frame>)[index];
+        frames.add(Frame.deleted(frame.key));
+      } catch (e) {
+        // Ignore error (index doesn't exist)
+      }
+    }
+
+    return _writeFrames(frames, notify: notify);
+  }
+
   Future<void> _writeFrames(
     List<Frame> frames, {
     bool notify = true,
