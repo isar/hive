@@ -35,7 +35,7 @@ abstract class HiveInterface implements TypeRegistry {
     bool crashRecovery = true,
     String? path,
     @Deprecated('Use [backend] with a [StorageBackendMemory] instead')
-        Uint8List? bytes,
+    Uint8List? bytes,
     StorageBackend? backend,
     String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
@@ -85,6 +85,8 @@ abstract class HiveInterface implements TypeRegistry {
 
   /// Checks if a box exists
   Future<bool> boxExists(String name, {String? path});
+
+  Iterable<String> listBoxes();
 
   /// Clears all registered adapters.
   ///

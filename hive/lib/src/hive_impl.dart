@@ -30,7 +30,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
 
   bool useLocks = true;
 
-  bool wasInitialized=false;
+  bool wasInitialized = false;
 
   /// Not part of public API
   HiveImpl() {
@@ -58,7 +58,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     homePath = path;
     _managerOverride = BackendManager.select(backendPreference);
     this.useLocks = useLocks;
-    wasInitialized=true;
+    wasInitialized = true;
   }
 
   Future<BoxBase<E>> _openBox<E>(
@@ -138,7 +138,7 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
     bool crashRecovery = true,
     String? path,
     @Deprecated('Use [backend] with a [StorageBackendMemory] instead')
-        Uint8List? bytes,
+    Uint8List? bytes,
     StorageBackend? backend,
     String? collection,
     @Deprecated('Use encryptionCipher instead') List<int>? encryptionKey,
@@ -267,6 +267,14 @@ class HiveImpl extends TypeRegistryImpl implements HiveInterface {
       {String? path, String? collection}) async {
     var lowerCaseName = name.toLowerCase();
     return await manager.boxExists(lowerCaseName, path ?? homePath, collection);
+  }
+
+  @override
+  Iterable<String> listBoxes() {
+    var boxesNames = _boxes.values.toList().map((box) {
+      return box.name;
+    });
+    return boxesNames;
   }
 }
 
