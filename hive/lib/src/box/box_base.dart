@@ -134,6 +134,14 @@ abstract class BoxBase<E> {
     bool notify = true,
   });
 
+  /// Deletes all the given [indexes] from the box.
+  ///
+  /// If an index does not exist, it is skipped.
+  Future<void> deleteAllAt(
+    Iterable<int> indexes, {
+    bool notify = true,
+  });
+
   /// Deletes all the given [keys] from the box.
   ///
   /// If a key does not exist, it is skipped.

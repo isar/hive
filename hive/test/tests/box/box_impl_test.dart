@@ -202,6 +202,53 @@ void main() {
       });
     });
 
+    group('.deleteAllAt' '()', () {
+      test('do nothing when deleting non existing keys', () async {
+        var frames = <Frame>[];
+
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
+        var box = _getBox(backend: backend, keystore: keystore);
+        when(() => keystore.frames).thenReturn(frames);
+        when(() => keystore.containsKey(any())).thenReturn(false);
+        returnFutureVoid(when(() => backend.compact(frames)));
+        when(() => keystore.beginTransaction(frames)).thenReturn(false);
+
+        await box.deleteAllAt([0, 1, 2]);
+        verifyZeroInteractions(backend);
+      });
+
+      test('delete keys', () async {
+        var frames = [Frame.deleted('key1'), Frame.deleted('key2')];
+
+        var backend = MockStorageBackend();
+        var keystore = MockKeystore();
+        when(() => backend.supportsCompaction).thenReturn(true);
+        when(() => keystore.beginTransaction(any())).thenReturn(true);
+        returnFutureVoid(when(() => backend.writeFrames(frames)));
+        when(() => keystore.containsKey(any())).thenReturn(true);
+        when(() => keystore.length).thenReturn(-1);
+        when(() => keystore.deletedEntries).thenReturn(-1);
+        when(() => keystore.frames).thenReturn(frames);
+        returnFutureVoid(when(() => backend.compact(frames)));
+
+        var box = _getBox(
+          backend: backend,
+          keystore: keystore,
+          cStrategy: (a, b) => true,
+        );
+
+        await box.deleteAllAt([0, 1]);
+        await box.flush();
+        verifyInOrder([
+          () => keystore.beginTransaction(frames),
+          () => backend.writeFrames(frames),
+          () => keystore.commitTransaction(),
+          () => backend.compact(any()),
+        ]);
+      });
+    });
+
     test('.toMap()', () {
       var box = _getBox(
         keystore: Keystore.debug(frames: [

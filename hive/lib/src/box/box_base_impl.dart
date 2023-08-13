@@ -271,6 +271,13 @@ class _NullBoxBase<E> implements BoxBase<E> {
       throw UnimplementedError();
 
   @override
+  Never deleteAllAt(
+    Iterable<int> indexes, {
+    bool notify = true,
+  }) =>
+      throw UnimplementedError();
+
+  @override
   Never deleteFromDisk() => throw UnimplementedError();
 
   @override
