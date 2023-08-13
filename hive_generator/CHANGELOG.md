@@ -1,5 +1,7 @@
-## 2.0.0
-- Updated `analyzer` version constraints to `>=5.0.0`
+## 2.0.1
+
+- Updated `analyzer` version constraints to `>=4.6.0 <7.0.0`
+- Updates SDK version
 
 ## 1.1.3
 
