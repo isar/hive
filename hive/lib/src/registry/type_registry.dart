@@ -17,6 +17,18 @@ abstract class TypeRegistry {
     bool override = false,
   });
 
+  /// Registers a nested type registry which you can use to register multiple
+  /// nested typeId-s using the [configure] function. The nested registry will
+  /// be registered as a adapter on the current registry itself with a typeId
+  /// provided on the [parentTypeId] argument.
+  ///
+  /// Check [this PR](https://github.com/hivedb/hive/pull/804) for more details.
+  void registerNestedAdapters<T>(
+    void Function(TypeRegistry registry) configure, {
+    required int parentTypeId,
+    bool override = false,
+  });
+
   /// Returns true if a [TypeAdapter] is registered
   bool isAdapterRegistered(int typeId);
 
