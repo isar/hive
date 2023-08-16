@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:hive/hive.dart';
@@ -38,7 +39,7 @@ class StorageBackendVm extends StorageBackend {
 
   /// Not part of public API
   @visibleForTesting
-  late RandomAccessFile lockRaf;
+  RandomAccessFile? lockRaf;
 
   /// Not part of public API
   @visibleForTesting
@@ -78,28 +79,39 @@ class StorageBackendVm extends StorageBackend {
       TypeRegistry registry, Keystore keystore, bool lazy) async {
     this.registry = registry;
 
-    lockRaf = await _lockFile.open(mode: FileMode.write);
     if ((Hive as HiveImpl).useLocks) {
+      final lockRaf = this.lockRaf = await _lockFile.open(mode: FileMode.write);
       await lockRaf.lock();
     }
 
-    int recoveryOffset;
-    if (!lazy) {
-      recoveryOffset =
-          await _frameHelper.framesFromFile(path, keystore, registry, _cipher);
-    } else {
-      recoveryOffset = await _frameHelper.keysFromFile(path, keystore, _cipher);
-    }
-
-    if (recoveryOffset != -1) {
-      if (_crashRecovery) {
-        print('Recovering corrupted box.');
-        await writeRaf.truncate(recoveryOffset);
-        await writeRaf.setPosition(recoveryOffset);
-        writeOffset = recoveryOffset;
+    try {
+      int recoveryOffset;
+      if (!lazy) {
+        recoveryOffset = await _frameHelper.framesFromFile(
+            readRaf, keystore, registry, _cipher);
       } else {
-        throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+        recoveryOffset =
+            await _frameHelper.keysFromFile(readRaf, keystore, _cipher);
       }
+
+      if (recoveryOffset != -1) {
+        if (_crashRecovery) {
+          print('Recovering corrupted box.');
+          await writeRaf.truncate(recoveryOffset);
+          await writeRaf.setPosition(recoveryOffset);
+          writeOffset = recoveryOffset;
+        } else {
+          throw HiveError('Wrong checksum in hive file. Box may be corrupted.');
+        }
+      }
+    } catch (e, s) {
+      log(
+        'Error checking hive recovery offset',
+        error: e,
+        stackTrace: s,
+        name: 'hive',
+      );
+      rethrow;
     }
   }
 
@@ -217,8 +229,10 @@ class StorageBackendVm extends StorageBackend {
     await readRaf.close();
     await writeRaf.close();
 
-    await lockRaf.close();
-    await _lockFile.delete();
+    await lockRaf?.close();
+    if (await _lockFile.exists()) {
+      await _lockFile.delete();
+    }
   }
 
   @override

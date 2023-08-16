@@ -252,8 +252,7 @@ void main() {
             .thenAnswer((i) => Future.value(writeRaf));
         when(() => writeRaf.writeFrom(bytes))
             .thenAnswer((i) => Future.value(writeRaf));
-        when(() => writeRaf.flush())
-            .thenAnswer((i) => Future.value(writeRaf));
+        when(() => writeRaf.flush()).thenAnswer((i) => Future.value(writeRaf));
 
         var backend = _getBackend(writeRaf: writeRaf)
           // The registry needs to be initialized before writing values, and

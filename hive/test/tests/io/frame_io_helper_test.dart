@@ -23,12 +23,12 @@ class _FrameIoHelperTest extends FrameIoHelper {
   _FrameIoHelperTest(this.bytes);
 
   @override
-  Future<RandomAccessFile> openFile(String path) async {
+  Future<RandomAccessFile> overridableRAF(RandomAccessFile raf) async {
     return getTempRaf(bytes);
   }
 
   @override
-  Future<Uint8List> readFile(String path) async {
+  Future<Uint8List> overridableReadFile(RandomAccessFile raf) async {
     return bytes;
   }
 }
@@ -39,8 +39,8 @@ void main() {
       test('frame', () async {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytes));
-        var recoveryOffset =
-            await ioHelper.keysFromFile('null', keystore, null);
+        var recoveryOffset = await ioHelper.keysFromFile(
+            await getTempRaf(const []), keystore, null);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -53,8 +53,8 @@ void main() {
       test('encrypted', () async {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytesEncrypted));
-        var recoveryOffset =
-            await ioHelper.keysFromFile('null', keystore, testCipher);
+        var recoveryOffset = await ioHelper.keysFromFile(
+            await getTempRaf(const []), keystore, testCipher);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -73,8 +73,8 @@ void main() {
       test('frame', () async {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytes));
-        var recoveryOffset =
-            await ioHelper.framesFromFile('null', keystore, testRegistry, null);
+        var recoveryOffset = await ioHelper.framesFromFile(
+            await getTempRaf(const []), keystore, testRegistry, null);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
@@ -88,7 +88,7 @@ void main() {
         var keystore = Keystore.debug();
         var ioHelper = _FrameIoHelperTest(_getBytes(frameBytesEncrypted));
         var recoveryOffset = await ioHelper.framesFromFile(
-            'null', keystore, testRegistry, testCipher);
+            await getTempRaf(const []), keystore, testRegistry, testCipher);
         expect(recoveryOffset, -1);
 
         var testKeystore = Keystore.debug(
