@@ -21,16 +21,16 @@
   </a>
 </p>
 
-Hive is a lightweight and blazing-fast key-value database made for Flutter and Dart.
+Hive is a lightweight and buzzing-fast key-value database made for Flutter and Dart.
 
 ## Features 🌟
 
-- 🌍 Cross-platform: mobile, desktop, browser
-- 🚀 Need for Speed? Hive's got it in spades.
-- 💡 Simple, powerful, & intuitive API
-- 🔐 Tighter than Fort Knox: Encryption is built right in.
-- 🧠 Think multi-tasking: Hive supports multiple isolates.
-- 🔋 No need to pack extras: Hive comes with batteries included.
+- 🌍 Bee everywhere: mobile, desktop, browser
+- 🚀 Buzzing speed: Hive's wings flap faster than the rest!
+- 💡 Sweet, powerful, & intuitive API
+- 🔐 Queen's Guard on duty: Encryption is built right in.
+- 🧠 Thinking in swarms: Hive supports multiple isolates.
+- 🍯 Hive comes with everything a bee needs and more!
 
 > Bee fact: A single bee can visit 5,000 flowers in a day!
 
@@ -67,7 +67,7 @@ void main() async {
 
 #### 🏁 And... Action!
 
-Woohoo! You're all set. Dive right in and let's get buzzing with Hive.
+Woohoo! You're all set. Jump in and let your Hive adventure begin!
 
 ```dart
 import 'package:hive/hive.dart';
@@ -110,9 +110,9 @@ Your journey with Hive begins with opening your first box. Trust me, it's unbee-
 final box = Hive.box(name: 'myBox');
 ```
 
-When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hive will craft a new box for you. If you call it again with the same name, Hive will return the already existing box.
+When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hive will create a new box for you. If you call it again with the same name, Hive will return the already existing box.
 
-You can use `Hive.box()` without providing a name. In this case, Hive will return the default box.
+You can also use `Hive.box()` without providing a name. In this case, Hive will return the default box.
 
 There are optional parameters you can pass to `Hive.box()`:
 
@@ -220,7 +220,7 @@ But remember, bees can't retrieve honey from a comb that's empty or doesn't exis
 ```dart
 final box = Hive.box();
 box.add('Daisy');
-print(box.getAt(1)); // This will make the bees buzz in confusion
+print(box.getAt(1)); // Error! This will make the bees buzz in confusion
 ```
 
 Even if we insert a key-value pair we can still access the values by index.
@@ -244,7 +244,7 @@ box.add('Marigold');
 print(box[0]); // Marigold
 
 box[0] = 'Daffodil';
-box[1] = 'Bluebell'; // This will get the bees in a whirl
+box[1] = 'Bluebell'; // Error! This will get the bees in a whirl
 ```
 
 > Bee fact: To produce one pound of honey, a hive's bees must visit 2 million flowers and fly over 55,000 miles.
@@ -258,6 +258,12 @@ final box = Hive.box<String>(name: 'BeeTreasures');
 box.put('DaisyDance', 'SweetNectarShake');
 box.put('RoseRumba', 'GoldenPollenParty');
 box.put('TulipTango', 777); // Error - You can't fool the bees!
+```
+
+Make sure to use the same type whenever you get the box. Otherwise, you'll get an error:
+
+```dart
+Hive.box<int>(name: 'BeeTreasures'); // Error - We already have a String box!
 ```
 
 > Bee fact: Bees have two stomachs. One is for eating, and the other is for storing nectar collected from flowers or water so they can carry it back to their hive. Talk about a sweet backpack!
@@ -296,9 +302,7 @@ Now, you're all set to let your bees fly:
 ```dart
 final box = Hive.box();
 
-var bumble = Bee()
-  ..name = 'Bumble'
-  ..role = 'Worker';
+final bumble = Bee(name: 'Bumble', role: 'Worker');
 box.put('BumbleID', bumble);
 
 print(box.get('BumbleID')); // Bumble - Worker
@@ -320,7 +324,7 @@ box.write(() {
 });
 
 box.read(() {
-  box.get('nectar1');
+  box.get('nectar1'); // GoldenNectar
 });
 ```
 

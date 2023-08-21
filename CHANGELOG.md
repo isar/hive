@@ -1,3 +1,20 @@
+# 4.0.0-dev.0
+
+⚠️ THIS VERSION OF HIVE IS UNSTABLE AND NOT READY FOR PRODUCTION USE ⚠️
+
+This is a complete rewrite of Hive. It is not compatible with older versions of Hive yet.
+
+Hive now uses Isar internally which brings all the benefits of a native database to Hive.
+
+### Enchantments
+
+- Much more resource efficiency
+- Support for access from multiple isolates
+- Support for transactions
+- No more issues with concurrent access and corruption
+- Vastly reduced startup time
+- No more code generation
+
 # 3.0.0-dev
 
 ### Enchantments
