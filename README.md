@@ -34,7 +34,7 @@ Hive is a lightweight and blazing-fast key-value database made for Flutter and D
 
 > 🐝 A single bee can visit 5,000 flowers in a day!
 
-## Buzz into Action 🐝
+## Buzz into Action 🍯
 
 Feeling the excitement? Great! Let's help you take your first flight with Hive.
 
@@ -182,7 +182,7 @@ final fav = box['favoriteFlower'];
 final moves = box['danceMoves'] ?? 'waggle';
 ```
 
-> 🐝 Worker bees are the only bees most people ever see flying around outside the hive. They're female, and their roles are to forage for food (pollen and nectar from flowers), build and protect the hive, and clean and circulate air by beating their wings.
+> 🐝 Worker bees are the only bees most people ever see flying around outside the hive. They're female, and their roles are to forage for food, build and protect the hive, and more.
 
 ### 🧹 Deleting Data
 

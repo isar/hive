@@ -1,15 +1,6 @@
 part of hive;
 
-/// Boxes contain all of your data. In the browser, each box has its own
-/// IndexedDB database. On all other platforms, each Box is stored in a
-/// seperate file in the Hive home directory.
-///
-/// Write operations are asynchronous but the new values are immediately
-/// available. The returned `Future` finishes when the change is written to
-/// the backend. If this operation fails, the changes are being reverted.
-///
-/// Read operations for normal boxes are synchronous (the entries are in
-/// memory). Lazy boxes have asynchronous read operations.
+/// A box contains and manages a collection of key-value pairs.
 abstract interface class Box<E> {
   /// Whether this box is currently open.
   ///
