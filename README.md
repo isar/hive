@@ -28,7 +28,7 @@ Hive is a lightweight and blazing-fast key-value database made for Flutter and D
 - 🌍 Cross-platform: mobile, desktop, browser
 - 🚀 Need for Speed? Hive's got it in spades.
 - 💡 Simple, powerful, & intuitive API
-- 🔐 Tighter than Fort Knox: We've got encryption built right in.
+- 🔐 Tighter than Fort Knox: Encryption is built right in.
 - 🧠 Think multi-tasking: Hive supports multiple isolates.
 - 🔋 No need to pack extras: Hive comes with batteries included.
 
@@ -83,9 +83,22 @@ print('Name: $name');
 
 # 📚 Hive Handbook
 
-In Hive, data is neatly organized into containers known as boxes. Think of boxes as tables you'd find in SQL, but far more flexible — they don't stick to a set structure and can contain a variety of data.
+In Hive, data is neatly organized into containers known as boxes. Think of boxes as tables you'd find in SQL, but far more flexible — they don't stick to a set structure and can contain a variety of data. Boxes can be encrypted to store sensitive data.
 
-For a small app, a single box might be enough. For more advanced problems, boxes are a great way to organize your data. Boxes can also be encrypted to store sensitive data.
+## Table of Contents
+
+Want to jump to a specific section? Here's a handy table of contents:
+
+- [Opening Boxes](#-opening-boxes)
+- [Closing Boxes](#-bidding-adieu-closing-boxes)
+- [Inserting](#-filling-the-honeycomb-inserting-data-)
+- [Reading](#-extracting-honey-i-mean-data-)
+- [Deleting](#-deleting-data)
+- [Using Boxes like Lists](#-hive-compartments-using-boxes-like-lists)
+- [Type safety](#-type-safety)
+- [Non-primitive Objects](#-bee-yond-the-basics-non-primitive-objects)
+- [Transactions](#-transactions)
+- [FAQ](#-buzzworthy-questions-faq)
 
 > 🐝 Bees have five eyes – three simple eyes on top of the head, and two compound eyes, with numerous hexagonal facets.
 
@@ -97,30 +110,32 @@ Your journey with Hive begins with opening your first box. Trust me, it's unbee-
 final box = Hive.box(name: 'myBox');
 ```
 
-When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hive will craft a new box for you. If you call it again with the same name, Hive will return the already existing box. You can also use `Hive.box()` without a name. In this case, Hive will return the default box.
+When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hive will craft a new box for you. If you call it again with the same name, Hive will return the already existing box.
+
+You can use `Hive.box()` without providing a name. In this case, Hive will return the default box.
 
 There are optional parameters you can pass to `Hive.box()`:
 
-| Parameter       | Description                                                                        |
-| --------------- | ---------------------------------------------------------------------------------- |
-| `name`          | Label your box with a distinct name                                                |
-| `directory`     | Select a home for your box. If omitted, Hive defaults to the defaultDirectory.     |
-| `encryptionKey` | Hand over this key, and Hive will encrypt your box. Remember to keep the key safe! |
-| `maxSizeMiB`    | The maximum size of the box in MiB. Go for a modest number.                        |
+| Parameter       | Description                                                               |
+| --------------- | ------------------------------------------------------------------------- |
+| `name`          | Label your box with a distinct name                                       |
+| `directory`     | Select a home for your box. If omitted, Hive uses the `defaultDirectory`. |
+| `encryptionKey` | Hand over this key, and Hive will encrypt your box. Keep it safe!         |
+| `maxSizeMiB`    | The maximum size of the box in MiB. Go for a modest number.               |
 
 > 🐝 Beeswax, which is secreted from the abdomen of worker bees, is used to construct the honeycomb.
 
 ### 🌂 Bidding Adieu: Closing Boxes
 
-It's not advised to close boxes that might be accessed again shortly. This prevents unnecessary overhead of reopening the box and ensures smooth data retrieval.
+It's not advised to close boxes that might be accessed again. This prevents unnecessary overhead of reopening the box and ensures smooth data retrieval.
 
-To close a single box just call `box.close()`. To close all boxes use `Hive.closeAllBoxes()`. Sometimes you may want to close a box and delete all of its data. You can do this by calling `box.deleteFromDisk()` or `Hive.deleteAllBoxesFromDisk()`.
+To close a box just call `box.close()`. Wipe the box from the face of the earth with `box.deleteFromDisk()`.
 
 > 🐝 When a bee finds a good source of nectar, it flies back to the hive and shows its friends where the nectar source is by doing a dance.
 
 ### ✍️ Filling the Honeycomb: Inserting Data
 
-We have a box, now let's fill it with sweet data! At its core, a box is just a key-value store. String keys are mapped to arbitrary primitive values. You can think of a box as a persisted `Map<String, dynamic>`.
+Once we have a box, it's time to fill it with sweet data! At its core, a box is just a key-value store. String keys are mapped to arbitrary primitive values. You can think of a box as a persisted `Map<String, dynamic>`.
 
 ```dart
 final box = Hive.box();
@@ -128,7 +143,7 @@ box.put('danceMoves', 'Waggle Dance');
 box.put('wingSpeed', 200);
 ```
 
-Updating values? If a particular key already exists, Hive simply updates its corresponding value. And yes, complex types like lists and maps? They're in too!
+Updating values? If a particular key already exists, Hive simply updates its corresponding value. And complex types like lists and maps? They're in too!
 
 ```dart
 box.put('friends', ['Buzzy', 'Stinger', 'Honey']);
@@ -157,14 +172,14 @@ Need a snippet of info from your Hive? No need to don the beekeeper suit; just s
 ```dart
 final box = Hive.box(name: 'beeees');
 final fav = box.get('favoriteFlower');
-final moves = box.get('beeDanceMoves', defaultValue: 'waggle');
+final moves = box.get('danceMoves', defaultValue: 'waggle');
 ```
 
 Oh, and if you're feeling fancy, use the `[]` operator for a more stylish approach:
 
 ```dart
 final fav = box['favoriteFlower'];
-final moves = box['beeDanceMoves'] ?? 'waggle';
+final moves = box['danceMoves'] ?? 'waggle';
 ```
 
 > 🐝 Worker bees are the only bees most people ever see flying around outside the hive. They're female, and their roles are to forage for food (pollen and nectar from flowers), build and protect the hive, and clean and circulate air by beating their wings.
@@ -174,7 +189,8 @@ final moves = box['beeDanceMoves'] ?? 'waggle';
 Time for some spring cleaning in the hive! To remove a single entry from your box, use `box.delete()`:
 
 ```dart
-box.delete('lavenderHoney');
+final deleted = box.delete('lavenderHoney');
+print('Honey eaten: $deleted'); // Honey eaten: true
 ```
 
 Perhaps it's time for a complete reset, making space for a fresh batch of honey. If you're looking to remove all key-value pairs from a box, use `box.clear()`:
@@ -185,7 +201,7 @@ box.clear();
 
 > 🐝 Bees have been around for more than 30 million years! Their long history predates the existence of humans and even dinosaurs.
 
-### 🍯 Hive Compartments: Using Boxes like Lists
+### ✨ Using Boxes like Lists
 
 In the bee world, honeycombs aren't just random compartments; they're methodically organized. Similarly, while we've been viewing Hive boxes as maps so far, they can be used just like lists:
 
@@ -323,6 +339,48 @@ print(box.get('honeyLevel')); // 5
 ```
 
 > 🐝 Bees can recognize human faces, and they can even be trained to associate a picture of a face with sweet treats!
+
+## 🌼 Buzzworthy Questions: FAQ!
+
+#### To bee or not to bee: Hive or Isar?
+
+It's not always black and yellow! Both Hive and Isar have their sweet spots. Hive is a lightweight wrapper around Isar so if you are looking for a simple key-value store, Hive is the way to go. Isar is the way to go if you need queries, relations, and more advanced features.
+
+#### Will using Hive make my app as fast as a bee?
+
+While we can't promise your app will gain wings, Hive sure will give it the speed it deserves. Hive is very resource efficient and optimized for mobile devices. Flutter like a butterfly, sting like a bee!
+
+#### Where in the beehive does Hive hide my honey... I mean, data?
+
+Remember the `defaultDirectory` we set at the beginning? That's where Hive stores your data in a file named `yourBoxName.isar` or `yourBoxName.sqlite`.
+
+#### I've got some bee-autiful images! Can I store them directly in Hive?
+
+A: While you might be tempted to put those pics right into Hive, it's best to store your images and other binary data as files outside the Hive. You can then store the file path in Hive. Think of it like leaving honey out in the open; it's better to keep it neatly stored in the appropriate place.
+
+#### Yikes! What if my app meets an untimely demise (gets killed)? What becomes of my Hive?
+
+No need for a bee-mergency! If your app buzzes off unexpectedly, Hive ensures that your data remains safe and sound. Transactions are atomic, so either all changes are applied or none of them. If an error occurs during a transaction, the box will not be changed.
+
+#### How does Hive keep our data safe from sticky fingers?
+
+We've got the queen's guard on duty! If you encrypt your box Hive uses 256-bit AES in CBC mode. Every database page is safeguarded separately, ensuring your sweet stuff remains secure and only accessible to those with the right key. Buzz-worthy protection, right?
+
+#### When should I rally the troops and use transactions?
+
+Just like a hive making big decisions together, you'll want to use transactions when you have several operations that should be executed together. If one fails, they all fail. It ensures your data stays consistent, safe, and buzzing in harmony!
+
+#### What if I'm allergic to bees?
+
+No worries! Hive is 100% sting-free, although we're pretty sure you'll get a buzz out of its performance.
+
+#### Hive operations are synchronous. Doesn't that make the bee waltz a bit slow?
+
+Hive is incredibly fast an efficient. It's built on top of Isar, a high-performance database engine. If you want to keep database operations away from your UI isolate, you can use `compute()` or `Isolate.run()` to run them in a separate isolate.
+
+#### How many boxes should a wise beekeeper have?
+
+While the sky's the limit in the world of bees, in Hive, every box becomes a separate file. So, even if you're buzzing with excitement, it's wise not to overdo it.
 
 ### 📜 License
 
