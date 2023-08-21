@@ -22,7 +22,7 @@ Hive is a lightweight and blazing-fast key-value database made for Flutter and D
 
 ## Quick Start
 
-#### 1. Add dependencies
+#### 1️⃣ Add dependencies
 
 Add `hive` and `path_provider` to your `pubspec.yaml` file.
 
@@ -34,7 +34,7 @@ dependencies:
 
 `path_provider` is used to find a valid location to store the database.
 
-#### 2. Set the default directory
+#### 2️⃣ Set the default directory
 
 This is where Hive should store its data.
 
@@ -48,7 +48,7 @@ void main() async {
 }
 ```
 
-#### 3. Start using Hive
+#### 3️⃣ Start using Hive
 
 You're ready to go! Have fun using Hive 🐝
 
@@ -62,13 +62,13 @@ final name = myBox.get('name');
 print('Name: $name');
 ```
 
-## Documentation
+## 📒 Documentation
 
 All data stored in Hive is organized in boxes. A box can be compared to a table in SQL, but it does not have a structure and can contain anything.
 
 For a small app, a single box might be enough. For more advanced problems, boxes are a great way to organize your data. Boxes can also be encrypted to store sensitive data.
 
-### Opening Boxes
+### 🗃️ Opening Boxes
 
 Opening a box is simple:
 
@@ -87,13 +87,13 @@ There are optional parameters you can pass to `Hive.box()`:
 | `encryptionKey` | If provided, the box will be encrypted and can only be opened if the same key is provided again. |
 | `maxSizeMiB`    | The maximum size of the box in MiB. Try to use a small value.                                    |
 
-### Closing Boxes
+### 🌂 Closing Boxes
 
 It is not recommended to close boxes if they are still used at a later time. However if the user logs out of your app, you might want to close your boxes:
 
 To close a single box just call `box.close()`. To close all boxes use `Hive.closeAllBoxes()`. Sometimes you may want to close a box and delete all of its data. You can do this by calling `box.deleteFromDisk()` or `Hive.deleteAllBoxesFromDisk()`.
 
-### Inserting data
+### ✏️ Inserting data
 
 At its core, a box is just a key-value store. String keys are mapped to arbitrary primitive values. You can think of a box as a persisted `Map<String, dynamic>`.
 
@@ -125,7 +125,7 @@ To store multiple values at once, you can use `box.putAll()`:
 box.putAll({'theme': 'dark', 'brightness': 22.7});
 ```
 
-### Reading data
+### 🤓 Reading data
 
 To read data from a box, you can use `box.get()` and `box.getAll()`. If a key does not exist, `box.get()` will return `null`. You can also specify a default value:
 
@@ -142,7 +142,7 @@ final brightness = themeBox['brightness'];
 final fontSize = themeBox['fontSize'] ?? 14.0;
 ```
 
-### Deleting data
+### 🧹 Deleting data
 
 To delete a single value, you can use `box.delete()`:
 
@@ -150,7 +150,7 @@ To delete a single value, you can use `box.delete()`:
 box.delete('theme');
 ```
 
-### Using Boxes like Lists
+### 🪄 Using Boxes like Lists
 
 Previously we treated boxes like maps. However, you can also use them like lists:
 
@@ -198,7 +198,7 @@ box[0] = 'value2';
 box[1] = 'value3'; // This will throw an error
 ```
 
-### Type safety
+### 💃 Type safety
 
 Boxes have an optional generic type parameter. This allows you to store only values of a specific type in a box:
 
@@ -209,7 +209,7 @@ box.put('key2', 'value2');
 box.put('key3', 777); // This will throw an error
 ```
 
-### Non-primitive Objects
+### 👾 Non-primitive Objects
 
 Hive not only supports primitives, lists and maps but also any Dart object you like. Your object just needs a `.fromJson()` and `.toJson()` method:
 
@@ -252,7 +252,7 @@ box.put('dave', person);
 print(box.get('dave')); // Dave - 22
 ```
 
-### Transactions
+### 🪢 Transactions
 
 Transactions are an efficient way to update multiple values at once. They are also useful if you want to make sure that a Box is not changed by other code while you are working with it.
 
@@ -284,7 +284,7 @@ box.write(() {
 print(box.get('counter')); // 5
 ```
 
-### License
+### 🧑‍⚖️ License
 
 ```
 Copyright 2023 Simon Choi
