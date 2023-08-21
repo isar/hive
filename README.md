@@ -32,9 +32,9 @@ Hive is a lightweight and blazing-fast key-value database made for Flutter and D
 - 🧠 Think multi-tasking: Hive supports multiple isolates.
 - 🔋 No need to pack extras: Hive comes with batteries included.
 
-> 🐝 A single bee can visit 5,000 flowers in a day!
+> Bee fact: A single bee can visit 5,000 flowers in a day!
 
-## Buzz into Action 🍯
+## Buzz into Action 🐝
 
 Feeling the excitement? Great! Let's help you take your first flight with Hive.
 
@@ -67,7 +67,7 @@ void main() async {
 
 #### 🏁 And... Action!
 
-🎉 Woohoo! You're all set. Dive right in and let's get buzzing with Hive.
+Woohoo! You're all set. Dive right in and let's get buzzing with Hive.
 
 ```dart
 import 'package:hive/hive.dart';
@@ -79,7 +79,7 @@ final name = box.get('name');
 print('Name: $name');
 ```
 
-> 🐝 Honeybees can fly at a speed of up to 30 kilometers per hour!
+> Bee fact: Honeybees can fly at a speed of up to 30 kilometers per hour!
 
 # 📚 Hive Handbook
 
@@ -100,7 +100,7 @@ Want to jump to a specific section? Here's a handy table of contents:
 - [Transactions](#-transactions)
 - [FAQ](#-buzzworthy-questions-faq)
 
-> 🐝 Bees have five eyes – three simple eyes on top of the head, and two compound eyes, with numerous hexagonal facets.
+> Bee fact: Bees have five eyes – three simple eyes on top of the head, and two compound eyes, with numerous hexagonal facets.
 
 ### 📦 Opening Boxes
 
@@ -123,7 +123,7 @@ There are optional parameters you can pass to `Hive.box()`:
 | `encryptionKey` | Hand over this key, and Hive will encrypt your box. Keep it safe!         |
 | `maxSizeMiB`    | The maximum size of the box in MiB. Go for a modest number.               |
 
-> 🐝 Beeswax, which is secreted from the abdomen of worker bees, is used to construct the honeycomb.
+> Bee fact: Beeswax, which is secreted from the abdomen of worker bees, is used to construct the honeycomb.
 
 ### 🌂 Bidding Adieu: Closing Boxes
 
@@ -131,7 +131,7 @@ It's not advised to close boxes that might be accessed again. This prevents unne
 
 To close a box just call `box.close()`. Wipe the box from the face of the earth with `box.deleteFromDisk()`.
 
-> 🐝 When a bee finds a good source of nectar, it flies back to the hive and shows its friends where the nectar source is by doing a dance.
+> Bee fact: When a bee finds a good source of nectar, it flies back to the hive and shows its friends where the nectar source is by doing a dance.
 
 ### ✍️ Filling the Honeycomb: Inserting Data
 
@@ -163,7 +163,7 @@ Got a bucket of honey facts? Drop them all at once with `box.putAll()`:
 box.putAll({'favoriteFlower': 'Lavender', 'wingSpeed': 210});
 ```
 
-> 🐝 A single bee colony can produce anywhere from 30 to 100 pounds of honey in a year, depending on the availability of nectar sources.
+> Bee fact: A single bee colony can produce anywhere from 30 to 100 pounds of honey in a year, depending on the availability of nectar sources.
 
 ### 👀 Extracting Honey... I mean, Data!
 
@@ -182,7 +182,7 @@ final fav = box['favoriteFlower'];
 final moves = box['danceMoves'] ?? 'waggle';
 ```
 
-> 🐝 Worker bees are the only bees most people ever see flying around outside the hive. They're female, and their roles are to forage for food, build and protect the hive, and more.
+> Bee fact: Worker bees are the only bees most people ever see flying around outside the hive. They're female, and their roles are to forage for food, build and protect the hive, and more.
 
 ### 🧹 Deleting Data
 
@@ -199,7 +199,7 @@ Perhaps it's time for a complete reset, making space for a fresh batch of honey.
 box.clear();
 ```
 
-> 🐝 Bees have been around for more than 30 million years! Their long history predates the existence of humans and even dinosaurs.
+> Bee fact: Bees have been around for more than 30 million years! Their long history predates the existence of humans and even dinosaurs.
 
 ### ✨ Using Boxes like Lists
 
@@ -247,7 +247,7 @@ box[0] = 'Daffodil';
 box[1] = 'Bluebell'; // This will get the bees in a whirl
 ```
 
-> 🐝 To produce one pound of honey, a hive's bees must visit 2 million flowers and fly over 55,000 miles.
+> Bee fact: To produce one pound of honey, a hive's bees must visit 2 million flowers and fly over 55,000 miles.
 
 ### 🛡️ Type safety
 
@@ -260,7 +260,7 @@ box.put('RoseRumba', 'GoldenPollenParty');
 box.put('TulipTango', 777); // Error - You can't fool the bees!
 ```
 
-> 🐝 Bees have two stomachs. One is for eating, and the other is for storing nectar collected from flowers or water so they can carry it back to their hive. Talk about a sweet backpack!
+> Bee fact: Bees have two stomachs. One is for eating, and the other is for storing nectar collected from flowers or water so they can carry it back to their hive. Talk about a sweet backpack!
 
 ### 🧩 Bee-yond the Basics: Non-primitive Objects
 
@@ -304,7 +304,7 @@ box.put('BumbleID', bumble);
 print(box.get('BumbleID')); // Bumble - Worker
 ```
 
-> 🐝 Bees are responsible for pollinating about one-third of the world's food crops.
+> Bee fact: Bees are responsible for pollinating about one-third of the world's food crops.
 
 ### 🪢 Transactions
 
@@ -338,49 +338,49 @@ box.write(() {
 print(box.get('honeyLevel')); // 5
 ```
 
-> 🐝 Bees can recognize human faces, and they can even be trained to associate a picture of a face with sweet treats!
+> Bee fact: Bees can recognize human faces, and they can even be trained to associate a picture of a face with sweet treats!
 
-### 🌼 Buzzworthy Questions: FAQ
+### 🍯 Buzzworthy Questions: FAQ
 
-#### To bee or not to bee: Hive or Isar?
+#### 🐝 To bee or not to bee: Hive or Isar?
 
-> It's not always black and yellow! Both Hive and Isar have their sweet spots. Hive is a lightweight wrapper around Isar so if you are looking for a simple key-value store, Hive is the way to go. Isar is the way to go if you need queries, relations, and more advanced features.
+> It's not always black and yellow! 🖤💛 Both Hive and Isar have their sweet spots. Hive is a lightweight wrapper around Isar so if you are looking for a simple key-value store, Hive might be enough. Isar is the way to go if you need queries, relations, and more advanced features.
 
-#### Will using Hive make my app as fast as a bee?
+#### 🚀 Will using Hive make my app as fast as a bee?
 
-> While we can't promise your app will gain wings, Hive sure will give it the speed it deserves. Hive is very resource efficient and optimized for mobile devices. Flutter like a butterfly, sting like a bee!
+> While we can't promise your app will gain wings, 🦋 Hive sure will give it the speed it deserves. Hive is very resource efficient and optimized for mobile devices. Flutter like a butterfly, sting like a bee! 🐝
 
-#### Where in the beehive does Hive hide my honey... I mean, data?
+#### 🗂 Where in the beehive does Hive hide my honey... I mean, data?
 
-> Remember the `defaultDirectory` we set at the beginning? That's where Hive stores your data in a file named `yourBoxName.isar` or `yourBoxName.sqlite`.
+> Remember the `defaultDirectory` we set at the beginning? 📍 That's where Hive stores your data in a file named `yourBoxName.isar` or `yourBoxName.sqlite`.
 
-#### I've got some bee-autiful images! Can I store them directly in Hive?
+#### 📸 I've got some bee-autiful images! Can I store them directly in Hive?
 
-> While you might be tempted to put those pics right into Hive, it's best to store your images and other binary data as files outside the Hive. You can then store the file path in Hive. Think of it like leaving honey out in the open; it's better to keep it neatly stored in the appropriate place.
+> While you might be tempted to put those pics right into Hive, 🖼️ it's best to store your images and other binary data as files outside Hive. You can then store the file path in Hive. Think of it like leaving honey out in the open; it's better to keep it neatly stored in the appropriate place. 🏺
 
-#### Yikes! What if my app meets an untimely demise (gets killed)? What becomes of my Hive?
+#### 😲 Yikes! What if my app meets an untimely demise (gets killed)? What becomes of my Hive?
 
-> No need for a bee-mergency! If your app buzzes off unexpectedly, Hive ensures that your data remains safe and sound. Transactions are atomic, so either all changes are applied or none of them. If an error occurs during a transaction, the box will not be changed.
+> No need for a bee-mergency! 🚨 If your app buzzes off unexpectedly, Hive ensures that your data remains safe and sound. Transactions are atomic, so either all changes are applied or none of them. If an error occurs during a transaction, the box will not be changed.
 
-#### How does Hive keep our data safe from sticky fingers?
+#### 🔐 How does Hive keep our data safe from sticky fingers?
 
-> We've got the queen's guard on duty! If you encrypt your box Hive uses 256-bit AES in CBC mode. Every database page is safeguarded separately, ensuring your sweet stuff remains secure and only accessible to those with the right key. Buzz-worthy protection, right?
+> We've got the queen's guard on duty! 🛡️ If you encrypt your box Hive uses 256-bit AES in CBC mode. Every database page is safeguarded separately, ensuring your sweet stuff remains secure and only accessible to those with the right key. Buzz-worthy protection, right? 🗝️
 
-#### When should I rally the troops and use transactions?
+#### 🤝 When should I rally the troops and use transactions?
 
-> Just like a hive making big decisions together, you'll want to use transactions when you have several operations that should be executed together. If one fails, they all fail. It ensures your data stays consistent, safe, and buzzing in harmony!
+> Just like a hive making big decisions together, 🌐 you'll want to use transactions when you have several operations that should be executed together. If one fails, they all fail. It ensures your data stays consistent, safe, and buzzing in harmony! 🎶
 
-#### What if I'm allergic to bees?
+#### 🤣 What if I'm allergic to bees?
 
-> No worries! Hive is 100% sting-free, although we're pretty sure you'll get a buzz out of its performance.
+> No worries! Hive is 100% sting-free, 🚫 although we're pretty sure you'll get a buzz out of its performance.
 
-#### Hive operations are synchronous. Doesn't that make the bee waltz a bit slow?
+#### ⏳ Hive operations are synchronous. Doesn't that make the bee waltz a bit slow?
 
-> Hive is incredibly fast an efficient. It's built on top of Isar, a high-performance database engine. If you want to keep database operations away from your UI isolate, you can use `compute()` or `Isolate.run()` to run them in a separate isolate.
+> Hive is incredibly fast and efficient. 🚄 It's built on top of Isar, a high-performance database engine. If you want to keep database operations away from your UI isolate, you can use `compute()` or `Isolate.run()` to run them in a separate isolate.
 
-#### How many boxes should a wise beekeeper have?
+#### 📦 How many boxes should a wise beekeeper have?
 
-> While the sky's the limit in the world of bees, in Hive, every box becomes a separate file. So, even if you're buzzing with excitement, it's wise not to overdo it.
+> While the sky's the limit in the world of bees, 🌌 in Hive, every box becomes a separate file. So, even if you're buzzing with excitement, it's wise not to overdo it. 📚
 
 ### 📜 License
 
