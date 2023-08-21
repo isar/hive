@@ -91,11 +91,11 @@ Want to jump to a specific section? Here's a handy table of contents:
 
 - [Opening Boxes](#-opening-boxes)
 - [Closing Boxes](#-bidding-adieu-closing-boxes)
-- [Inserting](#-filling-the-honeycomb-inserting-data)
+- [Inserting](#%EF%B8%8F-filling-the-honeycomb-inserting-data)
 - [Reading](#-extracting-honey-i-mean-data)
 - [Deleting](#-deleting-data)
-- [Using Boxes like Lists](#-hive-compartments-using-boxes-like-lists)
-- [Type safety](#-type-safety)
+- [Using Boxes like Lists](#-using-boxes-like-lists)
+- [Type safety](#%EF%B8%8F-type-safety)
 - [Non-primitive Objects](#-bee-yond-the-basics-non-primitive-objects)
 - [Transactions](#-transactions)
 - [FAQ](#-buzzworthy-questions-faq)
@@ -340,7 +340,7 @@ print(box.get('honeyLevel')); // 5
 
 > 🐝 Bees can recognize human faces, and they can even be trained to associate a picture of a face with sweet treats!
 
-## 🌼 Buzzworthy Questions: FAQ!
+### 🌼 Buzzworthy Questions: FAQ
 
 #### To bee or not to bee: Hive or Isar?
 
