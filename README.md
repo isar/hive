@@ -7,8 +7,8 @@
   <a href="https://pub.dev/packages/hive">
     <img src="https://img.shields.io/pub/v/hive?label=pub.dev&labelColor=333940&logo=dart">
   </a>
-  <a href="https://github.com/isar/hive/actions/workflows/test.yaml">
-    <img src="https://img.shields.io/github/actions/workflow/status/isar/hive/test.yaml?branch=main&label=tests&labelColor=333940&logo=github">
+  <a href="https://github.com/isar/hive/actions/workflows/Dart CI.yaml">
+    <img src="https://img.shields.io/github/actions/workflow/status/isar/hive/test.yml?branch=main&label=tests&labelColor=333940&logo=github">
   </a>
   <a href="https://app.codecov.io/gh/isar/hive">
     <img src="https://img.shields.io/codecov/c/github/isar/hive?logo=codecov&logoColor=fff&labelColor=333940">
