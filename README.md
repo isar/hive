@@ -3,28 +3,44 @@
 </p>
 <h2 align="center">Fast, Enjoyable & Secure NoSQL Database</h2>
 
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/hivedb/hive/test.yml?label=tests&labelColor=333940&logo=github)](https://github.com/hivedb/hive/actions)
-[![Codecov branch](https://img.shields.io/codecov/c/github/hivedb/hive/nndb?labelColor=333940&logo=codecov&logoColor=white)](https://codecov.io/gh/hivedb/hive)
-[![Pub Version](https://img.shields.io/pub/v/hive?label=pub.dev&labelColor=333940&logo=dart)](https://pub.dev/packages/hive)
-[![GitHub](https://img.shields.io/github/license/hivedb/hive?color=%23007A88&labelColor=333940&logo=apache)](https://github.com/hivedb/hive/blob/master/LICENSE)
+<p align="center">
+  <a href="https://pub.dev/packages/hive">
+    <img src="https://img.shields.io/pub/v/hive?label=pub.dev&labelColor=333940&logo=dart">
+  </a>
+  <a href="https://github.com/isar/hive/actions/workflows/test.yaml">
+    <img src="https://img.shields.io/github/actions/workflow/status/isar/hive/test.yaml?branch=main&label=tests&labelColor=333940&logo=github">
+  </a>
+  <a href="https://app.codecov.io/gh/isar/hive">
+    <img src="https://img.shields.io/codecov/c/github/isar/hive?logo=codecov&logoColor=fff&labelColor=333940">
+  </a>
+  <a href="https://t.me/isardb">
+    <img src="https://img.shields.io/static/v1?label=join&message=Isar%20%26%20Hive&labelColor=333940&logo=telegram&logoColor=white&color=229ED9">
+  </a>
+  <a href="https://twitter.com/simcdev">
+    <img src="https://img.shields.io/twitter/follow/simcdev?style=social">
+  </a>
+</p>
 
 Hive is a lightweight and blazing-fast key-value database made for Flutter and Dart.
 
-## Features
+## Features 🌟
 
-- 🚀 Cross platform: mobile, desktop, browser
-- ⚡ Great performance
-- ❤️ Simple, powerful, & intuitive API
-- 🔒 Strong encryption built in
-- 🎈 Resource friendly
-- 🍿 Multi-isolate support
-- 🔋 Batteries included
+- 🌍 Cross-platform: mobile, desktop, browser
+- 🚀 Need for Speed? Hive's got it in spades.
+- 💡 Simple, powerful, & intuitive API
+- 🔐 Tighter than Fort Knox: We've got encryption built right in.
+- 🧠 Think multi-tasking: Hive supports multiple isolates.
+- 🔋 No need to pack extras: We come with batteries included.
 
-## Quick Start
+> 🐝 A single bee can visit 5,000 flowers in a day!
+
+## Buzz into Action with Hive 🐝
+
+Feeling the excitement? Great! Let's help you take your first flight with Hive.
 
 #### 1️⃣ Add dependencies
 
-Add `hive` and `path_provider` to your `pubspec.yaml` file.
+To kickstart the journey add `hive` and `path_provider` to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
@@ -32,11 +48,11 @@ dependencies:
   path_provider: ^2.1.0
 ```
 
-`path_provider` is used to find a valid location to store the database.
+Pssst! 🤫 `path_provider` will help you to find the optimal directory for each platform.
 
-#### 2️⃣ Set the default directory
+#### 📂 Designate a Home
 
-This is where Hive should store its data.
+Hive needs a place to call home. Using `path_provider` we can find a valid directory.
 
 ```dart
 void main() async {
@@ -48,29 +64,33 @@ void main() async {
 }
 ```
 
-#### 3️⃣ Start using Hive
+#### 🏁 And... Action!
 
-You're ready to go! Have fun using Hive 🐝
+🎉 Woohoo! You're all set. Dive right in and let's get buzzing with Hive.
 
 ```dart
 import 'package:hive/hive.dart';
 
-final myBox = Hive.box();
-myBox.put('name', 'David');
+final box = Hive.box();
+box.put('name', 'David');
 
-final name = myBox.get('name');
+final name = box.get('name');
 print('Name: $name');
 ```
 
-## 📒 Documentation
+> 🐝 Honeybees can fly at a speed of up to 30 kilometers per hour!
 
-All data stored in Hive is organized in boxes. A box can be compared to a table in SQL, but it does not have a structure and can contain anything.
+## 📚 Hive Handbook
+
+In Hive, data is neatly organized into containers known as boxes. Think of boxes as tables you'd find in SQL, but far more flexible — they don't stick to a set structure and can contain a variety of data.
 
 For a small app, a single box might be enough. For more advanced problems, boxes are a great way to organize your data. Boxes can also be encrypted to store sensitive data.
 
-### 🗃️ Opening Boxes
+> 🐝 Bees have five eyes – three simple eyes on top of the head, and two compound eyes, with numerous hexagonal facets.
 
-Opening a box is simple:
+### 📦 Opening Boxes
+
+Initiating your journey with Hive begins with opening your first box. Trust me, it's unbee-lievably easy:
 
 ```dart
 final box = Hive.box(name: 'myBox');
@@ -80,96 +100,110 @@ When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hi
 
 There are optional parameters you can pass to `Hive.box()`:
 
-| Parameter       | Description                                                                                      |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| `name`          | The name of the box                                                                              |
-| `directory`     | The path where the box should be stored. If not specified, Hive will use the `defaultDirectory`. |
-| `encryptionKey` | If provided, the box will be encrypted and can only be opened if the same key is provided again. |
-| `maxSizeMiB`    | The maximum size of the box in MiB. Try to use a small value.                                    |
+| Parameter       | Description                                                                        |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `name`          | Label your box with a distinct name                                                |
+| `directory`     | Select a home for your box. If omitted, Hive defaults to the defaultDirectory.     |
+| `encryptionKey` | Hand over this key, and Hive will encrypt your box. Remember to keep the key safe! |
+| `maxSizeMiB`    | The maximum size of the box in MiB. Go for a modest number.                        |
 
-### 🌂 Closing Boxes
+> 🐝 Beeswax, which is secreted from the abdomen of worker bees, is used to construct the honeycomb.
 
-It is not recommended to close boxes if they are still used at a later time. However if the user logs out of your app, you might want to close your boxes:
+### 🌂 Bidding Adieu: Closing Boxes
+
+It's not advised to close boxes that might be accessed again shortly. This prevents unnecessary overhead of reopening the box and ensures smooth data retrieval.
 
 To close a single box just call `box.close()`. To close all boxes use `Hive.closeAllBoxes()`. Sometimes you may want to close a box and delete all of its data. You can do this by calling `box.deleteFromDisk()` or `Hive.deleteAllBoxesFromDisk()`.
 
-### ✏️ Inserting data
+> 🐝 When a bee finds a good source of nectar, it flies back to the hive and shows its friends where the nectar source is by doing a dance.
 
-At its core, a box is just a key-value store. String keys are mapped to arbitrary primitive values. You can think of a box as a persisted `Map<String, dynamic>`.
+### ✍️ Filling the Honeycomb: Inserting Data
 
-```dart
-final box = Hive.box();
-box.put('theme', 'dark');
-box.put('isLoggedIn', true);
-box.put('brightness', 22.7);
-```
-
-If a specific key already exists, the value will be overwritten. You can also store lists and maps of primitives:
-
-```dart
-box.put('list', [1, 2, 3]);
-box.put('map', {'name': 'Dave', 'age': 22});
-```
-
-There is an alternative syntax for storing values that is more similar to a `Map`:
-
-```dart
-box['theme'] = 'dark';
-box['isLoggedIn'] = true;
-box['brightness'] = 22.7;
-```
-
-To store multiple values at once, you can use `box.putAll()`:
-
-```dart
-box.putAll({'theme': 'dark', 'brightness': 22.7});
-```
-
-### 🤓 Reading data
-
-To read data from a box, you can use `box.get()` and `box.getAll()`. If a key does not exist, `box.get()` will return `null`. You can also specify a default value:
-
-```dart
-final themeBox = Hive.box(name: 'theme');
-final brightness = themeBox.get('brightness');
-final fontSize = themeBox.get('fontSize', defaultValue: 14.0);
-```
-
-Similar to `box.put()`, you can also use the `[]` operator to read values:
-
-```dart
-final brightness = themeBox['brightness'];
-final fontSize = themeBox['fontSize'] ?? 14.0;
-```
-
-### 🧹 Deleting data
-
-To delete a single value, you can use `box.delete()`:
-
-```dart
-box.delete('theme');
-```
-
-### 🪄 Using Boxes like Lists
-
-Previously we treated boxes like maps. However, you can also use them like lists:
+We have a box, now let's fill it with sweet data! At its core, a box is just a key-value store. String keys are mapped to arbitrary primitive values. You can think of a box as a persisted `Map<String, dynamic>`.
 
 ```dart
 final box = Hive.box();
-
-box.add('value1');
-box.add('value2');
-
-print(box.getAt(0)); // value1
-print(box.getAt(1)); // value2
+box.put('danceMoves', 'Waggle Dance');
+box.put('wingSpeed', 200);
 ```
 
-Just like in lists, index-based operations will throw an error if the index is out of bounds:
+Updating values? If a particular key already exists, Hive simply updates its corresponding value. And yes, complex types like lists and maps? They're in too!
+
+```dart
+box.put('friends', ['Buzzy', 'Stinger', 'Honey']);
+box.put('memories', {'firstFlight': 'Sunny Day', 'bestNectar': 'Rose'});
+```
+
+Instead of `.put()` you prefer the syntax of maps? Hive gets you:
+
+```dart
+box['danceMoves'] = 'Round Dance';
+box['wingSpeed'] = 220;
+```
+
+Got a bucket of honey facts? Drop them all at once with `box.putAll()`:
+
+```dart
+box.putAll({'favoriteFlower': 'Lavender', 'wingSpeed': 210});
+```
+
+> 🐝 A single bee colony can produce anywhere from 30 to 100 pounds of honey in a year, depending on the availability of nectar sources.
+
+### 👀 Extracting Honey... I mean, Data!
+
+Need a snippet of info from your Hive? No need to don the beekeeper suit; just scoop it out using `box.get()` or `box.getAll()`. If a key doesn't exist, `box.get()` simply return a `null`. But fret not; you can tell it to have a backup plan:
+
+```dart
+final box = Hive.box(name: 'beeees');
+final fav = box.get('favoriteFlower');
+final moves = box.get('beeDanceMoves', defaultValue: 'waggle');
+```
+
+Oh, and if you're feeling fancy, use the `[]` operator for a more stylish approach:
+
+```dart
+final fav = box['favoriteFlower'];
+final moves = box['beeDanceMoves'] ?? 'waggle';
+```
+
+> 🐝 Worker bees are the only bees most people ever see flying around outside the hive. They're female, and their roles are to forage for food (pollen and nectar from flowers), build and protect the hive, and clean and circulate air by beating their wings.
+
+### 🧹 Deleting Data
+
+Time for some spring cleaning in the hive! To remove a single entry from your box, use `box.delete()`:
+
+```dart
+box.delete('lavenderHoney');
+```
+
+Perhaps it's time for a complete reset, making space for a fresh batch of honey. If you're looking to remove all key-value pairs from a box, use `box.clear()`:
+
+```dart
+box.clear();
+```
+
+> 🐝 Bees have been around for more than 30 million years! Their long history predates the existence of humans and even dinosaurs.
+
+### 🍯 Hive Compartments: Using Boxes like Lists
+
+In the bee world, honeycombs aren't just random compartments; they're methodically organized. Similarly, while we've been viewing Hive boxes as maps so far, they can be used just like lists:
 
 ```dart
 final box = Hive.box();
-box.add('value1');
-print(box.getAt(1)); // This will throw an error
+
+box.add('Rose');
+box.add('Tulip');
+
+print(box.getAt(0)); // Rose
+print(box.getAt(1)); // Tulip
+```
+
+But remember, bees can't retrieve honey from a comb that's empty or doesn't exist. Likewise, index-based operations will throw an error if you try an index out of bounds:
+
+```dart
+final box = Hive.box();
+box.add('Daisy');
+print(box.getAt(1)); // This will make the bees buzz in confusion
 ```
 
 Even if we insert a key-value pair we can still access the values by index.
@@ -177,13 +211,11 @@ Even if we insert a key-value pair we can still access the values by index.
 ```dart
 final box = Hive.box();
 
-box.add('value1');
-box.put('key', 'value2');
-box.add('value3');
+box.add('Lily');
+box.put('key', 'Orchid');
 
-print(box.getAt(0)); // value1
-print(box.getAt(1)); // value2
-print(box.getAt(2)); // value3
+print(box.getAt(0)); // Lily
+print(box.getAt(1)); // Orchid
 ```
 
 Of course, we can also use the `[]` operator in combination with indexes :
@@ -191,66 +223,71 @@ Of course, we can also use the `[]` operator in combination with indexes :
 ```dart
 final box = Hive.box();
 
-box.add('value1');
-print(box[0]); // value1
+box.add('Marigold');
+print(box[0]); // Marigold
 
-box[0] = 'value2';
-box[1] = 'value3'; // This will throw an error
+box[0] = 'Daffodil';
+box[1] = 'Bluebell'; // This will get the bees in a whirl
 ```
 
-### 💃 Type safety
+> 🐝 To produce one pound of honey, a hive's bees must visit 2 million flowers and fly over 55,000 miles.
 
-Boxes have an optional generic type parameter. This allows you to store only values of a specific type in a box:
+### 🛡️ Type safety
+
+Safety is the bee's priority! To keep your data sweet and pure boxes have an optional generic type parameter. It allows you to store only values of a specific type in a box:
 
 ```dart
-final box = Hive.box<String>(name: 'myStringBox');
-box.put('key1', 'value1');
-box.put('key2', 'value2');
-box.put('key3', 777); // This will throw an error
+final box = Hive.box<String>(name: 'BeeTreasures');
+box.put('DaisyDance', 'SweetNectarShake');
+box.put('RoseRumba', 'GoldenPollenParty');
+box.put('TulipTango', 777); // Error - You can't fool the bees!
 ```
 
-### 👾 Non-primitive Objects
+> 🐝 Bees have two stomachs. One is for eating, and the other is for storing nectar collected from flowers or water so they can carry it back to their hive. Talk about a sweet backpack!
 
-Hive not only supports primitives, lists and maps but also any Dart object you like. Your object just needs a `.fromJson()` and `.toJson()` method:
+### 🧩 Bee-yond the Basics: Non-primitive Objects
+
+Hive goes beyond storing just basic data types! Along with primitives, lists, and maps, Hive can store any Dart object of your liking. The only buzz you need to know? Your object should come equipped with a `.fromJson()` and `.toJson()` method:
 
 ```dart
-class Person {
-  Person({required this.name, required this.age});
+class Bee {
+  Bee({required this.name, required this.role});
 
-  factory Person.fromJson(Map<String, dynamic> json) => Person(
+  factory Bee.fromJson(Map<String, dynamic> json) => Bee(
     name: json['name'] as String,
-    age: json['age'] as int,
+    role: json['role'] as String,
   );
 
   final String name;
-
-  final int age;
+  final String role;
 
   Map<String, dynamic> toJson() => {
     'name': name,
-    'age': age,
+    'role': role,
   };
 }
 ```
 
-When initializing Hive you need to register your class:
+Before our bee-friends can buzz around in Hive, you need to do the beekeeper's job and register the `Bee` class:
 
 ```dart
-Hive.registerAdapter('Person', Person.fromJson);
+Hive.registerAdapter('Bee', Bee.fromJson);
 ```
 
-Now you can store `Person` objects in your boxes:
+Now, you're all set to let your bees fly:
 
 ```dart
 final box = Hive.box();
 
-var person = Person()
-  ..name = 'Dave'
-  ..age = 22;
-box.put('dave', person);
+var bumble = Bee()
+  ..name = 'Bumble'
+  ..role = 'Worker';
+box.put('BumbleID', bumble);
 
-print(box.get('dave')); // Dave - 22
+print(box.get('BumbleID')); // Bumble - Worker
 ```
+
+> 🐝 Bees are responsible for pollinating about one-third of the world's food crops.
 
 ### 🪢 Transactions
 
@@ -260,13 +297,13 @@ Transactions are an efficient way to update multiple values at once. They are al
 final box = Hive.box();
 
 box.write(() {
-  box.put('key1', 'value1');
-  box.put('key2', 'value2');
-  box.put('key3', 'value3');
+  box.store('nectar1', 'GoldenNectar');
+  box.store('nectar2', 'WildflowerBrew');
+  box.store('nectar3', 'CloverDew');
 });
 
 box.read(() {
-  box.get('key1');
+  box.get('nectar1');
 });
 ```
 
@@ -274,17 +311,19 @@ Changes made in a transaction are always atomic. Either all changes are applied 
 
 ```dart
 final box = Hive.box();
-box.put('counter', 5);
+box.put('honeyLevel', 5);
 
 box.write(() {
-  box.put('counter', 6);
+  box.put('honeyLevel', 6);
   throw Exception('Oh no!!!');
 });
 
-print(box.get('counter')); // 5
+print(box.get('honeyLevel')); // 5
 ```
 
-### 🧑‍⚖️ License
+> 🐝 Bees can recognize human faces, and they can even be trained to associate a picture of a face with sweet treats!
+
+### 📜 License
 
 ```
 Copyright 2023 Simon Choi
