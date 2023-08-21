@@ -91,8 +91,8 @@ Want to jump to a specific section? Here's a handy table of contents:
 
 - [Opening Boxes](#-opening-boxes)
 - [Closing Boxes](#-bidding-adieu-closing-boxes)
-- [Inserting](#-filling-the-honeycomb-inserting-data-)
-- [Reading](#-extracting-honey-i-mean-data-)
+- [Inserting](#-filling-the-honeycomb-inserting-data)
+- [Reading](#-extracting-honey-i-mean-data)
 - [Deleting](#-deleting-data)
 - [Using Boxes like Lists](#-hive-compartments-using-boxes-like-lists)
 - [Type safety](#-type-safety)
@@ -344,43 +344,43 @@ print(box.get('honeyLevel')); // 5
 
 #### To bee or not to bee: Hive or Isar?
 
-It's not always black and yellow! Both Hive and Isar have their sweet spots. Hive is a lightweight wrapper around Isar so if you are looking for a simple key-value store, Hive is the way to go. Isar is the way to go if you need queries, relations, and more advanced features.
+> It's not always black and yellow! Both Hive and Isar have their sweet spots. Hive is a lightweight wrapper around Isar so if you are looking for a simple key-value store, Hive is the way to go. Isar is the way to go if you need queries, relations, and more advanced features.
 
 #### Will using Hive make my app as fast as a bee?
 
-While we can't promise your app will gain wings, Hive sure will give it the speed it deserves. Hive is very resource efficient and optimized for mobile devices. Flutter like a butterfly, sting like a bee!
+> While we can't promise your app will gain wings, Hive sure will give it the speed it deserves. Hive is very resource efficient and optimized for mobile devices. Flutter like a butterfly, sting like a bee!
 
 #### Where in the beehive does Hive hide my honey... I mean, data?
 
-Remember the `defaultDirectory` we set at the beginning? That's where Hive stores your data in a file named `yourBoxName.isar` or `yourBoxName.sqlite`.
+> Remember the `defaultDirectory` we set at the beginning? That's where Hive stores your data in a file named `yourBoxName.isar` or `yourBoxName.sqlite`.
 
 #### I've got some bee-autiful images! Can I store them directly in Hive?
 
-A: While you might be tempted to put those pics right into Hive, it's best to store your images and other binary data as files outside the Hive. You can then store the file path in Hive. Think of it like leaving honey out in the open; it's better to keep it neatly stored in the appropriate place.
+> While you might be tempted to put those pics right into Hive, it's best to store your images and other binary data as files outside the Hive. You can then store the file path in Hive. Think of it like leaving honey out in the open; it's better to keep it neatly stored in the appropriate place.
 
 #### Yikes! What if my app meets an untimely demise (gets killed)? What becomes of my Hive?
 
-No need for a bee-mergency! If your app buzzes off unexpectedly, Hive ensures that your data remains safe and sound. Transactions are atomic, so either all changes are applied or none of them. If an error occurs during a transaction, the box will not be changed.
+> No need for a bee-mergency! If your app buzzes off unexpectedly, Hive ensures that your data remains safe and sound. Transactions are atomic, so either all changes are applied or none of them. If an error occurs during a transaction, the box will not be changed.
 
 #### How does Hive keep our data safe from sticky fingers?
 
-We've got the queen's guard on duty! If you encrypt your box Hive uses 256-bit AES in CBC mode. Every database page is safeguarded separately, ensuring your sweet stuff remains secure and only accessible to those with the right key. Buzz-worthy protection, right?
+> We've got the queen's guard on duty! If you encrypt your box Hive uses 256-bit AES in CBC mode. Every database page is safeguarded separately, ensuring your sweet stuff remains secure and only accessible to those with the right key. Buzz-worthy protection, right?
 
 #### When should I rally the troops and use transactions?
 
-Just like a hive making big decisions together, you'll want to use transactions when you have several operations that should be executed together. If one fails, they all fail. It ensures your data stays consistent, safe, and buzzing in harmony!
+> Just like a hive making big decisions together, you'll want to use transactions when you have several operations that should be executed together. If one fails, they all fail. It ensures your data stays consistent, safe, and buzzing in harmony!
 
 #### What if I'm allergic to bees?
 
-No worries! Hive is 100% sting-free, although we're pretty sure you'll get a buzz out of its performance.
+> No worries! Hive is 100% sting-free, although we're pretty sure you'll get a buzz out of its performance.
 
 #### Hive operations are synchronous. Doesn't that make the bee waltz a bit slow?
 
-Hive is incredibly fast an efficient. It's built on top of Isar, a high-performance database engine. If you want to keep database operations away from your UI isolate, you can use `compute()` or `Isolate.run()` to run them in a separate isolate.
+> Hive is incredibly fast an efficient. It's built on top of Isar, a high-performance database engine. If you want to keep database operations away from your UI isolate, you can use `compute()` or `Isolate.run()` to run them in a separate isolate.
 
 #### How many boxes should a wise beekeeper have?
 
-While the sky's the limit in the world of bees, in Hive, every box becomes a separate file. So, even if you're buzzing with excitement, it's wise not to overdo it.
+> While the sky's the limit in the world of bees, in Hive, every box becomes a separate file. So, even if you're buzzing with excitement, it's wise not to overdo it.
 
 ### 📜 License
 
