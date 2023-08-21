@@ -3,74 +3,54 @@ name: Dart CI
 on: [push, pull_request]
 
 jobs:
-  test-hive:
+  format:
+    name: Check formatting
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        test-platform: [vm, chrome]
-        dart-channel: ["2.16.0", "2.18.2"]
     steps:
-      - uses: actions/checkout@v1
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ matrix.dart-channel }}
+      - uses: actions/checkout@v3
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
       - name: Install dependencies
         run: dart pub get
-        working-directory: hive
-      - name: Run tests
-        run: dart pub run test -p ${{ matrix.test-platform }}
-        working-directory: hive
+      - name: Check formatting
+        run: dart format -o none . --set-exit-if-changed
 
-  test-hive-flutter:
+  lint:
+    name: Check lints
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        flutter-channel: [dev, beta, stable]
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
-        with:
-          java-version: "12.x"
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: ${{ matrix.flutter-channel }}
-      - name: Override dependency version
-        run: |
-          echo -e "\ndependency_overrides:\n  win32: 2.6.1\n  hive:\n    path: ../hive" >> pubspec.yaml
-        working-directory: hive_flutter
+      - uses: actions/checkout@v3
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+      - name: Install dependencies
+        run: dart pub get
+      - name: Check Lints
+        run: dart analyze
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+      - name: Install dependencies
+        run: dart pub get
+      - name: Run tests
+        run: dart test
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
       - name: Install dependencies
         run: flutter pub get
-        working-directory: hive_flutter
-      - name: Run tests
-        run: flutter test
-        working-directory: hive_flutter
-
-  test-hive_generator:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dart-channel: ["2.18.2"]
-    steps:
-      - uses: actions/checkout@v1
-      - uses: dart-lang/setup-dart@v1
+      - name: Code Coverage
+        run: flutter test --coverage --coverage-path lcov.info
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
         with:
-          sdk: ${{ matrix.dart-channel }}
-      - name: Install dependencies
-        run: dart pub get
-        working-directory: hive_generator/example
-      - name: Generate build_runner output
-        run: dart run build_runner build --delete-conflicting-outputs
-        working-directory: hive_generator/example
-
-  check-score:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package: [hive, hive_generator, hive_flutter]
-    steps:
-      - uses: actions/checkout@v1
-      - uses: axel-op/dart-package-analyzer@v3
-        with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          relativePath: ${{ matrix.package }}
-          minAnnotationLevel: warning
+          files: lcov.info
