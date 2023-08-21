@@ -80,7 +80,7 @@ print('Name: $name');
 
 > 🐝 Honeybees can fly at a speed of up to 30 kilometers per hour!
 
-## 📚 Hive Handbook
+# 📚 Hive Handbook
 
 In Hive, data is neatly organized into containers known as boxes. Think of boxes as tables you'd find in SQL, but far more flexible — they don't stick to a set structure and can contain a variety of data.
 
