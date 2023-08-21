@@ -30,27 +30,28 @@ Hive is a lightweight and blazing-fast key-value database made for Flutter and D
 - 💡 Simple, powerful, & intuitive API
 - 🔐 Tighter than Fort Knox: We've got encryption built right in.
 - 🧠 Think multi-tasking: Hive supports multiple isolates.
-- 🔋 No need to pack extras: We come with batteries included.
+- 🔋 No need to pack extras: Hive comes with batteries included.
 
 > 🐝 A single bee can visit 5,000 flowers in a day!
 
-## Buzz into Action with Hive 🐝
+## Buzz into Action 🐝
 
 Feeling the excitement? Great! Let's help you take your first flight with Hive.
 
-#### 1️⃣ Add dependencies
+#### 🔗 Add dependencies
 
-To kickstart the journey add `hive` and `path_provider` to your `pubspec.yaml`.
+To kickstart the journey add `hive`, `isar_flutter_libs` and `path_provider` to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
   hive: ^4.0.0
+  isar_flutter_libs: ^4.0.0-dev.13
   path_provider: ^2.1.0
 ```
 
 Pssst! 🤫 `path_provider` will help you to find the optimal directory for each platform.
 
-#### 📂 Designate a Home
+#### 🏡 Designate a Home
 
 Hive needs a place to call home. Using `path_provider` we can find a valid directory.
 
@@ -90,13 +91,13 @@ For a small app, a single box might be enough. For more advanced problems, boxes
 
 ### 📦 Opening Boxes
 
-Initiating your journey with Hive begins with opening your first box. Trust me, it's unbee-lievably easy:
+Your journey with Hive begins with opening your first box. Trust me, it's unbee-lievably easy:
 
 ```dart
 final box = Hive.box(name: 'myBox');
 ```
 
-When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hive will create a new box. If you call it again with the same name, Hive will return the already existing box. You can also use `Hive.box()` without a name. In this case, Hive will return the default box.
+When you call `Hive.box(name: 'myBox')` for the first time with a given name, Hive will craft a new box for you. If you call it again with the same name, Hive will return the already existing box. You can also use `Hive.box()` without a name. In this case, Hive will return the default box.
 
 There are optional parameters you can pass to `Hive.box()`:
 
