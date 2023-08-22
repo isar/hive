@@ -1,0 +1,32 @@
+name: Hive release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          running-workflow-name: "Release"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+      - name: pub.dev credentials
+        run: |
+          mkdir -p $HOME/.config/dart
+          echo '${{ secrets.PUB_JSON }}' >> $HOME/.config/dart/pub-credentials.json
+      - name: Publish hive
+        run: |
+          dart pub get
+          dart pub publish --force

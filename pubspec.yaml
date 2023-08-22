@@ -1,11 +1,20 @@
 name: hive
-description: Lightweight and blazing fast key-value database written in pure Dart. Strongly encrypted using AES-256.
+description: Lightweight and buzzing-fast key-value database made for Flutter and Dart.
 version: 4.0.0-dev.0
-homepage: https://github.com/hivedb/hive/tree/master/hive
-documentation: https://docs.hivedb.dev/
+repository: https://github.com/isar/hive
+homepage: https://github.com/isar/hive
+issue_tracker: https://github.com/isar/hive/issues
+funding:
+  - https://github.com/sponsors/simc/
+topics:
+  - database
+  - hive
+  - nosql
+  - encryption
+  - storage
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.1.0 <4.0.0"
 
 dependencies:
   isar: ^4.0.0-dev.13
