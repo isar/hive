@@ -1,6 +1,6 @@
 name: hive
 description: Lightweight and buzzing-fast key-value database made for Flutter and Dart.
-version: 4.0.0-dev.0
+version: 4.0.0-dev.1
 repository: https://github.com/isar/hive
 homepage: https://github.com/isar/hive
 issue_tracker: https://github.com/isar/hive/issues
