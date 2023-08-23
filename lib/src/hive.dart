@@ -2,7 +2,7 @@ part of hive;
 
 /// Open boxes and register adapters.
 class Hive {
-  static final _typeRegistry = _TypeRegistry();
+  static var _typeRegistry = _TypeRegistry();
   static final _openBoxes = <String, Box<dynamic>>{};
 
   /// The default name if you don't specify a name for a box.
@@ -89,6 +89,30 @@ class Hive {
     final newBox = _BoxImpl<E>(isar);
     _openBoxes[name] = newBox;
     return newBox;
+  }
+
+  /// Runs [computation] in a new isolate and returns the result. Also takes
+  /// care of initializing Hive and closing all boxes afterwards.
+  ///
+  /// The optional [debugName] can be used to identify the isolate in debuggers.
+  static Future<T> compute<T>(
+    FutureOr<T> Function() computation, {
+    String? debugName,
+  }) {
+    final registry = _typeRegistry;
+    final dir = defaultDirectory;
+    return Isolate.run(
+      () async {
+        Hive._typeRegistry = registry;
+        Hive.defaultDirectory = dir;
+        try {
+          return await computation();
+        } finally {
+          Hive.closeAllBoxes();
+        }
+      },
+      debugName: debugName ?? 'Hive Isolate',
+    );
   }
 
   /// Closes all open boxes.

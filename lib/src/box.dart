@@ -1,6 +1,7 @@
 part of hive;
 
 /// A box contains and manages a collection of key-value pairs.
+@pragma('vm:isolate-unsendable')
 abstract interface class Box<E> {
   /// Whether this box is currently open.
   ///
@@ -126,9 +127,10 @@ abstract interface class Box<E> {
   /// If a box is still open in another isolate, it will not be deleted.
   void deleteFromDisk();
 
-  /// Returns a broadcast stream of change events.
-  ///
-  /// If the [key] parameter is provided, only events for the specified key are
-  /// broadcasted.
-  Stream<(dynamic, E?)> watch({dynamic key});
+  /// Watch for changes to the given [key].
+  Stream<E?> watchKey(String key);
+
+  /// Returns a broadcast stream of all changes to the box. This should mainly
+  /// be used to be notified of changes in background isolates.
+  Stream<void> watch();
 }

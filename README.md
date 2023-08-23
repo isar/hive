@@ -91,14 +91,15 @@ Want to jump to a specific section? Here's a handy table of contents:
 
 - [Opening Boxes](#-opening-boxes)
 - [Closing Boxes](#-bidding-adieu-closing-boxes)
-- [Inserting](#%EF%B8%8F-filling-the-honeycomb-inserting-data)
+- [Inserting](#-filling-the-honeycomb-inserting-data)
 - [Reading](#-extracting-honey-i-mean-data)
 - [Deleting](#-deleting-data)
 - [Using Boxes like Lists](#-using-boxes-like-lists)
-- [Type safety](#%EF%B8%8F-type-safety)
+- [Type safety](#-type-safety)
 - [Non-primitive Objects](#-bee-yond-the-basics-non-primitive-objects)
 - [Transactions](#-transactions)
-- [FAQ](#-buzzworthy-questions-faq)
+- [Background Isolate](#-background-isolate)
+- [FAQ](#-buzzworthy-questions)
 
 > Bee fact: Bees have five eyes – three simple eyes on top of the head, and two compound eyes, with numerous hexagonal facets.
 
@@ -344,7 +345,37 @@ print(box.get('honeyLevel')); // 5
 
 > Bee fact: Bees can recognize human faces, and they can even be trained to associate a picture of a face with sweet treats!
 
-### 🍯 Buzzworthy Questions: FAQ
+### 💃 The Isolate Dance
+
+Just like a beehive where multiple bees work simultaneously, you can buzz into Hive from various Isolates at the same time. This nifty trick is great when you wish to keep those database activities separate from your UI thread.
+
+Hive comes with a sweet `Hive.compute()` method that runs a function in a different isolate. The best part? It also does the honey-making job of setting up and tidying resources for you.
+
+```dart
+// Opening the bee's box
+final box = Hive.box();
+
+// Storing some sweet nectar
+box.put('nectarType', 'wildflower');
+
+await Hive.compute(() {
+  // Accessing the same box from another worker bee
+  final box = Hive.box();
+  print(box.get('nectarType')); // wildflower
+
+  // Updating the nectar's quality
+  box.put('nectarType', 'lavender');
+});
+
+// Tasting the updated honey flavor
+print(honeycomb.get('nectarType')); // lavender
+```
+
+Just remember, while the bees dance in harmony, ensure your Isolates do too! 🐝🎶
+
+> Bee fact: Bees have two pairs of wings, and they beat 11,400 times per minute.
+
+### 🍯 Buzzworthy Questions
 
 #### 🐝 To bee or not to bee: Hive or Isar?
 

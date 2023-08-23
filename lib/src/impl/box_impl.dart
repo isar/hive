@@ -356,7 +356,19 @@ class _BoxImpl<E> implements Box<E> {
   }
 
   @override
-  Stream<(Object, E?)> watch({Object? key}) {
-    throw UnimplementedError();
+  Stream<E?> watchKey(String key) {
+    return isar.frames.where().keyEqualTo(key).watch().map((frames) {
+      final frame = frames.firstOrNull;
+      if (frame == null) {
+        return null;
+      } else {
+        return _frameFromJson(frame);
+      }
+    });
+  }
+
+  @override
+  Stream<void> watch() {
+    return isar.frames.watchLazy();
   }
 }

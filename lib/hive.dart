@@ -2,6 +2,10 @@
 /// Dart. It is strongly encrypted using AES-256.
 library hive;
 
+import 'dart:async';
+import 'dart:isolate'
+    if (dart.library.html) 'package:hive/src/impl/isolate_stub.dart';
+
 import 'package:hive/src/impl/frame.dart';
 import 'package:isar/isar.dart';
 
