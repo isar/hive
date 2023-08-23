@@ -98,7 +98,7 @@ Want to jump to a specific section? Here's a handy table of contents:
 - [Type safety](#-type-safety)
 - [Non-primitive Objects](#-bee-yond-the-basics-non-primitive-objects)
 - [Transactions](#-transactions)
-- [Background Isolate](#-background-isolate)
+- [Isolates](#-the-isolate-dance)
 - [FAQ](#-buzzworthy-questions)
 
 > Bee fact: Bees have five eyes – three simple eyes on top of the head, and two compound eyes, with numerous hexagonal facets.
