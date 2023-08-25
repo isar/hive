@@ -26,11 +26,11 @@ Hive is a lightweight and buzzing-fast key-value database made for Flutter and D
 ## Features 🌟
 
 - 🌍 Bee everywhere: mobile, desktop, browser
-- 🚀 Buzzing speed: Hive's wings flap faster than the rest!
+- 🚀 Buzzing speed: Faster than a bee on caffeine!
 - 💡 Sweet, powerful, & intuitive API
-- 🔐 Queen's Guard on duty: Encryption is built right in.
-- 🧠 Thinking in swarms: Hive supports multiple isolates.
-- 🍯 Hive comes with everything a bee needs and more!
+- 🔐 Queen's Guard: Encryption built right in.
+- 🧠 Thinking in swarms: Multi-isolate support.
+- 🍯 Everything a bee needs and more!
 
 > Bee fact: A single bee can visit 5,000 flowers in a day!
 
