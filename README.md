@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hivedb/hive/master/.github/logo_transparent.svg?sanitize=true" width="350px">
+  <img src="https://raw.githubusercontent.com/hivedb/hive/master/.github/hive.svg?sanitize=true" width="350px">
 </p>
 <h2 align="center">Fast, Enjoyable & Secure NoSQL Database</h2>
 
