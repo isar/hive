@@ -295,7 +295,7 @@ class Bee {
 Before our bee-friends can buzz around in Hive, you need to do the beekeeper's job and register the `Bee` class:
 
 ```dart
-Hive.registerAdapter('Bee', Bee.fromJson);
+Hive.registerAdapter(BeeAdapter());
 ```
 
 Now, you're all set to let your bees fly:
